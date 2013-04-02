@@ -10,7 +10,10 @@ const int prt_LOB = -1; //Lower bound of prt
 
 class Qnum_t {
 	public:
+		Qnum_t(): U1(0), prt(0){
+		}
 		Qnum_t(int _U1): U1(_U1), prt(0){
+			cout<<U1<<endl;
 			assert(U1 < U1_UPB && U1 > U1_LOB);
 			//cout<<"Constructing Qnum " << this << endl;
 		}
@@ -36,6 +39,5 @@ class Qnum_t {
 	private:
 		int U1;
 		int prt;
-
 };
 

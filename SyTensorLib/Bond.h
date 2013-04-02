@@ -16,11 +16,15 @@ class Bond_t {
 		Bond_t(const Bond_t& _b):type(_b.type), dim(_b.dim), Qnums(_b.Qnums), Qdegs(_b.Qdegs), offsets(_b.offsets){
 			//cout<<"Copying Bond "<< this <<" from " << &_b << endl;
 		}
+		void assign(bondType, vector<Qnum_t>& qnums);
 		friend class SyTensor_t;
 		friend ostream& operator<< (ostream& os, const Bond_t& b);
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
+		friend bool operator== (const Bond_t& b1, const Bond_t& b2);
+		friend void printRawElem(const SyTensor_t& SyT);
 		~Bond_t();
 	private:
+		void setting(vector<Qnum_t>& qnums);
 		bondType type;
 		int dim;
 		vector<Qnum_t>Qnums;	//Quantum numbers
