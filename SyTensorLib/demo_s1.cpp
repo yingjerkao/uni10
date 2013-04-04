@@ -40,9 +40,8 @@ int main(){
 	//rSyT.reshape(labels2, 2);
 	cout << SyT;		            
 	cout<< rSyT;
-	double dada[4] = {5, 5, 6, 6};
-	SyT.elemset(q10, dada, 4);
 	cout<<SyT;
+	printRawElem(SyT);
 	SyT.check();
 }
 

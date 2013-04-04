@@ -1,6 +1,8 @@
 OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o
 LINK := -mkl=parallel
 
+outer: outer.cpp $(OBJ)
+	icpc -o $@ $< $(OBJ) $(LINK)
 demo: demo_s1.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
 con: contract.cpp $(OBJ)
@@ -28,4 +30,4 @@ syTensor.o: SyTensor.cpp SyTensor.h
 
 clean:
 	rm -f *.o
-	rm -f run con demo
+	rm -f run con demo outer

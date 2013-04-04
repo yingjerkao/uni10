@@ -59,7 +59,6 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 	for(int i = conBond; i < BbondNum; i++)
 		cBonds.push_back(Tb.bonds[i]);
 	SyTensor_t Tc(cBonds);
-
 	cout << Ta;
 	cout << Tb;
 	Tc.addLabel(newLabelC);

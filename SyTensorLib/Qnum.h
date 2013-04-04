@@ -28,7 +28,8 @@ class Qnum_t {
 		~Qnum_t(){
 			//cout<<"Destructing Qnum " << this<< endl;
 		};
-
+		int getU1(){return U1;}
+		int getPrt(){return prt;}
 		void set(int _U1 = 0, int _prt = 0);
 		friend bool operator< (const Qnum_t& q1, const Qnum_t& q2);
 		friend bool operator<= (const Qnum_t& q1, const Qnum_t& q2);

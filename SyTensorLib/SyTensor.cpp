@@ -567,18 +567,78 @@ double SyTensor_t::at(vector<int> idxs)const{
 void printRawElem(const SyTensor_t& SyT){
 	if(SyT.status & HAVEELEM){
 		int bondNum = SyT.bonds.size();
-		vector<int> idxs(bondNum, 0);
 		int colNum = 1;
 		for(int b = bondNum - 1; b >= 0; b--)
 			if(SyT.bonds[b].type == BD_COL)
 				colNum *= SyT.bonds[b].dim;
 			else
 				break;
-		int cnt = 0;
+		vector<Qnum_t> rowQ;
+		vector<Qnum_t> colQ;
+		int Rnum = SyT.RBondNum;
+		int Cnum = bondNum - SyT.RBondNum;
+		vector<int> idxs(Rnum, 0);
+		vector<int> qidxs(Rnum, 0);
 		int bend;
 		while(1){
-			if(cnt % colNum == 0)
-				cout<<"\n\n";
+			Qnum_t qnum;
+			for(int b = 0; b < Rnum; b++)
+				qnum = qnum * SyT.bonds[b].Qnums[qidxs[b]];
+			rowQ.push_back(qnum);
+			for(bend = Rnum - 1; bend >= 0; bend--){
+				idxs[bend]++;
+				if(idxs[bend] < SyT.bonds[bend].offsets[qidxs[bend]] + SyT.bonds[bend].Qdegs[qidxs[bend]])
+					break;
+				else{
+					qidxs[bend]++;
+					if(qidxs[bend] < SyT.bonds[bend].Qnums.size())
+						break;
+					else{
+						qidxs[bend] = 0;
+						idxs[bend] = 0;
+					}
+				}
+			}
+			if(bend < 0)
+				break;
+		}
+		idxs.assign(Cnum, 0);
+		qidxs.assign(Cnum, 0);
+		while(1){
+			Qnum_t qnum;
+			for(int b = 0; b < Cnum; b++)
+				qnum = qnum * SyT.bonds[Rnum + b].Qnums[qidxs[b]];
+			colQ.push_back(qnum);
+			for(bend = Cnum - 1; bend >= 0; bend--){
+				idxs[bend]++;
+				if(idxs[bend] < SyT.bonds[Rnum + bend].offsets[qidxs[bend]] + SyT.bonds[Rnum + bend].Qdegs[qidxs[bend]])
+					break;
+				else{
+					qidxs[bend]++;
+					if(qidxs[bend] < SyT.bonds[Rnum + bend].Qnums.size())
+						break;
+					else{
+						qidxs[bend] = 0;
+						idxs[bend] = 0;
+					}
+				}
+			}
+			if(bend < 0)
+				break;
+		}
+		cout<< "     ";
+		for(int q = 0; q < colQ.size(); q++)
+			cout<< "   " << setw(2) << colQ[q].getU1() << "," << colQ[q].getPrt();
+		cout<< endl << setw(5) << "" << setw(colQ.size() * 7 + 2) <<setfill('-')<<"";
+		cout<<setfill(' ');
+		idxs.assign(bondNum, 0);
+		int cnt = 0;
+		int r = 0;
+		while(1){
+			if(cnt % colNum == 0){
+				cout<<"\n    |\n" << setw(2) << rowQ[r].getU1() << "," << rowQ[r].getPrt() << "|";
+				r++;
+			}
 			cout<< setw(7) << setprecision(3) << SyT.at(idxs);
 			for(bend = bondNum - 1; bend >= 0; bend--){
 				idxs[bend]++;
@@ -591,7 +651,7 @@ void printRawElem(const SyTensor_t& SyT){
 			if(bend < 0)
 				break;
 		}
-		cout <<"\n\n";
+		cout <<"\n    |\n";
 	}
 	else{
 		printf("NO ELEMENT IN THE TENSOR!!!\n");

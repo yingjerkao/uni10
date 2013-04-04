@@ -82,8 +82,8 @@ int main(){
 			            
 	cout<< SyT;
 	cout<< rSyT;
-	//printRawElem(SyT);
-	printRawElem(rSyT);
+	printRawElem(SyT);
+	//printRawElem(rSyT);
 	SyT.check();
 	Block_t blk = SyT.getBlock(q10);
 	cout<<blk.row()<<endl;
