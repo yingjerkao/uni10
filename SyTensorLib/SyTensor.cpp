@@ -8,7 +8,7 @@ SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
 	name(SyT.name), status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks),
     RBondNum(SyT.RBondNum), elemNum(SyT.elemNum), Qidx(SyT.Qidx),
 	RQidx2Off(SyT.RQidx2Off), CQidx2Off(SyT.CQidx2Off){
-	cout<<"COPY CONSTRUCTING " << this << endl;
+	//cout<<"COPY CONSTRUCTING " << this << endl;
 	if(SyT.status & HAVELABEL)	//Labels are NOT copied to another tensor.
 		status ^= HAVELABEL;
 	RQidx2Blk.assign(SyT.RQidx2Blk.size(), NULL);
@@ -31,7 +31,7 @@ SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
 }	
 
 SyTensor_t& SyTensor_t::operator=(const SyTensor_t& SyT){
-	cout<<"ASSING CONSTRUCTING " << this << endl;
+	//cout<<"ASSING CONSTRUCTING " << this << endl;
 	name = SyT.name;
 	status = SyT.status;
 	bonds = SyT.bonds;
@@ -62,16 +62,22 @@ SyTensor_t& SyTensor_t::operator=(const SyTensor_t& SyT){
 	return *this;
 }
 
+SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, const string& _name): name(_name), status(0), bonds(_bonds){
+	assert(_bonds.size() > 0); //No bond in Tensor, Error!
+	//cout<<"CONSTRUCTING " << this << endl;
+	initSyT();
+	COUNTER++;
+}
 SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, vector<int>& _labels, const string& _name): name(_name), status(0), bonds(_bonds){
 	assert(_bonds.size() > 0); //No bond in Tensor, Error!
 	initSyT();
 	addLabel(_labels);
 	COUNTER++;
 }
-SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, const string& _name): name(_name), status(0), bonds(_bonds){
+SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, int* _labels, const string& _name): name(_name), status(0), bonds(_bonds){
 	assert(_bonds.size() > 0); //No bond in Tensor, Error!
-	//cout<<"CONSTRUCTING " << this << endl;
 	initSyT();
+	addLabel(_labels);
 	COUNTER++;
 }
 
@@ -95,14 +101,25 @@ void SyTensor_t::check(){
 	cout<<"Max Allocated Elem for a Tensor: " << MAXELEMTEN << endl;
 }
 
+void SyTensor_t::addLabel(int* newLabels){
+	assert(!(status & HAVELABEL) && status & INIT);
+	vector<int> labels(newLabels, newLabels + bonds.size());
+	addLabel(labels);
+}
 void SyTensor_t::addLabel(vector<int>& newLabels){
-	assert(!(status & HAVELABEL));
+	assert(!(status & HAVELABEL) && status & INIT);
 	set<int> labelS(&(newLabels[0]), &(newLabels[newLabels.size()]));
 	assert(bonds.size() == labelS.size());
 	labels = newLabels;
 	status |= HAVELABEL;
 }
 
+void SyTensor_t::reshape(int* newLabels, int rowBondNum){
+	assert(status & INIT);
+	vector<int> labels(newLabels, newLabels + bonds.size());
+	this->reshape(labels, rowBondNum);
+
+}
 void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 	assert(status & INIT);
 	assert(status & HAVELABEL);

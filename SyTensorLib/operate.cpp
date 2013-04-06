@@ -15,6 +15,7 @@ SyTensor_t operator+(const SyTensor_t& Ta, const SyTensor_t& Tb){
 void SyTensor_t::operator*= (SyTensor_t& Tb){
 	*this = *this * Tb;
 }
+
 SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 	assert(Ta.status & Tb.status & INIT);
 	assert(Ta.status & Tb.status & HAVELABEL);
@@ -62,34 +63,13 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 	Block_t blockA, blockB, blockC;
 	map<Qnum_t,Block_t>::iterator it; 
 	map<Qnum_t,Block_t>::iterator it2; 
-	/*
-	cout<< Ta;
-	printRawElem(Ta);
-	cout<< Tb;
-	printRawElem(Tb);
-	*/
 	for(it = Ta.blocks.begin() ; it != Ta.blocks.end(); it++){
 		if((it2 = Tb.blocks.find(it->first)) != Tb.blocks.end()){
 			blockA = it->second;
 			blockB = it2->second;
 			blockC = Tc.blocks[it->first]; 
-			/*
-			cout<<"BLOCKA: " << blockA<<endl;
-			for(int i = 0; i < blockA.Rnum; i++){
-				for(int j = 0; j < blockA.Cnum; j++)
-					printf("%7.3f", blockA.elem[i * blockA.Cnum + j]);
-				printf("\n\n");
-			}
-			cout<<"BLOCKB: " << blockB<<endl;
-			for(int i = 0; i < blockB.Rnum; i++){
-				for(int j = 0; j < blockB.Cnum; j++)
-					printf("%7.3f", blockB.elem[i * blockB.Cnum + j]);
-				printf("\n\n");
-			}
-			*/
 			assert(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum);
 			myDgemm(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
-			
 		}
 	}
 	Tc.status |= HAVEELEM;

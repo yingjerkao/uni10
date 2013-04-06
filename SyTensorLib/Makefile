@@ -1,7 +1,9 @@
-OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o
+OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o network.o
 LINK := -mkl=parallel
 
 asd.e: ascend.cpp $(OBJ)
+	icpc -o $@ $< $(OBJ) $(LINK)
+rasd.e: rawAscend.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
 dir.e: direct.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
@@ -11,6 +13,9 @@ con.e: contract.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
 run.e: main.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
+
+network.o: Network.cpp Network.h
+	icpc -c $< -o $@
 
 qnum.o: Qnum.cpp Qnum.h
 	icpc -c $< -o $@
