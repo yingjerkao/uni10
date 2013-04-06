@@ -8,7 +8,7 @@ SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
 	name(SyT.name), status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks), labels(SyT.labels),
     RBondNum(SyT.RBondNum), elemNum(SyT.elemNum), Qidx(SyT.Qidx),
 	RQidx2Off(SyT.RQidx2Off), CQidx2Off(SyT.CQidx2Off){
-	cout<<"COPY CONSTRUCTING " << this << endl;
+	//cout<<"COPY CONSTRUCTING " << this << endl;
 	RQidx2Blk.assign(SyT.RQidx2Blk.size(), NULL);
 	for (int i = 0; i < SyT.RQidx2Blk.size(); i++)
 		if(SyT.RQidx2Blk[i])
@@ -29,7 +29,7 @@ SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
 }	
 
 SyTensor_t& SyTensor_t::operator=(const SyTensor_t& SyT){
-	cout<<"ASSING CONSTRUCTING " << this << endl;
+	//cout<<"ASSING CONSTRUCTING " << this << endl;
 	name = SyT.name;
 	status = SyT.status;
 	bonds = SyT.bonds;
@@ -68,13 +68,13 @@ SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, vector<int>& _labels, const strin
 }
 SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, const string& _name): name(_name), status(0), bonds(_bonds){
 	assert(_bonds.size() > 0); //No bond in Tensor, Error!
-	cout<<"CONSTRUCTING " << this << endl;
+	//cout<<"CONSTRUCTING " << this << endl;
 	initSyT();
 	COUNTER++;
 }
 
 SyTensor_t::~SyTensor_t(){
-	cout<<"DESTRUCTING " << this << endl;
+	//cout<<"DESTRUCTING " << this << endl;
 	if(status & INIT){
 		free(elem);
 		ELEMNUM -= elemNum;
@@ -125,10 +125,10 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 	if(inorder  && rsp_outin[0] == 0 && RBondNum == rowBondNum);	//do nothing
 	else if(inorder  && rsp_outin[0] != 0 && (bondNum - RBondNum) == rowBondNum){
 		this->transpose();
-		printf("TRANSPOSE!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+		//printf("TRANSPOSE!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	}
 	else{
-		printf("LALALALALALALAL\n");
+		//printf("LALALALALALALAL\n");
 		vector<Bond_t> outBonds;
 		for(int b = 0; b < bonds.size(); b++)
 			outBonds.push_back(bonds[rsp_outin[b]]);
@@ -235,7 +235,11 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 	}
 }
 
-void SyTensor_t::transpose(){
+void SyTensor_t::rawTranspose(){
+	transpose(false);
+
+}
+void SyTensor_t::transpose(bool flag){
 	assert(status & INIT);
 	int bondNum = bonds.size();
 	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of SyTout is the index "1" of SyTin, opposite to the order in TensorLib
@@ -261,11 +265,12 @@ void SyTensor_t::transpose(){
 	}
 	else
 		for(int b = 0; b < bonds.size(); b++)
-			outBonds[b] = bonds[rsp_outin[b]];
+			outBonds.push_back(bonds[rsp_outin[b]]);
 
 	for(int b = 0; b < bondNum; b++){
-		for(int q = 0; q < outBonds[b].Qnums.size(); q++)
-			outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
+		if(flag)
+			for(int q = 0; q < outBonds[b].Qnums.size(); q++)
+				outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
 		if(b < cbondNum)
 			outBonds[b].type = BD_ROW;
 		else
@@ -762,6 +767,7 @@ void SyTensor_t::orthoRand(){
 	map<Qnum_t,Block_t>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		orthoRandomize(it->second.elem, it->second.Rnum, it->second.Cnum);
+	status |= HAVEELEM;
 }
 
 void SyTensor_t::eye(Qnum_t qnum){
@@ -773,6 +779,7 @@ void SyTensor_t::eye(){
 	map<Qnum_t,Block_t>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		myEye(it->second.elem, it->second.Rnum, it->second.Cnum);
+	status |= HAVEELEM;
 }
 
 void SyTensor_t::elemset(Qnum_t qnum, DOUBLE* elem, int64_t elemNum){

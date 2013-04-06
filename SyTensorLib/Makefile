@@ -1,13 +1,15 @@
 OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o
 LINK := -mkl=parallel
 
-outer: outer.cpp $(OBJ)
+asd.e: ascend.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
-demo: demo_s1.cpp $(OBJ)
+dir.e: direct.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
-con: contract.cpp $(OBJ)
+demo.e: demo_s1.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
-run: main.cpp $(OBJ)
+con.e: contract.cpp $(OBJ)
+	icpc -o $@ $< $(OBJ) $(LINK)
+run.e: main.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
 
 qnum.o: Qnum.cpp Qnum.h
@@ -29,5 +31,4 @@ syTensor.o: SyTensor.cpp SyTensor.h
 	icpc -c $< -o $@
 
 clean:
-	rm -f *.o
-	rm -f run con demo outer
+	rm -f *.o *.e

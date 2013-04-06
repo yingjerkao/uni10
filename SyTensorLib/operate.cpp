@@ -52,28 +52,45 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 	int conBond = interLabel.size();
 	Ta.reshape(newLabelA, AbondNum - conBond);
 	Tb.reshape(newLabelB, conBond);
-	assert(Ta.blocks.size() == Tb.blocks.size());
 	vector<Bond_t> cBonds;
 	for(int i = 0; i < AbondNum - conBond; i++)
 		cBonds.push_back(Ta.bonds[i]);
 	for(int i = conBond; i < BbondNum; i++)
 		cBonds.push_back(Tb.bonds[i]);
 	SyTensor_t Tc(cBonds);
-	cout << Ta;
-	cout << Tb;
 	Tc.addLabel(newLabelC);
 	Block_t blockA, blockB, blockC;
 	map<Qnum_t,Block_t>::iterator it; 
+	map<Qnum_t,Block_t>::iterator it2; 
+	/*
+	cout<< Ta;
+	printRawElem(Ta);
+	cout<< Tb;
+	printRawElem(Tb);
+	*/
 	for(it = Ta.blocks.begin() ; it != Ta.blocks.end(); it++){
-		blockA = it->second;
-		blockB = Tb.blocks[it->first];
-		blockC = Tc.blocks[it->first]; 
-		cout<<it->first<<endl;
-		cout<<blockA<<endl;
-		cout<<blockB<<endl;
-		cout<<blockC<<endl;
-		assert(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum);
-		myDgemm(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
+		if((it2 = Tb.blocks.find(it->first)) != Tb.blocks.end()){
+			blockA = it->second;
+			blockB = it2->second;
+			blockC = Tc.blocks[it->first]; 
+			/*
+			cout<<"BLOCKA: " << blockA<<endl;
+			for(int i = 0; i < blockA.Rnum; i++){
+				for(int j = 0; j < blockA.Cnum; j++)
+					printf("%7.3f", blockA.elem[i * blockA.Cnum + j]);
+				printf("\n\n");
+			}
+			cout<<"BLOCKB: " << blockB<<endl;
+			for(int i = 0; i < blockB.Rnum; i++){
+				for(int j = 0; j < blockB.Cnum; j++)
+					printf("%7.3f", blockB.elem[i * blockB.Cnum + j]);
+				printf("\n\n");
+			}
+			*/
+			assert(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum);
+			myDgemm(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
+			
+		}
 	}
 	Tc.status |= HAVEELEM;
 	return Tc;

@@ -39,8 +39,8 @@ int main(){
 	vector<int> labels2(label2_tmp, label2_tmp + sizeof(label2_tmp) / sizeof(int));
 	//rSyT.reshape(labels2, 2);
 	cout << SyT;		            
-	cout<< rSyT;
-	cout<<SyT;
+	//cout<< rSyT;
+	//cout<<SyT;
 	printRawElem(SyT);
 	SyT.check();
 }

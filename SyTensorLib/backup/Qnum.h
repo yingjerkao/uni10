@@ -11,24 +11,26 @@ const int prt_LOB = -1; //Lower bound of prt
 class Qnum_t {
 	public:
 		Qnum_t(): U1(0), prt(0){
-			cout<<"Constructing Qnum...\n";
 		}
 		Qnum_t(int _U1): U1(_U1), prt(0){
+			cout<<U1<<endl;
 			assert(U1 < U1_UPB && U1 > U1_LOB);
-			cout<<"Constructing Qnum...\n";
+			//cout<<"Constructing Qnum " << this << endl;
 		}
 		Qnum_t(int _U1, int _prt): U1(_U1), prt(_prt){
 			assert(U1 < U1_UPB && U1 > U1_LOB && prt < prt_UPB && prt > prt_LOB);
-			cout<<"Constructing Qnum...\n";
+			//cout<<"Constructing Qnum " << this << endl;
 		}
 
 		Qnum_t(const Qnum_t& _q):U1(_q.U1), prt(_q.prt){
-			cout<<"Copying Qnum...\n";
+			//cout<<"Copying Qnum " << this << " from " << &_q << endl;
 		}
 		~Qnum_t(){
-			cout<<"Destructing Qnum...\n";
+			//cout<<"Destructing Qnum " << this<< endl;
 		};
-
+		int getU1(){return U1;}
+		int getPrt(){return prt;}
+		void set(int _U1 = 0, int _prt = 0);
 		friend bool operator< (const Qnum_t& q1, const Qnum_t& q2);
 		friend bool operator<= (const Qnum_t& q1, const Qnum_t& q2);
 		friend bool operator== (const Qnum_t& q1, const Qnum_t& q2);
@@ -38,6 +40,5 @@ class Qnum_t {
 	private:
 		int U1;
 		int prt;
-
 };
 

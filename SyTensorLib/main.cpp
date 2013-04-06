@@ -73,20 +73,18 @@ int main(){
 
 	SyTensor_t rSyT = SyT;
 	//int label2_tmp[] = {-1, -2, -3, -4, -5};
-	int label2_tmp[] = {-4, -5, -1, -2, -3};
-	//int label2_tmp[] = {-2, -5, -3, -1, -4};
+	//int label2_tmp[] = {-4, -5, -1, -2, -3};
+	int label2_tmp[] = {-2, -5, -3, -1, -4};
 	vector<int> labels2(label2_tmp, label2_tmp + sizeof(label2_tmp) / sizeof(int));
 	//rSyT.reshape(labels2, 2);
 	rSyT.transpose();
-	rSyT.eye();
+	rSyT.reshape(labels2, 3);
 			            
 	cout<< SyT;
 	cout<< rSyT;
-	printRawElem(SyT);
+	printRawElem(rSyT);
 	//printRawElem(rSyT);
 	SyT.check();
 	Block_t blk = SyT.getBlock(q10);
-	cout<<blk.row()<<endl;
-	cout<<blk.col()<<endl;
 }
 

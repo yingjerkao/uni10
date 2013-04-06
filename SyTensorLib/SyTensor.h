@@ -31,7 +31,8 @@ class SyTensor_t{
 		void addLabel(vector<int>& newLabels);
 		void reshape(vector<int>& newLabels, int rowBondNum);
 		void addRawElem(double* rawElem);
-		void transpose();
+		void transpose(bool flag=true);
+		void rawTranspose();
 		void randomize();
 		double at(vector<int>idxs)const;
 		void check();
