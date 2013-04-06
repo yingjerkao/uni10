@@ -5,10 +5,12 @@ int64_t SyTensor_t::MAXELEMNUM = 0;
 int64_t SyTensor_t::MAXELEMTEN = 0;
 
 SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
-	name(SyT.name), status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks), labels(SyT.labels),
+	name(SyT.name), status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks),
     RBondNum(SyT.RBondNum), elemNum(SyT.elemNum), Qidx(SyT.Qidx),
 	RQidx2Off(SyT.RQidx2Off), CQidx2Off(SyT.CQidx2Off){
-	//cout<<"COPY CONSTRUCTING " << this << endl;
+	cout<<"COPY CONSTRUCTING " << this << endl;
+	if(SyT.status & HAVELABEL)	//Labels are NOT copied to another tensor.
+		status ^= HAVELABEL;
 	RQidx2Blk.assign(SyT.RQidx2Blk.size(), NULL);
 	for (int i = 0; i < SyT.RQidx2Blk.size(); i++)
 		if(SyT.RQidx2Blk[i])
@@ -29,7 +31,7 @@ SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
 }	
 
 SyTensor_t& SyTensor_t::operator=(const SyTensor_t& SyT){
-	//cout<<"ASSING CONSTRUCTING " << this << endl;
+	cout<<"ASSING CONSTRUCTING " << this << endl;
 	name = SyT.name;
 	status = SyT.status;
 	bonds = SyT.bonds;
@@ -94,6 +96,7 @@ void SyTensor_t::check(){
 }
 
 void SyTensor_t::addLabel(vector<int>& newLabels){
+	assert(!(status & HAVELABEL));
 	set<int> labelS(&(newLabels[0]), &(newLabels[newLabels.size()]));
 	assert(bonds.size() == labelS.size());
 	labels = newLabels;
@@ -147,7 +150,6 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 			}
 		}
 		SyTensor_t SyTout(outBonds, "Reshaped " + name);
-		SyTout.addLabel(newLabels);
 		if(status & HAVEELEM){
 			int QcolNum = 1;
 			int QcolNum_in = 1;
@@ -232,14 +234,11 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 			SyTout.status |= HAVEELEM;
 		}
 		*this = SyTout;
+		this->addLabel(newLabels);
 	}
 }
 
-void SyTensor_t::rawTranspose(){
-	transpose(false);
-
-}
-void SyTensor_t::transpose(bool flag){
+void SyTensor_t::transpose(){
 	assert(status & INIT);
 	int bondNum = bonds.size();
 	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of SyTout is the index "1" of SyTin, opposite to the order in TensorLib
@@ -257,18 +256,17 @@ void SyTensor_t::transpose(bool flag){
 			rsp_outin[b] = b - cbondNum;
 	vector<int> outLabels(bondNum, 0);
 	vector<Bond_t> outBonds;
-	if(status & HAVELABEL){
+	if(status & HAVELABEL)
 		for(int b = 0; b < bonds.size(); b++){
 			outBonds.push_back(bonds[rsp_outin[b]]);
 			outLabels[b] = labels[rsp_outin[b]];
 		}
-	}
 	else
 		for(int b = 0; b < bonds.size(); b++)
 			outBonds.push_back(bonds[rsp_outin[b]]);
 
 	for(int b = 0; b < bondNum; b++){
-		if(flag)
+		if(status & HAVELABEL)
 			for(int q = 0; q < outBonds[b].Qnums.size(); q++)
 				outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
 		if(b < cbondNum)
