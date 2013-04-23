@@ -195,7 +195,6 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 			vector<int> Qidxs(bondNum, 0); 
 			vector<int> idxs;
 			vector<int> Din_acc(bondNum, 1);	//Degeneracy acc
-
 			while(1){
 				if(SyTout.Qidx[Qoff]){
 					Qoff_in = 0;

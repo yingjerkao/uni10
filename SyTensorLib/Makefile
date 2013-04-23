@@ -1,6 +1,10 @@
 OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o network.o
 LINK := -mkl=parallel
 
+net.e: net.cpp $(OBJ)
+	icpc -o $@ $< $(OBJ) $(LINK)
+init.e: init_H.cpp $(OBJ)
+	icpc -o $@ $< $(OBJ) $(LINK)
 asd.e: ascend.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
 rasd.e: rawAscend.cpp $(OBJ)

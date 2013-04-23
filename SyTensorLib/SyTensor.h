@@ -48,6 +48,7 @@ class SyTensor_t{
 		void operator*= (double a);
 		Block_t& getBlock(Qnum_t qnum);
 		friend void printRawElem(const SyTensor_t& SyT);
+		friend class Node_t;
 		void orthoRand();
 		void orthoRand(Qnum_t qnum);
 		void eye();

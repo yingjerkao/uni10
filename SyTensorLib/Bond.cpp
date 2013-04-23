@@ -58,3 +58,9 @@ ostream& operator<< (ostream& os, const Bond_t& b){
 bool operator== (const Bond_t& b1, const Bond_t& b2){
 	return (b1.type == b2.type) && (b1.Qnums == b2.Qnums) && (b1.Qdegs == b2.Qdegs);
 }
+void Bond_t::tranfer(bondType tp){
+	if(type != tp)
+		for(int q = 0; q < Qnums.size(); q++)
+			Qnums[q] = -Qnums[q];
+	type = tp;
+}
