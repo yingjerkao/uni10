@@ -7,13 +7,17 @@ using namespace std;
 class SyTensor_t;
 class Bond_t;
 class Qnum_t;
-
 class Node_t{
 	public:
 		Node_t();
 		Node_t(SyTensor_t* Tp);
-		float assess(Node_t& nd);
+		Node_t(const Node_t& nd);
+		Node_t(vector<Bond_t>& _bonds, vector<int>& _labels);
+		~Node_t();
+		Node_t contract(Node_t* nd);
+		float metric(Node_t* nd);
 		friend ostream& operator<< (ostream& os, const Node_t& nd);
+		friend class Network_t;
 	private:
 		SyTensor_t* T;
 		vector<int> labels;	
@@ -22,6 +26,7 @@ class Node_t{
 		Node_t* parent;
 		Node_t* left;
 		Node_t* right;
+		int64_t cal_elemNum(vector<Bond_t>& _bonds);
 };
 
 class lBond_t{	//light bond
@@ -33,12 +38,18 @@ class Network_t {
 	public:
 		Network_t();
 		Network_t(vector<SyTensor_t*>& tens);
+		~Network_t();
 		Node_t* add(SyTensor_t*);
-		SyTensor_t contract();
+		SyTensor_t launch();
 		void optimize(int num=1);
 	private:
-		vector<Node_t*> tensors;
+		vector<Node_t*> leafs;
 		vector<int> order;
 		Node_t* root;
-		Node_t* settle(Node_t*); 
+		int times;	//construction times
+		int tot_elem;	//total memory ussage
+		int max_elem;	//maximum 
+		void construct(); 
+		void matching(Node_t* sbj, Node_t* tar);
+		void branch(Node_t* sbj, Node_t* tar);
 };

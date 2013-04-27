@@ -18,11 +18,12 @@ class Bond_t {
 		}
 		void assign(bondType, vector<Qnum_t>& qnums);
 		friend class SyTensor_t;
+		friend class Node_t;
 		friend ostream& operator<< (ostream& os, const Bond_t& b);
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
 		friend bool operator== (const Bond_t& b1, const Bond_t& b2);
 		friend void printRawElem(const SyTensor_t& SyT);
-		void tranfer(bondType tp);
+		void change(bondType tp);
 		~Bond_t();
 	private:
 		void setting(vector<Qnum_t>& qnums);
