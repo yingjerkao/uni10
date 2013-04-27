@@ -12,7 +12,6 @@ Node_t::Node_t(vector<Bond_t>& _bonds, vector<int>& _labels): T(NULL), labels(_l
 	elemNum = cal_elemNum(bonds);
 }
 Node_t::~Node_t(){
-	cout<<"DELETE Node......\n";
 }
 Node_t Node_t::contract(Node_t* nd){
 	int AbondNum = bonds.size();
@@ -192,7 +191,10 @@ void Network_t::branch(Node_t* sbj, Node_t* tar){
 			tar->parent->left = par;
 		else
 			tar->parent->right = par;
-	par->parent = tar->parent;
+	else{	//tar is root
+		par->parent = NULL;
+		root = par;
+	}
 	par->left = sbj;
 	par->right = tar;
 	sbj->parent = par;
@@ -224,11 +226,8 @@ void Network_t::matching(Node_t* sbj, Node_t* tar){
 
 void Network_t::construct(){
 	for(int i = 0; i < order.size(); i++){
-		cout<<order[i]<<endl;
 		matching(leafs[order[i]], root);
 	}
-	for(int i = 0; i < order.size(); i++)
-		cout<<(*(leafs[order[i]]));
 }
 
 void Network_t::optimize(int num){
@@ -242,6 +241,31 @@ Network_t::~Network_t(){
 		delete leafs[i];
 }
 
+void Network_t::preprint(ostream& os, Node_t* nd, int layer){
+	if(nd == NULL)
+		return;
+	for(int i = 0; i < layer; i++)
+		os<<"\t";
+	if(nd->T)
+		os<<nd->T->name << "(" << nd->elemNum << "): ";
+	else
+		os<<"*("<<nd->elemNum<<"): ";
+	for(int i = 0; i < nd->labels.size(); i++)
+		os<< nd->labels[i] << ", ";
+	os<<endl;
+	preprint(os, nd->left, layer+1);
+	preprint(os, nd->right, layer+1);
+
+}
+ostream& operator<< (ostream& os, Network_t& net){
+	//for(int i = 0; i < net.order.size(); i++)
+	//	os<<(*(net.leafs[net.order[i]]));
+	net.preprint(os, net.root, 0);
+	//os<<*(net.root);
+
+	return os;
+
+}
 ostream& operator<< (ostream& os, const Node_t& nd){
 	os << "Tensor: " << nd.T<<endl;
 	os << "elemNum: " << nd.elemNum<<endl;

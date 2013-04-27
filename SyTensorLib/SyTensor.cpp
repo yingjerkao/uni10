@@ -166,7 +166,7 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 				outBonds[b].type = BD_COL;
 			}
 		}
-		SyTensor_t SyTout(outBonds, "Reshaped " + name);
+		SyTensor_t SyTout(outBonds, name);
 		if(status & HAVEELEM){
 			int QcolNum = 1;
 			int QcolNum_in = 1;
@@ -290,7 +290,7 @@ void SyTensor_t::transpose(){
 		else
 			outBonds[b].type = BD_COL;
 	}
-	SyTensor_t SyTout(outBonds, "Transpoesed " + name);
+	SyTensor_t SyTout(outBonds, name);
 	if(status & HAVELABEL)
 		SyTout.addLabel(outLabels);
 	if(status & HAVEELEM){

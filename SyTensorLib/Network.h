@@ -42,6 +42,8 @@ class Network_t {
 		Node_t* add(SyTensor_t*);
 		SyTensor_t launch();
 		void optimize(int num=1);
+		friend ostream& operator<< (ostream& os, Network_t& nd);
+		void preprint(ostream& os, Node_t* nd, int layer);	//pre-order print
 	private:
 		vector<Node_t*> leafs;
 		vector<int> order;
@@ -53,3 +55,4 @@ class Network_t {
 		void matching(Node_t* sbj, Node_t* tar);
 		void branch(Node_t* sbj, Node_t* tar);
 };
+
