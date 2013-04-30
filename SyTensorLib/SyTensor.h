@@ -36,6 +36,7 @@ class SyTensor_t{
 		void addRawElem(double* rawElem);
 		void transpose();
 		void randomize();
+		void setName(string _name);
 		double at(vector<int>idxs)const;
 		void check();
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);

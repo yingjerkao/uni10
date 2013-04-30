@@ -1,14 +1,14 @@
 #include "SyTensor.h"
 #include "Network.h"
-Node_t::Node_t(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL){
+Node_t::Node_t(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }
-Node_t::Node_t(SyTensor_t* Tp): T(Tp), elemNum(Tp->elemNum), labels(Tp->labels), bonds(Tp->bonds), parent(NULL), left(NULL), right(NULL){	
+Node_t::Node_t(SyTensor_t* Tp): T(Tp), elemNum(Tp->elemNum), labels(Tp->labels), bonds(Tp->bonds), parent(NULL), left(NULL), right(NULL), point(0){	
 	assert(Tp->status & INIT);
 	assert(Tp->status & HAVELABEL);
 }
-Node_t::Node_t(const Node_t& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right){	
+Node_t::Node_t(const Node_t& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){	
 }
-Node_t::Node_t(vector<Bond_t>& _bonds, vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL){	
+Node_t::Node_t(vector<Bond_t>& _bonds, vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL), point(0){	
 	elemNum = cal_elemNum(bonds);
 }
 Node_t::~Node_t(){
@@ -185,30 +185,55 @@ Node_t* Network_t::add(SyTensor_t* SyTp){
 }
 
 void Network_t::branch(Node_t* sbj, Node_t* tar){
-	Node_t* par = new Node_t(sbj->contract(tar));
-	if(tar->parent != NULL)	//tar is not root
-		if(tar->parent->left == tar)	// tar on the left side of its parent
-			tar->parent->left = par;
-		else
-			tar->parent->right = par;
-	else{	//tar is root
-		par->parent = NULL;
-		root = par;
+	Node_t* par = new Node_t(tar->contract(sbj));
+	if(sbj->parent == NULL){	//create a parent node
+		if(tar->parent != NULL){	//tar is not root
+			if(tar->parent->left == tar)	// tar on the left side of its parent
+				tar->parent->left = par;
+			else
+				tar->parent->right = par;
+			par->parent = tar->parent;
+		}
+		else{	//tar is root
+			par->parent = NULL;
+			root = par;
+		}
 	}
-	par->left = sbj;
-	par->right = tar;
-	sbj->parent = par;
+	else{	//sbj and tar have same parent and replace the parent node
+		if(tar->parent->parent != NULL){
+			if(tar->parent->parent->left == tar->parent)	// tar on the left side of its parent
+				tar->parent->parent->left = par;
+			else
+				tar->parent->parent->right = par;
+			par->parent = tar->parent->parent;
+		}
+		else{	//tar->parent is root
+			par->parent = NULL;
+			root = par;
+		}
+		delete tar->parent;
+	}
+	par->left = tar;
+	par->right = sbj;
 	tar->parent = par;
+	sbj->parent = par;
+	par->point = tar->metric(sbj);
+
+	if(sbj->parent->parent != NULL){	//propagate up
+		sbj = sbj->parent;
+		branch(sbj->parent->right, sbj->parent->left);
+	}
 }
 void Network_t::matching(Node_t* sbj, Node_t* tar){
-	if(tar == NULL)	//tar is root
+	if(tar == NULL){	//tar is root
 		root = sbj;
+	}
 	else if(tar->T == NULL){	//not leaf
-		float sbj_p;
-		if((sbj_p = sbj->metric(tar)) > 0){	//has contracted bonds
+		if(sbj->metric(tar) > 0){	//has contracted bonds
 			assert(tar->left != NULL && tar->right != NULL);
-			float lft_p, rht_p;
-			if((lft_p = sbj->metric(tar->left)) > sbj_p || (rht_p = sbj->metric(tar->right)) > sbj_p){	//go deeper comparison to the children
+			float tar_p = tar->point;
+			float lft_p = 0, rht_p = 0;
+			if((lft_p = sbj->metric(tar->left)) > tar_p || (rht_p = sbj->metric(tar->right)) > tar_p){	//go deeper comparison to the children
 				if(lft_p > rht_p)
 					matching(sbj, tar->left);
 				else
@@ -220,8 +245,9 @@ void Network_t::matching(Node_t* sbj, Node_t* tar){
 		else	//contract!!!
 			branch(sbj, tar);
 	}
-	else	//contract!!!
+	else{	//contract!!!
 		branch(sbj, tar);
+	}
 }
 
 void Network_t::construct(){

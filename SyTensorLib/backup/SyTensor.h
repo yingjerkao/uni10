@@ -25,11 +25,14 @@ class SyTensor_t{
 	public:
 		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "Tensor");
+		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "Tensor");
 		SyTensor_t(const SyTensor_t& SyT);
 		~SyTensor_t();
 		SyTensor_t& operator=(const SyTensor_t& SyT);
 		void addLabel(vector<int>& newLabels);
+		void addLabel(int* newLabels);
 		void reshape(vector<int>& newLabels, int rowBondNum);
+		void reshape(int* newLabels, int rowBondNum);
 		void addRawElem(double* rawElem);
 		void transpose();
 		void randomize();
@@ -45,6 +48,8 @@ class SyTensor_t{
 		void operator*= (double a);
 		Block_t& getBlock(Qnum_t qnum);
 		friend void printRawElem(const SyTensor_t& SyT);
+		friend class Node_t;
+		friend class Network_t;
 		void orthoRand();
 		void orthoRand(Qnum_t qnum);
 		void eye();

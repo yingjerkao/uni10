@@ -26,6 +26,7 @@ class Node_t{
 		Node_t* parent;
 		Node_t* left;
 		Node_t* right;
+		float point;
 		int64_t cal_elemNum(vector<Bond_t>& _bonds);
 };
 

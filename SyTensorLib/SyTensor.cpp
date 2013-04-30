@@ -68,6 +68,7 @@ SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, const string& _name): name(_name)
 	initSyT();
 	COUNTER++;
 }
+
 SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, vector<int>& _labels, const string& _name): name(_name), status(0), bonds(_bonds){
 	assert(_bonds.size() > 0); //No bond in Tensor, Error!
 	initSyT();
@@ -808,4 +809,8 @@ void SyTensor_t::bzero(Qnum_t qnum){
 
 void SyTensor_t::bzero(){
 	memset(elem, 0, elemNum * sizeof(DOUBLE));
+}
+
+void SyTensor_t::setName(string _name){
+	name = _name;
 }
