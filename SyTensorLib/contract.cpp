@@ -109,7 +109,7 @@ int main(){
 	cout<< SyTb;
 	//printRawElem(SyTa);
 	//printRawElem(SyTb);
-	SyTa *= SyTb;
-	cout<< SyTa;
+	SyTensor_t SyTc = SyTa * SyTb;
+	cout<<SyTc;
 	SyTa.check();
 }

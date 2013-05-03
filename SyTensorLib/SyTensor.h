@@ -23,6 +23,7 @@ class Bond_t;
 
 class SyTensor_t{
 	public:
+		SyTensor_t(const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "Tensor");

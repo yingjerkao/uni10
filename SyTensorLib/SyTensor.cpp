@@ -4,6 +4,11 @@ int SyTensor_t::COUNTER = 0;
 int64_t SyTensor_t::MAXELEMNUM = 0;
 int64_t SyTensor_t::MAXELEMTEN = 0;
 
+
+SyTensor_t::SyTensor_t(const string& _name): status(0), elem(NULL), RBondNum(0), elemNum(0), name(_name){
+	COUNTER++;
+}
+
 SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
 	name(SyT.name), status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks),
     RBondNum(SyT.RBondNum), elemNum(SyT.elemNum), Qidx(SyT.Qidx),
@@ -63,8 +68,8 @@ SyTensor_t& SyTensor_t::operator=(const SyTensor_t& SyT){
 }
 
 SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, const string& _name): name(_name), status(0), bonds(_bonds){
-	assert(_bonds.size() > 0); //No bond in Tensor, Error!
 	//cout<<"CONSTRUCTING " << this << endl;
+	assert(_bonds.size() > 0); //No bond in Tensor, Error!
 	initSyT();
 	COUNTER++;
 }

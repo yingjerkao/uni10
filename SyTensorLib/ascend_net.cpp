@@ -65,41 +65,31 @@ int main(){
 	int label_W2T[] = {9, 10, 11, -4};
 	W2T.addLabel(label_W2T);
 	W2T.setName("W2T");
-
-	
-	SyTensor_t H1 = W1T * W1;		
+	int label_out[] = {-1, -2, -3, -4};
 	/*
+	SyTensor_t H1 = W1 * W1T;		
 	SyTensor_t tmp = UT * U;
 	tmp *= W2T;
 	tmp *= H0;
 	tmp *= W2;
 	H1 *= tmp;	
-	int label_out[] = {-1, -2, -3, -4};
 	H1.reshape(label_out, 2);
+	cout<<H1;
 	*/
-	//cout<<H1;
 	//printRawElem(H1);
-	H0.check();
-
-	SyTensor_t tmp = W1 * U;
-	H1 *= U;
-
-	Node_t ndW1(&W1);
-	Node_t ndW1T(&W1T);
-	Node_t ndU(&U);
-	Node_t ndH1(&H1);
-	//cout << ndU.metric(&ndH1) << endl;
-	//cout << ndU.metric(&ndW1) << endl;
-	//cout << ndU.metric(&ndW1T) << endl;
 
 	Network_t net;
-	net.add(&W1);
-	net.add(&W1T);
-	net.add(&U);
-	net.add(&H0);
-	net.add(&UT);
-	net.add(&W2);
-	net.add(&W2T);
+	net.add(U);
+	net.add(H0);
+	net.add(UT);
+	net.add(W1);
+	net.add(W1T);
+	net.add(W2);
+	net.add(W2T);
 	net.optimize();
+	SyTensor_t Tret = net.launch();
 	cout<<net;
+	Tret.reshape(label_out, 2);
+	cout<<Tret;
+	W1.check();
 }

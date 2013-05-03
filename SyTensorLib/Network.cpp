@@ -2,9 +2,9 @@
 #include "Network.h"
 Node_t::Node_t(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }
-Node_t::Node_t(SyTensor_t* Tp): T(Tp), elemNum(Tp->elemNum), labels(Tp->labels), bonds(Tp->bonds), parent(NULL), left(NULL), right(NULL), point(0){	
-	assert(Tp->status & INIT);
-	assert(Tp->status & HAVELABEL);
+Node_t::Node_t(SyTensor_t& Tp): T(&Tp), elemNum(Tp.elemNum), labels(Tp.labels), bonds(Tp.bonds), parent(NULL), left(NULL), right(NULL), point(0){	
+	assert(Tp.status & INIT);
+	assert(Tp.status & HAVELABEL);
 }
 Node_t::Node_t(const Node_t& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){	
 }
@@ -174,10 +174,10 @@ Network_t::Network_t(): root(NULL), times(0), tot_elem(0), max_elem(0){
 
 Network_t::Network_t(vector<SyTensor_t*>& tens): root(NULL), times(0), tot_elem(0), max_elem(0){
 	for(int i = 0; i < tens.size(); i++)
-		add(tens[i]);
+		add(*tens[i]);
 }
 
-Node_t* Network_t::add(SyTensor_t* SyTp){
+Node_t* Network_t::add(SyTensor_t& SyTp){
 	Node_t* ndp = new Node_t(SyTp);
 	order.push_back(leafs.size());
 	leafs.push_back(ndp);
@@ -259,7 +259,31 @@ void Network_t::construct(){
 void Network_t::optimize(int num){
 	if(times == 0)
 		construct();
-	
+}
+
+SyTensor_t Network_t::launch(){
+	return merge(root);
+}
+
+SyTensor_t Network_t::merge(Node_t* nd){
+	if(nd->left->T == NULL){
+		SyTensor_t lftT = merge(nd->left);
+		if(nd->right->T == NULL){
+			SyTensor_t rhtT = merge(nd->right);
+			return lftT * rhtT;
+		}
+		else{
+			return lftT * *(nd->right->T);
+		}
+	}
+	else
+		if(nd->right->T == NULL){
+			SyTensor_t rhtT = merge(nd->right);
+			return *(nd->left->T) * rhtT;
+		}
+		else{
+			return *(nd->left->T) * *(nd->right->T);
+		}
 }
 
 Network_t::~Network_t(){
@@ -271,7 +295,7 @@ void Network_t::preprint(ostream& os, Node_t* nd, int layer){
 	if(nd == NULL)
 		return;
 	for(int i = 0; i < layer; i++)
-		os<<"\t";
+		os<<"|   ";
 	if(nd->T)
 		os<<nd->T->name << "(" << nd->elemNum << "): ";
 	else
@@ -281,16 +305,11 @@ void Network_t::preprint(ostream& os, Node_t* nd, int layer){
 	os<<endl;
 	preprint(os, nd->left, layer+1);
 	preprint(os, nd->right, layer+1);
-
 }
+
 ostream& operator<< (ostream& os, Network_t& net){
-	//for(int i = 0; i < net.order.size(); i++)
-	//	os<<(*(net.leafs[net.order[i]]));
 	net.preprint(os, net.root, 0);
-	//os<<*(net.root);
-
 	return os;
-
 }
 ostream& operator<< (ostream& os, const Node_t& nd){
 	os << "Tensor: " << nd.T<<endl;

@@ -10,7 +10,7 @@ class Qnum_t;
 class Node_t{
 	public:
 		Node_t();
-		Node_t(SyTensor_t* Tp);
+		Node_t(SyTensor_t& Tp);
 		Node_t(const Node_t& nd);
 		Node_t(vector<Bond_t>& _bonds, vector<int>& _labels);
 		~Node_t();
@@ -40,7 +40,7 @@ class Network_t {
 		Network_t();
 		Network_t(vector<SyTensor_t*>& tens);
 		~Network_t();
-		Node_t* add(SyTensor_t*);
+		Node_t* add(SyTensor_t&);
 		SyTensor_t launch();
 		void optimize(int num=1);
 		friend ostream& operator<< (ostream& os, Network_t& nd);
@@ -55,5 +55,5 @@ class Network_t {
 		void construct(); 
 		void matching(Node_t* sbj, Node_t* tar);
 		void branch(Node_t* sbj, Node_t* tar);
+		SyTensor_t merge(Node_t* nd);
 };
-
