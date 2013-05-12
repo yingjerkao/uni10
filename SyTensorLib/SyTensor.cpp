@@ -111,7 +111,13 @@ SyTensor_t::SyTensor_t(const string& fname): status(0){	//load Tensor from file
 		Qnum_t q0;
 		vector<Qnum_t> qnums(num_q, q0);
 		fread(&(qnums[0]), num_q, qnum_sz, fp);
-		Bond_t bd(tp, qnums);
+		vector<int> qdegs(num_q, 0);
+		fread(&(qdegs[0]), num_q, sizeof(int), fp);
+		vector<Qnum_t> tot_qnums;
+		for(int q = 0; q < num_q; q++)
+			for(int d = 0; d < qdegs[q]; d++)
+				tot_qnums.push_back(qnums[q]);
+		Bond_t bd(tp, tot_qnums);
 		bonds.push_back(bd);
 	}
 	initSyT();	
@@ -130,7 +136,6 @@ SyTensor_t::SyTensor_t(const string& fname): status(0){	//load Tensor from file
 		fread(elem, elemNum, sizeof(DOUBLE), fp);
 		status |= HAVEELEM;
 	}
-
 }
 
 SyTensor_t::~SyTensor_t(){
@@ -827,6 +832,7 @@ void SyTensor_t::save(const string& fname){
 		fwrite(&(bonds[b].type), 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
 		fwrite(&num_q, 1, sizeof(int), fp);	//OUT: Number of Qnums in the bond(4 bytes)
 		fwrite(&(bonds[b].Qnums[0]), num_q, qnum_sz, fp);
+		fwrite(&(bonds[b].Qdegs[0]), num_q, sizeof(int), fp);
 	}
 	if(status & HAVELABEL){
 		int num_l = labels.size();

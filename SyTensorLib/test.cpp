@@ -26,7 +26,7 @@ int main(){
 	H0.addRawElem(H_elem);
 	H0.save("dada");
 	cout<<H0;
-	SyTensor_t H1("dada");
+	SyTensor_t H1("H1");
 	cout<<H1;
 }
 

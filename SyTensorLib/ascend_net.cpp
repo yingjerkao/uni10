@@ -91,6 +91,8 @@ int main(){
 	SyTensor_t Tret = net.launch();
 	cout<<net;
 	Tret.reshape(label_out, 2);
+	Tret.save("H1");
+	cout<<Tret;
 	//cout<<Tret;
 	//printRawElem(Tret);
 	W1.check();
