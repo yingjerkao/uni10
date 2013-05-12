@@ -23,6 +23,7 @@ class Bond_t;
 
 class SyTensor_t{
 	public:
+		SyTensor_t(const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "Tensor");
@@ -36,6 +37,7 @@ class SyTensor_t{
 		void addRawElem(double* rawElem);
 		void transpose();
 		void randomize();
+		void setName(string _name);
 		double at(vector<int>idxs)const;
 		void check();
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);

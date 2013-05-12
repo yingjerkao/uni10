@@ -21,9 +21,11 @@ class Qnum_t;
 class Block_t;
 class Bond_t;
 
+
 class SyTensor_t{
 	public:
-		SyTensor_t(const string& _name = "Tensor");
+		SyTensor_t();
+		SyTensor_t(const string& fname);
 		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "Tensor");
 		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "Tensor");
@@ -40,6 +42,7 @@ class SyTensor_t{
 		void setName(string _name);
 		double at(vector<int>idxs)const;
 		void check();
+		void save(const string& fname);
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
 		friend SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb);
 		void operator*= (SyTensor_t& Tb);
@@ -80,4 +83,3 @@ class SyTensor_t{
 		void grouping();
 		void initSyT();
 };
-

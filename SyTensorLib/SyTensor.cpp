@@ -4,8 +4,13 @@ int SyTensor_t::COUNTER = 0;
 int64_t SyTensor_t::MAXELEMNUM = 0;
 int64_t SyTensor_t::MAXELEMTEN = 0;
 
+#include <boost/random.hpp>
+using namespace boost;
+mt19937 SyT_rng(777);
+uniform_01<mt19937> SyT_uni01_sampler(SyT_rng);
 
-SyTensor_t::SyTensor_t(const string& _name): status(0), elem(NULL), RBondNum(0), elemNum(0), name(_name){
+
+SyTensor_t::SyTensor_t(): status(0), elem(NULL), RBondNum(0), elemNum(0){
 	COUNTER++;
 }
 
@@ -85,6 +90,47 @@ SyTensor_t::SyTensor_t(vector<Bond_t>& _bonds, int* _labels, const string& _name
 	initSyT();
 	addLabel(_labels);
 	COUNTER++;
+}
+
+SyTensor_t::SyTensor_t(const string& fname): status(0){	//load Tensor from file
+	name = fname;
+	FILE* fp = fopen(fname.c_str(), "r");
+	assert(fp != NULL);
+	int st;
+	fread(&st, 1, sizeof(int), fp);
+	int bondNum;
+	fread(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
+	size_t qnum_sz;;
+	fread(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum_t)
+	assert(qnum_sz == sizeof(Qnum_t));
+	for(int b = 0; b < bondNum; b++){
+		int num_q;
+		bondType tp;
+		fread(&tp, 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
+		fread(&num_q, 1, sizeof(int), fp);	//OUT: Number of Qnums in the bond(4 bytes)
+		Qnum_t q0;
+		vector<Qnum_t> qnums(num_q, q0);
+		fread(&(qnums[0]), num_q, qnum_sz, fp);
+		Bond_t bd(tp, qnums);
+		bonds.push_back(bd);
+	}
+	initSyT();	
+	if(st & HAVELABEL){
+		int num_l;
+		fread(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
+		assert(num_l == bonds.size());
+		labels.assign(num_l, 0);
+		fread(&(labels[0]), num_l, sizeof(int), fp);
+		status |= HAVELABEL;
+	}
+	if(st & HAVELABEL){
+		int num_el;
+		fread(&num_el, 1, sizeof(elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
+		assert(num_el == elemNum);
+		fread(elem, elemNum, sizeof(DOUBLE), fp);
+		status |= HAVEELEM;
+	}
+
 }
 
 SyTensor_t::~SyTensor_t(){
@@ -698,7 +744,8 @@ ostream& operator<< (ostream& os, SyTensor_t& SyT){
 	cout<<endl;
 	for(int s = 0; s < star; s++)
 		cout << "*";
-	cout << " " << SyT.name << " ";
+	if(SyT.name.length() > 0)
+		cout << " " << SyT.name << " ";
 	for(int s = 0; s < star; s++)
 		cout<<"*";	
 	cout << "\n             ____________\n";
@@ -765,16 +812,40 @@ ostream& operator<< (ostream& os, SyTensor_t& SyT){
 	cout << "***************** END ****************\n\n";
 	return os;
 }
+
+void SyTensor_t::save(const string& fname){
+	assert((status & INIT));   //If not INIT, NO NEED to write out to file
+	FILE* fp = fopen(fname.c_str(), "w");
+	assert(fp != NULL);
+	fwrite(&status, 1, sizeof(status), fp);	//OUT: status(4 bytes)
+	int bondNum = bonds.size();
+	fwrite(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
+	size_t qnum_sz = sizeof(bonds[0].Qnums[0]);
+	fwrite(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum_t)
+	for(int b = 0; b < bondNum; b++){
+		int num_q = bonds[b].Qnums.size();
+		fwrite(&(bonds[b].type), 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
+		fwrite(&num_q, 1, sizeof(int), fp);	//OUT: Number of Qnums in the bond(4 bytes)
+		fwrite(&(bonds[b].Qnums[0]), num_q, qnum_sz, fp);
+	}
+	if(status & HAVELABEL){
+		int num_l = labels.size();
+		fwrite(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
+		fwrite(&(labels[0]), num_l, sizeof(int), fp);
+	}
+	if(status & HAVEELEM){
+		fwrite(&elemNum, 1, sizeof(elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
+		fwrite(elem, elemNum, sizeof(DOUBLE), fp);
+	}
+	fclose(fp);
+}
+
 /*------------------- SET ELEMENTS -----------------*/
-#include <boost/random.hpp>
-using namespace boost;
 
 void SyTensor_t::randomize(){
-	mt19937 rng(777);
-	uniform_01<mt19937> uni01_sampler(rng);
 	assert((status & INIT));   //If not INIT, CANNOT add elements
 	for(int i = 0; i < elemNum; i++)
-		elem[i] = uni01_sampler();
+		elem[i] = SyT_uni01_sampler();
 	status |= HAVEELEM;
 }
 

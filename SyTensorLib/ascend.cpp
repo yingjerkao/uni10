@@ -9,7 +9,7 @@ int main(){
 	Qnum_t q_10(-1, 0);
 	Qnum_t q30(3, 0);
 	Qnum_t q_30(-3, 0);
-	vector<Bond_t> bonds;		
+	vector<Bond_t> bonds;
 	vector<Qnum_t> qnums;
 	qnums.push_back(q10);qnums.push_back(q_10);
 	Bond_t bdr(BD_ROW, qnums);

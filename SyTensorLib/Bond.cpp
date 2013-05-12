@@ -20,6 +20,7 @@ void Bond_t::assign(bondType _type, vector<Qnum_t>& qnums){
 }
 
 void Bond_t::setting(vector<Qnum_t>& qnums){
+	assert(qnums.size() > 0);
 	map<Qnum_t, bool> mark;
 	int cnt = 0;
 	dim = 0;

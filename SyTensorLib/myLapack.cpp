@@ -2,6 +2,9 @@
 #include <boost/random.hpp>
 using namespace boost;
 
+mt19937 lapack_rng(777);
+uniform_01<mt19937> lapack_uni01_sampler(lapack_rng);
+
 void myDgemm(double* A, double* B, int M, int N, int K, double* C){
 	double alpha = 1, beta = 0;
 	dgemm((char*)"N", (char*)"N", &N, &M, &K, &alpha, B, &N, A, &K, &beta, C, &N);
@@ -43,12 +46,10 @@ void vecScal(double a, double* X, int64_t N){
  *For the incoming matrix "elem", the number of row <= the number of column, M <= N
  */
 void orthoRandomize(double* elem, int M, int N){
-	mt19937 rng(777);
-	uniform_01<mt19937> uni01_sampler(rng);
 	int eleNum = M*N;
 	double *random = (double*)malloc(eleNum * sizeof(double));
 	for (int i=0 ; i<eleNum ; i++){
-		random[i] = uni01_sampler();
+		random[i] = lapack_uni01_sampler();
 	}
 	assert(M <= N);
 	int min = M; //min = min(M,N)

@@ -257,12 +257,19 @@ void Network_t::construct(){
 }
 
 void Network_t::optimize(int num){
-	if(times == 0)
+	if(times == 0){
 		construct();
+		times ++;
+	}
 }
 
 SyTensor_t Network_t::launch(){
-	return merge(root);
+	if(times > 0)
+		return merge(root);
+	else{
+		construct();
+		return merge(root);
+	}
 }
 
 SyTensor_t Network_t::merge(Node_t* nd){
