@@ -30,6 +30,7 @@ class Node_t{
 		Node_t* right;
 		float point;
 		int64_t cal_elemNum(vector<Bond_t>& _bonds);
+		void delink(); 
 };
 
 class lBond_t{	//light bond
@@ -46,6 +47,7 @@ class Network_t {
 		Network_t(const string& fname);
 		~Network_t();
 		Node_t* add(SyTensor_t&);
+		Node_t* replaceWith(int idx, SyTensor_t& SyT, bool force=false);	//if force is true, force replace without change the all network
 		SyTensor_t launch(const string& name="");
 		SyTensor_t launch(int* outLabels, int Rnum = 0, const string& name="");
 		SyTensor_t launch(vector<int>& outLabels, int Rnum = 0, const string& name="");

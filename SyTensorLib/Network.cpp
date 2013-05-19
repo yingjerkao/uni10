@@ -18,6 +18,13 @@ Node_t::Node_t(vector<Bond_t>& _bonds, vector<int>& _labels): T(NULL), labels(_l
 Node_t::~Node_t(){
 }
 
+void Node_t::delink(){
+	parent = NULL;
+	left = NULL;
+	right = NULL;
+	point = 0;
+}
+
 Node_t Node_t::contract(Node_t* nd){
 	int AbondNum = bonds.size();
 	int BbondNum = nd->bonds.size();
@@ -195,10 +202,8 @@ Network_t::Network_t(const string& fname, vector<SyTensor_t*>& tens): root(NULL)
 	fromfile(fname);
 	assert((label_arr.size() - 1) == tens.size());
 	for(int i = 0; i < tens.size(); i++){
-		if(tens[i]->name.length() > 0){
-			cout << tens[i]->name << ", "<< names[i]<<endl;
+		if(tens[i]->name.length() > 0)
 			assert(tens[i]->name == names[i]);
-		}
 		else
 			tens[i]->setName(names[i]);
 		tens[i]->addLabel(label_arr[i]);
@@ -248,11 +253,33 @@ void Network_t::fromfile(const string& fname){
 }
 
 
-Node_t* Network_t::add(SyTensor_t& SyTp){
+Node_t* Network_t::add(SyTensor_t& SyT){
 	assert(label_arr.size() == 0);
-	Node_t* ndp = new Node_t(SyTp);
+	Node_t* ndp = new Node_t(SyT);
 	order.push_back(leafs.size());
 	leafs.push_back(ndp);
+	return ndp;
+}
+
+Node_t* Network_t::replaceWith(int idx, SyTensor_t& SyT, bool force){
+	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
+	if((!force) && load)
+		destruct();
+	if(SyT.name != "")
+		assert(SyT.name == names[idx]);
+	else
+		SyT.setName(names[idx]);
+	SyT.addLabel(label_arr[idx]);
+	if(leafs[idx] != NULL){
+		if(force){
+			leafs[idx]->T = &SyT;
+			return leafs[idx];
+		}
+		else
+			delete leafs[idx];
+	}
+	Node_t* ndp = new Node_t(SyT);
+	leafs[idx] = ndp;
 	return ndp;
 }
 
@@ -333,12 +360,17 @@ void Network_t::clean(Node_t* nd){
 
 void Network_t::destruct(){
 	clean(root);
+	root = NULL;
+	for(int i = 0; i < leafs.size(); i++)
+		leafs[i]->delink();
 	load = false;
 }
 
 void Network_t::construct(){
-	for(int i = 0; i < order.size(); i++)
+	for(int i = 0; i < order.size(); i++){
+		assert(leafs[order[i]] != NULL);
 		matching(leafs[order[i]], root);
+	}
 	load = true;
 }
 

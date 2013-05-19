@@ -67,7 +67,9 @@ int main(){
 	W2T.addLabel(label_W2T);
 	//W2T.setName("W2T");
 	int label_out[] = {-1, -2, -3, -4};
-	cout<<W1 << W2;
+
+	SyTensor_t W2f(bonds, "W2");
+	W2f.orthoRand();
 
 	/*
 	SyTensor_t H1 = W1 * W1T;
@@ -95,15 +97,19 @@ int main(){
 	Tret.save("H1");
 	*/
 
-	SyTptrs.push_back(&W1);
-	SyTptrs.push_back(&W1T);
-	SyTptrs.push_back(&U);
-	SyTptrs.push_back(&H0);
-	SyTptrs.push_back(&UT);
-	SyTptrs.push_back(&W2);
-	SyTptrs.push_back(&W2T);
-	Network_t net1("AscendC", SyTptrs);
+	Network_t net1("AscendC");
+	net1.replaceWith(0, W1);
+	net1.replaceWith(1, W1T);
+	net1.replaceWith(2, U);
+	net1.replaceWith(3, H0);
+	net1.replaceWith(4, UT);
+	net1.replaceWith(5, W2f);
+	net1.replaceWith(6, W2T);
 	SyTensor_t Tret1 = net1.launch();
+	net1.replaceWith(5, W2);
+	Tret1 = net1.launch();
+	net1.replaceWith(5, W2, 1);
+	Tret1 = net1.launch();
 	Tret1.reshape(label_out, 2);	
 	Tret1.save("H11");
 	cout<<net1;
