@@ -9,6 +9,7 @@ int main(){
 	Qnum_t q_10(-1, 0);
 	Qnum_t q30(3, 0);
 	Qnum_t q_30(-3, 0);
+	vector<SyTensor_t*> SyTptrs;
 	vector<Bond_t> bonds;		
 	vector<Qnum_t> qnums;
 	qnums.push_back(q10);qnums.push_back(q_10);
@@ -22,44 +23,94 @@ int main(){
 						   0, -1.0/4,  1.0/2,     0,
 						   0,  1.0/2, -1.0/4,     0,
 						   0,      0,      0, 1.0/4};
-	int label_H[] = {1, 5, 3, 6};
-	SyTensor_t H(bonds, label_H, "H");
-	int label_U[] = {7, 8, 2, 5};
-	SyTensor_t U(bonds, label_U, "U");
-	H.addRawElem(H_elem);
+	int label_H0[] = {3, 7, 4, 8};
+	SyTensor_t H0(bonds, label_H0, "H0");
+	H0.addRawElem(H_elem);
+
+	SyTensor_t U(bonds, "U");
 	U.orthoRand();
 	SyTensor_t UT = U;
 	UT.transpose();
-	//cout << UT;
-	int label_UT[] = {6, 9, 7, 10};
+	int label_U[] = {2, 6, 3, 7};
+	U.addLabel(label_U);
+	int label_UT[] = {4, 8, 5, 9};
 	UT.addLabel(label_UT);
-	//cout<<H;
-	//cout<<U;
-
-	Node_t ndH(&H);
-	Node_t ndU(&U);
-	cout << ndH.metric(&ndU) <<endl;
-
-	//SyTensor_t tmp = H * U;
-	//cout<<tmp;
-	//H.check();
-
-	//cout<<ndH;
-	//cout<<ndU;
-	//cout << ndH.contract(&ndU)<<endl;
-
-	Network_t net;
-	net.add(&H);
-	net.add(&U);
-	net.add(&UT);
-	net.optimize();
-	cout<<net;
+	//UT.setName("UT");
 	
+	bonds.clear();
+	vector<Qnum_t> qnums1;
+	qnums1.push_back(q30);qnums1.push_back(q10);qnums1.push_back(q10);qnums1.push_back(q10);
+	qnums1.push_back(q_10);qnums1.push_back(q_10);qnums1.push_back(q_10);qnums1.push_back(q_30);
+	Bond_t bdr1(BD_ROW, qnums1);
+	bonds.clear();
+	bonds.push_back(bdr1);
+	bonds.push_back(bdc);
+	bonds.push_back(bdc);
+	bonds.push_back(bdc);
+	SyTensor_t W1(bonds, "W1");
+	W1.orthoRand();
+	SyTensor_t W1T = W1;
+	W1T.transpose();
+	int label_W1[] = {-1, 0, 1, 2};
+	W1.addLabel(label_W1);
+	int label_W1T[] = {0, 1, 5, -3};
+	W1T.addLabel(label_W1T);
+	//W1T.setName("W1T");
+
+	SyTensor_t W2(bonds, "W2");
+	W2.orthoRand();
+	SyTensor_t W2T = W2;
+	W2T.transpose();
+	int label_W2[] = {-2, 6, 10, 11};
+	W2.addLabel(label_W2);
+	int label_W2T[] = {9, 10, 11, -4};
+	W2T.addLabel(label_W2T);
+	//W2T.setName("W2T");
+	int label_out[] = {-1, -2, -3, -4};
+	cout<<W1 << W2;
+
 	/*
-	vector<SyTensor_t*> tens;
-	tens.push_back(&H);
-	tens.push_back(&U);
-	tens.push_back(&UT);
-	Network_t net1(tens);
+	SyTensor_t H1 = W1 * W1T;
+	SyTensor_t tmp = UT * U;
+	tmp *= W2T;
+	tmp *= H0;
+	tmp *= W2;
+	H1 *= tmp;	
+	H1.reshape(label_out, 2);
+	cout<<H1;
 	*/
+	/*
+	printRawElem(W1);
+	printRawElem(W2);
+	Network_t net;
+	net.add(U);
+	net.add(H0);
+	net.add(UT);
+	net.add(W1);
+	net.add(W1T);
+	net.add(W2);
+	net.add(W2T);
+	//W1 = net.launch();
+	SyTensor_t Tret = net.launch(label_out, 2);
+	Tret.save("H1");
+	*/
+
+	SyTptrs.push_back(&W1);
+	SyTptrs.push_back(&W1T);
+	SyTptrs.push_back(&U);
+	SyTptrs.push_back(&H0);
+	SyTptrs.push_back(&UT);
+	SyTptrs.push_back(&W2);
+	SyTptrs.push_back(&W2T);
+	Network_t net1("AscendC", SyTptrs);
+	SyTensor_t Tret1 = net1.launch();
+	Tret1.reshape(label_out, 2);	
+	Tret1.save("H11");
+	cout<<net1;
+
+	//cout<<Tret;
+	//cout<<Tret;
+	//printRawElem(Tret);
+	W1.check();
+	cout<<W2T;
 }

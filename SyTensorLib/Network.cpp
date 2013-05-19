@@ -2,17 +2,22 @@
 #include "Network.h"
 Node_t::Node_t(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }
+
 Node_t::Node_t(SyTensor_t& Tp): T(&Tp), elemNum(Tp.elemNum), labels(Tp.labels), bonds(Tp.bonds), parent(NULL), left(NULL), right(NULL), point(0){	
 	assert(Tp.status & INIT);
 	assert(Tp.status & HAVELABEL);
 }
+
 Node_t::Node_t(const Node_t& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){	
 }
+
 Node_t::Node_t(vector<Bond_t>& _bonds, vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL), point(0){	
 	elemNum = cal_elemNum(bonds);
 }
+
 Node_t::~Node_t(){
 }
+
 Node_t Node_t::contract(Node_t* nd){
 	int AbondNum = bonds.size();
 	int BbondNum = nd->bonds.size();
@@ -169,15 +174,82 @@ int64_t Node_t::cal_elemNum(vector<Bond_t>& _bonds){
 	return _elemNum;
 }
 
-Network_t::Network_t(): root(NULL), times(0), tot_elem(0), max_elem(0){
+Network_t::Network_t(): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 }
 
-Network_t::Network_t(vector<SyTensor_t*>& tens): root(NULL), times(0), tot_elem(0), max_elem(0){
+Network_t::Network_t(vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	for(int i = 0; i < tens.size(); i++)
 		add(*tens[i]);
 }
 
+Network_t::Network_t(const string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
+	fromfile(fname);
+	int Tnum = label_arr.size() - 1;
+	order.assign(Tnum, 0);
+	leafs.assign(Tnum, NULL);
+	for(int i = 0; i < order.size(); i++)
+		order[i] = i;
+}
+
+Network_t::Network_t(const string& fname, vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
+	fromfile(fname);
+	assert((label_arr.size() - 1) == tens.size());
+	for(int i = 0; i < tens.size(); i++){
+		if(tens[i]->name.length() > 0){
+			cout << tens[i]->name << ", "<< names[i]<<endl;
+			assert(tens[i]->name == names[i]);
+		}
+		else
+			tens[i]->setName(names[i]);
+		tens[i]->addLabel(label_arr[i]);
+		Node_t* ndp = new Node_t(*tens[i]);
+		order.push_back(leafs.size());
+		leafs.push_back(ndp);
+	}
+}
+
+void Network_t::fromfile(const string& fname){
+	string str;
+	ifstream infile;
+	infile.open (fname.c_str());
+	int lnum = 0;
+	int MAXLINES = 1000;
+	int pos;
+	int endpos;
+	string tar("1234567890-");
+	while(lnum < MAXLINES){
+		getline(infile, str); // Saves the line in STRING.
+		if(infile.eof())
+			break;
+		pos = str.find(":");
+		assert(pos != string::npos);
+		names.push_back(str.substr(0, pos));
+		vector<int> labels;
+		while((pos = str.find_first_of(tar, pos + 1)) != string::npos){
+			endpos = str.find_first_not_of(tar, pos + 1);
+			string label;
+			if(endpos == string::npos)
+				label = str.substr(pos);
+			else
+				label = str.substr(pos, endpos - pos);
+			char* pEnd;
+			labels.push_back(strtol(label.c_str(), &pEnd, 10));
+			pos = endpos;
+			if(pos == string::npos)
+				break;
+		}
+		label_arr.push_back(labels);
+		lnum ++;
+	}
+	assert(lnum < MAXLINES);	
+	int numT = names.size() - 1;
+	assert(names[numT] == "TOUT");
+	infile.close();
+}
+
+
 Node_t* Network_t::add(SyTensor_t& SyTp){
+	assert(label_arr.size() == 0);
 	Node_t* ndp = new Node_t(SyTp);
 	order.push_back(leafs.size());
 	leafs.push_back(ndp);
@@ -224,6 +296,7 @@ void Network_t::branch(Node_t* sbj, Node_t* tar){
 		branch(sbj->parent->right, sbj->parent->left);
 	}
 }
+
 void Network_t::matching(Node_t* sbj, Node_t* tar){
 	if(tar == NULL){	//tar is root
 		root = sbj;
@@ -250,27 +323,58 @@ void Network_t::matching(Node_t* sbj, Node_t* tar){
 	}
 }
 
+void Network_t::clean(Node_t* nd){
+	if(nd->T != NULL)	//leaf
+		return;
+	clean(nd->left);
+	clean(nd->right);
+	delete nd;
+}
+
+void Network_t::destruct(){
+	clean(root);
+	load = false;
+}
+
 void Network_t::construct(){
-	for(int i = 0; i < order.size(); i++){
+	for(int i = 0; i < order.size(); i++)
 		matching(leafs[order[i]], root);
-	}
+	load = true;
 }
 
-void Network_t::optimize(int num){
-	if(times == 0){
+//void Network_t::optimize(int num){
+//	assert(false);//not a ready function
+//}
+
+SyTensor_t Network_t::launch(const string& _name){
+	if(!load)
 		construct();
-		times ++;
-	}
+	SyTensor_t SyT = merge(root);
+	if(label_arr.size() > 0)
+		SyT.reshape(label_arr[label_arr.size() - 1], 0);
+	SyT.setName(_name);
+	return SyT;
+		
 }
 
-SyTensor_t Network_t::launch(){
-	if(times > 0)
-		return merge(root);
-	else{
+SyTensor_t Network_t::launch(int* outLabels, int Rnum, const string& _name){
+	if(!load)
 		construct();
-		return merge(root);
-	}
+	SyTensor_t SyT = merge(root);
+	SyT.reshape(outLabels, Rnum);
+	SyT.setName(_name);
+	return SyT;
 }
+
+SyTensor_t Network_t::launch(vector<int>& outLabels, int Rnum, const string& _name){
+	if(!load)
+		construct();
+	SyTensor_t SyT = merge(root);
+	SyT.reshape(outLabels, Rnum);
+	SyT.setName(_name);
+	return SyT;
+}
+
 
 SyTensor_t Network_t::merge(Node_t* nd){
 	if(nd->left->T == NULL){
@@ -294,6 +398,8 @@ SyTensor_t Network_t::merge(Node_t* nd){
 }
 
 Network_t::~Network_t(){
+	if(load)
+		destruct();
 	for(int i = 0; i < leafs.size(); i++)
 		delete leafs[i];
 }

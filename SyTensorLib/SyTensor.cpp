@@ -15,7 +15,7 @@ SyTensor_t::SyTensor_t(): status(0), elem(NULL), RBondNum(0), elemNum(0){
 }
 
 SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
-	name(SyT.name), status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks),
+	status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks),
     RBondNum(SyT.RBondNum), elemNum(SyT.elemNum), Qidx(SyT.Qidx),
 	RQidx2Off(SyT.RQidx2Off), CQidx2Off(SyT.CQidx2Off){
 	//cout<<"COPY CONSTRUCTING " << this << endl;
@@ -42,7 +42,7 @@ SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
 
 SyTensor_t& SyTensor_t::operator=(const SyTensor_t& SyT){
 	//cout<<"ASSING CONSTRUCTING " << this << endl;
-	name = SyT.name;
+	//name = SyT.name;
 	status = SyT.status;
 	bonds = SyT.bonds;
 	blocks = SyT.blocks;
@@ -136,6 +136,7 @@ SyTensor_t::SyTensor_t(const string& fname): status(0){	//load Tensor from file
 		fread(elem, elemNum, sizeof(DOUBLE), fp);
 		status |= HAVEELEM;
 	}
+	fclose(fp);
 }
 
 SyTensor_t::~SyTensor_t(){
@@ -159,12 +160,12 @@ void SyTensor_t::check(){
 }
 
 void SyTensor_t::addLabel(int* newLabels){
-	assert(!(status & HAVELABEL) && status & INIT);
+	assert(status & INIT);
 	vector<int> labels(newLabels, newLabels + bonds.size());
 	addLabel(labels);
 }
 void SyTensor_t::addLabel(vector<int>& newLabels){
-	assert(!(status & HAVELABEL) && status & INIT);
+	assert(status & INIT);
 	set<int> labelS(&(newLabels[0]), &(newLabels[newLabels.size()]));
 	assert(bonds.size() == labelS.size());
 	labels = newLabels;

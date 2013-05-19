@@ -26,9 +26,9 @@ class SyTensor_t{
 	public:
 		SyTensor_t();
 		SyTensor_t(const string& fname);
-		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "Tensor");
-		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "Tensor");
-		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "Tensor");
+		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "");
+		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "");
+		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "");
 		SyTensor_t(const SyTensor_t& SyT);
 		~SyTensor_t();
 		SyTensor_t& operator=(const SyTensor_t& SyT);
