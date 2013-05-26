@@ -58,6 +58,7 @@ class Network_t {
 		void preprint(ostream& os, Node_t* nd, int layer);	//pre-order print
 		vector<string> names;
 		vector< vector<int> > label_arr;
+		vector< int > Rnums;
 		vector<Node_t*> leafs;
 		vector<int> order;
 		Node_t* root;

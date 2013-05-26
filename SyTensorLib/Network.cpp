@@ -206,6 +206,7 @@ Network_t::Network_t(const string& fname, vector<SyTensor_t*>& tens): root(NULL)
 			assert(tens[i]->name == names[i]);
 		else
 			tens[i]->setName(names[i]);
+		assert(tens[i]->RBondNum == Rnums[i]);
 		tens[i]->addLabel(label_arr[i]);
 		Node_t* ndp = new Node_t(tens[i]);
 		order.push_back(leafs.size());
@@ -219,8 +220,8 @@ void Network_t::fromfile(const string& fname){
 	infile.open (fname.c_str());
 	int lnum = 0;
 	int MAXLINES = 1000;
-	int pos;
-	int endpos;
+	int pos = 0;
+	int endpos = 0;
 	string tar("1234567890-");
 	while(lnum < MAXLINES){
 		getline(infile, str); // Saves the line in STRING.
@@ -230,7 +231,15 @@ void Network_t::fromfile(const string& fname){
 		assert(pos != string::npos);
 		names.push_back(str.substr(0, pos));
 		vector<int> labels;
+		int Rnum = 0;
+		int cnt = 0;
+		int tmp;
 		while((pos = str.find_first_of(tar, pos + 1)) != string::npos){
+			if(Rnum == 0){
+				tmp = str.find(";", endpos);
+				if(tmp != string::npos && tmp < pos)
+					Rnum = cnt;
+			}
 			endpos = str.find_first_not_of(tar, pos + 1);
 			string label;
 			if(endpos == string::npos)
@@ -240,10 +249,13 @@ void Network_t::fromfile(const string& fname){
 			char* pEnd;
 			labels.push_back(strtol(label.c_str(), &pEnd, 10));
 			pos = endpos;
+			if(Rnum == 0)
+				cnt++;
 			if(pos == string::npos)
 				break;
 		}
 		label_arr.push_back(labels);
+		Rnums.push_back(Rnum);
 		lnum ++;
 	}
 	assert(lnum < MAXLINES);	
@@ -269,6 +281,7 @@ Node_t* Network_t::replaceWith(int idx, SyTensor_t* SyT, bool force){
 		assert(SyT->name == names[idx]);
 	else
 		SyT->name = names[idx]; //setName(names[idx]);
+	assert(SyT->RBondNum == Rnums[idx]);
 	SyT->addLabel(label_arr[idx]);
 	if(leafs[idx] != NULL){
 		if(force){
@@ -382,8 +395,9 @@ SyTensor_t Network_t::launch(const string& _name){
 	if(!load)
 		construct();
 	SyTensor_t SyT = merge(root);
+	int idx = label_arr.size() - 1;
 	if(label_arr.size() > 0)
-		SyT.reshape(label_arr[label_arr.size() - 1], 0);
+		SyT.reshape(label_arr[idx], Rnums[idx]);
 	SyT.setName(_name);
 	return SyT;
 		

@@ -12,8 +12,8 @@ int main(){
 	infile.open ("AscendL");
 	int lnum = 7;
 	int l;
-	int pos;
-	int endpos;
+	int pos = 0;
+	int endpos = 0;
 	string tar("1234567890-");
 	vector<string> names;
 	vector< vector<int> > label_arr;
@@ -24,7 +24,18 @@ int main(){
 		pos = str.find(":");
 		names.push_back(str.substr(0, pos));
 		vector<int> labels;
+		int Rnum = 0;
+		int cnt = 0;
+		int tmp;
 		while((pos = str.find_first_of(tar, pos + 1)) != string::npos){
+			if(Rnum == 0){
+				cout<<"["<<endpos<<","<<pos<<"]";
+				tmp = str.find(";", endpos);
+				if(tmp != string::npos && tmp < pos){
+					Rnum = cnt;
+				}
+				cout<<endl;
+			}
 			endpos = str.find_first_not_of(tar, pos + 1);
 			string label;
 			if(endpos == string::npos)
@@ -34,9 +45,12 @@ int main(){
 			char* pEnd;
 			labels.push_back(strtol(label.c_str(), &pEnd, 10));
 			pos = endpos;
+			if(Rnum == 0)
+				cnt++;
 			if(pos == string::npos)
 				break;
 		}
+		cout << "Rnum = " << Rnum<<endl;
 		label_arr.push_back(labels);
 	}
 

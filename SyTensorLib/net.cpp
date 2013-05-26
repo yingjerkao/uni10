@@ -103,7 +103,6 @@ int main(){
 	net1.replaceWith(5, &W2);
 	net1.replaceWith(6, &W2T);
 	SyTensor_t Tret1 = net1.launch();
-	Tret1.reshape(label_out, 2);	
 	Tret1.save("H11");
 	cout<<net1;
 
@@ -111,4 +110,4 @@ int main(){
 	//cout<<Tret;
 	//printRawElem(Tret);
 	W1.check();
-	cout<<W2;}
+	cout<<Tret1;}
