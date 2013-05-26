@@ -12,7 +12,7 @@ class Qnum_t;
 class Node_t{
 	public:
 		Node_t();
-		Node_t(SyTensor_t& Tp);
+		Node_t(SyTensor_t* Tp);
 		Node_t(const Node_t& nd);
 		Node_t(vector<Bond_t>& _bonds, vector<int>& _labels);
 		~Node_t();
@@ -25,6 +25,7 @@ class Node_t{
 		vector<int> labels;	
 		vector<Bond_t> bonds;
 		int64_t elemNum;
+		string name;
 		Node_t* parent;
 		Node_t* left;
 		Node_t* right;
@@ -46,8 +47,8 @@ class Network_t {
 		Network_t(vector< vector<int> > _label_arr);
 		Network_t(const string& fname);
 		~Network_t();
-		Node_t* add(SyTensor_t&);
-		Node_t* replaceWith(int idx, SyTensor_t& SyT, bool force=false);	//if force is true, force replace without change the all network
+		Node_t* add(SyTensor_t*);
+		Node_t* replaceWith(int idx, SyTensor_t* SyT, bool force=false);	//if force is true, force replace without change the all network
 		SyTensor_t launch(const string& name="");
 		SyTensor_t launch(int* outLabels, int Rnum = 0, const string& name="");
 		SyTensor_t launch(vector<int>& outLabels, int Rnum = 0, const string& name="");

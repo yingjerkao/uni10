@@ -3,9 +3,9 @@
 Node_t::Node_t(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }
 
-Node_t::Node_t(SyTensor_t& Tp): T(&Tp), elemNum(Tp.elemNum), labels(Tp.labels), bonds(Tp.bonds), parent(NULL), left(NULL), right(NULL), point(0){	
-	assert(Tp.status & INIT);
-	assert(Tp.status & HAVELABEL);
+Node_t::Node_t(SyTensor_t* Tp): T(Tp), elemNum(Tp->elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){	
+	assert(Tp->status & INIT);
+	assert(Tp->status & HAVELABEL);
 }
 
 Node_t::Node_t(const Node_t& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){	
@@ -186,7 +186,7 @@ Network_t::Network_t(): root(NULL), load(false), times(0), tot_elem(0), max_elem
 
 Network_t::Network_t(vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	for(int i = 0; i < tens.size(); i++)
-		add(*tens[i]);
+		add(tens[i]);
 }
 
 Network_t::Network_t(const string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
@@ -207,7 +207,7 @@ Network_t::Network_t(const string& fname, vector<SyTensor_t*>& tens): root(NULL)
 		else
 			tens[i]->setName(names[i]);
 		tens[i]->addLabel(label_arr[i]);
-		Node_t* ndp = new Node_t(*tens[i]);
+		Node_t* ndp = new Node_t(tens[i]);
 		order.push_back(leafs.size());
 		leafs.push_back(ndp);
 	}
@@ -253,7 +253,7 @@ void Network_t::fromfile(const string& fname){
 }
 
 
-Node_t* Network_t::add(SyTensor_t& SyT){
+Node_t* Network_t::add(SyTensor_t* SyT){
 	assert(label_arr.size() == 0);
 	Node_t* ndp = new Node_t(SyT);
 	order.push_back(leafs.size());
@@ -261,18 +261,18 @@ Node_t* Network_t::add(SyTensor_t& SyT){
 	return ndp;
 }
 
-Node_t* Network_t::replaceWith(int idx, SyTensor_t& SyT, bool force){
+Node_t* Network_t::replaceWith(int idx, SyTensor_t* SyT, bool force){
 	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
 	if((!force) && load)
 		destruct();
-	if(SyT.name != "")
-		assert(SyT.name == names[idx]);
+	if(SyT->name.length() > 0)
+		assert(SyT->name == names[idx]);
 	else
-		SyT.setName(names[idx]);
-	SyT.addLabel(label_arr[idx]);
+		SyT->name = names[idx]; //setName(names[idx]);
+	SyT->addLabel(label_arr[idx]);
 	if(leafs[idx] != NULL){
 		if(force){
-			leafs[idx]->T = &SyT;
+			leafs[idx]->T = SyT;
 			return leafs[idx];
 		}
 		else
@@ -442,7 +442,7 @@ void Network_t::preprint(ostream& os, Node_t* nd, int layer){
 	for(int i = 0; i < layer; i++)
 		os<<"|   ";
 	if(nd->T)
-		os<<nd->T->name << "(" << nd->elemNum << "): ";
+		os<<nd->name << "(" << nd->elemNum << "): ";
 	else
 		os<<"*("<<nd->elemNum<<"): ";
 	for(int i = 0; i < nd->labels.size(); i++)

@@ -856,7 +856,7 @@ void SyTensor_t::randomize(){
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::orthoRand(Qnum_t qnum){
+void SyTensor_t::orthoRand(const Qnum_t& qnum){
 	Block_t& block = blocks[qnum];
 	orthoRandomize(block.elem, block.Rnum, block.Cnum);
 }
@@ -868,7 +868,7 @@ void SyTensor_t::orthoRand(){
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::eye(Qnum_t qnum){
+void SyTensor_t::eye(const Qnum_t& qnum){
 	Block_t& block = blocks[qnum];
 	myEye(block.elem, block.Rnum, block.Cnum);
 }
@@ -880,12 +880,12 @@ void SyTensor_t::eye(){
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::elemset(Qnum_t qnum, DOUBLE* elem, int64_t elemNum){
+void SyTensor_t::elemset(const Qnum_t& qnum, DOUBLE* elem, int64_t elemNum){
 	Block_t& block = blocks[qnum];
 	memcpy(block.elem, elem, elemNum * sizeof(DOUBLE));
 }
 
-void SyTensor_t::bzero(Qnum_t qnum){
+void SyTensor_t::bzero(const Qnum_t& qnum){
 	Block_t& block = blocks[qnum];
 	memset(block.elem, 0, block.Rnum * block.Cnum * sizeof(DOUBLE));
 }
@@ -894,6 +894,6 @@ void SyTensor_t::bzero(){
 	memset(elem, 0, elemNum * sizeof(DOUBLE));
 }
 
-void SyTensor_t::setName(string _name){
+void SyTensor_t::setName(const string& _name){
 	name = _name;
 }

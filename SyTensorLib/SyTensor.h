@@ -39,7 +39,7 @@ class SyTensor_t{
 		void addRawElem(double* rawElem);
 		void transpose();
 		void randomize();
-		void setName(string _name);
+		void setName(const string& _name);
 		double at(vector<int>idxs)const;
 		void check();
 		void save(const string& fname);
@@ -56,11 +56,11 @@ class SyTensor_t{
 		friend class Node_t;
 		friend class Network_t;
 		void orthoRand();
-		void orthoRand(Qnum_t qnum);
+		void orthoRand(const Qnum_t& qnum);
 		void eye();
-		void eye(Qnum_t qnum);
-		void elemset(Qnum_t qnum, double* elem, int64_t num);
-		void bzero(Qnum_t qnum);
+		void eye(const Qnum_t& qnum);
+		void elemset(const Qnum_t& qnum, double* elem, int64_t num);
+		void bzero(const Qnum_t& qnum);
 		void bzero();
 	private:
 		string name;
