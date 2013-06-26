@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
+#include <stdint.h>
 #include "Qnum.h"
 using namespace std;
 class SyTensor_t;
