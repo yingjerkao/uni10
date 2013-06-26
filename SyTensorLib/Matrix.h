@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <vector>
 #include <assert.h>
+#include <string.h>
 using namespace std;
 //Type of Matrix
 #include "myLapack.h"
