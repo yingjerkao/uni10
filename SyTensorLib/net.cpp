@@ -26,6 +26,7 @@ int main(){
 	int label_H0[] = {3, 7, 4, 8};
 	SyTensor_t H0(bonds, label_H0, "H0");
 	H0.addRawElem(H_elem);
+	cout << H0;
 
 	SyTensor_t U(bonds, "U");
 	U.orthoRand();
@@ -49,6 +50,7 @@ int main(){
 	bonds.push_back(bdc);
 	SyTensor_t W1(bonds, "W1");
 	W1.orthoRand();
+	cout << W1;
 	SyTensor_t W1T = W1;
 	W1T.transpose();
 	int label_W1[] = {-1, 0, 1, 2};
@@ -78,6 +80,8 @@ int main(){
 	H1.reshape(label_out, 2);
 	cout<<H1;
 	*/
+
+
 	/*
 	printRawElem(W1);
 	printRawElem(W2);
