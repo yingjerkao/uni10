@@ -66,7 +66,7 @@ int main(){
 	W2T.addLabel(label_W2T);
 	W2T.setName("W2T");
 	int label_out[] = {-1, -2, -3, -4};
-	cout<<W1 << W2;
+	cout<< W1 << W2;
 
 	/*
 	SyTensor_t H1 = W1 * W1T;

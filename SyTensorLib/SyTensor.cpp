@@ -148,7 +148,7 @@ SyTensor_t::~SyTensor_t(){
 	COUNTER--;
 }
 
-Block_t& SyTensor_t::getBlock(Qnum_t qnum){
+Block_t SyTensor_t::getBlock(Qnum_t qnum){
 	return blocks[qnum];
 }
 
@@ -801,10 +801,9 @@ ostream& operator<< (ostream& os, SyTensor_t& SyT){
 	int Rnum, Cnum;
 	bool printElem = true;
 	for ( it = SyT.blocks.begin() ; it != SyT.blocks.end(); it++ ){
-		cout << "--- " << it->first << it->second;
 		Rnum = it->second.Rnum;
 		Cnum = it->second.Cnum;
-		cout << " ---\n\n";
+		os << "--- " << it->second.qnum << ": " << Rnum << " x " << Cnum << " = " << Rnum * Cnum << " ---\n\n";
 
 		if((SyT.status & HAVEELEM) && printElem){
 			for(int r = 0; r < Rnum; r++){
@@ -880,9 +879,9 @@ void SyTensor_t::eye(){
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::elemset(const Qnum_t& qnum, DOUBLE* elem, int64_t elemNum){
+void SyTensor_t::elemset(const Qnum_t& qnum, DOUBLE* elem){
 	Block_t& block = blocks[qnum];
-	memcpy(block.elem, elem, elemNum * sizeof(DOUBLE));
+	memcpy(block.elem, elem, block.Rnum * block.Cnum * sizeof(DOUBLE));
 }
 
 void SyTensor_t::bzero(const Qnum_t& qnum){

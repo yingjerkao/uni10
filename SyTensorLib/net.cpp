@@ -31,10 +31,10 @@ int main(){
 	U.orthoRand();
 	SyTensor_t UT = U;
 	UT.transpose();
-	int label_U[] = {2, 6, 3, 7};
-	U.addLabel(label_U);
-	int label_UT[] = {4, 8, 5, 9};
-	UT.addLabel(label_UT);
+	//int label_U[] = {2, 6, 3, 7};
+	//U.addLabel(label_U);
+	//int label_UT[] = {4, 8, 5, 9};
+	//UT.addLabel(label_UT);
 	//UT.setName("UT");
 	
 	bonds.clear();
@@ -89,7 +89,6 @@ int main(){
 	net.add(W1T);
 	net.add(W2);
 	net.add(W2T);
-	//W1 = net.launch();
 	SyTensor_t Tret = net.launch(label_out, 2);
 	Tret.save("H1");
 	*/

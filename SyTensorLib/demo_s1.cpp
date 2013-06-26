@@ -44,4 +44,3 @@ int main(){
 	printRawElem(SyT);
 	SyT.check();
 }
-

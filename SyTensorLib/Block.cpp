@@ -1,6 +1,11 @@
 #include "Block.h"
 ostream& operator<< (ostream& os, const Block_t& b){
-	os << ": " << b.Rnum << " x " << b.Cnum << " = " << b.Rnum * b.Cnum;
+	os << "--- " << b.qnum<< ": " << b.Rnum << " x " << b.Cnum << " = " << b.Rnum * b.Cnum << " ---\n\n";
+	for(int r = 0; r < b.Rnum; r++){
+		for(int c = 0; c < b.Cnum; c++)
+			cout<< setw(7) << setprecision(3) << b.elem[r * b.Cnum + c];
+		os << "\n\n";
+	}
 	return os;
 }
 int Block_t::row(){

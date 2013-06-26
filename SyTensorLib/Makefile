@@ -1,6 +1,8 @@
-OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o network.o
+OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o network.o matrix.o
 LINK := -mkl=parallel
 
+mat.e: mat.cpp $(OBJ)
+	icpc -o $@ $< $(OBJ) $(LINK)
 net.e: net.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
 test.e: test.cpp $(OBJ)
@@ -21,6 +23,9 @@ con.e: contract.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
 run.e: main.cpp $(OBJ)
 	icpc -o $@ $< $(OBJ) $(LINK)
+
+matrix.o: Matrix.cpp Matrix.h
+	icpc -c $< -o $@
 
 network.o: Network.cpp Network.h
 	icpc -c $< -o $@

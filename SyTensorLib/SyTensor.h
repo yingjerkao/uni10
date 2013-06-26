@@ -51,7 +51,7 @@ class SyTensor_t{
 		friend SyTensor_t operator* (const SyTensor_t& Ta, double a);
 		friend SyTensor_t operator* (double a, const SyTensor_t& Ta){return Ta * a;};
 		void operator*= (double a);
-		Block_t& getBlock(Qnum_t qnum);
+		Block_t getBlock(Qnum_t qnum);
 		friend void printRawElem(const SyTensor_t& SyT);
 		friend class Node_t;
 		friend class Network_t;
@@ -59,14 +59,14 @@ class SyTensor_t{
 		void orthoRand(const Qnum_t& qnum);
 		void eye();
 		void eye(const Qnum_t& qnum);
-		void elemset(const Qnum_t& qnum, double* elem, int64_t num);
+		void elemset(const Qnum_t& qnum, double* elem);
 		void bzero(const Qnum_t& qnum);
 		void bzero();
 	private:
 		string name;
-		int status;			//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
+		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
 		vector<Bond_t> bonds;
-		map<Qnum_t, Block_t> blocks;	
+		map<Qnum_t, Block_t> blocks;
 		vector<int>labels;	
 		DOUBLE *elem;		//Array of elements
 		int RBondNum;	//Row bond number

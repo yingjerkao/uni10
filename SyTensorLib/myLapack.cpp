@@ -83,3 +83,29 @@ void myEye(double* elem, int M, int N){
 	for(int i = 0; i < min; i++)
 		elem[i * N + i] = 1;
 }
+
+void syDiag(double* Kij, int N, double* Eig, double* EigVec){
+	memcpy(EigVec, Kij, N * N * sizeof(double));
+	int ldA = N;
+	int lwork = 4*N;
+	double* work= (double*)malloc(sizeof(double)*lwork);
+	int info;
+	dsyev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, work, &lwork, &info);
+	assert(info == 0);
+	free(work);
+}
+
+void myDgesvd(double* Mij_ori, int M, int N, double* U, double* S, double* vT){ //not tested yet
+	//Mij = U * S * VT
+	double* Mij = (double*)malloc(M * N * sizeof(double));
+	memcpy(Mij, Mij_ori, M * N * sizeof(double));
+	int min = M < N ? M : N;	//min = min(M,N)
+	int ldA = N, ldu = N, ldvT = min;
+	int lwork = 12*N;
+	double *work = (double*)malloc(lwork*sizeof(double));
+	int info;
+	dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, work, &lwork, &info);
+	assert(info == 0);
+	free(work);
+	free(Mij);
+}

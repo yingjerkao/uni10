@@ -14,3 +14,5 @@ void orthoRandomize(double* elem, int M, int N);
 
 void myTranspose(double* A, int M, int N, double* AT);
 void myEye(double* elem, int M, int N);
+void syDiag(double* Kij, int N, double* Eig, double* EigVec);
+void myDgesvd(double* Mij_ori, int M, int N, double* U, double* S, double* vT);

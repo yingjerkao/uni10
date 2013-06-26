@@ -22,6 +22,10 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 	assert(Ta.status & Tb.status & HAVEELEM);
 	int AbondNum = Ta.bonds.size();
 	int BbondNum = Tb.bonds.size();
+	vector<int> oldLabelA = Ta.labels;
+	vector<int> oldLabelB = Tb.labels;
+	int oldRnumA = Ta.RBondNum;
+	int oldRnumB = Tb.RBondNum;
 	vector<int> newLabelA;
 	vector<int> interLabel;
 	vector<int> newLabelB;
@@ -73,6 +77,8 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 		}
 	}
 	Tc.status |= HAVEELEM;
+	Ta.reshape(oldLabelA, oldRnumA);
+	Tb.reshape(oldLabelB, oldRnumB);
 	return Tc;
 }
 
