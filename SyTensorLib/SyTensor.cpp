@@ -148,8 +148,42 @@ SyTensor_t::~SyTensor_t(){
 	COUNTER--;
 }
 
-Block_t SyTensor_t::getBlock(Qnum_t qnum){
-	return blocks[qnum];
+vector<Qnum_t> SyTensor_t::qnums(){
+	vector<Qnum_t> keys;
+	for(map<Qnum_t,Block_t>::iterator it = blocks.begin(); it != blocks.end(); it++)
+		keys.push_back(it->first);
+	return keys;
+}
+
+Matrix_t SyTensor_t::getBlock(Qnum_t qnum, bool diag){
+	assert(blocks.find(qnum) != blocks.end());
+	Block_t blk = blocks[qnum];
+	if(diag){
+		Matrix_t mat(blk.Rnum, blk.Cnum, true);
+		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
+		for(int i = 0; i < elemNum; i++)
+			mat.elem[i] = blk.elem[i * blk.Cnum + i];
+		return mat;
+	}
+	else{
+		Matrix_t mat(blk.row(), blk.col(), blk.elem);
+		return mat;
+	}
+}
+
+void SyTensor_t::putBlock(const Qnum_t& qnum, Matrix_t& mat){
+	assert(blocks.find(qnum) != blocks.end());
+	Block_t& blk = blocks[qnum];
+	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
+	if(mat.isDiag()){
+		memset(blk.elem, 0, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
+		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
+		for(int i = 0; i < elemNum; i++)
+			blk.elem[i * blk.Cnum + i] = mat.elem[i];
+	}
+	else{
+		memcpy(blk.elem, mat.elem, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
+	}
 }
 
 void SyTensor_t::check(){
@@ -877,11 +911,6 @@ void SyTensor_t::eye(){
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		myEye(it->second.elem, it->second.Rnum, it->second.Cnum);
 	status |= HAVEELEM;
-}
-
-void SyTensor_t::elemset(const Qnum_t& qnum, DOUBLE* elem){
-	Block_t& block = blocks[qnum];
-	memcpy(block.elem, elem, block.Rnum * block.Cnum * sizeof(DOUBLE));
 }
 
 void SyTensor_t::bzero(const Qnum_t& qnum){

@@ -82,7 +82,7 @@ Matrix_t operator* (Matrix_t& Ma, Matrix_t& Mb){
 		Matrix_t Mc(Ma.Rnum, Mb.Cnum);	
 		for(int i = 0; i < Ma.Rnum; i++)
 			for(int j = 0; j < Mb.elemNum; j++)
-				Mc.elem[i * Mb.Cnum + j] = Ma.elem[i * Mb.Cnum + j] * Mb.elem[j];
+				Mc.elem[i * Mb.Cnum + j] = Ma.elem[i * Ma.Cnum + j] * Mb.elem[j];
 		return Mc;
 	}
 	else{
@@ -109,7 +109,6 @@ vector<Matrix_t> Matrix_t::diagonalize(){
 	return outs;
 }
 
-/*
 vector<Matrix_t> Matrix_t::svd(){
 	assert(!diag);
 	vector<Matrix_t> outs;
@@ -117,19 +116,6 @@ vector<Matrix_t> Matrix_t::svd(){
 	Matrix_t U(Rnum, min);
 	Matrix_t S(min, min, true);
 	Matrix_t VT(min, Cnum);
-	myDgesvd(elem, Rnum, Cnum, U.elem, S.elem, VT.elem);
-	outs.push_back(U);
-	outs.push_back(S);
-	outs.push_back(VT);
-	return outs;
-}
-*/
-vector<Matrix_t> Matrix_t::svd(){
-	assert(!diag);
-	vector<Matrix_t> outs;
-	Matrix_t U(Rnum, Rnum);
-	Matrix_t S(Rnum, Cnum, true);
-	Matrix_t VT(Cnum, Cnum);
 	myDgesvd(elem, Rnum, Cnum, U.elem, S.elem, VT.elem);
 	outs.push_back(U);
 	outs.push_back(S);

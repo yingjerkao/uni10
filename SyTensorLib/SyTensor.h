@@ -17,9 +17,7 @@ const int ELEMFREED = 16;		//the memory space of elements is freed
 #include "Block.h"
 #include "Bond.h"
 #include "myLapack.h"
-class Qnum_t;
-class Block_t;
-class Bond_t;
+#include "Matrix.h"
 
 
 class SyTensor_t{
@@ -39,6 +37,7 @@ class SyTensor_t{
 		void addRawElem(double* rawElem);
 		void transpose();
 		void randomize();
+		vector<Qnum_t> qnums();
 		void setName(const string& _name);
 		double at(vector<int>idxs)const;
 		void check();
@@ -51,7 +50,8 @@ class SyTensor_t{
 		friend SyTensor_t operator* (const SyTensor_t& Ta, double a);
 		friend SyTensor_t operator* (double a, const SyTensor_t& Ta){return Ta * a;};
 		void operator*= (double a);
-		Block_t getBlock(Qnum_t qnum);
+		Matrix_t getBlock(Qnum_t qnum, bool diag = false);
+		void putBlock(const Qnum_t& qnum, Matrix_t& mat);
 		friend void printRawElem(const SyTensor_t& SyT);
 		friend class Node_t;
 		friend class Network_t;
@@ -59,7 +59,6 @@ class SyTensor_t{
 		void orthoRand(const Qnum_t& qnum);
 		void eye();
 		void eye(const Qnum_t& qnum);
-		void elemset(const Qnum_t& qnum, double* elem);
 		void bzero(const Qnum_t& qnum);
 		void bzero();
 	private:

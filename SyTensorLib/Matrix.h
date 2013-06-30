@@ -3,6 +3,7 @@
 #include <vector>
 #include <assert.h>
 #include <string.h>
+#include <map>
 using namespace std;
 //Type of Matrix
 #include "myLapack.h"
@@ -17,6 +18,7 @@ class Matrix_t {
 		double* getElem();
 		int row();
 		int col();
+		bool isDiag(){return diag;};
 		Matrix_t& operator=(const Matrix_t& _m);
 		friend Matrix_t operator* (Matrix_t& Ma, Matrix_t& Mb);
 		void operator*= (Matrix_t& Mb);
