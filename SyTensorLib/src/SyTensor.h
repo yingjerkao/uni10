@@ -1,3 +1,13 @@
+/**
+ * @file SyTensor.h
+ * @author Yun-Da Hsieh
+ * @date 28 Aug 2013
+ * @brief This is the header file for the class of symmetry tensor "SyTensor_t".
+ *
+ * @see http://www.stack.nl/~dimitri/doxygen/docblocks.html
+ * @see http://www.stack.nl/~dimitri/doxygen/commands.html
+ */
+
 #include <iostream>
 #include <iomanip>
 #include <math.h>
@@ -8,23 +18,55 @@
 #include <assert.h>
 #include <stdint.h>
 using namespace std;
-const int INIT = 1;		//initialized
-const int HAVELABEL = 2;		//tensor with label
-const int HAVEELEM = 4;		//tensor with elements
-const int DISPOSABLE = 8;		//The elements of tensor is disposable through 'clone', 'reshapeClone', 'reshapeElem'. The elements of disposable Tensor is read-only.
-const int ELEMFREED = 16;		//the memory space of elements is freed
-#define DOUBLE	double
 #include "Block.h"
 #include "Bond.h"
 #include "myLapack.h"
 #include "Matrix.h"
+#define DOUBLE	double
+
+const int INIT = 1;		      /**< A flag for initialization */
+const int HAVELABEL = 2;		/**< A flag for having labels added */
+const int HAVEELEM = 4;		  /**< A flag for having element assigned */
 
 
+/**
+ * @brief Class of the symmetry tensor.
+ */
 class SyTensor_t{
 	public:
+    /**
+     * @brief
+     * How frequent it is used: *
+     * @verbatim How frequent it is used: * @endverbatim
+     * @see File demo/SyTensor_basic.cpp
+     */
 		SyTensor_t();
+    /**
+     * @brief To read in a binary file of a tensor which is written out by member function @c save().\n
+     * How frequent it is used: * * *
+     * @param fname The file name of the tensor being loaded, which is of type STL @c string.
+     * @see File demo/SyTensor_basic.cpp
+     */
 		SyTensor_t(const string& fname);
+    /**
+     * @brief To construct a tensor from a given bond array.\n
+     * How frequent it is used: * * *
+     * @param _bonds an STL vector of object @c Bond_t.
+     * @param _name The given name of a tensor, STL string.
+     * @see File demo/SyTensor_basic.cpp
+     * @note The number of bonds must be larger than one, that is, the library does not support rank 0 tensor.
+     * @warning <tt>assert(_bonds.size() > 0)</tt>
+     */
 		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "");
+    /**
+     * @brief To construct a tensor from a given bond array and a given label array.\n
+     * How frequent it is used: * *
+     * @param _bonds an STL vector of object @c Bond_t.
+     * @param _labels.
+     * @see File demo/SyTensor_basic.cpp
+     * @note each label is 1-1 corresponding to each bond in order of array.
+     * @warning <tt>assert(_bonds.size() == _labels.size())</tt>
+     */
 		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "");
 		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "");
 		SyTensor_t(const SyTensor_t& SyT);
@@ -66,10 +108,10 @@ class SyTensor_t{
 		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
 		vector<Bond_t> bonds;
 		map<Qnum_t, Block_t> blocks;
-		vector<int>labels;	
+		vector<int>labels;
 		DOUBLE *elem;		//Array of elements
 		int RBondNum;	//Row bond number
-		int64_t elemNum;	
+		int64_t elemNum;
 		vector<Block_t*> RQidx2Blk;
 		vector<bool> Qidx;
 		vector<int> RQidx2Off;

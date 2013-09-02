@@ -22,7 +22,7 @@ class Node_t{
 		friend class Network_t;
 	private:
 		SyTensor_t* T;
-		vector<int> labels;	
+		vector<int> labels;
 		vector<Bond_t> bonds;
 		int64_t elemNum;
 		string name;
@@ -31,12 +31,7 @@ class Node_t{
 		Node_t* right;
 		float point;
 		int64_t cal_elemNum(vector<Bond_t>& _bonds);
-		void delink(); 
-};
-
-class lBond_t{	//light bond
-	vector<Qnum_t>Qnums;	//Quantum numbers
-	vector<int>Qdegs;	//Degeneracy in each quantum sector
+		void delink();
 };
 
 class Network_t {
@@ -65,9 +60,9 @@ class Network_t {
 		bool load;	//whether or not the network is ready for contraction, construct=> load=true, destruct=>load=false
 		int times;	//construction times
 		int tot_elem;	//total memory ussage
-		int max_elem;	//maximum 
-		void construct(); 
-		void destruct(); 
+		int max_elem;	//maximum
+		void construct();
+		void destruct();
 		void matching(Node_t* sbj, Node_t* tar);
 		void branch(Node_t* sbj, Node_t* tar);
 		SyTensor_t merge(Node_t* nd);
