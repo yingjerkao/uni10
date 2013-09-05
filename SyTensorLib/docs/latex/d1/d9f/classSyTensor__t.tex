@@ -11,7 +11,7 @@ Class of the symmetry tensor.
 \bf{Sy\-Tensor\_\-t} ()
 \begin{CompactList}\small\item\em How frequent it is used: $\ast$. \item\end{CompactList}\item 
 \bf{Sy\-Tensor\_\-t} (const string \&fname)
-\begin{CompactList}\small\item\em To read in a binary file of a tensor which is written out by member function {\tt save()}.\par
+\begin{CompactList}\small\item\em To read in a binary file of a tensor which is written out by member function {\tt \doxyref{save()}{p.}{d1/d9f/classSyTensor__t_dfee275ff906680a7e9565bb951ff577}}.\par
  How frequent it is used: $\ast$ $\ast$ $\ast$. \item\end{CompactList}\item 
 \bf{Sy\-Tensor\_\-t} (vector$<$ Bond\_\-t $>$ \&\_\-bonds, const string \&\_\-name=\char`\"{}\char`\"{})
 \begin{CompactList}\small\item\em To construct a tensor from a given bond array.\par
@@ -19,49 +19,49 @@ Class of the symmetry tensor.
 \bf{Sy\-Tensor\_\-t} (vector$<$ Bond\_\-t $>$ \&\_\-bonds, vector$<$ int $>$ \&labels, const string \&\_\-name=\char`\"{}\char`\"{})
 \begin{CompactList}\small\item\em To construct a tensor from a given bond array and a given label array.\par
  How frequent it is used: $\ast$ $\ast$. \item\end{CompactList}\item 
-\textbf{Sy\-Tensor\_\-t} (vector$<$ Bond\_\-t $>$ \&\_\-bonds, int $\ast$labels, const string \&\_\-name=\char`\"{}\char`\"{})\label{d1/d9f/classSyTensor__t_9b559c0650ca8356c282a9e26b91653a}
-
-\item 
-\textbf{Sy\-Tensor\_\-t} (const \bf{Sy\-Tensor\_\-t} \&Sy\-T)\label{d1/d9f/classSyTensor__t_f78aebbd917afa2c1056f69e4db6722e}
-
-\item 
-\bf{Sy\-Tensor\_\-t} \& \textbf{operator=} (const \bf{Sy\-Tensor\_\-t} \&Sy\-T)\label{d1/d9f/classSyTensor__t_0a44eb0909a7e6da08b06d8a27c40f22}
-
-\item 
-void \textbf{add\-Label} (vector$<$ int $>$ \&new\-Labels)\label{d1/d9f/classSyTensor__t_764126669f8150a8e3fb0b05829e084d}
-
-\item 
-void \textbf{add\-Label} (int $\ast$new\-Labels)\label{d1/d9f/classSyTensor__t_187575ddc65a50a6c7a79173888419fd}
-
-\item 
-void \textbf{reshape} (vector$<$ int $>$ \&new\-Labels, int row\-Bond\-Num)\label{d1/d9f/classSyTensor__t_97069a4b531db9c3fa9bd943b8a4fcf7}
-
-\item 
-void \textbf{reshape} (int $\ast$new\-Labels, int row\-Bond\-Num)\label{d1/d9f/classSyTensor__t_2a024ef509402125d99b80290e8b09e3}
-
-\item 
-void \textbf{add\-Raw\-Elem} (double $\ast$raw\-Elem)\label{d1/d9f/classSyTensor__t_6383dba2b1d94384086943ced05ec44b}
-
-\item 
-void \textbf{transpose} ()\label{d1/d9f/classSyTensor__t_974656ad60918fb50e8b8f5e32b40fd6}
-
-\item 
-void \textbf{randomize} ()\label{d1/d9f/classSyTensor__t_6b4ec04e9f0f708e7bc57a37c15a1cef}
-
-\item 
-vector$<$ Qnum\_\-t $>$ \textbf{qnums} ()\label{d1/d9f/classSyTensor__t_e5a2ebf44357a6eca5e5989da1cfd09d}
-
-\item 
+\bf{Sy\-Tensor\_\-t} (vector$<$ Bond\_\-t $>$ \&\_\-bonds, int $\ast$labels, const string \&\_\-name=\char`\"{}\char`\"{})
+\begin{CompactList}\small\item\em To construct a tensor from a given bond array and a given label array.\par
+ How frequent it is used: $\ast$ $\ast$. \item\end{CompactList}\item 
+\bf{Sy\-Tensor\_\-t} (const \bf{Sy\-Tensor\_\-t} \&Sy\-T)
+\begin{CompactList}\small\item\em A deep copy constructor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. \item\end{CompactList}\item 
+\bf{Sy\-Tensor\_\-t} \& \bf{operator=} (const \bf{Sy\-Tensor\_\-t} \&Sy\-T)
+\begin{CompactList}\small\item\em A deep copy assignment.\par
+ How frequent it is used: $\ast$ $\ast$. \item\end{CompactList}\item 
+void \bf{add\-Label} (vector$<$ int $>$ \&new\-Labels)
+\begin{CompactList}\small\item\em Add labels to the Tensor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. \item\end{CompactList}\item 
+void \bf{add\-Label} (int $\ast$new\-Labels)
+\begin{CompactList}\small\item\em Add labels to the Tensor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. \item\end{CompactList}\item 
+void \bf{add\-Raw\-Elem} (double $\ast$raw\-Elem)
+\begin{CompactList}\small\item\em Add non-blocked elements to the tensor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. \item\end{CompactList}\item 
+double \bf{at} (vector$<$ int $>$idxs) const 
+\begin{CompactList}\small\item\em Get the value of correspoinding array of indices.\par
+ How frequent it is used: $\ast$  idxs An STL vector of interger array, describing the indices. \item\end{CompactList}\item 
+vector$<$ Qnum\_\-t $>$ \bf{qnums} ()
+\begin{CompactList}\small\item\em Get an array of quantum numbers of the blocks.\par
+ How frequent it is used: $\ast$ $\ast$. \item\end{CompactList}\item 
+void \bf{save} (const string \&fname)
+\begin{CompactList}\small\item\em Write the tensor to an output file of filename {\tt fname}.\par
+ How frequent it is used: $\ast$  fname A STL string, describing the filename of the output file. \item\end{CompactList}\item 
+void \bf{reshape} (vector$<$ int $>$ \&new\-Labels, int row\-Bond\-Num)
+\begin{CompactList}\small\item\em Reshape the element of the tensor, that is, change the order of bonds to the order of {\tt new\-Labels} and also change the element alignment to the corresponding order.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. \item\end{CompactList}\item 
+void \bf{reshape} (int $\ast$new\-Labels, int row\-Bond\-Num)
+\begin{CompactList}\small\item\em Reshape the element of the tensor, that is, change the order of bonds to the order of {\tt new\-Labels} and also change the element alignment to the corresponding order.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. \item\end{CompactList}\item 
+void \bf{transpose} ()
+\begin{CompactList}\small\item\em Transpose the tensor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. \item\end{CompactList}\item 
+void \bf{randomize} ()
+\begin{CompactList}\small\item\em Randomly give a value(0 $\sim$ 1.0) to each element.\par
+ How frequent it is used: $\ast$. \item\end{CompactList}\item 
 void \textbf{set\-Name} (const string \&\_\-name)\label{d1/d9f/classSyTensor__t_dd9c602aa43871713082e61ab90a2dd3}
 
 \item 
-double \textbf{at} (vector$<$ int $>$idxs) const \label{d1/d9f/classSyTensor__t_7e3ebd2e17eb7e230bac7bcf446e0377}
-
-\item 
 void \textbf{check} ()\label{d1/d9f/classSyTensor__t_36c4686657aac7670110375531ef91cd}
-
-\item 
-void \textbf{save} (const string \&fname)\label{d1/d9f/classSyTensor__t_dfee275ff906680a7e9565bb951ff577}
 
 \item 
 void \textbf{operator $\ast$=} (\bf{Sy\-Tensor\_\-t} \&Tb)\label{d1/d9f/classSyTensor__t_bb5a70b83ec528a1d5457335e6b61c51}
@@ -139,18 +139,14 @@ Class of the symmetry tensor.
 
 How frequent it is used: $\ast$. 
 
-
-
-\footnotesize\begin{verbatim}How frequent it is used: * \end{verbatim}
-\normalsize
- \begin{Desc}
+\begin{Desc}
 \item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
 \index{SyTensor_t@{Sy\-Tensor\_\-t}!SyTensor_t@{SyTensor\_\-t}}
 \index{SyTensor_t@{SyTensor\_\-t}!SyTensor_t@{Sy\-Tensor\_\-t}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}Sy\-Tensor\_\-t::Sy\-Tensor\_\-t (const string \& {\em fname})}\label{d1/d9f/classSyTensor__t_f71929efcd5c48f2085e38186848c48f}
 
 
-To read in a binary file of a tensor which is written out by member function {\tt save()}.\par
+To read in a binary file of a tensor which is written out by member function {\tt \doxyref{save()}{p.}{d1/d9f/classSyTensor__t_dfee275ff906680a7e9565bb951ff577}}.\par
  How frequent it is used: $\ast$ $\ast$ $\ast$. 
 
 \begin{Desc}
@@ -178,7 +174,7 @@ To construct a tensor from a given bond array.\par
 \begin{Desc}
 \item[Note:]The number of bonds must be larger than one, that is, the library does not support rank 0 tensor. \end{Desc}
 \begin{Desc}
-\item[Warning:]{\tt assert(\_\-bonds.size() $>$ 0)} \end{Desc}
+\item[Warning:]{\tt assert( \_\-bonds.size() $>$ 0 )} \end{Desc}
 \index{SyTensor_t@{Sy\-Tensor\_\-t}!SyTensor_t@{SyTensor\_\-t}}
 \index{SyTensor_t@{SyTensor\_\-t}!SyTensor_t@{Sy\-Tensor\_\-t}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}Sy\-Tensor\_\-t::Sy\-Tensor\_\-t (vector$<$ Bond\_\-t $>$ \& {\em \_\-bonds}, vector$<$ int $>$ \& {\em labels}, const string \& {\em \_\-name} = {\tt \char`\"{}\char`\"{}})}\label{d1/d9f/classSyTensor__t_24c808ed67b410bf044f4078acd6d278}
@@ -190,14 +186,209 @@ To construct a tensor from a given bond array and a given label array.\par
 \begin{Desc}
 \item[Parameters:]
 \begin{description}
-\item[{\em \_\-bonds}]an STL vector of object {\tt Bond\_\-t}. \item[{\em \_\-labels.}]\end{description}
+\item[{\em \_\-bonds}]An STL vector of object {\tt Bond\_\-t}. \item[{\em \_\-labels}]An STL interger vector, describing the labels of bonds. \item[{\em \_\-name}]The given name of a tensor, STL string. \end{description}
 \end{Desc}
 \begin{Desc}
 \item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
 \begin{Desc}
-\item[Note:]each label is 1-1 corresponding to each bond in order of array. \end{Desc}
+\item[Note:]The number of bonds must be larger than one, that is, the library does not support rank 0 tensor. 
+
+Each label is 1-1 corresponding to each bond in the order of array. \end{Desc}
 \begin{Desc}
-\item[Warning:]{\tt assert(\_\-bonds.size() == \_\-labels.size())} \end{Desc}
+\item[Warning:]{\tt assert( \_\-bonds.size() $>$ 0 )} 
+
+{\tt assert( \_\-bonds.size() == \_\-labels.size() )} \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!SyTensor_t@{SyTensor\_\-t}}
+\index{SyTensor_t@{SyTensor\_\-t}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Sy\-Tensor\_\-t::Sy\-Tensor\_\-t (vector$<$ Bond\_\-t $>$ \& {\em \_\-bonds}, int $\ast$ {\em labels}, const string \& {\em \_\-name} = {\tt \char`\"{}\char`\"{}})}\label{d1/d9f/classSyTensor__t_9b559c0650ca8356c282a9e26b91653a}
+
+
+To construct a tensor from a given bond array and a given label array.\par
+ How frequent it is used: $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em \_\-bonds}]An STL vector of object {\tt Bond\_\-t}. \item[{\em \_\-labels}]An integer array, describing the labels of bonds. \item[{\em \_\-name}]The given name of a tensor, STL string. \end{description}
+\end{Desc}
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+\begin{Desc}
+\item[Note:]The number of bonds must be larger than one, that is, the library does not support rank 0 tensor. 
+
+Each label is 1-1 corresponding to each bond in the order of array. \end{Desc}
+\begin{Desc}
+\item[Warning:]{\tt assert( \_\-bonds.size() $>$ 0 )} 
+
+{\tt assert( \_\-bonds.size() == \_\-labels.size() )} \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!SyTensor_t@{SyTensor\_\-t}}
+\index{SyTensor_t@{SyTensor\_\-t}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Sy\-Tensor\_\-t::Sy\-Tensor\_\-t (const \bf{Sy\-Tensor\_\-t} \& {\em Sy\-T})}\label{d1/d9f/classSyTensor__t_f78aebbd917afa2c1056f69e4db6722e}
+
+
+A deep copy constructor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+
+
+\subsection{Member Function Documentation}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!addLabel@{addLabel}}
+\index{addLabel@{addLabel}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Sy\-Tensor\_\-t::add\-Label (int $\ast$ {\em new\-Labels})}\label{d1/d9f/classSyTensor__t_187575ddc65a50a6c7a79173888419fd}
+
+
+Add labels to the Tensor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em new\-Labels}]An interger array, describing the labels of bonds. \end{description}
+\end{Desc}
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+\begin{Desc}
+\item[Note:]Each added label is 1-1 corresponding to each bond in the order of array. \end{Desc}
+\begin{Desc}
+\item[Warning:]{\tt assert( \_\-bonds.size() == \_\-labels.size() )} \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!addLabel@{addLabel}}
+\index{addLabel@{addLabel}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Sy\-Tensor\_\-t::add\-Label (vector$<$ int $>$ \& {\em new\-Labels})}\label{d1/d9f/classSyTensor__t_764126669f8150a8e3fb0b05829e084d}
+
+
+Add labels to the Tensor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em new\-Labels}]An STL interger vector, describing the labels of bonds. \end{description}
+\end{Desc}
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+\begin{Desc}
+\item[Note:]Each added label is 1-1 corresponding to each bond in the order of array. \end{Desc}
+\begin{Desc}
+\item[Warning:]{\tt assert( \_\-bonds.size() == \_\-labels.size() )} \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!addRawElem@{addRawElem}}
+\index{addRawElem@{addRawElem}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Sy\-Tensor\_\-t::add\-Raw\-Elem (double $\ast$ {\em raw\-Elem})}\label{d1/d9f/classSyTensor__t_6383dba2b1d94384086943ced05ec44b}
+
+
+Add non-blocked elements to the tensor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em raw\-Elem}]An array of element type of size equal to {\tt elem\-Num}. \end{description}
+\end{Desc}
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+\begin{Desc}
+\item[Note:]The alignment of the given tensor elements should follow the order of the bonds. \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!at@{at}}
+\index{at@{at}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}double Sy\-Tensor\_\-t::at (vector$<$ int $>$ {\em idxs}) const}\label{d1/d9f/classSyTensor__t_7e3ebd2e17eb7e230bac7bcf446e0377}
+
+
+Get the value of correspoinding array of indices.\par
+ How frequent it is used: $\ast$  idxs An STL vector of interger array, describing the indices. 
+
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!operator=@{operator=}}
+\index{operator=@{operator=}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{Sy\-Tensor\_\-t}\& Sy\-Tensor\_\-t::operator= (const \bf{Sy\-Tensor\_\-t} \& {\em Sy\-T})}\label{d1/d9f/classSyTensor__t_0a44eb0909a7e6da08b06d8a27c40f22}
+
+
+A deep copy assignment.\par
+ How frequent it is used: $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!qnums@{qnums}}
+\index{qnums@{qnums}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}vector$<$Qnum\_\-t$>$ Sy\-Tensor\_\-t::qnums ()}\label{d1/d9f/classSyTensor__t_e5a2ebf44357a6eca5e5989da1cfd09d}
+
+
+Get an array of quantum numbers of the blocks.\par
+ How frequent it is used: $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[Returns:]An STL vector of type {\tt Qnum\_\-t}. \end{Desc}
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!randomize@{randomize}}
+\index{randomize@{randomize}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Sy\-Tensor\_\-t::randomize ()}\label{d1/d9f/classSyTensor__t_6b4ec04e9f0f708e7bc57a37c15a1cef}
+
+
+Randomly give a value(0 $\sim$ 1.0) to each element.\par
+ How frequent it is used: $\ast$. 
+
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-tool.cpp \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!reshape@{reshape}}
+\index{reshape@{reshape}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Sy\-Tensor\_\-t::reshape (int $\ast$ {\em new\-Labels}, int {\em row\-Bond\-Num})}\label{d1/d9f/classSyTensor__t_2a024ef509402125d99b80290e8b09e3}
+
+
+Reshape the element of the tensor, that is, change the order of bonds to the order of {\tt new\-Labels} and also change the element alignment to the corresponding order.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em new\-Labels}]An interger array, describing the labels of bonds after reshape. \item[{\em row\-Bond\-Num}]An interger, describing the number of row bonds . \end{description}
+\end{Desc}
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-tool.cpp \end{Desc}
+\begin{Desc}
+\item[Note:]Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements. \end{Desc}
+\begin{Desc}
+\item[Warning:]The only difference between {\tt new\-Labels} and the original {\tt labels} is the order of the array elements. \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!reshape@{reshape}}
+\index{reshape@{reshape}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Sy\-Tensor\_\-t::reshape (vector$<$ int $>$ \& {\em new\-Labels}, int {\em row\-Bond\-Num})}\label{d1/d9f/classSyTensor__t_97069a4b531db9c3fa9bd943b8a4fcf7}
+
+
+Reshape the element of the tensor, that is, change the order of bonds to the order of {\tt new\-Labels} and also change the element alignment to the corresponding order.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em new\-Labels}]An STL interger vector, describing the labels of bonds after reshape. \item[{\em row\-Bond\-Num}]An interger, describing the number of row bonds . \end{description}
+\end{Desc}
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-tool.cpp \end{Desc}
+\begin{Desc}
+\item[Note:]Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements. \end{Desc}
+\begin{Desc}
+\item[Warning:]The only difference between {\tt new\-Labels} and the original {\tt labels} is the order of the array elements. \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!save@{save}}
+\index{save@{save}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Sy\-Tensor\_\-t::save (const string \& {\em fname})}\label{d1/d9f/classSyTensor__t_dfee275ff906680a7e9565bb951ff577}
+
+
+Write the tensor to an output file of filename {\tt fname}.\par
+ How frequent it is used: $\ast$  fname A STL string, describing the filename of the output file. 
+
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-basic.cpp \end{Desc}
+\index{SyTensor_t@{Sy\-Tensor\_\-t}!transpose@{transpose}}
+\index{transpose@{transpose}!SyTensor_t@{Sy\-Tensor\_\-t}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void Sy\-Tensor\_\-t::transpose ()}\label{d1/d9f/classSyTensor__t_974656ad60918fb50e8b8f5e32b40fd6}
+
+
+Transpose the tensor.\par
+ How frequent it is used: $\ast$ $\ast$ $\ast$. 
+
+\begin{Desc}
+\item[See also:]File demo/Sy\-Tensor\_\-tool.cpp \end{Desc}
 
 
 The documentation for this class was generated from the following file:\begin{CompactItemize}

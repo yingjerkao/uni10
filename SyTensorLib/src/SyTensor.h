@@ -37,10 +37,10 @@ class SyTensor_t{
     /**
      * @brief
      * How frequent it is used: *
-     * @verbatim How frequent it is used: * @endverbatim
      * @see File demo/SyTensor_basic.cpp
      */
 		SyTensor_t();
+
     /**
      * @brief To read in a binary file of a tensor which is written out by member function @c save().\n
      * How frequent it is used: * * *
@@ -48,6 +48,7 @@ class SyTensor_t{
      * @see File demo/SyTensor_basic.cpp
      */
 		SyTensor_t(const string& fname);
+
     /**
      * @brief To construct a tensor from a given bond array.\n
      * How frequent it is used: * * *
@@ -55,35 +56,146 @@ class SyTensor_t{
      * @param _name The given name of a tensor, STL string.
      * @see File demo/SyTensor_basic.cpp
      * @note The number of bonds must be larger than one, that is, the library does not support rank 0 tensor.
-     * @warning <tt>assert(_bonds.size() > 0)</tt>
+     * @warning <tt>assert( _bonds.size() > 0 )</tt>
      */
 		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "");
+
     /**
      * @brief To construct a tensor from a given bond array and a given label array.\n
      * How frequent it is used: * *
-     * @param _bonds an STL vector of object @c Bond_t.
-     * @param _labels.
+     * @param _bonds An STL vector of object @c Bond_t.
+     * @param _labels An STL interger vector, describing the labels of bonds.
+     * @param _name The given name of a tensor, STL string.
      * @see File demo/SyTensor_basic.cpp
-     * @note each label is 1-1 corresponding to each bond in order of array.
-     * @warning <tt>assert(_bonds.size() == _labels.size())</tt>
+     * @note The number of bonds must be larger than one, that is, the library does not support rank 0 tensor.
+     * @note Each label is 1-1 corresponding to each bond in the order of array.
+     * @warning <tt>assert( _bonds.size() > 0 )</tt>
+     * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
      */
 		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "");
+
+    /**
+     * @brief To construct a tensor from a given bond array and a given label array.\n
+     * How frequent it is used: * *
+     * @param _bonds An STL vector of object @c Bond_t.
+     * @param _labels An integer array, describing the labels of bonds.
+     * @param _name The given name of a tensor, STL string.
+     * @see File demo/SyTensor_basic.cpp
+     * @note The number of bonds must be larger than one, that is, the library does not support rank 0 tensor.
+     * @note Each label is 1-1 corresponding to each bond in the order of array.
+     * @warning <tt>assert( _bonds.size() > 0 )</tt>
+     * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
+     */
 		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "");
+
+    /**
+     * @brief A deep copy constructor.\n
+     * How frequent it is used: * * *
+     * @see File demo/SyTensor_basic.cpp
+     */
 		SyTensor_t(const SyTensor_t& SyT);
-		~SyTensor_t();
+
+    /**
+     * @brief A deep copy assignment.\n
+     * How frequent it is used: * *
+     * @see File demo/SyTensor_basic.cpp
+     */
 		SyTensor_t& operator=(const SyTensor_t& SyT);
+
+		~SyTensor_t();
+
+    /**
+     * @brief Add labels to the Tensor.\n
+     * How frequent it is used: * * *
+     * @param newLabels An STL interger vector, describing the labels of bonds.
+     * @see File demo/SyTensor_basic.cpp
+     * @note Each added label is 1-1 corresponding to each bond in the order of array.
+     * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
+     */
 		void addLabel(vector<int>& newLabels);
+
+    /**
+     * @brief Add labels to the Tensor.\n
+     * How frequent it is used: * * *
+     * @param newLabels An interger array, describing the labels of bonds.
+     * @see File demo/SyTensor_basic.cpp
+     * @note Each added label is 1-1 corresponding to each bond in the order of array.
+     * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
+     */
 		void addLabel(int* newLabels);
-		void reshape(vector<int>& newLabels, int rowBondNum);
-		void reshape(int* newLabels, int rowBondNum);
+
+    /**
+     * @brief Add non-blocked elements to the tensor.\n
+     * How frequent it is used: * * *
+     * @param rawElem An array of element type of size equal to @p elemNum.
+     * @see File demo/SyTensor_basic.cpp
+     * @note The alignment of the given tensor elements should follow the order of the bonds.
+     */
 		void addRawElem(double* rawElem);
-		void transpose();
-		void randomize();
-		vector<Qnum_t> qnums();
-		void setName(const string& _name);
+
+    /**
+     * @brief Get the value of correspoinding array of indices.\n
+     * How frequent it is used: *
+     * @para idxs An STL vector of interger array, describing the indices.
+     * @see File demo/SyTensor_basic.cpp
+     */
 		double at(vector<int>idxs)const;
-		void check();
+
+    /**
+     * @brief Get an array of quantum numbers of the blocks.\n
+     * How frequent it is used: * *
+     * @return An STL vector of type @c Qnum_t.
+     * @see File demo/SyTensor_basic.cpp
+     */
+    vector<Qnum_t> qnums();
+
+    /**
+     * @brief Write the tensor to an output file of filename @p fname.\n
+     * How frequent it is used: *
+     * @para fname A STL string, describing the filename of the output file.
+     * @see File demo/SyTensor_basic.cpp
+     */
 		void save(const string& fname);
+
+    /**
+     * @brief Reshape the element of the tensor, that is, change the order of bonds to the order of @p newLabels and also change the element alignment to the corresponding order.\n
+     * How frequent it is used: * * *
+     * @param newLabels An STL interger vector, describing the labels of bonds after reshape.
+     * @param rowBondNum An interger, describing the number of row bonds .
+     * @see File demo/SyTensor_tool.cpp
+     * @note Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements.
+     * @warning The only difference between @p newLabels and the original @p labels is the order of the array elements.
+     */
+		void reshape(vector<int>& newLabels, int rowBondNum);
+
+    /**
+     * @brief Reshape the element of the tensor, that is, change the order of bonds to the order of @p newLabels and also change the element alignment to the corresponding order.\n
+     * How frequent it is used: * * *
+     * @param newLabels An interger array, describing the labels of bonds after reshape.
+     * @param rowBondNum An interger, describing the number of row bonds .
+     * @see File demo/SyTensor_tool.cpp
+     * @note Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements.
+     * @warning The only difference between @p newLabels and the original @p labels is the order of the array elements.
+     */
+		void reshape(int* newLabels, int rowBondNum);
+
+    /**
+     * @brief Transpose the tensor.\n
+     * How frequent it is used: * * *
+     * @see File demo/SyTensor_tool.cpp
+     */
+		void transpose();
+
+    /**
+     * @brief Randomly give a value(0 ~ 1.0) to each element.\n
+     * How frequent it is used: *
+     * @see File demo/SyTensor_tool.cpp
+     */
+		void randomize();
+
+		void setName(const string& _name);
+
+		void check();
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
 		friend SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb);
 		void operator*= (SyTensor_t& Tb);

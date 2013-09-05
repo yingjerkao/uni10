@@ -10,27 +10,41 @@
 \contentsline {subsubsection}{\numberline {3.1.2.2}\setlength {\rightskip }{0pt plus 5cm}int \bf {Box\discretionary {-}{}{}Struct\_\discretionary {-}{}{}struct::b}}{5}
 \contentsline {subsubsection}{\numberline {3.1.2.3}\setlength {\rightskip }{0pt plus 5cm}double \bf {Box\discretionary {-}{}{}Struct\_\discretionary {-}{}{}struct::c}}{5}
 \contentsline {section}{\numberline {3.2}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t Class Reference}{7}
-\contentsline {subsection}{\numberline {3.2.1}Detailed Description}{8}
-\contentsline {subsection}{\numberline {3.2.2}Constructor \& Destructor Documentation}{8}
-\contentsline {subsubsection}{\numberline {3.2.2.1}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t ()}{8}
-\contentsline {subsubsection}{\numberline {3.2.2.2}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t (const string \& {\em fname})}{8}
-\contentsline {subsubsection}{\numberline {3.2.2.3}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t (vector$<$ Bond\_\discretionary {-}{}{}t $>$ \& {\em \_\discretionary {-}{}{}bonds}, const string \& {\em \_\discretionary {-}{}{}name} = {\tt \char `\"{}\char `\"{}})}{8}
-\contentsline {subsubsection}{\numberline {3.2.2.4}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t (vector$<$ Bond\_\discretionary {-}{}{}t $>$ \& {\em \_\discretionary {-}{}{}bonds}, vector$<$ int $>$ \& {\em labels}, const string \& {\em \_\discretionary {-}{}{}name} = {\tt \char `\"{}\char `\"{}})}{9}
-\contentsline {chapter}{\numberline {4}SYMMETRY\_\discretionary {-}{}{}TENSOR File Documentation}{11}
-\contentsline {section}{\numberline {4.1}doxygen\_\discretionary {-}{}{}c.h File Reference}{11}
-\contentsline {subsection}{\numberline {4.1.1}Detailed Description}{12}
-\contentsline {subsection}{\numberline {4.1.2}Typedef Documentation}{12}
-\contentsline {subsubsection}{\numberline {4.1.2.1}\setlength {\rightskip }{0pt plus 5cm}typedef enum \bf {Box\discretionary {-}{}{}Enum\_\discretionary {-}{}{}enum} \bf {Box\discretionary {-}{}{}Enum}}{12}
-\contentsline {subsubsection}{\numberline {4.1.2.2}\setlength {\rightskip }{0pt plus 5cm}typedef struct \bf {Box\discretionary {-}{}{}Struct\_\discretionary {-}{}{}struct} \bf {Box\discretionary {-}{}{}Struct}}{12}
-\contentsline {subsection}{\numberline {4.1.3}Enumeration Type Documentation}{12}
-\contentsline {subsubsection}{\numberline {4.1.3.1}\setlength {\rightskip }{0pt plus 5cm}enum \bf {Box\discretionary {-}{}{}Enum\_\discretionary {-}{}{}enum}}{12}
-\contentsline {subsection}{\numberline {4.1.4}Function Documentation}{13}
-\contentsline {subsubsection}{\numberline {4.1.4.1}\setlength {\rightskip }{0pt plus 5cm}BOXEXPORT \bf {Box\discretionary {-}{}{}Struct}$\ast $ Box\_\discretionary {-}{}{}The\_\discretionary {-}{}{}Function\_\discretionary {-}{}{}Name (Box\discretionary {-}{}{}Param\discretionary {-}{}{}Type1 {\em param1}, Box\discretionary {-}{}{}Param\discretionary {-}{}{}Type2 {\em param2})}{13}
-\contentsline {subsubsection}{\numberline {4.1.4.2}\setlength {\rightskip }{0pt plus 5cm}BOXEXPORT void Box\_\discretionary {-}{}{}The\_\discretionary {-}{}{}Last\_\discretionary {-}{}{}One (void)}{14}
-\contentsline {subsubsection}{\numberline {4.1.4.3}\setlength {\rightskip }{0pt plus 5cm}BOXEXPORT void$\ast $ Box\_\discretionary {-}{}{}The\_\discretionary {-}{}{}Second\_\discretionary {-}{}{}Function (void)}{14}
-\contentsline {section}{\numberline {4.2}Sy\discretionary {-}{}{}Tensor.h File Reference}{15}
-\contentsline {subsection}{\numberline {4.2.1}Detailed Description}{15}
-\contentsline {subsection}{\numberline {4.2.2}Variable Documentation}{16}
-\contentsline {subsubsection}{\numberline {4.2.2.1}\setlength {\rightskip }{0pt plus 5cm}const int \bf {HAVEELEM} = 4}{16}
-\contentsline {subsubsection}{\numberline {4.2.2.2}\setlength {\rightskip }{0pt plus 5cm}const int \bf {HAVELABEL} = 2}{16}
-\contentsline {subsubsection}{\numberline {4.2.2.3}\setlength {\rightskip }{0pt plus 5cm}const int \bf {INIT} = 1}{16}
+\contentsline {subsection}{\numberline {3.2.1}Detailed Description}{9}
+\contentsline {subsection}{\numberline {3.2.2}Constructor \& Destructor Documentation}{9}
+\contentsline {subsubsection}{\numberline {3.2.2.1}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t ()}{9}
+\contentsline {subsubsection}{\numberline {3.2.2.2}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t (const string \& {\em fname})}{9}
+\contentsline {subsubsection}{\numberline {3.2.2.3}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t (vector$<$ Bond\_\discretionary {-}{}{}t $>$ \& {\em \_\discretionary {-}{}{}bonds}, const string \& {\em \_\discretionary {-}{}{}name} = {\tt \char `\"{}\char `\"{}})}{9}
+\contentsline {subsubsection}{\numberline {3.2.2.4}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t (vector$<$ Bond\_\discretionary {-}{}{}t $>$ \& {\em \_\discretionary {-}{}{}bonds}, vector$<$ int $>$ \& {\em labels}, const string \& {\em \_\discretionary {-}{}{}name} = {\tt \char `\"{}\char `\"{}})}{10}
+\contentsline {subsubsection}{\numberline {3.2.2.5}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t (vector$<$ Bond\_\discretionary {-}{}{}t $>$ \& {\em \_\discretionary {-}{}{}bonds}, int $\ast $ {\em labels}, const string \& {\em \_\discretionary {-}{}{}name} = {\tt \char `\"{}\char `\"{}})}{10}
+\contentsline {subsubsection}{\numberline {3.2.2.6}\setlength {\rightskip }{0pt plus 5cm}Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t (const \bf {Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t} \& {\em Sy\discretionary {-}{}{}T})}{11}
+\contentsline {subsection}{\numberline {3.2.3}Member Function Documentation}{11}
+\contentsline {subsubsection}{\numberline {3.2.3.1}\setlength {\rightskip }{0pt plus 5cm}void Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::add\discretionary {-}{}{}Label (int $\ast $ {\em new\discretionary {-}{}{}Labels})}{11}
+\contentsline {subsubsection}{\numberline {3.2.3.2}\setlength {\rightskip }{0pt plus 5cm}void Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::add\discretionary {-}{}{}Label (vector$<$ int $>$ \& {\em new\discretionary {-}{}{}Labels})}{11}
+\contentsline {subsubsection}{\numberline {3.2.3.3}\setlength {\rightskip }{0pt plus 5cm}void Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::add\discretionary {-}{}{}Raw\discretionary {-}{}{}Elem (double $\ast $ {\em raw\discretionary {-}{}{}Elem})}{12}
+\contentsline {subsubsection}{\numberline {3.2.3.4}\setlength {\rightskip }{0pt plus 5cm}double Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::at (vector$<$ int $>$ {\em idxs}) const}{12}
+\contentsline {subsubsection}{\numberline {3.2.3.5}\setlength {\rightskip }{0pt plus 5cm}\bf {Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t}\& Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::operator= (const \bf {Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t} \& {\em Sy\discretionary {-}{}{}T})}{12}
+\contentsline {subsubsection}{\numberline {3.2.3.6}\setlength {\rightskip }{0pt plus 5cm}vector$<$Qnum\_\discretionary {-}{}{}t$>$ Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::qnums ()}{12}
+\contentsline {subsubsection}{\numberline {3.2.3.7}\setlength {\rightskip }{0pt plus 5cm}void Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::randomize ()}{13}
+\contentsline {subsubsection}{\numberline {3.2.3.8}\setlength {\rightskip }{0pt plus 5cm}void Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::reshape (int $\ast $ {\em new\discretionary {-}{}{}Labels}, int {\em row\discretionary {-}{}{}Bond\discretionary {-}{}{}Num})}{13}
+\contentsline {subsubsection}{\numberline {3.2.3.9}\setlength {\rightskip }{0pt plus 5cm}void Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::reshape (vector$<$ int $>$ \& {\em new\discretionary {-}{}{}Labels}, int {\em row\discretionary {-}{}{}Bond\discretionary {-}{}{}Num})}{13}
+\contentsline {subsubsection}{\numberline {3.2.3.10}\setlength {\rightskip }{0pt plus 5cm}void Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::save (const string \& {\em fname})}{14}
+\contentsline {subsubsection}{\numberline {3.2.3.11}\setlength {\rightskip }{0pt plus 5cm}void Sy\discretionary {-}{}{}Tensor\_\discretionary {-}{}{}t::transpose ()}{14}
+\contentsline {chapter}{\numberline {4}SYMMETRY\_\discretionary {-}{}{}TENSOR File Documentation}{15}
+\contentsline {section}{\numberline {4.1}doxygen\_\discretionary {-}{}{}c.h File Reference}{15}
+\contentsline {subsection}{\numberline {4.1.1}Detailed Description}{16}
+\contentsline {subsection}{\numberline {4.1.2}Typedef Documentation}{16}
+\contentsline {subsubsection}{\numberline {4.1.2.1}\setlength {\rightskip }{0pt plus 5cm}typedef enum \bf {Box\discretionary {-}{}{}Enum\_\discretionary {-}{}{}enum} \bf {Box\discretionary {-}{}{}Enum}}{16}
+\contentsline {subsubsection}{\numberline {4.1.2.2}\setlength {\rightskip }{0pt plus 5cm}typedef struct \bf {Box\discretionary {-}{}{}Struct\_\discretionary {-}{}{}struct} \bf {Box\discretionary {-}{}{}Struct}}{16}
+\contentsline {subsection}{\numberline {4.1.3}Enumeration Type Documentation}{16}
+\contentsline {subsubsection}{\numberline {4.1.3.1}\setlength {\rightskip }{0pt plus 5cm}enum \bf {Box\discretionary {-}{}{}Enum\_\discretionary {-}{}{}enum}}{16}
+\contentsline {subsection}{\numberline {4.1.4}Function Documentation}{17}
+\contentsline {subsubsection}{\numberline {4.1.4.1}\setlength {\rightskip }{0pt plus 5cm}BOXEXPORT \bf {Box\discretionary {-}{}{}Struct}$\ast $ Box\_\discretionary {-}{}{}The\_\discretionary {-}{}{}Function\_\discretionary {-}{}{}Name (Box\discretionary {-}{}{}Param\discretionary {-}{}{}Type1 {\em param1}, Box\discretionary {-}{}{}Param\discretionary {-}{}{}Type2 {\em param2})}{17}
+\contentsline {subsubsection}{\numberline {4.1.4.2}\setlength {\rightskip }{0pt plus 5cm}BOXEXPORT void Box\_\discretionary {-}{}{}The\_\discretionary {-}{}{}Last\_\discretionary {-}{}{}One (void)}{18}
+\contentsline {subsubsection}{\numberline {4.1.4.3}\setlength {\rightskip }{0pt plus 5cm}BOXEXPORT void$\ast $ Box\_\discretionary {-}{}{}The\_\discretionary {-}{}{}Second\_\discretionary {-}{}{}Function (void)}{18}
+\contentsline {section}{\numberline {4.2}Sy\discretionary {-}{}{}Tensor.h File Reference}{19}
+\contentsline {subsection}{\numberline {4.2.1}Detailed Description}{19}
+\contentsline {subsection}{\numberline {4.2.2}Variable Documentation}{20}
+\contentsline {subsubsection}{\numberline {4.2.2.1}\setlength {\rightskip }{0pt plus 5cm}const int \bf {HAVEELEM} = 4}{20}
+\contentsline {subsubsection}{\numberline {4.2.2.2}\setlength {\rightskip }{0pt plus 5cm}const int \bf {HAVELABEL} = 2}{20}
+\contentsline {subsubsection}{\numberline {4.2.2.3}\setlength {\rightskip }{0pt plus 5cm}const int \bf {INIT} = 1}{20}

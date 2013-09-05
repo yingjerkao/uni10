@@ -58,9 +58,7 @@ int main(){
 	cout << outs2[0];
 	cout << outs2[1];
 	cout << outs2[2];
-	Matrix_t ret = outs2[0];
-	ret *= outs2[1];
-	cout<<ret;
+	Matrix_t ret = outs2[0] * outs2[1];
 	ret *= outs2[2];
 	cout<<ret;
 }

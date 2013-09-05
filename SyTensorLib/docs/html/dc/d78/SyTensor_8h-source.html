@@ -38,67 +38,86 @@
 <a name="l00029"></a><a class="code" href="../../df/d91/SyTensor_8h.html#c005d52569c749f62fb23dc7b723ba8e">00029</a> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="../../df/d91/SyTensor_8h.html#c005d52569c749f62fb23dc7b723ba8e">HAVEELEM</a> = 4;           
 <a name="l00035"></a><a class="code" href="../../d1/d9f/classSyTensor__t.html">00035</a> <span class="keyword">class </span><a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>{
 <a name="l00036"></a>00036         <span class="keyword">public</span>:
-<a name="l00043"></a>00043                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>();
+<a name="l00042"></a>00042                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>();
+<a name="l00043"></a>00043 
 <a name="l00050"></a>00050                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(<span class="keyword">const</span> string&amp; fname);
-<a name="l00060"></a>00060                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(vector&lt;Bond_t&gt;&amp; _bonds, <span class="keyword">const</span> string&amp; _name = <span class="stringliteral">""</span>);
-<a name="l00070"></a>00070                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(vector&lt;Bond_t&gt;&amp; _bonds, vector&lt;int&gt;&amp; labels, <span class="keyword">const</span> string&amp; _name = <span class="stringliteral">""</span>);
-<a name="l00071"></a>00071                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(vector&lt;Bond_t&gt;&amp; _bonds, <span class="keywordtype">int</span>* labels, <span class="keyword">const</span> string&amp; _name = <span class="stringliteral">""</span>);
-<a name="l00072"></a>00072                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; SyT);
-<a name="l00073"></a>00073                 ~<a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>();
-<a name="l00074"></a>00074                 <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; SyT);
-<a name="l00075"></a>00075                 <span class="keywordtype">void</span> addLabel(vector&lt;int&gt;&amp; newLabels);
-<a name="l00076"></a>00076                 <span class="keywordtype">void</span> addLabel(<span class="keywordtype">int</span>* newLabels);
-<a name="l00077"></a>00077                 <span class="keywordtype">void</span> reshape(vector&lt;int&gt;&amp; newLabels, <span class="keywordtype">int</span> rowBondNum);
-<a name="l00078"></a>00078                 <span class="keywordtype">void</span> reshape(<span class="keywordtype">int</span>* newLabels, <span class="keywordtype">int</span> rowBondNum);
-<a name="l00079"></a>00079                 <span class="keywordtype">void</span> addRawElem(<span class="keywordtype">double</span>* rawElem);
-<a name="l00080"></a>00080                 <span class="keywordtype">void</span> transpose();
-<a name="l00081"></a>00081                 <span class="keywordtype">void</span> randomize();
-<a name="l00082"></a>00082                 vector&lt;Qnum_t&gt; qnums();
-<a name="l00083"></a>00083                 <span class="keywordtype">void</span> setName(<span class="keyword">const</span> string&amp; _name);
-<a name="l00084"></a>00084                 <span class="keywordtype">double</span> at(vector&lt;int&gt;idxs)<span class="keyword">const</span>;
-<a name="l00085"></a>00085                 <span class="keywordtype">void</span> check();
-<a name="l00086"></a>00086                 <span class="keywordtype">void</span> save(<span class="keyword">const</span> string&amp; fname);
-<a name="l00087"></a>00087                 <span class="keyword">friend</span> ostream&amp; operator&lt;&lt; (ostream&amp; os, <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; SyT);
-<a name="l00088"></a>00088                 <span class="keyword">friend</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a> operator* (<a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Ta, <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Tb);
-<a name="l00089"></a>00089                 <span class="keywordtype">void</span> operator*= (<a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Tb);
-<a name="l00090"></a>00090                 <span class="keyword">friend</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a> operator+ (<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Ta, <span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Tb);
-<a name="l00091"></a>00091                 <span class="keywordtype">void</span> operator+= (<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Tb);
-<a name="l00092"></a>00092                 <span class="keyword">friend</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a> operator* (<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Ta, <span class="keywordtype">double</span> a);
-<a name="l00093"></a>00093                 <span class="keyword">friend</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a> operator* (<span class="keywordtype">double</span> a, <span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Ta){<span class="keywordflow">return</span> Ta * a;};
-<a name="l00094"></a>00094                 <span class="keywordtype">void</span> operator*= (<span class="keywordtype">double</span> a);
-<a name="l00095"></a>00095                 Matrix_t getBlock(Qnum_t qnum, <span class="keywordtype">bool</span> diag = <span class="keyword">false</span>);
-<a name="l00096"></a>00096                 <span class="keywordtype">void</span> putBlock(<span class="keyword">const</span> Qnum_t&amp; qnum, Matrix_t&amp; mat);
-<a name="l00097"></a>00097                 <span class="keyword">friend</span> <span class="keywordtype">void</span> printRawElem(<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; SyT);
-<a name="l00098"></a>00098                 <span class="keyword">friend</span> <span class="keyword">class </span>Node_t;
-<a name="l00099"></a>00099                 <span class="keyword">friend</span> <span class="keyword">class </span>Network_t;
-<a name="l00100"></a>00100                 <span class="keywordtype">void</span> orthoRand();
-<a name="l00101"></a>00101                 <span class="keywordtype">void</span> orthoRand(<span class="keyword">const</span> Qnum_t&amp; qnum);
-<a name="l00102"></a>00102                 <span class="keywordtype">void</span> eye();
-<a name="l00103"></a>00103                 <span class="keywordtype">void</span> eye(<span class="keyword">const</span> Qnum_t&amp; qnum);
-<a name="l00104"></a>00104                 <span class="keywordtype">void</span> bzero(<span class="keyword">const</span> Qnum_t&amp; qnum);
-<a name="l00105"></a>00105                 <span class="keywordtype">void</span> bzero();
-<a name="l00106"></a>00106         <span class="keyword">private</span>:
-<a name="l00107"></a>00107                 string name;
-<a name="l00108"></a>00108                 <span class="keywordtype">int</span> status;     <span class="comment">//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements</span>
-<a name="l00109"></a>00109                 vector&lt;Bond_t&gt; bonds;
-<a name="l00110"></a>00110                 map&lt;Qnum_t, Block_t&gt; blocks;
-<a name="l00111"></a>00111                 vector&lt;int&gt;labels;
-<a name="l00112"></a>00112                 DOUBLE *elem;           <span class="comment">//Array of elements</span>
-<a name="l00113"></a>00113                 <span class="keywordtype">int</span> RBondNum;   <span class="comment">//Row bond number</span>
-<a name="l00114"></a>00114                 int64_t elemNum;
-<a name="l00115"></a>00115                 vector&lt;Block_t*&gt; RQidx2Blk;
-<a name="l00116"></a>00116                 vector&lt;bool&gt; Qidx;
-<a name="l00117"></a>00117                 vector&lt;int&gt; RQidx2Off;
-<a name="l00118"></a>00118                 vector&lt;int&gt; CQidx2Off;
-<a name="l00119"></a>00119                 <span class="keyword">static</span> <span class="keywordtype">int</span> COUNTER;
-<a name="l00120"></a>00120                 <span class="keyword">static</span> int64_t ELEMNUM;
-<a name="l00121"></a>00121                 <span class="keyword">static</span> int64_t MAXELEMNUM;
-<a name="l00122"></a>00122                 <span class="keyword">static</span> int64_t MAXELEMTEN;      <span class="comment">//Max number of element of a tensor</span>
-<a name="l00123"></a>00123                 <span class="comment">//Private Functions</span>
-<a name="l00124"></a>00124                 <span class="keywordtype">void</span> grouping();
-<a name="l00125"></a>00125                 <span class="keywordtype">void</span> initSyT();
-<a name="l00126"></a>00126 };
-</pre></div><hr size="1"><address style="align: right;"><small>Generated on Fri Aug 30 23:12:01 2013 for SYMMETRY_TENSOR by&nbsp;
+<a name="l00051"></a>00051 
+<a name="l00061"></a>00061                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(vector&lt;Bond_t&gt;&amp; _bonds, <span class="keyword">const</span> string&amp; _name = <span class="stringliteral">""</span>);
+<a name="l00062"></a>00062 
+<a name="l00075"></a>00075                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(vector&lt;Bond_t&gt;&amp; _bonds, vector&lt;int&gt;&amp; labels, <span class="keyword">const</span> string&amp; _name = <span class="stringliteral">""</span>);
+<a name="l00076"></a>00076 
+<a name="l00089"></a>00089                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(vector&lt;Bond_t&gt;&amp; _bonds, <span class="keywordtype">int</span>* labels, <span class="keyword">const</span> string&amp; _name = <span class="stringliteral">""</span>);
+<a name="l00090"></a>00090 
+<a name="l00096"></a>00096                 <a class="code" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>(<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; SyT);
+<a name="l00097"></a>00097 
+<a name="l00103"></a>00103                 <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; <a class="code" href="../../d1/d9f/classSyTensor__t.html#0a44eb0909a7e6da08b06d8a27c40f22">operator=</a>(<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; SyT);
+<a name="l00104"></a>00104 
+<a name="l00105"></a>00105                 ~<a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>();
+<a name="l00106"></a>00106 
+<a name="l00115"></a>00115                 <span class="keywordtype">void</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#764126669f8150a8e3fb0b05829e084d">addLabel</a>(vector&lt;int&gt;&amp; newLabels);
+<a name="l00116"></a>00116 
+<a name="l00125"></a>00125                 <span class="keywordtype">void</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#764126669f8150a8e3fb0b05829e084d">addLabel</a>(<span class="keywordtype">int</span>* newLabels);
+<a name="l00126"></a>00126 
+<a name="l00134"></a>00134                 <span class="keywordtype">void</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#6383dba2b1d94384086943ced05ec44b">addRawElem</a>(<span class="keywordtype">double</span>* rawElem);
+<a name="l00135"></a>00135 
+<a name="l00142"></a>00142                 <span class="keywordtype">double</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#7e3ebd2e17eb7e230bac7bcf446e0377">at</a>(vector&lt;int&gt;idxs)<span class="keyword">const</span>;
+<a name="l00143"></a>00143 
+<a name="l00150"></a>00150     vector&lt;Qnum_t&gt; <a class="code" href="../../d1/d9f/classSyTensor__t.html#e5a2ebf44357a6eca5e5989da1cfd09d">qnums</a>();
+<a name="l00151"></a>00151 
+<a name="l00158"></a>00158                 <span class="keywordtype">void</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#dfee275ff906680a7e9565bb951ff577">save</a>(<span class="keyword">const</span> string&amp; fname);
+<a name="l00159"></a>00159 
+<a name="l00169"></a>00169                 <span class="keywordtype">void</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#97069a4b531db9c3fa9bd943b8a4fcf7">reshape</a>(vector&lt;int&gt;&amp; newLabels, <span class="keywordtype">int</span> rowBondNum);
+<a name="l00170"></a>00170 
+<a name="l00180"></a>00180                 <span class="keywordtype">void</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#97069a4b531db9c3fa9bd943b8a4fcf7">reshape</a>(<span class="keywordtype">int</span>* newLabels, <span class="keywordtype">int</span> rowBondNum);
+<a name="l00181"></a>00181 
+<a name="l00187"></a>00187                 <span class="keywordtype">void</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#974656ad60918fb50e8b8f5e32b40fd6">transpose</a>();
+<a name="l00188"></a>00188 
+<a name="l00194"></a>00194                 <span class="keywordtype">void</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html#6b4ec04e9f0f708e7bc57a37c15a1cef">randomize</a>();
+<a name="l00195"></a>00195 
+<a name="l00196"></a>00196                 <span class="keywordtype">void</span> setName(<span class="keyword">const</span> string&amp; _name);
+<a name="l00197"></a>00197 
+<a name="l00198"></a>00198                 <span class="keywordtype">void</span> check();
+<a name="l00199"></a>00199                 <span class="keyword">friend</span> ostream&amp; operator&lt;&lt; (ostream&amp; os, <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; SyT);
+<a name="l00200"></a>00200                 <span class="keyword">friend</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a> operator* (<a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Ta, <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Tb);
+<a name="l00201"></a>00201                 <span class="keywordtype">void</span> operator*= (<a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Tb);
+<a name="l00202"></a>00202                 <span class="keyword">friend</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a> operator+ (<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Ta, <span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Tb);
+<a name="l00203"></a>00203                 <span class="keywordtype">void</span> operator+= (<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Tb);
+<a name="l00204"></a>00204                 <span class="keyword">friend</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a> operator* (<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Ta, <span class="keywordtype">double</span> a);
+<a name="l00205"></a>00205                 <span class="keyword">friend</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a> operator* (<span class="keywordtype">double</span> a, <span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; Ta){<span class="keywordflow">return</span> Ta * a;};
+<a name="l00206"></a>00206                 <span class="keywordtype">void</span> operator*= (<span class="keywordtype">double</span> a);
+<a name="l00207"></a>00207                 Matrix_t getBlock(Qnum_t qnum, <span class="keywordtype">bool</span> diag = <span class="keyword">false</span>);
+<a name="l00208"></a>00208                 <span class="keywordtype">void</span> putBlock(<span class="keyword">const</span> Qnum_t&amp; qnum, Matrix_t&amp; mat);
+<a name="l00209"></a>00209                 <span class="keyword">friend</span> <span class="keywordtype">void</span> printRawElem(<span class="keyword">const</span> <a class="code" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>&amp; SyT);
+<a name="l00210"></a>00210                 <span class="keyword">friend</span> <span class="keyword">class </span>Node_t;
+<a name="l00211"></a>00211                 <span class="keyword">friend</span> <span class="keyword">class </span>Network_t;
+<a name="l00212"></a>00212                 <span class="keywordtype">void</span> orthoRand();
+<a name="l00213"></a>00213                 <span class="keywordtype">void</span> orthoRand(<span class="keyword">const</span> Qnum_t&amp; qnum);
+<a name="l00214"></a>00214                 <span class="keywordtype">void</span> eye();
+<a name="l00215"></a>00215                 <span class="keywordtype">void</span> eye(<span class="keyword">const</span> Qnum_t&amp; qnum);
+<a name="l00216"></a>00216                 <span class="keywordtype">void</span> bzero(<span class="keyword">const</span> Qnum_t&amp; qnum);
+<a name="l00217"></a>00217                 <span class="keywordtype">void</span> bzero();
+<a name="l00218"></a>00218         <span class="keyword">private</span>:
+<a name="l00219"></a>00219                 string name;
+<a name="l00220"></a>00220                 <span class="keywordtype">int</span> status;     <span class="comment">//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements</span>
+<a name="l00221"></a>00221                 vector&lt;Bond_t&gt; bonds;
+<a name="l00222"></a>00222                 map&lt;Qnum_t, Block_t&gt; blocks;
+<a name="l00223"></a>00223                 vector&lt;int&gt;labels;
+<a name="l00224"></a>00224                 DOUBLE *elem;           <span class="comment">//Array of elements</span>
+<a name="l00225"></a>00225                 <span class="keywordtype">int</span> RBondNum;   <span class="comment">//Row bond number</span>
+<a name="l00226"></a>00226                 int64_t elemNum;
+<a name="l00227"></a>00227                 vector&lt;Block_t*&gt; RQidx2Blk;
+<a name="l00228"></a>00228                 vector&lt;bool&gt; Qidx;
+<a name="l00229"></a>00229                 vector&lt;int&gt; RQidx2Off;
+<a name="l00230"></a>00230                 vector&lt;int&gt; CQidx2Off;
+<a name="l00231"></a>00231                 <span class="keyword">static</span> <span class="keywordtype">int</span> COUNTER;
+<a name="l00232"></a>00232                 <span class="keyword">static</span> int64_t ELEMNUM;
+<a name="l00233"></a>00233                 <span class="keyword">static</span> int64_t MAXELEMNUM;
+<a name="l00234"></a>00234                 <span class="keyword">static</span> int64_t MAXELEMTEN;      <span class="comment">//Max number of element of a tensor</span>
+<a name="l00235"></a>00235                 <span class="comment">//Private Functions</span>
+<a name="l00236"></a>00236                 <span class="keywordtype">void</span> grouping();
+<a name="l00237"></a>00237                 <span class="keywordtype">void</span> initSyT();
+<a name="l00238"></a>00238 };
+</pre></div><hr size="1"><address style="align: right;"><small>Generated on Thu Sep 5 23:20:32 2013 for SYMMETRY_TENSOR by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="../../doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>
