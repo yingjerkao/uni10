@@ -1,4 +1,4 @@
-This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2011.11.9)  5 SEP 2013 23:20
+This is pdfeTeX, Version 3.141592-1.21a-2.2 (Web2C 7.5.4) (format=latex 2011.11.9)  13 SEP 2013 13:39
 entering extended mode
 **refman.tex
 (./refman.tex
@@ -330,7 +330,7 @@ LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <9> not available
 
 ] [8]
 LaTeX Font Info:    Font shape `T1/cmtt/bx/n' in size <10> not available
-(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 149.
+(Font)              Font shape `T1/cmtt/m/n' tried instead on input line 158.
  [9] [10] [11] [12] [13]) [14]
 Chapter 4.
 (./d3/de5/doxygen__c_8h.tex
@@ -387,12 +387,12 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 1820 strings out of 94501
- 25805 string characters out of 1176789
- 71811 words of memory out of 1000000
- 4937 multiletter control sequences out of 10000+50000
+ 1823 strings out of 94501
+ 25979 string characters out of 1176789
+ 71813 words of memory out of 1000000
+ 4940 multiletter control sequences out of 10000+50000
  19580 words of font info for 42 fonts, out of 500000 for 2000
  580 hyphenation exceptions out of 1000
  30i,12n,43p,732b,416s stack positions out of 1500i,500n,5000p,200000b,5000s
 
-Output written on refman.dvi (25 pages, 40016 bytes).
+Output written on refman.dvi (25 pages, 40288 bytes).

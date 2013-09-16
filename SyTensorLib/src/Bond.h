@@ -22,7 +22,7 @@ class Bond_t {
 		friend ostream& operator<< (ostream& os, const Bond_t& b);
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
 		friend bool operator== (const Bond_t& b1, const Bond_t& b2);
-		friend void printRawElem(const SyTensor_t& SyT);
+		friend void printRawElem(const SyTensor_t& SyT, const string& fname);
 		void change(bondType tp);
 		~Bond_t();
 	private:

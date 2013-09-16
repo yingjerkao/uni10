@@ -30,8 +30,8 @@
 \indexentry{operator=@{operator=}!SyTensor_t@{Sy\-Tensor\_\-t}}{12}
 \indexentry{SyTensor_t@{Sy\-Tensor\_\-t}!qnums@{qnums}}{12}
 \indexentry{qnums@{qnums}!SyTensor_t@{Sy\-Tensor\_\-t}}{12}
-\indexentry{SyTensor_t@{Sy\-Tensor\_\-t}!randomize@{randomize}}{12}
-\indexentry{randomize@{randomize}!SyTensor_t@{Sy\-Tensor\_\-t}}{12}
+\indexentry{SyTensor_t@{Sy\-Tensor\_\-t}!randomize@{randomize}}{13}
+\indexentry{randomize@{randomize}!SyTensor_t@{Sy\-Tensor\_\-t}}{13}
 \indexentry{SyTensor_t@{Sy\-Tensor\_\-t}!reshape@{reshape}}{13}
 \indexentry{reshape@{reshape}!SyTensor_t@{Sy\-Tensor\_\-t}}{13}
 \indexentry{SyTensor_t@{Sy\-Tensor\_\-t}!reshape@{reshape}}{13}

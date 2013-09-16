@@ -4,6 +4,12 @@ LIB := ../src/
 OBJ := $(LIB)qnum.o $(LIB)bond.o $(LIB)block.o $(LIB)myLapack.o $(LIB)operate.o $(LIB)syTensor.o $(LIB)network.o $(LIB)matrix.o
 LINK := -mkl=parallel
 
+asd.e: ascend.cpp $(OBJ)
+	cd $(SRC); make all
+	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
+rspf.e: reshapeF.cpp
+	cd $(SRC); make all
+	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
 mat.e: mat.cpp
 	cd $(SRC); make all
 	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
@@ -17,9 +23,6 @@ asdnet.e: ascend_net.cpp $(OBJ)
 	cd $(SRC); make all
 	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
 init.e: init_H.cpp $(OBJ)
-	cd $(SRC); make all
-	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
-asd.e: ascend.cpp $(OBJ)
 	cd $(SRC); make all
 	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
 rasd.e: rawAscend.cpp $(OBJ)

@@ -430,17 +430,22 @@ SyTensor_t Network_t::merge(Node_t* nd){
 			return lftT * rhtT;
 		}
 		else{
+			(nd->right->T)->addLabel(nd->right->labels);
 			return lftT * *(nd->right->T);
 		}
 	}
-	else
+	else{
 		if(nd->right->T == NULL){
 			SyTensor_t rhtT = merge(nd->right);
+			(nd->left->T)->addLabel(nd->left->labels);
 			return *(nd->left->T) * rhtT;
 		}
 		else{
+			(nd->left->T)->addLabel(nd->left->labels);
+			(nd->right->T)->addLabel(nd->right->labels);
 			return *(nd->left->T) * *(nd->right->T);
 		}
+	}
 }
 
 Network_t::~Network_t(){

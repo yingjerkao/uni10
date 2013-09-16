@@ -194,7 +194,10 @@ class SyTensor_t{
 		void randomize();
 
 		void setName(const string& _name);
+		int64_t getElemNum(){return elemNum;};
 
+		void reshapeF(vector<int>& newLabels, int rowBondNum);
+		void reshapeF(int* newLabels, int rowBondNum);
 		void check();
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
 		friend SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb);
@@ -206,7 +209,7 @@ class SyTensor_t{
 		void operator*= (double a);
 		Matrix_t getBlock(Qnum_t qnum, bool diag = false);
 		void putBlock(const Qnum_t& qnum, Matrix_t& mat);
-		friend void printRawElem(const SyTensor_t& SyT);
+		friend void printRawElem(const SyTensor_t& SyT, const string& fname="");
 		friend class Node_t;
 		friend class Network_t;
 		void orthoRand();

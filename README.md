@@ -1,4 +1,0 @@
-TensorLib
-=========
-
-Tensor Library

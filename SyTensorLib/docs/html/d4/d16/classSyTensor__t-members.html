@@ -27,6 +27,7 @@
   <tr bgcolor="#f0f0f0"><td><b>eye</b>() (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>eye</b>(const Qnum_t &amp;qnum) (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>getBlock</b>(Qnum_t qnum, bool diag=false) (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>getElemNum</b>() (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td><code> [inline]</code></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>Network_t</b> (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td><code> [friend]</code></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>Node_t</b> (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td><code> [friend]</code></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>operator *</b> (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td><code> [friend]</code></td></tr>
@@ -46,6 +47,8 @@
   <tr class="memlist"><td><a class="el" href="../../d1/d9f/classSyTensor__t.html#6b4ec04e9f0f708e7bc57a37c15a1cef">randomize</a>()</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="../../d1/d9f/classSyTensor__t.html#97069a4b531db9c3fa9bd943b8a4fcf7">reshape</a>(vector&lt; int &gt; &amp;newLabels, int rowBondNum)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="../../d1/d9f/classSyTensor__t.html#2a024ef509402125d99b80290e8b09e3">reshape</a>(int *newLabels, int rowBondNum)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>reshapeF</b>(vector&lt; int &gt; &amp;newLabels, int rowBondNum) (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
+  <tr bgcolor="#f0f0f0"><td><b>reshapeF</b>(int *newLabels, int rowBondNum) (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="../../d1/d9f/classSyTensor__t.html#dfee275ff906680a7e9565bb951ff577">save</a>(const string &amp;fname)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>setName</b>(const string &amp;_name) (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="../../d1/d9f/classSyTensor__t.html#89c494977034fcf3f754881fcbea7f7f">SyTensor_t</a>()</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
@@ -56,7 +59,7 @@
   <tr class="memlist"><td><a class="el" href="../../d1/d9f/classSyTensor__t.html#f78aebbd917afa2c1056f69e4db6722e">SyTensor_t</a>(const SyTensor_t &amp;SyT)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="../../d1/d9f/classSyTensor__t.html#974656ad60918fb50e8b8f5e32b40fd6">transpose</a>()</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
   <tr bgcolor="#f0f0f0"><td><b>~SyTensor_t</b>() (defined in <a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a>)</td><td><a class="el" href="../../d1/d9f/classSyTensor__t.html">SyTensor_t</a></td><td></td></tr>
-</table><hr size="1"><address style="align: right;"><small>Generated on Thu Sep 5 23:20:33 2013 for SYMMETRY_TENSOR by&nbsp;
+</table><hr size="1"><address style="align: right;"><small>Generated on Fri Sep 13 13:39:54 2013 for SYMMETRY_TENSOR by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="../../doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

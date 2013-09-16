@@ -80,7 +80,7 @@
   \indexspace
 
   \item {randomize}
-    \subitem {Sy\-Tensor\_\-t}, 12
+    \subitem {Sy\-Tensor\_\-t}, 13
   \item {reshape}
     \subitem {Sy\-Tensor\_\-t}, 13
 
@@ -101,7 +101,7 @@
     \subitem {at}, 12
     \subitem {operator=}, 12
     \subitem {qnums}, 12
-    \subitem {randomize}, 12
+    \subitem {randomize}, 13
     \subitem {reshape}, 13
     \subitem {save}, 14
     \subitem {SyTensor\_\-t}, 9--11

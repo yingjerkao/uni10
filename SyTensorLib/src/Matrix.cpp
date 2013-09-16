@@ -9,11 +9,11 @@ ostream& operator<< (ostream& os, const Matrix_t& m){
 		for(int j = 0; j < m.Cnum; j++)
 			if(m.diag)
 				if(i == j)
-					os << setw(7) << setprecision(3) << m.elem[i];
+					os << setw(7) << fixed << setprecision(3) << m.elem[i];
 				else
-					os << setw(7) << setprecision(3) << 0.0;
+					os << setw(7) << fixed << setprecision(3) << 0.0;
 			else
-				os << setw(7) << setprecision(3) << m.elem[i * m.Cnum + j];
+				os << setw(7) << fixed << setprecision(3) << m.elem[i * m.Cnum + j];
 		os << endl << endl;
 	}
 	return os;
@@ -60,11 +60,7 @@ int Matrix_t::col(){
 	return Cnum;
 }
 
-double* Matrix_t::getElem(){
-	return elem;
-}
-
-Matrix_t operator* (Matrix_t& Ma, Matrix_t& Mb){
+Matrix_t operator* (const Matrix_t& Ma, const Matrix_t& Mb){
 	assert(Ma.Cnum == Mb.Rnum);
 	if((!Ma.diag) && (!Mb.diag)){
 		Matrix_t Mc(Ma.Rnum, Mb.Cnum);	
@@ -93,7 +89,7 @@ Matrix_t operator* (Matrix_t& Ma, Matrix_t& Mb){
 	}
 }
 
-void Matrix_t::operator*= (Matrix_t& Mb){
+void Matrix_t::operator*= (const Matrix_t& Mb){
 	*this = *this * Mb;
 }
 
@@ -146,4 +142,16 @@ Matrix_t operator+(const Matrix_t& Ma, const Matrix_t& Mb){
 
 void Matrix_t::operator+= (const Matrix_t& Mb){
 	vecAdd(Mb.elem, elem, elemNum);
+}
+
+void Matrix_t::transpose(){
+	if(!diag){
+		double* oldElem = (double*)malloc(elemNum * sizeof(double));
+		memcpy(oldElem, elem, elemNum * sizeof(double));
+		myTranspose(oldElem, Rnum, Cnum, elem);
+		free(oldElem);
+	}
+	int tmp = Rnum;
+	Rnum = Cnum;
+	Cnum = tmp;
 }

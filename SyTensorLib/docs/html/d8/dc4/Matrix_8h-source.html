@@ -33,17 +33,17 @@
 <a name="l00015"></a>00015                 Matrix_t(<span class="keywordtype">int</span> _Rnum, <span class="keywordtype">int</span> _Cnum, <span class="keywordtype">double</span>* _elem, <span class="keywordtype">bool</span> _diag=<span class="keyword">false</span>);
 <a name="l00016"></a>00016                 Matrix_t(<span class="keyword">const</span> Matrix_t&amp; _m);
 <a name="l00017"></a>00017                 ~Matrix_t();
-<a name="l00018"></a>00018                 <span class="keywordtype">double</span>* getElem();
-<a name="l00019"></a>00019                 <span class="keywordtype">int</span> row();
-<a name="l00020"></a>00020                 <span class="keywordtype">int</span> col();
-<a name="l00021"></a>00021                 <span class="keywordtype">bool</span> isDiag(){<span class="keywordflow">return</span> diag;};
-<a name="l00022"></a>00022                 Matrix_t&amp; operator=(<span class="keyword">const</span> Matrix_t&amp; _m);
-<a name="l00023"></a>00023                 <span class="keyword">friend</span> Matrix_t operator* (Matrix_t&amp; Ma, Matrix_t&amp; Mb);
-<a name="l00024"></a>00024                 <span class="keywordtype">void</span> operator*= (Matrix_t&amp; Mb);
-<a name="l00025"></a>00025                 <span class="keyword">friend</span> ostream&amp; operator&lt;&lt; (ostream&amp; os, <span class="keyword">const</span> Matrix_t&amp; b);
-<a name="l00026"></a>00026                 vector&lt;Matrix_t&gt; diagonalize();
-<a name="l00027"></a>00027                 vector&lt;Matrix_t&gt; svd();
-<a name="l00028"></a>00028                 <span class="keywordtype">void</span> orthoRand();
+<a name="l00018"></a>00018                 <span class="keywordtype">int</span> row();
+<a name="l00019"></a>00019                 <span class="keywordtype">int</span> col();
+<a name="l00020"></a>00020                 <span class="keywordtype">bool</span> isDiag(){<span class="keywordflow">return</span> diag;};
+<a name="l00021"></a>00021                 Matrix_t&amp; operator=(<span class="keyword">const</span> Matrix_t&amp; _m);
+<a name="l00022"></a>00022                 <span class="keyword">friend</span> Matrix_t operator* (<span class="keyword">const</span> Matrix_t&amp; Ma, <span class="keyword">const</span> Matrix_t&amp; Mb);
+<a name="l00023"></a>00023                 <span class="keywordtype">void</span> operator*= (<span class="keyword">const</span> Matrix_t&amp; Mb);
+<a name="l00024"></a>00024                 <span class="keyword">friend</span> ostream&amp; operator&lt;&lt; (ostream&amp; os, <span class="keyword">const</span> Matrix_t&amp; b);
+<a name="l00025"></a>00025                 vector&lt;Matrix_t&gt; diagonalize();
+<a name="l00026"></a>00026                 vector&lt;Matrix_t&gt; svd();
+<a name="l00027"></a>00027                 <span class="keywordtype">void</span> orthoRand();
+<a name="l00028"></a>00028                 <span class="keywordtype">void</span> transpose();
 <a name="l00029"></a>00029                 <span class="keyword">friend</span> Matrix_t operator*(<span class="keyword">const</span> Matrix_t&amp; Ma, <span class="keywordtype">double</span> a);
 <a name="l00030"></a>00030                 <span class="keyword">friend</span> Matrix_t operator*(<span class="keywordtype">double</span> a, <span class="keyword">const</span> Matrix_t&amp; Ma){<span class="keywordflow">return</span> Ma * a;};
 <a name="l00031"></a>00031                 <span class="keywordtype">void</span> operator*= (<span class="keywordtype">double</span> a);
@@ -56,7 +56,7 @@
 <a name="l00038"></a>00038                 <span class="keywordtype">int</span> elemNum;
 <a name="l00039"></a>00039                 <span class="keywordtype">bool</span> diag;
 <a name="l00040"></a>00040 };
-</pre></div><hr size="1"><address style="align: right;"><small>Generated on Thu Sep 5 23:20:32 2013 for SYMMETRY_TENSOR by&nbsp;
+</pre></div><hr size="1"><address style="align: right;"><small>Generated on Fri Sep 13 13:39:53 2013 for SYMMETRY_TENSOR by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="../../doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

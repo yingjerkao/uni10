@@ -37,7 +37,6 @@ int main(){
 	cout<< H0;
 
 
-
 	//----------
 	Matrix_t mat(4, 4, H_elem);	
 	cout << mat;
@@ -54,6 +53,10 @@ int main(){
 	Matrix_t Msvd(4, 5);
 	Msvd.orthoRand();
 	cout << Msvd;
+	cout << "===== Transpose =====\n";
+	Msvd.transpose();
+	cout << Msvd;
+	cout << "=====================\n";
 	vector<Matrix_t> outs2 = Msvd.svd();
 	cout << outs2[0];
 	cout << outs2[1];
