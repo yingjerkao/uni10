@@ -33,6 +33,7 @@ network.o: Network.cpp Network.h
 	icpc -c $< -o $@
 
 libtensor.a: $(OBJ)
+	mkdir -p ../lib
 	ar q ../lib/$@ $^
 clean:
 	rm -f *.o *.e
