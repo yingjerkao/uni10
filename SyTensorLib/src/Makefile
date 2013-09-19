@@ -1,14 +1,19 @@
 OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o network.o matrix.o
+OBJF := qnumF.o bond.o block.o myLapack.o operate.o syTensor.o network.o matrix.o
 LINK := -mkl=parallel
 
-all: $(OBJ) libtensor.a
+all: $(OBJF) libtensorF.a
+
+#all: $(OBJ) libtensor.a
 
 doc:
 	doxygen Doxyfile
 	cd ../docs/latex/; make pdf
 
-
 qnum.o: Qnum.cpp Qnum.h
+	icpc -c $< -o $@
+
+qnumF.o: QnumF.cpp QnumF.h
 	icpc -c $< -o $@
 
 bond.o: Bond.cpp Bond.h
@@ -32,7 +37,11 @@ matrix.o: Matrix.cpp Matrix.h
 network.o: Network.cpp Network.h
 	icpc -c $< -o $@
 
+libtensorF.a: $(OBJF)
+	ar q ../lib/$@ $^
+
 libtensor.a: $(OBJ)
 	ar q ../lib/$@ $^
+
 clean:
 	rm -f *.o *.e

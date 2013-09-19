@@ -2,7 +2,8 @@
 #include <iomanip>
 #include <assert.h>
 #include <stdint.h>
-#include "Qnum.h"
+#include "QnumF.h"
+
 using namespace std;
 class SyTensor_t;
 class Block_t {
@@ -16,8 +17,8 @@ class Block_t {
 		~Block_t(){
 			//cout<<"Destructing Block...\n";
 		};
-		int row();
-		int col();
+		int row()const;
+		int col()const;
 		friend class SyTensor_t;
 		friend ostream& operator<< (ostream& os, const Block_t& b);
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);

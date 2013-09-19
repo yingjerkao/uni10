@@ -8,10 +8,10 @@ ostream& operator<< (ostream& os, const Block_t& b){
 	}
 	return os;
 }
-int Block_t::row(){
+int Block_t::row()const{
 	return Rnum;
 }
-int Block_t::col(){
+int Block_t::col()const{
 	return Cnum;
 }
 bool operator== (const Block_t& b1, const Block_t& b2){

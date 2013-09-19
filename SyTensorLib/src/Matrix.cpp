@@ -52,11 +52,11 @@ Matrix_t::~Matrix_t(){
 	free(elem);
 }
 
-int Matrix_t::row(){
+int Matrix_t::row()const{
 	return Rnum;
 }
 
-int Matrix_t::col(){
+int Matrix_t::col()const{
 	return Cnum;
 }
 

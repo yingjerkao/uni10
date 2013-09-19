@@ -28,6 +28,10 @@ const int INIT = 1;		      /**< A flag for initialization */
 const int HAVELABEL = 2;		/**< A flag for having labels added */
 const int HAVEELEM = 4;		  /**< A flag for having element assigned */
 
+typedef struct{
+	int b1; 
+	int b2; 
+}_Swap;
 
 /**
  * @brief Class of the symmetry tensor.
@@ -194,10 +198,8 @@ class SyTensor_t{
 		void randomize();
 
 		void setName(const string& _name);
-		int64_t getElemNum(){return elemNum;};
+		int64_t getElemNum()const{return elemNum;};
 
-		void reshapeF(vector<int>& newLabels, int rowBondNum);
-		void reshapeF(int* newLabels, int rowBondNum);
 		void check();
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
 		friend SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb);
@@ -218,6 +220,8 @@ class SyTensor_t{
 		void eye(const Qnum_t& qnum);
 		void bzero(const Qnum_t& qnum);
 		void bzero();
+		vector<bool> addSwap(vector<_Swap>swaps);
+		void addGate(vector<_Swap>signs);
 	private:
 		string name;
 		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
@@ -227,10 +231,10 @@ class SyTensor_t{
 		DOUBLE *elem;		//Array of elements
 		int RBondNum;	//Row bond number
 		int64_t elemNum;
-		vector<Block_t*> RQidx2Blk;
+		vector<Block_t*> RQidx2Blk;	//Qidx to the Block
 		vector<bool> Qidx;
-		vector<int> RQidx2Off;
-		vector<int> CQidx2Off;
+		vector<int> RQidx2Off;	//the row offset starts from the block origin of a qnum
+		vector<int> CQidx2Off;	//the col offset starts from the block origin of a qnum
 		static int COUNTER;
 		static int64_t ELEMNUM;
 		static int64_t MAXELEMNUM;

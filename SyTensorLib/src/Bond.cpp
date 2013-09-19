@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 using namespace std;
-#include "Qnum.h"
+#include "QnumF.h"
 #include "Bond.h"
 
 Bond_t::Bond_t(bondType _type, vector<Qnum_t>& qnums) : type(_type){

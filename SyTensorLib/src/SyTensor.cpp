@@ -206,6 +206,56 @@ void SyTensor_t::addLabel(vector<int>& newLabels){
 	status |= HAVELABEL;
 }
 
+vector<_Swap> _recSwap(int* _ord, int n){	//Given the reshape order out to in. 
+	int* ord = (int*)malloc(sizeof(int) * n);
+	memcpy(ord, _ord, sizeof(int) * n);
+	vector<_Swap> swaps;
+	_Swap sg; 
+	for(int i = 0; i < n - 1; i++)
+		for(int j = 0; j < n - i - 1; j++)
+			if(ord[j] > ord[j + 1]){
+				sg.b1 = ord[j + 1]; 
+				sg.b2 = ord[j];
+				ord[j] = sg.b1;
+				ord[j + 1] = sg.b2;
+				swaps.push_back(sg);
+			}
+	free(ord);
+	return swaps;
+}
+
+vector<bool>SyTensor_t::addSwap(vector<_Swap>swaps){
+	vector<bool> signs(Qidx.size(), 0);
+	int Qoff = 0;	//for SyTout
+	int bend;
+	int bondNum = bonds.size();
+	vector<int> Qidxs(bondNum, 0);
+	while(1){
+		if(Qidx[Qoff]){
+			int sign = 0;
+			for(int i = 0; i < swaps.size(); i++)
+				sign ^= bonds[swaps[i].b1].Qnums[Qidxs[swaps[i].b1]].getPrtF() & bonds[swaps[i].b2].Qnums[Qidxs[swaps[i].b2]].getPrtF();
+			signs[Qoff] = sign;
+		}
+		for(bend = bondNum - 1; bend >= 0; bend--){
+			Qidxs[bend]++;
+			if(Qidxs[bend] < bonds[bend].Qnums.size())
+				break;
+			else
+				Qidxs[bend] = 0;
+		}
+		Qoff++;
+		if(bend < 0)
+			break;
+	}
+	return signs;
+}
+
+void SyTensor_t::addGate(vector<_Swap> swaps){
+	vector<bool> signs = addSwap(swaps);
+	
+}
+
 void SyTensor_t::reshape(int* newLabels, int rowBondNum){
 	assert(status & INIT);
 	vector<int> labels(newLabels, newLabels + bonds.size());
@@ -287,6 +337,13 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 			vector<int> Qidxs(bondNum, 0); 
 			vector<int> idxs;
 			vector<int> Din_acc(bondNum, 1);	//Degeneracy acc
+
+			int sign = 1;
+			//For Fermionic system
+			vector<_Swap> swaps = _recSwap(rsp_outin, bondNum);
+			vector<bool>signs = addSwap(swaps);
+			//End Fermionic system
+
 			while(1){
 				if(SyTout.Qidx[Qoff]){
 					Qoff_in = 0;
@@ -310,178 +367,15 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 					cnt = 0;
 					cnt_in = 0;
 					idxs.assign(bondNum, 0);
+
+					//For Fermionic system
+					sign = 1;
+					if(signs[Qoff_in])
+						sign = -1;
+					//End Fermionic system
+
 					while(1){
-						SyTout.elem[boff + (cnt / DcolNum) * BcolNum + cnt % DcolNum] = elem[boff_in + (cnt_in / DcolNum_in) * BcolNum_in + cnt_in % DcolNum_in];
-						cnt++;
-						for(bend = bondNum - 1; bend >= 0; bend--){
-							idxs[bend]++;
-							if(idxs[bend] < Dupb[bend]){
-								cnt_in += Din_acc[rsp_outin[bend]];
-								break;
-							}
-							else{
-								cnt_in -= Din_acc[rsp_outin[bend]] * (idxs[bend] - 1);
-								idxs[bend] = 0;
-							}
-						}
-						if(bend < 0)
-							break;
-					}
-				}
-				for(bend = bondNum - 1; bend >= 0; bend--){
-					Qidxs[bend]++;
-					if(Qidxs[bend] < SyTout.bonds[bend].Qnums.size())
-						break;
-					else
-						Qidxs[bend] = 0;
-				}
-				Qoff++;
-				if(bend < 0)
-					break;
-			}
-			SyTout.status |= HAVEELEM;
-		}
-		*this = SyTout;
-		this->addLabel(newLabels);
-	}
-}
-
-void SyTensor_t::reshapeF(int* newLabels, int rowBondNum){
-	assert(status & INIT);
-	vector<int> labels(newLabels, newLabels + bonds.size());
-	this->reshapeF(labels, rowBondNum);
-
-}
-
-typedef struct{
-	int b1; 
-	int b2; 
-}swapGate;
-
-void addSwap(int* ord, int n, vector<swapGate>& swaps){
-	swapGate sg; 
-	for(int i = 0; i < n - 1; i++)
-		for(int j = 0; j < n - i - 1; j++)
-			if(ord[j] > ord[j + 1]){
-				sg.b1 = ord[j + 1]; 
-				sg.b2 = ord[j];
-				ord[j] = sg.b1;
-				ord[j + 1] = sg.b2;
-				swaps.push_back(sg);
-			}   
-}
-
-
-void SyTensor_t::reshapeF(vector<int>& newLabels, int rowBondNum){
-	assert(status & INIT);
-	assert(status & HAVELABEL);
-	assert(labels.size() == newLabels.size());
-	int bondNum = bonds.size();
-	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of SyTout is the index "1" of SyTin, opposite to the order in TensorLib, to be used in swap gate
-	int rsp_inout[bondNum];	//rsp_inout[2] = 1 means the index "2" of SyTin is the index "1" of SyTout, the same as the order in TensorLib
-	int cnt = 0;
-	for(int i = 0; i < bondNum; i++)
-		for(int j = 0; j < bondNum; j++)
-			if(labels[i] == newLabels[j]){
-				rsp_outin[j] = i;	
-				rsp_inout[i] = j;	
-				cnt++;
-			}
-
-
-	cout << "out_in"<<endl;
-	for(int i = 0; i < bondNum; i++)
-		cout << rsp_outin[i]<< " ";
-
-
-	assert(cnt == newLabels.size());
-	bool inorder = true;
-	for(int i = 1; i < bondNum; i++)
-		if(((rsp_outin[i] + bondNum - i) % bondNum) != rsp_outin[0]){
-			inorder = false;
-			break;
-		}
-	if(inorder  && rsp_outin[0] == 0 && RBondNum == rowBondNum);	//do nothing
-	else if(inorder  && rsp_outin[0] != 0 && (bondNum - RBondNum) == rowBondNum){
-		this->transpose();
-		//printf("TRANSPOSE!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-	}
-	else{
-		vector<swapGate> swaps;
-		addSwap(rsp_outin, bondNum, swaps);
-
-		//printf("LALALALALALALAL\n");
-		vector<Bond_t> outBonds;
-		for(int b = 0; b < bonds.size(); b++)
-			outBonds.push_back(bonds[rsp_outin[b]]);
-		for(int b = 0; b < bonds.size(); b++){
-			if(b < rowBondNum){
-				if(outBonds[b].type == BD_COL)
-					for(int q = 0; q < outBonds[b].Qnums.size(); q++)
-						outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
-				outBonds[b].type = BD_ROW;
-			}
-			else{
-				if(outBonds[b].type == BD_ROW)
-					for(int q = 0; q < outBonds[b].Qnums.size(); q++)
-						outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
-				outBonds[b].type = BD_COL;
-			}
-		}
-		SyTensor_t SyTout(outBonds, name);
-		if(status & HAVEELEM){
-			int QcolNum = 1;
-			int QcolNum_in = 1;
-			for(int b = bondNum - 1; b >= 0; b--)
-				if(SyTout.bonds[b].type == BD_COL)
-					QcolNum *= SyTout.bonds[b].Qnums.size();
-				else
-					break;
-			for(int b = bondNum - 1; b >= 0; b--)
-				if(bonds[b].type == BD_COL)
-					QcolNum_in *= bonds[b].Qnums.size();
-				else
-					break;
-			
-			vector<int> Qin_acc(bondNum, 1); 
-			vector<int> Dupb(bondNum, 0);
-			for(int b = bondNum	- 1; b > 0; b--)
-				Qin_acc[b - 1] = Qin_acc[b] * bonds[b].Qnums.size();
-			int Qoff = 0;	//for SyTout
-			int Qoff_in;
-			int bend;
-			int BcolNum, BcolNum_in;
-			int DcolNum, DcolNum_in;
-			int boff = 0, boff_in = 0;
-			int cnt, cnt_in;
-			vector<int> Qidxs(bondNum, 0); 
-			vector<int> idxs;
-			vector<int> Din_acc(bondNum, 1);	//Degeneracy acc
-			while(1){
-				if(SyTout.Qidx[Qoff]){
-					Qoff_in = 0;
-					DcolNum = 1;
-					DcolNum_in = 1;
-					for(int b = 0; b < bondNum; b++){
-						Qoff_in += Qidxs[b] * Qin_acc[rsp_outin[b]];
-						Dupb[b] = SyTout.bonds[b].Qdegs[Qidxs[b]];
-						if(SyTout.bonds[b].type == BD_COL)
-							DcolNum *= SyTout.bonds[b].Qdegs[Qidxs[b]];
-						if(bonds[b].type == BD_COL)
-							DcolNum_in *= bonds[b].Qdegs[Qidxs[rsp_inout[b]]];
-					}
-					assert(Qidx[Qoff_in]);
-					for(int b = bondNum	- 1; b > 0; b--)
-						Din_acc[b - 1] = Din_acc[b] * bonds[b].Qdegs[Qidxs[rsp_inout[b]]];
-					BcolNum = (SyTout.RQidx2Blk[Qoff / QcolNum])->Cnum;
-					boff = (SyTout.RQidx2Blk[Qoff / QcolNum])->offset + SyTout.RQidx2Off[Qoff / QcolNum] * BcolNum + SyTout.CQidx2Off[Qoff % QcolNum];
-					BcolNum_in = (RQidx2Blk[Qoff_in / QcolNum_in])->Cnum;
-					boff_in = (RQidx2Blk[Qoff_in / QcolNum_in])->offset + RQidx2Off[Qoff_in / QcolNum_in] * BcolNum_in + CQidx2Off[Qoff_in % QcolNum_in];
-					cnt = 0;
-					cnt_in = 0;
-					idxs.assign(bondNum, 0);
-					while(1){
-						SyTout.elem[boff + (cnt / DcolNum) * BcolNum + cnt % DcolNum] = elem[boff_in + (cnt_in / DcolNum_in) * BcolNum_in + cnt_in % DcolNum_in];
+						SyTout.elem[boff + (cnt / DcolNum) * BcolNum + cnt % DcolNum] = sign * elem[boff_in + (cnt_in / DcolNum_in) * BcolNum_in + cnt_in % DcolNum_in];
 						cnt++;
 						for(bend = bondNum - 1; bend >= 0; bend--){
 							idxs[bend]++;
@@ -566,13 +460,18 @@ void SyTensor_t::transpose(){
 				it_out = SyTout.blocks.find(-(it_in->first));
 			else
 				it_out = SyTout.blocks.find((it_in->first));
+			int sign = 1;
+			//For Fermionic System
+			if((it_in->first).getPrtF() == 1)
+				sign = -1;
+			//For Fermionic System
 			Rnum = it_in->second.Rnum;
 			Cnum = it_in->second.Cnum;
 			elem_in = it_in->second.elem;
 			elem_out = it_out->second.elem;
 			for(int i = 0; i < Rnum; i++)
 				for(int j = 0; j < Cnum; j++)
-					elem_out[j * Rnum + i] = elem_in[i * Cnum + j];
+					elem_out[j * Rnum + i] = sign * elem_in[i * Cnum + j];
 		}   
 		SyTout.status |= HAVEELEM;
 	}

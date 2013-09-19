@@ -20,7 +20,7 @@ Qnum_t operator* (const Qnum_t& q1, const Qnum_t& q2){
 }
 
 ostream& operator<< (ostream& os, const Qnum_t& q){
-	os << "(U1 = " << setprecision(2) << q.U1 << ", P = " << setprecision(1) << q.prt << ")";
+	os << "(U1 = " << setprecision(2) << q.U1 << ", P = " << setprecision(1) << (int)q.prt << ")";
 	return os;
 }
 

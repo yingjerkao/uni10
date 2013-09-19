@@ -15,9 +15,9 @@ class Matrix_t {
 		Matrix_t(int _Rnum, int _Cnum, double* _elem, bool _diag=false);
 		Matrix_t(const Matrix_t& _m);
 		~Matrix_t();
-		int row();
-		int col();
-		bool isDiag(){return diag;};
+		int row()const;
+		int col()const;
+		bool isDiag()const{return diag;};
 		Matrix_t& operator=(const Matrix_t& _m);
 		friend Matrix_t operator* (const Matrix_t& Ma, const Matrix_t& Mb);
 		void operator*= (const Matrix_t& Mb);
