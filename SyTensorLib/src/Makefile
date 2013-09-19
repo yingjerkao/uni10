@@ -1,6 +1,6 @@
 OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o network.o matrix.o
 LINK := -mkl=parallel
-
+CC:=g++
 all: $(OBJ) libtensor.a
 
 doc:
@@ -9,31 +9,32 @@ doc:
 
 
 qnum.o: Qnum.cpp Qnum.h
-	icpc -c $< -o $@
+	$(CC) -c $< -o $@
 
 bond.o: Bond.cpp Bond.h
-	icpc -c $< -o $@
+	$(CC) -c $< -o $@
 
 block.o: Block.cpp Block.h
-	icpc -c $< -o $@
+	$(CC) -c $< -o $@
 
 myLapack.o: myLapack.cpp myLapack.h
-	icpc -c $< -mkl=parallel -o $@
+	$(CC) -c $< -mkl=parallel -o $@
 
 operate.o: operate.cpp
-	icpc -c $< -o $@
+	$(CC) -c $< -o $@
 
 syTensor.o: SyTensor.cpp SyTensor.h
-	icpc -c $< -o $@
+	$(CC) -c $< -o $@
 
 matrix.o: Matrix.cpp Matrix.h
-	icpc -c $< -o $@
+	$(CC) -c $< -o $@
 
 network.o: Network.cpp Network.h
-	icpc -c $< -o $@
+	$(CC) -c $< -o $@
 
 libtensor.a: $(OBJ)
 	[ -d ../lib ] || mkdir -p ../lib
 	ar q ../lib/$@ $^
+.PHONY : clean all doc
 clean:
 	rm -f *.o *.e

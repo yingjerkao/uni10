@@ -41,6 +41,6 @@ run.e: main.cpp $(OBJ)
 	cd $(SRC); make all
 	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
 
-
+.PHONY: clean 
 clean:
 	rm -f *.o *.e
