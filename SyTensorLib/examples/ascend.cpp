@@ -22,23 +22,17 @@ int main(){
 						   0, -1.0/4,  1.0/2,     0,
 						   0,  1.0/2, -1.0/4,     0,
 						   0,      0,      0, 1.0/4};
-	int label_H0[] = {2, 5, 3, 6};
-	SyTensor_t H0(bonds, label_H0, "H0");
+
+	SyTensor_t H0(bonds, "Ob");
 	H0.addRawElem(H_elem);
 
 	SyTensor_t U(bonds, "U");
 	U.orthoRand();
 	SyTensor_t UT = U;
 	UT.transpose();
-	int label_U[] = {4, 8, 5, 9};
-	U.addLabel(label_U);
-	int label_UT[] = {6, 9, 7, 10};
-	UT.addLabel(label_UT);
 	
 	bonds.clear();
 	vector<Qnum_t> qnums1;
-	//qnums1.push_back(q30);qnums1.push_back(q10);
-	//qnums1.push_back(q_10);qnums1.push_back(q_30);
 	qnums1.push_back(q30);qnums1.push_back(q10);qnums1.push_back(q10);qnums1.push_back(q10);
 	qnums1.push_back(q_10);qnums1.push_back(q_10);qnums1.push_back(q_10);qnums1.push_back(q_30);
 	Bond_t bdr1(BD_ROW, qnums1);
@@ -51,32 +45,71 @@ int main(){
 	W1.orthoRand();
 	SyTensor_t W1T = W1;
 	W1T.transpose();
-	int label_W1[] = {-1, 1, 2, 4};
-	W1.addLabel(label_W1);
-	int label_W1T[] = {1, 3, 7, -3};
-	W1T.addLabel(label_W1T);
 
 	SyTensor_t W2(bonds, "W2");
 	W2.orthoRand();
 	SyTensor_t W2T = W2;
 	W2T.transpose();
-	int label_W2[] = {-2, 8, 11, 12};
-	W2.addLabel(label_W2);
-	int label_W2T[] = {10, 11, 12, -4};
-	W2T.addLabel(label_W2T);
-	U.transpose();
-
+	SyTensor_t W2F = W2;
+	W2F.orthoRand();
 	
-	SyTensor_t H1 = W1T * W1;		
+	SyTensor_t H1;
+	// raw contractions
+	/*
+	int label_W1[] = {-1, 0, 1, 3};
+	W1.addLabel(label_W1);
+	int label_W1T[] = {0, 2, 6, -3};
+	W1T.addLabel(label_W1T);
+	int label_U[] = {3, 7, 4, 8};
+	U.addLabel(label_U);
+	int label_H0[] = {1, 4, 2, 5};
+	H0.addLabel(label_H0);
+	int label_UT[] = {5, 8, 6, 9};
+	UT.addLabel(label_UT);
+	int label_W2[] = {-2, 7, 10, 11};
+	W2.addLabel(label_W2);
+	int label_W2T[] = {9, 10, 11, -4};
+	W2T.addLabel(label_W2T);
+
+	H1 = W1T * W1;		
 	SyTensor_t tmp = UT * H0;
 	tmp *= U;
 	tmp *= W2;
 	tmp *= W2T;
 	H1 *= tmp;
+	*/
+	// END raw contraction
 	
+	// Network replaceWith()
+	Network_t net2("AscendL");
+	net2.replaceWith(0, &W1);
+	net2.replaceWith(1, &W1T);
+	net2.replaceWith(2, &U);
+	net2.replaceWith(3, &H0);
+	net2.replaceWith(4, &UT);
+	net2.replaceWith(5, &W2);
+	net2.replaceWith(6, &W2T);
+	H1 = net2.launch();
+	//  END replaceWith()
+	// Network Construct()
+	/*
+	vector<SyTensor_t*> tens;
+	tens.push_back(&W1);
+	tens.push_back(&W1T);
+	tens.push_back(&U);
+	tens.push_back(&H0);
+	tens.push_back(&UT);
+	tens.push_back(&W2);
+	tens.push_back(&W2T);
+	Network_t net3("AscendL", tens);
+	H1 = net3.launch();
+	*/
+	// END Network Construct()
 	int label_out[] = {-1, -2, -3, -4};
 	H1.reshape(label_out, 2);
 	cout<<H1;
 	printRawElem(H1);
+	//cout<<W1;
+
 	H0.check();
 }

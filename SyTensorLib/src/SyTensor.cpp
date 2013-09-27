@@ -226,7 +226,7 @@ vector<_Swap> _recSwap(int* _ord, int n){	//Given the reshape order out to in.
 
 vector<bool>SyTensor_t::addSwap(vector<_Swap>swaps){
 	vector<bool> signs(Qidx.size(), 0);
-	int Qoff = 0;	//for SyTout
+	int Qoff = 0;
 	int bend;
 	int bondNum = bonds.size();
 	vector<int> Qidxs(bondNum, 0);
@@ -252,17 +252,76 @@ vector<bool>SyTensor_t::addSwap(vector<_Swap>swaps){
 }
 
 void SyTensor_t::addGate(vector<_Swap> swaps){
-	vector<bool> signs = addSwap(swaps);
+	int Qoff = 0;
+	int bend;
+	int bondNum = bonds.size();
+	vector<int> Qidxs(bondNum, 0);
+	vector<int> Dupb(bondNum, 0);
+	vector<int> idxs;
+	int QcolNum = 1;
+	for(int b = bondNum - 1; b >= 0; b--)
+		if(bonds[b].type == BD_COL)
+			QcolNum *= bonds[b].Qnums.size();
+		else
+			break;
+	int DcolNum;
+	int BcolNum;
+	int boff;
+	int sign = 1;
+	int cnt;
+	while(1){
+		if(Qidx[Qoff]){
+			DcolNum = 1;
+			for(int b = 0; b < bondNum; b++){
+				Dupb[b] = bonds[b].Qdegs[Qidxs[b]];
+				if(bonds[b].type == BD_COL)
+					DcolNum *= bonds[b].Qdegs[Qidxs[b]];
+			}
+			BcolNum = (RQidx2Blk[Qoff / QcolNum])->Cnum;
+			boff = (RQidx2Blk[Qoff / QcolNum])->offset + RQidx2Off[Qoff / QcolNum] * BcolNum + CQidx2Off[Qoff % QcolNum];
+			idxs.assign(bondNum, 0);
+			cnt = 0;
+
+			int sign01 = 0;
+			for(int i = 0; i < swaps.size(); i++)
+				sign01 ^= bonds[swaps[i].b1].Qnums[Qidxs[swaps[i].b1]].getPrtF() & bonds[swaps[i].b2].Qnums[Qidxs[swaps[i].b2]].getPrtF();
+			sign = sign01 ? -1 : 1;
+
+			while(1){
+				elem[boff + (cnt / DcolNum) * BcolNum + cnt % DcolNum] *= sign;
+				for(bend = bondNum - 1; bend >= 0; bend--){
+					idxs[bend]++;
+					if(idxs[bend] < Dupb[bend])
+						break;
+					else
+						idxs[bend] = 0;
+				}
+				if(bend < 0)
+					break;
+				cnt++;
+			}
+		}   
+		for(bend = bondNum - 1; bend >= 0; bend--){
+			Qidxs[bend]++;
+			if(Qidxs[bend] < bonds[bend].Qnums.size())
+				break;
+			else
+				Qidxs[bend] = 0;
+		}
+		Qoff++;
+		if(bend < 0)
+			break;
+	}
 	
 }
 
-void SyTensor_t::reshape(int* newLabels, int rowBondNum){
+void SyTensor_t::reshape(int* newLabels, int rowBondNum, int fermion){
 	assert(status & INIT);
 	vector<int> labels(newLabels, newLabels + bonds.size());
-	this->reshape(labels, rowBondNum);
+	this->reshape(labels, rowBondNum, fermion);
 
 }
-void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
+void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum, int fermion){
 	assert(status & INIT);
 	assert(status & HAVELABEL);
 	assert(labels.size() == newLabels.size());
@@ -286,7 +345,7 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 		}
 	if(inorder  && rsp_outin[0] == 0 && RBondNum == rowBondNum);	//do nothing
 	else if(inorder  && rsp_outin[0] != 0 && (bondNum - RBondNum) == rowBondNum){
-		this->transpose();
+		this->transpose(fermion);
 		//printf("TRANSPOSE!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	}
 	else{
@@ -340,8 +399,7 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 
 			int sign = 1;
 			//For Fermionic system
-			vector<_Swap> swaps = _recSwap(rsp_outin, bondNum);
-			vector<bool>signs = addSwap(swaps);
+			vector<_Swap> swaps = _recSwap(rsp_inout, bondNum);
 			//End Fermionic system
 
 			while(1){
@@ -369,9 +427,12 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 					idxs.assign(bondNum, 0);
 
 					//For Fermionic system
-					sign = 1;
-					if(signs[Qoff_in])
-						sign = -1;
+					if(fermion){
+					int sign01 = 0;
+					for(int i = 0; i < swaps.size(); i++)
+						sign01 ^= bonds[swaps[i].b1].Qnums[Qidxs[swaps[i].b1]].getPrtF() & bonds[swaps[i].b2].Qnums[Qidxs[swaps[i].b2]].getPrtF();
+					sign = sign01 ? -1 : 1;
+					}
 					//End Fermionic system
 
 					while(1){
@@ -410,7 +471,7 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 	}
 }
 
-void SyTensor_t::transpose(){
+void SyTensor_t::transpose(int fermion){
 	assert(status & INIT);
 	int bondNum = bonds.size();
 	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of SyTout is the index "1" of SyTin, opposite to the order in TensorLib
@@ -462,8 +523,10 @@ void SyTensor_t::transpose(){
 				it_out = SyTout.blocks.find((it_in->first));
 			int sign = 1;
 			//For Fermionic System
+			if(fermion){
 			if((it_in->first).getPrtF() == 1)
 				sign = -1;
+			}
 			//For Fermionic System
 			Rnum = it_in->second.Rnum;
 			Cnum = it_in->second.Cnum;

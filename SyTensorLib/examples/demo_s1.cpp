@@ -5,7 +5,7 @@ using namespace std;
 #include "SyTensor.h"
 
 int main(){
-	Qnum_t q10(1, 0);
+	Qnum_t q10(1, 1);
 	Qnum_t q00(0, 0);
 	Qnum_t q_10(-1, 0);
 	vector<Bond_t> bonds;		
@@ -33,10 +33,20 @@ int main(){
 					 0, 0, 0, 0, 0, 1, 0, 0, 0,\
 					 0, 0, 0, 0, 0, 0, 0, 0, 1\
 					};
+	/*
+	double elem[] = {1, 0, 0, 0, 0, 0, 0, 0, 0,\
+					 0, 0, 0, 2, 0, 0, 0, 0, 0,\
+					 0, 0, 3, 0, 4, 0, 0, 0, 0,\
+					 0, 5, 0, 0, 0, 0, 0, 0, 0,\
+					 0, 0, 6, 0, 0, 0, 7, 0, 0,\
+					 0, 0, 0, 0, 0, 0, 0, 8, 0,\
+					 0, 0, 0, 0, 9, 0,10, 0, 0,\
+					 0, 0, 0, 0, 0,11, 0, 0, 0,\
+					 0, 0, 0, 0, 0, 0, 0, 0,12\
+					};
+	*/
 	SyT.addRawElem(elem);
 	SyTensor_t rSyT = SyT;
-	int label2_tmp[] = {-2, -3, -1, -4};
-	vector<int> labels2(label2_tmp, label2_tmp + sizeof(label2_tmp) / sizeof(int));
 	//rSyT.reshape(labels2, 2);
 	cout << SyT;		            
 	//cout<< rSyT;

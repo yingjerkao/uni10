@@ -181,34 +181,40 @@ int64_t Node_t::cal_elemNum(vector<Bond_t>& _bonds){
 	return _elemNum;
 }
 
+/*
 Network_t::Network_t(): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 }
-
+*/
+/*
 Network_t::Network_t(vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	for(int i = 0; i < tens.size(); i++)
 		add(tens[i]);
 }
+*/
 
 Network_t::Network_t(const string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	fromfile(fname);
 	int Tnum = label_arr.size() - 1;
 	order.assign(Tnum, 0);
 	leafs.assign(Tnum, NULL);
+	tensors.assign(Tnum, NULL);
 	for(int i = 0; i < order.size(); i++)
 		order[i] = i;
 }
 
-Network_t::Network_t(const string& fname, vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
+Network_t::Network_t(const string& fname, const vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	fromfile(fname);
 	assert((label_arr.size() - 1) == tens.size());
 	for(int i = 0; i < tens.size(); i++){
 		if(tens[i]->name.length() > 0)
 			assert(tens[i]->name == names[i]);
-		else
-			tens[i]->setName(names[i]);
 		assert(tens[i]->RBondNum == Rnums[i]);
-		tens[i]->addLabel(label_arr[i]);
-		Node_t* ndp = new Node_t(tens[i]);
+
+		SyTensor_t* ten = new SyTensor_t(*(tens[i]));
+		ten->setName(names[i]);
+		ten->addLabel(label_arr[i]);
+		tensors.push_back(ten);
+		Node_t* ndp = new Node_t(ten);
 		order.push_back(leafs.size());
 		leafs.push_back(ndp);
 	}
@@ -264,7 +270,7 @@ void Network_t::fromfile(const string& fname){
 	infile.close();
 }
 
-
+/*
 Node_t* Network_t::add(SyTensor_t* SyT){
 	assert(label_arr.size() == 0);
 	Node_t* ndp = new Node_t(SyT);
@@ -272,6 +278,7 @@ Node_t* Network_t::add(SyTensor_t* SyT){
 	leafs.push_back(ndp);
 	return ndp;
 }
+*/
 
 Node_t* Network_t::replaceWith(int idx, SyTensor_t* SyT, bool force){
 	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
@@ -279,19 +286,24 @@ Node_t* Network_t::replaceWith(int idx, SyTensor_t* SyT, bool force){
 		destruct();
 	if(SyT->name.length() > 0)
 		assert(SyT->name == names[idx]);
-	else
-		SyT->name = names[idx]; //setName(names[idx]);
 	assert(SyT->RBondNum == Rnums[idx]);
-	SyT->addLabel(label_arr[idx]);
+
 	if(leafs[idx] != NULL){
 		if(force){
 			leafs[idx]->T = SyT;
 			return leafs[idx];
 		}
-		else
+		else{
+			delete tensors[idx];
 			delete leafs[idx];
+		}
 	}
-	Node_t* ndp = new Node_t(SyT);
+
+	SyTensor_t* ten = new SyTensor_t(*SyT);
+	ten->setName(names[idx]);
+	ten->addLabel(label_arr[idx]);
+	tensors[idx] = ten;
+	Node_t* ndp = new Node_t(ten);
 	leafs[idx] = ndp;
 	return ndp;
 }
@@ -453,6 +465,8 @@ Network_t::~Network_t(){
 		destruct();
 	for(int i = 0; i < leafs.size(); i++)
 		delete leafs[i];
+	for(int i = 0; i < tensors.size(); i++)
+		delete tensors[i];
 }
 
 void Network_t::preprint(ostream& os, Node_t* nd, int layer){
