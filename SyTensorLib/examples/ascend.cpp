@@ -3,15 +3,25 @@
 #include <map>
 using namespace std;
 #include "TensorLib.h"
+//#define FERMION 1
 
 int main(){
 	Qnum_t q10(1, 0);
 	Qnum_t q_10(-1, 0);
 	Qnum_t q30(3, 0);
-	Qnum_t q_30(-3, 0);
+	
+#ifdef FERMION
+	Qnum_t q_11(-1, 0, 1);
+	Qnum_t q11(1, 0, 1);
+	Qnum_t q_31(-3, 0, 1);
+#else
+	Qnum_t q_11(-1, 1);
+	Qnum_t q11(1, 1);
+	Qnum_t q_31(-3, 1);
+#endif
 	vector<Bond_t> bonds;
 	vector<Qnum_t> qnums;
-	qnums.push_back(q10);qnums.push_back(q_10);
+	qnums.push_back(q10);qnums.push_back(q_11);
 	Bond_t bdr(BD_ROW, qnums);
 	Bond_t bdc(BD_COL, qnums);
 	bonds.push_back(bdr);
@@ -33,8 +43,8 @@ int main(){
 	
 	bonds.clear();
 	vector<Qnum_t> qnums1;
-	qnums1.push_back(q30);qnums1.push_back(q10);qnums1.push_back(q10);qnums1.push_back(q10);
-	qnums1.push_back(q_10);qnums1.push_back(q_10);qnums1.push_back(q_10);qnums1.push_back(q_30);
+	qnums1.push_back(q30); qnums1.push_back(q11); qnums1.push_back(q11); qnums1.push_back(q11);
+	qnums1.push_back(q_10); qnums1.push_back(q_10); qnums1.push_back(q_10); qnums1.push_back(q_31);
 	Bond_t bdr1(BD_ROW, qnums1);
 	bonds.clear();
 	bonds.push_back(bdr1);
@@ -71,28 +81,31 @@ int main(){
 	int label_W2T[] = {9, 10, 11, -4};
 	W2T.addLabel(label_W2T);
 
-	H1 = W1T * W1;		
-	SyTensor_t tmp = UT * H0;
-	tmp *= U;
-	tmp *= W2;
-	tmp *= W2T;
-	H1 *= tmp;
+	H1 = W1 * W2;		
+	H1 *= U;
+	H1 *= H0;
+	H1 *= UT;
+	H1 *= W1T;
+	H1 *= W2T;
 	*/
+
 	// END raw contraction
 	
 	// Network replaceWith()
+	/*
 	Network_t net2("AscendL");
 	net2.replaceWith(0, &W1);
-	net2.replaceWith(1, &W1T);
+	net2.replaceWith(1, &W2);
 	net2.replaceWith(2, &U);
 	net2.replaceWith(3, &H0);
 	net2.replaceWith(4, &UT);
-	net2.replaceWith(5, &W2);
+	net2.replaceWith(5, &W1T);
 	net2.replaceWith(6, &W2T);
 	H1 = net2.launch();
+	cout<<net2;
+	*/
 	//  END replaceWith()
 	// Network Construct()
-	/*
 	vector<SyTensor_t*> tens;
 	tens.push_back(&W1);
 	tens.push_back(&W1T);
@@ -103,13 +116,14 @@ int main(){
 	tens.push_back(&W2T);
 	Network_t net3("AscendL", tens);
 	H1 = net3.launch();
-	*/
 	// END Network Construct()
+	//int label_out[] = {-1, -2, -3, -4};
 	int label_out[] = {-1, -2, -3, -4};
 	H1.reshape(label_out, 2);
 	cout<<H1;
-	printRawElem(H1);
-	//cout<<W1;
+	//printRawElem(H1);
+	//cout<<W1T;
 
 	H0.check();
 }
+

@@ -56,6 +56,8 @@ class Network_t {
 		vector< int > Rnums;
 		vector<Node_t*> leafs;
 		vector<SyTensor_t*> tensors;
+		vector< vector<_Swap> > swaps_arr;
+		vector<bool> swapflags;
 		vector<int> order;
 		Node_t* root;
 		bool load;	//whether or not the network is ready for contraction, construct=> load=true, destruct=>load=false
@@ -69,4 +71,5 @@ class Network_t {
 		SyTensor_t merge(Node_t* nd);
 		void clean(Node_t* nd);
 		void fromfile(const string& fname);
+		void recSwap();
 };

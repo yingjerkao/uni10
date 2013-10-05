@@ -44,8 +44,8 @@ int main(){
 	//H.addRawElem(H_elem);
 	H.orthoRand();
 	int labels[] = {-1, -2, -3, -4};
-	int rsp_labels[] = {-4, -2, -3, -1};
-	int ord[] = {3, 1, 2, 0};
+	int rsp_labels[] = {-4, -1, -2, -3};
+	int ord[] = {3, 0, 1, 2};
 	vector<_Swap> swaps = _recSwap(ord, 4);
 	SyTensor_t H1 = H;
 	H.addLabel(labels);
@@ -53,6 +53,8 @@ int main(){
 	H.reshape(rsp_labels, 1);
 	H1.addGate(swaps);
 	H1.reshape(rsp_labels, 1, 0);
+	H.setName("H");
+	H1.setName("H1");
 	//cout << H;
 	cout << H1;
 	H.save("H_out");

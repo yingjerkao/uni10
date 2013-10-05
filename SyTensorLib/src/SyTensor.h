@@ -223,13 +223,13 @@ class SyTensor_t{
 		void bzero();
 		vector<bool> addSwap(vector<_Swap>swaps);
 		void addGate(vector<_Swap>signs);
+		DOUBLE *elem;		//Array of elements
 	private:
 		string name;
 		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
 		vector<Bond_t> bonds;
 		map<Qnum_t, Block_t> blocks;
 		vector<int>labels;
-		DOUBLE *elem;		//Array of elements
 		int RBondNum;	//Row bond number
 		int64_t elemNum;
 		vector<Block_t*> RQidx2Blk;	//Qidx to the Block

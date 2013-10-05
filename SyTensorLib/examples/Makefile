@@ -7,6 +7,9 @@ LINK := -mkl=parallel
 asd.e: ascend.cpp $(OBJ)
 	cd $(SRC); make all
 	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
+netF.e: netF.cpp $(OBJ)
+	cd $(SRC); make all
+	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
 conF.e: contractF.cpp ../src/SyTensor.cpp
 	cd $(SRC); make all
 	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)

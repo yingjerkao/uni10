@@ -312,7 +312,6 @@ void SyTensor_t::addGate(vector<_Swap> swaps){
 		if(bend < 0)
 			break;
 	}
-	
 }
 
 void SyTensor_t::reshape(int* newLabels, int rowBondNum, int fermion){
@@ -399,7 +398,8 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum, int fermion){
 
 			int sign = 1;
 			//For Fermionic system
-			vector<_Swap> swaps = _recSwap(rsp_inout, bondNum);
+			vector<_Swap> swaps = _recSwap(rsp_outin, bondNum);
+
 			//End Fermionic system
 
 			while(1){
@@ -428,10 +428,10 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum, int fermion){
 
 					//For Fermionic system
 					if(fermion){
-					int sign01 = 0;
-					for(int i = 0; i < swaps.size(); i++)
-						sign01 ^= bonds[swaps[i].b1].Qnums[Qidxs[swaps[i].b1]].getPrtF() & bonds[swaps[i].b2].Qnums[Qidxs[swaps[i].b2]].getPrtF();
-					sign = sign01 ? -1 : 1;
+						int sign01 = 0;
+						for(int i = 0; i < swaps.size(); i++)
+							sign01 ^= (bonds[swaps[i].b1].Qnums[Qidxs[rsp_inout[swaps[i].b1]]].getPrtF() & bonds[swaps[i].b2].Qnums[Qidxs[rsp_inout[swaps[i].b2]]].getPrtF());
+						sign = sign01 ? -1 : 1;
 					}
 					//End Fermionic system
 
@@ -524,8 +524,9 @@ void SyTensor_t::transpose(int fermion){
 			int sign = 1;
 			//For Fermionic System
 			if(fermion){
-			if((it_in->first).getPrtF() == 1)
-				sign = -1;
+				if(status & HAVELABEL)
+					if((it_in->first).getPrtF() == 1)
+						sign = -1;
 			}
 			//For Fermionic System
 			Rnum = it_in->second.Rnum;
@@ -635,7 +636,7 @@ void SyTensor_t::grouping(){
 	map<Qnum_t,int> row_QnumMdim;
 	vector<int> row_offs(row_bondNum, 0);
 	map<Qnum_t,vector<int> > row_Qnum2Qidx;
-	Qnum_t qnum(0, 0);
+	Qnum_t qnum;
 	int dim;
 	int boff = 0;
 	RQidx2Off.assign(row_Qdim, 0);
