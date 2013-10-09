@@ -108,11 +108,11 @@ int main(){
 	// Network Construct()
 	vector<SyTensor_t*> tens;
 	tens.push_back(&W1);
-	tens.push_back(&W1T);
+	tens.push_back(&W2);
 	tens.push_back(&U);
 	tens.push_back(&H0);
 	tens.push_back(&UT);
-	tens.push_back(&W2);
+	tens.push_back(&W1T);
 	tens.push_back(&W2T);
 	Network_t net3("AscendL", tens);
 	H1 = net3.launch();
@@ -120,7 +120,7 @@ int main(){
 	//int label_out[] = {-1, -2, -3, -4};
 	int label_out[] = {-1, -2, -3, -4};
 	H1.reshape(label_out, 2);
-	cout<<H1;
+	//cout<<H1;
 	//printRawElem(H1);
 	//cout<<W1T;
 

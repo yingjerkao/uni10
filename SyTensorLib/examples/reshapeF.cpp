@@ -45,8 +45,12 @@ int main(){
 	H.orthoRand();
 	int labels[] = {-1, -2, -3, -4};
 	int rsp_labels[] = {-4, -1, -2, -3};
-	int ord[] = {3, 0, 1, 2};
+	//int ord[] = {3, 0, 1, 2};
+	int ord[] = {2, 3, 1, 0};
 	vector<_Swap> swaps = _recSwap(ord, 4);
+	for(int i = 0; i < swaps.size(); i++)
+		cout<<swaps[i].b1<<", "<<swaps[i].b2<<endl;
+	cout<<"----"<<endl;
 	SyTensor_t H1 = H;
 	H.addLabel(labels);
 	H1.addLabel(labels);
@@ -57,6 +61,6 @@ int main(){
 	H1.setName("H1");
 	//cout << H;
 	cout << H1;
-	H.save("H_out");
-	H1.save("H1_out");
+	//H.save("H_out");
+	//H1.save("H1_out");
 }

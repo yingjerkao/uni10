@@ -210,17 +210,17 @@ Network_t::Network_t(const string& fname, const vector<SyTensor_t*>& tens): root
 	vector<_Swap> swaps;
 	swaps_arr.assign(Tnum, swaps);
 	leafs.assign(Tnum, NULL);
+	tensors.assign(Tnum, NULL);
 	for(int i = 0; i < Tnum; i++){
 		if(tens[i]->name.length() > 0)
 			assert(tens[i]->name == names[i]);
 		assert(tens[i]->RBondNum == Rnums[i]);
-
 		SyTensor_t* ten = new SyTensor_t(*(tens[i]));
 		ten->setName(names[i]);
 		ten->addLabel(label_arr[i]);
-		tensors.push_back(ten);
+		tensors[i] = ten;
 		Node_t* ndp = new Node_t(ten);
-		leafs.push_back(ndp);
+		leafs[i] = ndp;
 	}
 }
 
@@ -327,7 +327,6 @@ Node_t* Network_t::replaceWith(int idx, SyTensor_t* SyT, bool force){
 		destruct();
 	if(SyT->name.length() > 0)
 		assert(SyT->name == names[idx]);
-	cout<<SyT->name<<endl;
 	assert(SyT->RBondNum == Rnums[idx]);
 
 	if(leafs[idx] != NULL){
@@ -538,6 +537,21 @@ ostream& operator<< (ostream& os, const Node_t& nd){
 	return os;
 }
 
-void Network_t::recSwap(){
-	
+void Network_t::recSwap(Node_t* nd, int inc){
+	assert(inc <= tensors.size());
+	if(nd == NULL)
+		return;
+	if(nd->T){
+		bool found = false;
+		for(int i = 0; i < tensors.size(); i++)
+			if(nd->T == tensors[i]){
+				conOrder[inc] = i;
+				found = true;
+				break;
+			}
+		assert(found);
+		inc++;
+	}
+	recSwap(nd->left, inc);
+	recSwap(nd->right, inc);
 }

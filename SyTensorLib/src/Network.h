@@ -58,7 +58,8 @@ class Network_t {
 		vector<SyTensor_t*> tensors;
 		vector< vector<_Swap> > swaps_arr;
 		vector<bool> swapflags;
-		vector<int> order;
+		vector<int> conOrder;	//contraction order;
+		vector<int> order;	//add order
 		Node_t* root;
 		bool load;	//whether or not the network is ready for contraction, construct=> load=true, destruct=>load=false
 		int times;	//construction times
@@ -71,5 +72,5 @@ class Network_t {
 		SyTensor_t merge(Node_t* nd);
 		void clean(Node_t* nd);
 		void fromfile(const string& fname);
-		void recSwap();
+		void recSwap(Node_t* nd, int inc = 0);
 };

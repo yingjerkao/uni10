@@ -33,7 +33,7 @@ typedef struct{
 	int b2; 
 }_Swap;
 
-vector<_Swap> _recSwap(int* ord, int n);
+vector<_Swap> _recSwap(int* ord, int n, int* ordF);
 /**
  * @brief Class of the symmetry tensor.
  */
@@ -171,7 +171,7 @@ class SyTensor_t{
      * @note Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements.
      * @warning The only difference between @p newLabels and the original @p labels is the order of the array elements.
      */
-		void reshape(vector<int>& newLabels, int rowBondNum, int fermion = 1);
+		void reshape(vector<int>& newLabels, int rowBondNum, int fermion=1);
 
     /**
      * @brief Reshape the element of the tensor, that is, change the order of bonds to the order of @p newLabels and also change the element alignment to the corresponding order.\n
@@ -182,14 +182,14 @@ class SyTensor_t{
      * @note Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements.
      * @warning The only difference between @p newLabels and the original @p labels is the order of the array elements.
      */
-		void reshape(int* newLabels, int rowBondNum, int fermion = 1);
+		void reshape(int* newLabels, int rowBondNum, int fermion=1);
 
     /**
      * @brief Transpose the tensor.\n
      * How frequent it is used: * * *
      * @see File demo/SyTensor_tool.cpp
      */
-		void transpose(int fermion = 1);
+		void transpose();
 
     /**
      * @brief Randomly give a value(0 ~ 1.0) to each element.\n

@@ -206,18 +206,20 @@ void SyTensor_t::addLabel(vector<int>& newLabels){
 	status |= HAVELABEL;
 }
 
-vector<_Swap> _recSwap(int* _ord, int n){	//Given the reshape order out to in. 
+vector<_Swap> _recSwap(int* _ord, int n, int* ordF){	//Given the reshape order out to in. 
 	int* ord = (int*)malloc(sizeof(int) * n);
 	memcpy(ord, _ord, sizeof(int) * n);
 	vector<_Swap> swaps;
 	_Swap sg; 
+	int tmp;
 	for(int i = 0; i < n - 1; i++)
 		for(int j = 0; j < n - i - 1; j++)
 			if(ord[j] > ord[j + 1]){
-				sg.b1 = ord[j + 1]; 
-				sg.b2 = ord[j];
-				ord[j] = sg.b1;
-				ord[j + 1] = sg.b2;
+				sg.b1 = ordF[ord[j + 1]]; 
+				sg.b2 = ordF[ord[j]];
+				tmp = ord[j];
+				ord[j] = ord[j + 1];
+				ord[j + 1] = tmp;
 				swaps.push_back(sg);
 			}
 	free(ord);
@@ -343,12 +345,7 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum, int fermion){
 			break;
 		}
 	if(inorder  && rsp_outin[0] == 0 && RBondNum == rowBondNum);	//do nothing
-	else if(inorder  && rsp_outin[0] != 0 && (bondNum - RBondNum) == rowBondNum){
-		this->transpose(fermion);
-		//printf("TRANSPOSE!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-	}
 	else{
-		//printf("LALALALALALALAL\n");
 		vector<Bond_t> outBonds;
 		for(int b = 0; b < bonds.size(); b++)
 			outBonds.push_back(bonds[rsp_outin[b]]);
@@ -396,12 +393,61 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum, int fermion){
 			vector<int> idxs;
 			vector<int> Din_acc(bondNum, 1);	//Degeneracy acc
 
-			int sign = 1;
 			//For Fermionic system
-			vector<_Swap> swaps = _recSwap(rsp_outin, bondNum);
+#ifdef FERMIONIC
+			int sign = 1;
+			int inLabelF[bondNum];
+			int outLabelF[bondNum];
+			int ordF[bondNum];
+			for(int b = 0; b < RBondNum; b++){
+				inLabelF[b] = labels[b];
+				ordF[b] = b;
+			}
+			for(int b = 0; b < SyTout.RBondNum; b++)
+				outLabelF[b] = newLabels[b];
+			for(int b = bondNum - 1; b >= RBondNum; b--){
+				ordF[b] = bondNum - b + RBondNum - 1;
+				inLabelF[ordF[b]] = labels[b];
+			}
+			for(int b = bondNum - 1; b >= SyTout.RBondNum; b--)
+				outLabelF[bondNum - b + SyTout.RBondNum - 1] = newLabels[b];
 
+			int rspF_outin[bondNum];
+			for(int i = 0; i < bondNum; i++)
+				for(int j = 0; j < bondNum; j++)
+					if(inLabelF[i] == outLabelF[j])
+						rspF_outin[j] = i;	
+			vector<_Swap> swaps = _recSwap(rspF_outin, bondNum, ordF);
+			/*	
+			cout<<name<<"------------------------\n";
+			cout<<"IN: ";
+			for(int b = 0; b < bondNum; b++)
+				cout<<labels[b]<<", ";
+			cout<<endl;
+			cout<<"IN F: ";
+			for(int b = 0; b < bondNum; b++)
+				cout<<inLabelF[b]<<", ";
+			cout<<endl;
+			cout<<"OUT: ";
+			for(int b = 0; b < bondNum; b++)
+				cout<<newLabels[b]<<", ";
+			cout<<endl;
+			cout<<"OUT F: ";
+			for(int b = 0; b < bondNum; b++)
+				cout<<outLabelF[b]<<", ";
+			cout<<endl;
+			cout<<"RSPF OUTIN: ";
+			for(int b = 0; b < bondNum; b++)
+				cout<<rspF_outin[b]<<", ";
+			cout<<endl;
+			cout<<"ordF: ";
+			for(int b = 0; b < bondNum; b++)
+				cout<<ordF[b]<<", ";
+			cout<<endl;
+			*/
+
+#endif
 			//End Fermionic system
-
 			while(1){
 				if(SyTout.Qidx[Qoff]){
 					Qoff_in = 0;
@@ -425,18 +471,22 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum, int fermion){
 					cnt = 0;
 					cnt_in = 0;
 					idxs.assign(bondNum, 0);
-
 					//For Fermionic system
+#ifdef FERMIONIC
 					if(fermion){
 						int sign01 = 0;
 						for(int i = 0; i < swaps.size(); i++)
 							sign01 ^= (bonds[swaps[i].b1].Qnums[Qidxs[rsp_inout[swaps[i].b1]]].getPrtF() & bonds[swaps[i].b2].Qnums[Qidxs[rsp_inout[swaps[i].b2]]].getPrtF());
 						sign = sign01 ? -1 : 1;
 					}
+#endif
 					//End Fermionic system
-
 					while(1){
+#ifdef FERMIONIC
 						SyTout.elem[boff + (cnt / DcolNum) * BcolNum + cnt % DcolNum] = sign * elem[boff_in + (cnt_in / DcolNum_in) * BcolNum_in + cnt_in % DcolNum_in];
+#else
+						SyTout.elem[boff + (cnt / DcolNum) * BcolNum + cnt % DcolNum] = elem[boff_in + (cnt_in / DcolNum_in) * BcolNum_in + cnt_in % DcolNum_in];
+#endif
 						cnt++;
 						for(bend = bondNum - 1; bend >= 0; bend--){
 							idxs[bend]++;
@@ -471,7 +521,7 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum, int fermion){
 	}
 }
 
-void SyTensor_t::transpose(int fermion){
+void SyTensor_t::transpose(){
 	assert(status & INIT);
 	int bondNum = bonds.size();
 	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of SyTout is the index "1" of SyTin, opposite to the order in TensorLib
@@ -499,9 +549,6 @@ void SyTensor_t::transpose(int fermion){
 			outBonds.push_back(bonds[rsp_outin[b]]);
 
 	for(int b = 0; b < bondNum; b++){
-		if(status & HAVELABEL)
-			for(int q = 0; q < outBonds[b].Qnums.size(); q++)
-				outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
 		if(b < cbondNum)
 			outBonds[b].type = BD_ROW;
 		else
@@ -517,25 +564,14 @@ void SyTensor_t::transpose(int fermion){
 		double* elem_out;
 		int Rnum, Cnum;
 		for ( it_in = blocks.begin() ; it_in != blocks.end(); it_in++ ){
-			if(status & HAVELABEL)
-				it_out = SyTout.blocks.find(-(it_in->first));
-			else
-				it_out = SyTout.blocks.find((it_in->first));
-			int sign = 1;
-			//For Fermionic System
-			if(fermion){
-				if(status & HAVELABEL)
-					if((it_in->first).getPrtF() == 1)
-						sign = -1;
-			}
-			//For Fermionic System
+			it_out = SyTout.blocks.find((it_in->first));
 			Rnum = it_in->second.Rnum;
 			Cnum = it_in->second.Cnum;
 			elem_in = it_in->second.elem;
 			elem_out = it_out->second.elem;
 			for(int i = 0; i < Rnum; i++)
 				for(int j = 0; j < Cnum; j++)
-					elem_out[j * Rnum + i] = sign * elem_in[i * Cnum + j];
+					elem_out[j * Rnum + i] = elem_in[i * Cnum + j];
 		}   
 		SyTout.status |= HAVEELEM;
 	}

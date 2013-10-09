@@ -3,6 +3,7 @@
 #include <assert.h>
 using namespace std;
 
+#define FERMIONIC 1
 const int U1_UPB = 100;	//Upper bound of U1
 const int U1_LOB = -100;//Lower bound of U1
 const int prt_UPB = 2;  //Upper bound of prt
