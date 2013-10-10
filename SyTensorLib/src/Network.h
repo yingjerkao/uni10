@@ -72,5 +72,6 @@ class Network_t {
 		SyTensor_t merge(Node_t* nd);
 		void clean(Node_t* nd);
 		void fromfile(const string& fname);
-		void recSwap(Node_t* nd, int inc = 0);
+		void findConOrd(Node_t* nd);
+		void addSwap();
 };

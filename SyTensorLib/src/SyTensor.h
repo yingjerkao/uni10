@@ -34,6 +34,7 @@ typedef struct{
 }_Swap;
 
 vector<_Swap> _recSwap(int* ord, int n, int* ordF);
+vector<_Swap> _recSwap(int* _ord, int n);	//Given the reshape order out to in. 
 /**
  * @brief Class of the symmetry tensor.
  */
@@ -221,7 +222,8 @@ class SyTensor_t{
 		void eye(const Qnum_t& qnum);
 		void bzero(const Qnum_t& qnum);
 		void bzero();
-		vector<bool> addSwap(vector<_Swap>swaps);
+		vector<_Swap> exSwap(const SyTensor_t& Tb)const;
+
 		void addGate(vector<_Swap>signs);
 		DOUBLE *elem;		//Array of elements
 	private:
@@ -243,4 +245,5 @@ class SyTensor_t{
 		//Private Functions
 		void grouping();
 		void initSyT();
+
 };

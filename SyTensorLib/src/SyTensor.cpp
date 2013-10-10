@@ -206,6 +206,12 @@ void SyTensor_t::addLabel(vector<int>& newLabels){
 	status |= HAVELABEL;
 }
 
+vector<_Swap> _recSwap(int* _ord, int n){	//Given the reshape order out to in. 
+	int ordF[n];
+	for(int i = 0; i < n; i++)
+		ordF[i] = i;
+	return _recSwap(_ord, n, ordF);
+}
 vector<_Swap> _recSwap(int* _ord, int n, int* ordF){	//Given the reshape order out to in. 
 	int* ord = (int*)malloc(sizeof(int) * n);
 	memcpy(ord, _ord, sizeof(int) * n);
@@ -224,33 +230,6 @@ vector<_Swap> _recSwap(int* _ord, int n, int* ordF){	//Given the reshape order o
 			}
 	free(ord);
 	return swaps;
-}
-
-vector<bool>SyTensor_t::addSwap(vector<_Swap>swaps){
-	vector<bool> signs(Qidx.size(), 0);
-	int Qoff = 0;
-	int bend;
-	int bondNum = bonds.size();
-	vector<int> Qidxs(bondNum, 0);
-	while(1){
-		if(Qidx[Qoff]){
-			int sign = 0;
-			for(int i = 0; i < swaps.size(); i++)
-				sign ^= bonds[swaps[i].b1].Qnums[Qidxs[swaps[i].b1]].getPrtF() & bonds[swaps[i].b2].Qnums[Qidxs[swaps[i].b2]].getPrtF();
-			signs[Qoff] = sign;
-		}
-		for(bend = bondNum - 1; bend >= 0; bend--){
-			Qidxs[bend]++;
-			if(Qidxs[bend] < bonds[bend].Qnums.size())
-				break;
-			else
-				Qidxs[bend] = 0;
-		}
-		Qoff++;
-		if(bend < 0)
-			break;
-	}
-	return signs;
 }
 
 void SyTensor_t::addGate(vector<_Swap> swaps){
@@ -1108,3 +1087,31 @@ void SyTensor_t::bzero(){
 void SyTensor_t::setName(const string& _name){
 	name = _name;
 }
+
+vector<_Swap> SyTensor_t::exSwap(const SyTensor_t& Tb) const{
+	assert(status & HAVELABEL & Tb.status);
+	int bondNumA = labels.size();
+	int bondNumB = Tb.labels.size();
+	vector<int> intersect;
+	vector<int> left;
+	for(int a = 0; a < bondNumA; a++){
+		bool found = false;
+		for(int b = 0; b < bondNumB; b++)
+			if(labels[a] == Tb.labels[b])
+				found = true;
+		if(found)
+			intersect.push_back(a);
+		else
+			left.push_back(a);
+	}
+	vector<_Swap> swaps;
+	_Swap sp;
+	for(int i = 0; i < intersect.size(); i++)
+		for(int j = 0; j < left.size(); j++){
+			sp.b1 = intersect[i];
+			sp.b2 = left[j];
+			swaps.push_back(sp);
+		}
+	return swaps;
+}
+

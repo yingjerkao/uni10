@@ -3,8 +3,24 @@
 #include <map>
 using namespace std;
 #include "TensorLib.h"
-//#define FERMION 1
+#define FERMION 1
 
+
+bool elemCmp(SyTensor_t& ten1, SyTensor_t& ten2){
+	int n1 = ten1.getElemNum();
+	int n2 = ten2.getElemNum();
+	double diff;
+	if(n1 == n2){
+		for(int i = 0; i < n1; i++){
+			diff = fabs(ten1.elem[i] - ten2.elem[i]);
+			if(diff > 1E-6)
+				return false;
+		}
+	}
+	else
+		return false;
+	return true;
+}
 int main(){
 	Qnum_t q10(1, 0);
 	Qnum_t q_10(-1, 0);
@@ -92,7 +108,6 @@ int main(){
 	// END raw contraction
 	
 	// Network replaceWith()
-	/*
 	Network_t net2("AscendL");
 	net2.replaceWith(0, &W1);
 	net2.replaceWith(1, &W2);
@@ -102,10 +117,14 @@ int main(){
 	net2.replaceWith(5, &W1T);
 	net2.replaceWith(6, &W2T);
 	H1 = net2.launch();
+	net2.replaceWith(0, &W1);
+	net2.replaceWith(0, &W1);
+	net2.replaceWith(0, &W1);
+	H1 = net2.launch();
 	cout<<net2;
-	*/
 	//  END replaceWith()
 	// Network Construct()
+	/*
 	vector<SyTensor_t*> tens;
 	tens.push_back(&W1);
 	tens.push_back(&W2);
@@ -115,15 +134,17 @@ int main(){
 	tens.push_back(&W1T);
 	tens.push_back(&W2T);
 	Network_t net3("AscendL", tens);
+	cout<< net3;
 	H1 = net3.launch();
+	*/
 	// END Network Construct()
-	//int label_out[] = {-1, -2, -3, -4};
 	int label_out[] = {-1, -2, -3, -4};
 	H1.reshape(label_out, 2);
-	//cout<<H1;
+	cout<<H1;
 	//printRawElem(H1);
 	//cout<<W1T;
-
+	SyTensor_t H1_tmp("tenH1");
 	H0.check();
+	assert(elemCmp(H1, H1_tmp));
 }
 

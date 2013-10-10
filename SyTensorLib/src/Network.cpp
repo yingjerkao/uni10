@@ -207,6 +207,7 @@ Network_t::Network_t(const string& fname, const vector<SyTensor_t*>& tens): root
 	fromfile(fname);
 	assert((label_arr.size() - 1) == tens.size());
 	int Tnum = tens.size();
+	swapflags.assign(Tnum, false);
 	vector<_Swap> swaps;
 	swaps_arr.assign(Tnum, swaps);
 	leafs.assign(Tnum, NULL);
@@ -333,6 +334,7 @@ Node_t* Network_t::replaceWith(int idx, SyTensor_t* SyT, bool force){
 		*(tensors[idx]) = *SyT;
 		tensors[idx]->addLabel(label_arr[idx]);
 		tensors[idx]->setName(names[idx]);
+		swapflags[idx] = false;
 	}
 	else{
 		SyTensor_t* ten = new SyTensor_t(*SyT);
@@ -421,10 +423,19 @@ void Network_t::clean(Node_t* nd){
 }
 
 void Network_t::destruct(){
+	cout<<"DESTRUCTING..."<<endl;
 	clean(root);
 	root = NULL;
 	for(int i = 0; i < leafs.size(); i++)
 		leafs[i]->delink();
+	conOrder.clear();
+	for(int t = 0; t < tensors.size(); t++){
+		if(swapflags[t]){
+			tensors[t]->addGate(swaps_arr[t]);
+			swapflags[t] = false;
+		}
+		swaps_arr[t].clear();
+	}
 	load = false;
 }
 
@@ -433,6 +444,7 @@ void Network_t::construct(){
 		assert(leafs[order[i]] != NULL);
 		matching(leafs[order[i]], root);
 	}
+	addSwap();
 	load = true;
 }
 
@@ -443,6 +455,11 @@ void Network_t::construct(){
 SyTensor_t Network_t::launch(const string& _name){
 	if(!load)
 		construct();
+	for(int t = 0; t < tensors.size(); t++)
+		if(!swapflags[t]){
+			tensors[t]->addGate(swaps_arr[t]);
+			swapflags[t] = true;
+		}
 	SyTensor_t SyT = merge(root);
 	int idx = label_arr.size() - 1;
 	if(label_arr.size() > 0)
@@ -451,25 +468,6 @@ SyTensor_t Network_t::launch(const string& _name){
 	return SyT;
 		
 }
-
-SyTensor_t Network_t::launch(int* outLabels, int Rnum, const string& _name){
-	if(!load)
-		construct();
-	SyTensor_t SyT = merge(root);
-	SyT.reshape(outLabels, Rnum);
-	SyT.setName(_name);
-	return SyT;
-}
-
-SyTensor_t Network_t::launch(vector<int>& outLabels, int Rnum, const string& _name){
-	if(!load)
-		construct();
-	SyTensor_t SyT = merge(root);
-	SyT.reshape(outLabels, Rnum);
-	SyT.setName(_name);
-	return SyT;
-}
-
 
 SyTensor_t Network_t::merge(Node_t* nd){
 	if(nd->left->T == NULL){
@@ -519,6 +517,8 @@ void Network_t::preprint(ostream& os, Node_t* nd, int layer){
 }
 
 ostream& operator<< (ostream& os, Network_t& net){
+	if(!net.load)
+		net.construct();
 	net.preprint(os, net.root, 0);
 	return os;
 }
@@ -537,21 +537,65 @@ ostream& operator<< (ostream& os, const Node_t& nd){
 	return os;
 }
 
-void Network_t::recSwap(Node_t* nd, int inc){
-	assert(inc <= tensors.size());
-	if(nd == NULL)
+void Network_t::findConOrd(Node_t* nd){
+	if(nd == NULL || conOrder.size() == tensors.size())
 		return;
 	if(nd->T){
 		bool found = false;
 		for(int i = 0; i < tensors.size(); i++)
 			if(nd->T == tensors[i]){
-				conOrder[inc] = i;
+				conOrder.push_back(i);
 				found = true;
 				break;
 			}
 		assert(found);
-		inc++;
 	}
-	recSwap(nd->left, inc);
-	recSwap(nd->right, inc);
+	findConOrd(nd->left);
+	findConOrd(nd->right);
+}
+
+void Network_t::addSwap(){
+	int Tnum = leafs.size();
+	findConOrd(root);
+	assert(Tnum == conOrder.size());
+	int tenOrder[conOrder.size()];
+	memcpy(tenOrder, &(conOrder[0]), Tnum * sizeof(int));
+	vector<_Swap> tenSwaps = _recSwap(tenOrder, Tnum);
+	vector<_Swap> swtmp;
+	for(int s = 0; s < tenSwaps.size(); s++){
+		swtmp = tensors[tenSwaps[s].b1]->exSwap(*(tensors[tenSwaps[s].b2]));
+		swaps_arr[tenSwaps[s].b1].insert(swaps_arr[tenSwaps[s].b1].end(), swtmp.begin(), swtmp.end());
+	}
+	//Distinct Swaps of each tensors
+	for(int t = 0; t < Tnum; t++){
+		map<int, bool> recs;
+		map<int, bool>::iterator it;
+		int bondNum = tensors[t]->bonds.size();
+		int is, ib;
+		int hash;
+		for(int s = 0; s < swaps_arr[t].size(); s++){
+			if(swaps_arr[t][s].b1 < swaps_arr[t][s].b2){
+				is = swaps_arr[t][s].b1;
+				ib = swaps_arr[t][s].b2;
+			}
+			else{
+				is = swaps_arr[t][s].b2;
+				ib = swaps_arr[t][s].b1;
+			}
+			int hash = is * bondNum + ib;
+			if((it = recs.find(hash)) != recs.end())
+				it->second ^= true;
+			else
+				recs[hash] = true;
+		}
+		swaps_arr[t].clear();
+		_Swap sp;
+		for (it=recs.begin(); it!=recs.end(); it++){
+			if(it->second){
+				sp.b1 = (it->first) / bondNum;
+				sp.b2 = (it->first) % bondNum;
+				swaps_arr[t].push_back(sp);
+			}
+		}
+	}
 }
