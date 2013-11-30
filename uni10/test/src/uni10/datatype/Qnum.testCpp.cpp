@@ -16,6 +16,28 @@
 *
 *****************************************************************************/
 
-#include <uni10/datatype.hpp>
+#include <uni10.hpp>
+
+int main(int agrc, char** argv)
+{
+  std::cout << uni10::print_copyright() << "\n\n"
+            << "test -- Qnum.h\n"
+            << "==============\n"
+            << "\n\n";
+
+  if (true)
+  {
+    typedef uni10::datatype::Qnum<int,char> Qnum_t;
+
+    Qnum_t q1, q2(2), q3(2,4);
+
+    std::cout << "q1 = " << q1 << "\n"
+              << "q2 = " << q2 << "\n" 
+              << "q3 = " << q3 << "\n"
+    ;
 
 
+  }
+
+  return 0;
+}
