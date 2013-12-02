@@ -1,9 +1,9 @@
 
 SRCDIR = .
-TENSORLIB = $(SRCDIR)/../../src/
+TENSORLIB = $(SRCDIR)/../../SyTensorLib/src/
 
 
-INC = -I$(TENSORLIB) -I$(SRCDIR) -I/usr/include/x86_64-linux-gnu/c++/4.7
+INC = -I$(TENSORLIB) -I$(SRCDIR)
 OBJ = $(TENSORLIB)qnumF.o $(TENSORLIB)bond.o $(TENSORLIB)block.o $(TENSORLIB)myLapack.o $(TENSORLIB)operate.o $(TENSORLIB)syTensor.o $(TENSORLIB)network.o $(TENSORLIB)matrix.o
 LDFLAGS =
 
