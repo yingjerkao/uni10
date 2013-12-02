@@ -1,41 +1,77 @@
+/*****************************************************************************
+*
+* Universal Tensor Network Library
+*
+* Copyright (C) 2013-2014 
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
+* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
+* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
+* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+* DEALINGS IN THE SOFTWARE.
+*
+* Please direct any enquiry to <development@uni10.org>
+*
+*****************************************************************************/
+
+#ifndef UNI10_DATATYPE_FERMIONIC_QUANTUM_NUMBER_H
+#define UNI10_DATATYPE_FERMIONIC_QUANTUM_NUMBER_H
+
 #include <iostream>
 #include <iomanip>
-#include <assert.h>
-using namespace std;
+#include <cassert>
+#include <uni10/datatype/quantum-number.h>
 
-#define FERMIONIC 1
-const int U1_UPB = 100;	//Upper bound of U1
-const int U1_LOB = -100;//Lower bound of U1
-const int prt_UPB = 2;  //Upper bound of prt
-const int prt_LOB = -1; //Lower bound of prt
+namespace uni10 {
+namespace datatype {
 
-class Qnum_t {
-	public:
-		Qnum_t(): U1(0), prt(0), prtF(0){}
-		Qnum_t(int _U1): U1(_U1), prt(0), prtF(0){
-			assert(U1 < U1_UPB && U1 > U1_LOB);
-		}
-		Qnum_t(int _U1, int _prt): U1(_U1), prt(_prt), prtF(0){
-			assert(U1 < U1_UPB && U1 > U1_LOB && prt < prt_UPB && prt > prt_LOB);
-		}
-		Qnum_t(int _U1, int _prt, int _prtF): U1(_U1), prt(_prt), prtF(_prtF){
-			assert(U1 < U1_UPB && U1 > U1_LOB && prt < prt_UPB && prt > prt_LOB && prtF < prt_UPB && prtF > prt_LOB);
-		}
-		Qnum_t(const Qnum_t& _q):U1(_q.U1), prt(_q.prt), prtF(_q.prtF){}
-		~Qnum_t(){};
-		int getU1()const{return U1;}
-		int getPrt()const{return prt;}
-		int getPrtF()const{return prtF;}
-		void set(int _U1 = 0, int _prt = 0, int _prtF = 0);
-		friend bool operator< (const Qnum_t& q1, const Qnum_t& q2);
-		friend bool operator<= (const Qnum_t& q1, const Qnum_t& q2);
-		friend bool operator== (const Qnum_t& q1, const Qnum_t& q2);
-		friend Qnum_t operator- (const Qnum_t& q1);
-		friend Qnum_t operator* (const Qnum_t& q1, const Qnum_t& q2);
-		friend ostream& operator<< (ostream& os, const Qnum_t& q);
-	private:
-		int U1;
-		char prt;
-		char prtF;
+#define FERMIONIC 1  // hmm... we should not do this...
+
+template <class I, class S>
+class fermionic_quantum_number 
+  : public quantum_number<I,S>
+{
+public:
+  typedef typename quantum_number<I,S>::int_type    int_type;
+  typedef typename quantum_number<I,S>::short_type  short_type;
+
+  // Non-standard constructor
+  fermionic_quantum_number
+    ( int_type U1_   = int_type()
+    , int_type prt_  = int_type()
+    , int_type prtF_ = int_type()
+    );
+
+  inline int_type prtF()     const  { return _prtF; }
+  inline int_type get_prtF() const  { return prtF(); }   // to be depreciated...
+
+  inline void set_prtF (int_type prtF_)   { _prtF = prtF_; }
+  inline void set      (int_type U1_, int_type prt_)                   { this->set_U1(U1_); this->set_prt(prt_); } 
+  inline void set      (int_type U1_, int_type prt_, int_type prtF_)   { this->set_U1(U1_); this->set_prt(prt_); set_prtF(prtF_); }
+
+  template <class I1, class S1>
+  friend bool operator<  (fermionic_quantum_number<I1,S1> const & q1, fermionic_quantum_number<I1,S1> const & q2);
+  template <class I1, class S1>
+  friend bool operator<= (fermionic_quantum_number<I1,S1> const & q1, fermionic_quantum_number<I1,S1> const & q2);
+  template <class I1, class S1>
+  friend bool operator== (fermionic_quantum_number<I1,S1> const & q1, fermionic_quantum_number<I1,S1> const & q2);
+
+  template <class I1, class S1>
+  friend fermionic_quantum_number<I1,S1> operator- (fermionic_quantum_number<I1,S1> const & q);
+  template <class I1, class S1>
+  friend fermionic_quantum_number<I1,S1> operator* (fermionic_quantum_number<I1,S1> const & q1, fermionic_quantum_number<I1,S1> const & q2);
+
+  template <class I1, class S1>
+  friend std::ostream& operator<< (std::ostream& os, const fermionic_quantum_number<I1,S1> & obj);
+
+private:
+  short_type  _prtF;
+
 };
 
+} // ending namespace datatype
+} // ending namespace uni10
+
+#endif
