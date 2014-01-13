@@ -1,29 +1,20 @@
-# @configure_input@
-# Package-specific substitution variables 
-package = @PACKAGE_NAME@
-version = @PACKAGE_VERSION@ 
-tarname = @PACKAGE_TARNAME@ 
-distdir = $(tarname)-$(version)
-# Prefix-specific substitution variables 
-prefix = @prefix@
-exec_prefix = @exec_prefix@
-bindir = @bindir@
-# VPATH-related substitution variables 
-srcdir =@srcdir@
-VPATH = @srcdir@
-
-
 OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o network.o matrix.o
+OBJF := qnumF.o bond.o block.o myLapack.o operate.o syTensor.o network.o matrix.o
 LINK := -mkl=parallel
-CC:=g++
-all: $(OBJ) libtensor.a
+CC := icpc
+
+all: $(OBJF) libtensorF.a
+
+#all: $(OBJ) libtensor.a
 
 doc:
 	doxygen Doxyfile
 	cd ../docs/latex/; make pdf
 
-
 qnum.o: Qnum.cpp Qnum.h
+	$(CC) -c $< -o $@
+
+qnumF.o: QnumF.cpp QnumF.h
 	$(CC) -c $< -o $@
 
 bond.o: Bond.cpp Bond.h
@@ -47,9 +38,12 @@ matrix.o: Matrix.cpp Matrix.h
 network.o: Network.cpp Network.h
 	$(CC) -c $< -o $@
 
+libtensorF.a: $(OBJF)
+	ar q ../lib/$@ $^
+
 libtensor.a: $(OBJ)
 	[ -d ../lib ] || mkdir -p ../lib
 	ar q ../lib/$@ $^
-.PHONY : clean all doc
+
 clean:
 	rm -f *.o *.e
