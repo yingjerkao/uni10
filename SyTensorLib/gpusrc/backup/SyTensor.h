@@ -203,7 +203,6 @@ class SyTensor_t{
 		void randomize();
 
 		void setName(const string& _name);
-		string getName();
 		int64_t getElemNum()const{return elemNum;};
 
 		void check();
@@ -216,7 +215,6 @@ class SyTensor_t{
 		friend SyTensor_t operator* (double a, const SyTensor_t& Ta){return Ta * a;};
 		void operator*= (double a);
 		Matrix_t getBlock(Qnum_t qnum, bool diag = false);
-		map<Qnum_t, Matrix_t> getBlocks();
 		void putBlock(const Qnum_t& qnum, Matrix_t& mat);
 		friend void printRawElem(const SyTensor_t& SyT, const string& fname="");
 		friend class Node_t;

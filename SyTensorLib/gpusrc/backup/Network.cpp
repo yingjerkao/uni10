@@ -466,6 +466,7 @@ SyTensor_t Network_t::launch(const string& _name){
 		SyT.reshape(label_arr[idx], Rnums[idx]);
 	SyT.setName(_name);
 	return SyT;
+		
 }
 
 SyTensor_t Network_t::merge(Node_t* nd){

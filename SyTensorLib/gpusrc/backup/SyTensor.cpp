@@ -326,9 +326,6 @@ void SyTensor_t::bzero(){
 void SyTensor_t::setName(const string& _name){
 	name = _name;
 }
-string SyTensor_t::getName(){
-	return name;
-}
 
 vector<_Swap> SyTensor_t::exSwap(const SyTensor_t& Tb) const{
 	assert(status & HAVELABEL & Tb.status);
@@ -446,7 +443,10 @@ void printRawElem(const SyTensor_t& SyT, const string& fname){
 				r++;
 			}
 			cout<< setw(7) << fixed << setprecision(3) << SyT.at(idxs);
-			rawElem.push_back(SyT.at(idxs));
+			if(print){
+				rawElem.push_back(SyT.at(idxs));
+				cout << SyT.at(idxs);
+			}
 			for(bend = bondNum - 1; bend >= 0; bend--){
 				idxs[bend]++;
 				if(idxs[bend] < SyT.bonds[bend].dim)
@@ -584,14 +584,6 @@ Matrix_t SyTensor_t::getBlock(Qnum_t qnum, bool diag){
 	}
 }
 
-map<Qnum_t, Matrix_t> SyTensor_t::getBlocks(){
-	map<Qnum_t, Matrix_t> mats;
-	for(map<Qnum_t,Block_t>::iterator it = blocks.begin(); it != blocks.end(); it++){
-		Matrix_t mat(it->second.Rnum, it->second.Cnum, it->second.elem);
-		mats.insert(pair<Qnum_t, Matrix_t>(it->first, mat));
-	}
-	return mats;
-}
 void SyTensor_t::putBlock(const Qnum_t& qnum, Matrix_t& mat){
 	assert(blocks.find(qnum) != blocks.end());
 	Block_t& blk = blocks[qnum];

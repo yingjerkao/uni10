@@ -5,7 +5,7 @@ using namespace std;
 #include "SyTensor.h"
 
 int main(){
-	Qnum_t q10(1, 1);
+	Qnum_t q10(1, 0);
 	Qnum_t q00(0, 0);
 	Qnum_t q_10(-1, 0);
 	vector<Bond_t> bonds;		

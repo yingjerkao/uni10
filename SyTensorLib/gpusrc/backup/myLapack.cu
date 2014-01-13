@@ -39,9 +39,10 @@ void vecScal(double a, double* X, int64_t N){
 /*Generate a set of row vectors which form a othonormal basis
  *For the incoming matrix "elem", the number of row <= the number of column, M <= N
  */
-void orthoRandomize(double* elem, int M, int N){
+void orthoRandomize(double* elem, int M, int N, int status){
 	int eleNum = M*N;
 	double *random = (double*)malloc(eleNum * sizeof(double));
+	double *tmp = (double*)malloc(eleNum * sizeof(double));
 	randomNums(random, M * N, 0);
 	assert(M <= N);
 	int min = M; //min = min(M,N)
@@ -52,15 +53,18 @@ void orthoRandomize(double* elem, int M, int N){
 	double *work = (double*)malloc(lwork*sizeof(double));
 	int info;
 	//tmpT = u*S*vT
-	dgesvd((char*)"N", (char*)"S", &M, &N, random, &ldA, S, u, &ldu, elem, &ldvT, work, &lwork, &info);
+	dgesvd((char*)"N", (char*)"S", &M, &N, random, &ldA, S, u, &ldu, tmp, &ldvT, work, &lwork, &info);
 	//reshape from Fortran format to C format
-	memcpy(random, elem, eleNum * sizeof(double));
-	myTranspose(random, N, M, elem, 0);
+	cerr<<"!!!!!!!!!! orthoRandomize: GPU SLOW FUNCTION !!!!!!!!!!\n";
+	myTranspose(tmp, N, M, random, 0);	
+	myMemcpy(elem, random, eleNum * sizeof(double), status, 0);	
 	free(random);
+	free(tmp);
 	free(S);
 	free(u);
 	free(work);
 }
+
 void syDiag(double* Kij, int N, double* Eig, double* EigVec){
 	memcpy(EigVec, Kij, N * N * sizeof(double));
 	int ldA = N;

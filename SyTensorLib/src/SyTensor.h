@@ -7,9 +7,10 @@
  * @see http://www.stack.nl/~dimitri/doxygen/docblocks.html
  * @see http://www.stack.nl/~dimitri/doxygen/commands.html
  */
-
+#pragma once
 #include <iostream>
 #include <iomanip>
+#include <stdio.h>
 #include <math.h>
 #include <vector>
 #include <map>
@@ -23,6 +24,7 @@ using namespace std;
 #include "myLapack.h"
 #include "Matrix.h"
 #define DOUBLE	double
+
 
 const int INIT = 1;		      /**< A flag for initialization */
 const int HAVELABEL = 2;		/**< A flag for having labels added */
@@ -153,7 +155,7 @@ class SyTensor_t{
      * @return An STL vector of type @c Qnum_t.
      * @see File demo/SyTensor_basic.cpp
      */
-    vector<Qnum_t> qnums();
+    	vector<Qnum_t> qnums();
 
     /**
      * @brief Write the tensor to an output file of filename @p fname.\n
@@ -172,7 +174,7 @@ class SyTensor_t{
      * @note Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements.
      * @warning The only difference between @p newLabels and the original @p labels is the order of the array elements.
      */
-		void reshape(vector<int>& newLabels, int rowBondNum, int fermion=1);
+		void reshape(vector<int>& newLabels, int rowBondNum);
 
     /**
      * @brief Reshape the element of the tensor, that is, change the order of bonds to the order of @p newLabels and also change the element alignment to the corresponding order.\n
@@ -183,7 +185,7 @@ class SyTensor_t{
      * @note Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements.
      * @warning The only difference between @p newLabels and the original @p labels is the order of the array elements.
      */
-		void reshape(int* newLabels, int rowBondNum, int fermion=1);
+		void reshape(int* newLabels, int rowBondNum);
 
     /**
      * @brief Transpose the tensor.\n
@@ -200,6 +202,7 @@ class SyTensor_t{
 		void randomize();
 
 		void setName(const string& _name);
+		string getName();
 		int64_t getElemNum()const{return elemNum;};
 
 		void check();
@@ -213,7 +216,8 @@ class SyTensor_t{
 		void operator*= (double a);
 		Matrix_t getBlock(Qnum_t qnum, bool diag = false);
 		void putBlock(const Qnum_t& qnum, Matrix_t& mat);
-		friend void printRawElem(const SyTensor_t& SyT, const string& fname="");
+		map<Qnum_t, Matrix_t> getBlocks();
+		friend Matrix_t printRawElem(const SyTensor_t& SyT, const string& fname="");
 		friend class Node_t;
 		friend class Network_t;
 		void orthoRand();
@@ -223,21 +227,30 @@ class SyTensor_t{
 		void bzero(const Qnum_t& qnum);
 		void bzero();
 		vector<_Swap> exSwap(const SyTensor_t& Tb)const;
-
-		void addGate(vector<_Swap>signs);
-		DOUBLE *elem;		//Array of elements
+		bool similar(const SyTensor_t& Tb)const;
+		void addGate(vector<_Swap> swaps);
+		void packMeta();
+		bool elemCmp(const SyTensor_t& SyT)const;
+		double trace();
+		SyTensor_t subTrace(const vector<int>& labelA, const vector<int>& labelB);
+		SyTensor_t subTrace(int la, int lb);
 	private:
 		string name;
+		DOUBLE *elem;		//Array of elements
 		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
 		vector<Bond_t> bonds;
 		map<Qnum_t, Block_t> blocks;
 		vector<int>labels;
 		int RBondNum;	//Row bond number
+		int RQdim;
+		int CQdim;
 		int64_t elemNum;
-		vector<Block_t*> RQidx2Blk;	//Qidx to the Block
-		vector<bool> Qidx;
-		vector<int> RQidx2Off;	//the row offset starts from the block origin of a qnum
-		vector<int> CQidx2Off;	//the col offset starts from the block origin of a qnum
+		map<int, Block_t*> RQidx2Blk;	//Qidx to the Block
+		map<int, int> QidxEnc;
+		map<int, int> RQidx2Off;	//the row offset starts from the block origin of a qnum
+		map<int, int> CQidx2Off;	//the col offset starts from the block origin of a qnum
+		map<int, int> RQidx2Dim;
+		map<int, int> CQidx2Dim;
 		static int COUNTER;
 		static int64_t ELEMNUM;
 		static int64_t MAXELEMNUM;
@@ -245,5 +258,4 @@ class SyTensor_t{
 		//Private Functions
 		void grouping();
 		void initSyT();
-
 };

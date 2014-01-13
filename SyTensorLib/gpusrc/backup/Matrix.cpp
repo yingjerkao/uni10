@@ -7,12 +7,11 @@ ostream& operator<< (ostream& os, const Matrix_t& m){
 	os <<endl << endl;
 	for(int i = 0; i < m.Rnum; i++){
 		for(int j = 0; j < m.Cnum; j++)
-			if(m.diag){
+			if(m.diag)
 				if(i == j)
 					os << setw(7) << fixed << setprecision(3) << m.elem[i];
 				else
 					os << setw(7) << fixed << setprecision(3) << 0.0;
-			}
 			else
 				os << setw(7) << fixed << setprecision(3) << m.elem[i * m.Cnum + j];
 		os << endl << endl;
@@ -89,20 +88,6 @@ Matrix_t operator* (const Matrix_t& Ma, const Matrix_t& Mb){
 		return Mc;
 	}
 }
-bool operator== (const Matrix_t& m1, const Matrix_t& m2){
-	double diff;
-	if(m1.elemNum == m2.elemNum){	
-		for(int i = 0; i < m1.elemNum; i++){
-			diff = fabs(m1.elem[i] - m2.elem[i]);
-			if(diff > 1E-6)
-				return false;
-		}
-	}
-	else
-		return false;
-	return true;
-}
-
 
 void Matrix_t::operator*= (const Matrix_t& Mb){
 	*this = *this * Mb;
@@ -136,7 +121,7 @@ vector<Matrix_t> Matrix_t::svd(){
 
 void Matrix_t::orthoRand(){
 	assert(!diag);
-	orthoRandomize(elem, Rnum, Cnum);
+	orthoRandomize(elem, Rnum, Cnum, 0);
 }
 
 Matrix_t operator*(const Matrix_t& Ma, double a){
