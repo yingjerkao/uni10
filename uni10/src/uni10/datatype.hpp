@@ -19,6 +19,7 @@
 #ifndef UNI10_DATATYPE_HPP
 #define UNI10_DATATYPE_HPP
 
-#include <uni10/datatype/Qnum.h>
+#include <uni10/datatype/quantum-state.h>
+#include <uni10/datatype/fermionic-quantum-state.h>
 
 #endif

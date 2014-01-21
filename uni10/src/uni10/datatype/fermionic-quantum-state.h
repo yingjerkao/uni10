@@ -16,13 +16,13 @@
 *
 *****************************************************************************/
 
-#ifndef UNI10_DATATYPE_FERMIONIC_QUANTUM_NUMBER_H
-#define UNI10_DATATYPE_FERMIONIC_QUANTUM_NUMBER_H
+#ifndef UNI10_DATATYPE_FERMIONIC_QUANTUM_STATE_H
+#define UNI10_DATATYPE_FERMIONIC_QUANTUM_STATE_H
 
 #include <iostream>
 #include <iomanip>
 #include <cassert>
-#include <uni10/datatype/quantum-number.h>
+#include <uni10/datatype/quantum-state.h>
 
 namespace uni10 {
 namespace datatype {
@@ -30,15 +30,15 @@ namespace datatype {
 #define FERMIONIC 1  // hmm... we should not do this...
 
 template <class I, class S>
-class fermionic_quantum_number 
-  : public quantum_number<I,S>
+class fermionic_quantum_state 
+  : public quantum_state<I,S>
 {
 public:
-  typedef typename quantum_number<I,S>::int_type    int_type;
-  typedef typename quantum_number<I,S>::short_type  short_type;
+  typedef typename quantum_state<I,S>::int_type    int_type;
+  typedef typename quantum_state<I,S>::short_type  short_type;
 
   // Non-standard constructor
-  fermionic_quantum_number
+  fermionic_quantum_state
     ( int_type U1_   = int_type()
     , int_type prt_  = int_type()
     , int_type prtF_ = int_type()
@@ -52,19 +52,19 @@ public:
   inline void set      (int_type U1_, int_type prt_, int_type prtF_)   { this->set_U1(U1_); this->set_prt(prt_); set_prtF(prtF_); }
 
   template <class I1, class S1>
-  friend bool operator<  (fermionic_quantum_number<I1,S1> const & q1, fermionic_quantum_number<I1,S1> const & q2);
+  friend bool operator<  (fermionic_quantum_state<I1,S1> const & q1, fermionic_quantum_state<I1,S1> const & q2);
   template <class I1, class S1>
-  friend bool operator<= (fermionic_quantum_number<I1,S1> const & q1, fermionic_quantum_number<I1,S1> const & q2);
+  friend bool operator<= (fermionic_quantum_state<I1,S1> const & q1, fermionic_quantum_state<I1,S1> const & q2);
   template <class I1, class S1>
-  friend bool operator== (fermionic_quantum_number<I1,S1> const & q1, fermionic_quantum_number<I1,S1> const & q2);
+  friend bool operator== (fermionic_quantum_state<I1,S1> const & q1, fermionic_quantum_state<I1,S1> const & q2);
 
   template <class I1, class S1>
-  friend fermionic_quantum_number<I1,S1> operator- (fermionic_quantum_number<I1,S1> const & q);
+  friend fermionic_quantum_state<I1,S1> operator- (fermionic_quantum_state<I1,S1> const & q);
   template <class I1, class S1>
-  friend fermionic_quantum_number<I1,S1> operator* (fermionic_quantum_number<I1,S1> const & q1, fermionic_quantum_number<I1,S1> const & q2);
+  friend fermionic_quantum_state<I1,S1> operator* (fermionic_quantum_state<I1,S1> const & q1, fermionic_quantum_state<I1,S1> const & q2);
 
   template <class I1, class S1>
-  friend std::ostream& operator<< (std::ostream& os, const fermionic_quantum_number<I1,S1> & obj);
+  friend std::ostream& operator<< (std::ostream& os, const fermionic_quantum_state<I1,S1> & obj);
 
 private:
   short_type  _prtF;

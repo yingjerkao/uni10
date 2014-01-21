@@ -16,17 +16,17 @@
 *
 *****************************************************************************/
 
-#ifndef UNI10_DATATYPE_QNUM_CPP
-#define UNI10_DATATYPE_QNUM_CPP
+#ifndef UNI10_DATATYPE_QUANTUM_STATE_CPP
+#define UNI10_DATATYPE_QUANTUM_STATE_CPP
 
-#include <uni10/datatype/Qnum.h>
+#include <uni10/datatype/quantum-state.h>
 
 namespace uni10 {
 namespace datatype {
 
 template<>
-Qnum<int,char>
-::Qnum
+quantum_state<int,char>
+::quantum_state
   ( int U1_ 
   , int prt_
   )
@@ -39,72 +39,62 @@ Qnum<int,char>
 }
 
 template<>
-void 
-Qnum<int,char>
-::set
-  ( int U1_
-  , int prt_
-  )
-{
-  Qnum tmp(U1_,prt_);  
-  std::swap(*this,tmp);
-}
-
-template<>
 std::ostream&
 operator<<
   ( std::ostream & os
-  , const Qnum<int,char> & obj
+  , const quantum_state<int,char> & obj
   )
 {
-  os << "(U1 = " 
-     << std::setprecision(2) << obj._U1 
-     << ", P = " 
-     << std::setprecision(1) << static_cast<int>(obj._prt) 
-     << ")"
+  os << "U1 = " << std::setprecision(2) << obj._U1 << "\t"
+     << "prt = " << std::setprecision(1) << static_cast<int>(obj._prt) << "\t"
   ;
   return os;
 }
 
+template<>
 bool operator<
-  ( Qnum<int,char> const & q1
-  , Qnum<int,char> const & q2
-  )
+  ( quantum_state<int,char> const & q1
+  , quantum_state<int,char> const & q2
+  ) 
 {
 	return (q1.U1() * 10 + q1.prt()) < (q2.U1() * 10 + q2.prt());
 }
 
+template<>
 bool operator<= 
-  ( Qnum<int,char> const & q1
-  , Qnum<int,char> const & q2
+  ( quantum_state<int,char> const & q1
+  , quantum_state<int,char> const & q2
   )
 {
   return (q1.U1() * 10 + q1.prt()) <= (q2.U1() * 10 + q2.prt());
 }
 
+template<>
 bool operator== 
-  ( Qnum<int,char> const & q1
-  , Qnum<int,char> const & q2
+  ( quantum_state<int,char> const & q1
+  , quantum_state<int,char> const & q2
   )
 {
 	return (q1.U1() == q2.U1()) && (q1.prt() == q2.prt());
 }
 
-Qnum<int,char>
+template<>
+quantum_state<int,char>
 operator- 
-  ( Qnum<int,char> const & q
+  ( quantum_state<int,char> const & q
   )
 {
-	return Qnum<int,char>(-q.U1(), q.prt());
+	return quantum_state<int,char>(-q.U1(), q.prt());
 }
 
-Qnum<int,char> 
+template<>
+quantum_state<int,char> 
 operator* 
-  ( Qnum<int,char> const & q1
-  , Qnum<int,char> const & q2
+  ( quantum_state<int,char> const & q1
+  , quantum_state<int,char> const & q2
   )
 {
-	return Qnum<int,char>(q1.U1() + q2.U1(), q1.prt() ^ q2.prt());
+	return quantum_state<int,char>(q1.U1() + q2.U1(), q1.prt() ^ q2.prt());
 }
 
 

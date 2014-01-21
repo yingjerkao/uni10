@@ -16,8 +16,8 @@
 *
 *****************************************************************************/
 
-#ifndef UNI10_DATATYPE_QNUM_H
-#define UNI10_DATATYPE_QNUM_H
+#ifndef UNI10_DATATYPE_QUANTUM_STATE_H
+#define UNI10_DATATYPE_QUANTUM_STATE_H
 
 #include <iostream>
 #include <iomanip>
@@ -27,15 +27,15 @@ namespace uni10 {
 namespace datatype {
 
 template <class I, class S>
-class Qnum 
+class quantum_state 
 {
 public:
   // typedefs
-  typedef I  int_type;    // to be replaced by template...
+  typedef I  int_type;    
   typedef S  short_type;
 
   // Non-standard constructor
-  Qnum
+  quantum_state
     ( int_type U1_   = int_type()
     , int_type prt_  = int_type()
     );
@@ -47,19 +47,28 @@ public:
   inline int_type get_U1()  const  { return U1();  }   // to be depreciated...
   inline int_type get_prt() const  { return prt(); }   // to be depreciated...
 
-  inline void set_U1  (int_type U1_)    { _U1  = U1;  }
+  inline void set_U1  (int_type U1_)    { _U1  = U1_;  }
   inline void set_prt (int_type prt_)   { _prt = prt_; }
-  inline void set     (int_type U1_=int_type(), int_type prt_=int_type());   // to be depreciated...
-
-  template<class I1, class S1>
-  Qnum& operator=(const Qnum<I1,S1>& obj);  
+  inline void set     (int_type U1_, int_type prt_)   { set_U1(U1_); set_prt(prt_); } 
 
   template <class I1, class S1>
-  friend std::ostream& operator<< (std::ostream& os, const Qnum<I1,S1> & q);
+  friend bool operator<  (quantum_state<I1,S1> const & q1, quantum_state<I1,S1> const & q2);
+  template <class I1, class S1>
+  friend bool operator<= (quantum_state<I1,S1> const & q1, quantum_state<I1,S1> const & q2);
+  template <class I1, class S1>
+  friend bool operator== (quantum_state<I1,S1> const & q1, quantum_state<I1,S1> const & q2);
 
-private:
-  short_type  _prt;
+  template <class I1, class S1>
+  friend quantum_state<I1,S1> operator- (quantum_state<I1,S1> const & q);
+  template <class I1, class S1>
+  friend quantum_state<I1,S1> operator* (quantum_state<I1,S1> const & q1, quantum_state<I1,S1> const & q2);
+
+  template <class I1, class S1>
+  friend std::ostream& operator<< (std::ostream& os, const quantum_state<I1,S1> & obj);
+
+protected:
   int_type    _U1;
+  short_type  _prt;
 
   static const int U1_ubound  = 100; 
   static const int U1_lbound  = -100;
@@ -71,12 +80,3 @@ private:
 } // ending namespace uni10
 
 #endif
-
-/*
-//		friend bool operator< (const Qnum_t& q1, const Qnum_t& q2);   // redundant
-//		friend bool operator<= (const Qnum_t& q1, const Qnum_t& q2);  // redundant
-//		friend bool operator== (const Qnum_t& q1, const Qnum_t& q2);  // redundant
-
-//		friend Qnum_t operator- (const Qnum_t& q1);    // subtraction is free function
-//		friend Qnum_t operator* (const Qnum_t& q1, const Qnum_t& q2);  // multiplication should be free function...
-*/

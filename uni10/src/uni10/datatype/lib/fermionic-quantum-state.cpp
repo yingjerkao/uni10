@@ -16,22 +16,22 @@
 *
 *****************************************************************************/
 
-#ifndef UNI10_DATATYPE_FERMIONIC_QUANTUM_NUMBER_CPP
-#define UNI10_DATATYPE_FERMIONIC_QUANTUM_NUMBER_CPP
+#ifndef UNI10_DATATYPE_FERMIONIC_QUANTUM_STATE_CPP
+#define UNI10_DATATYPE_FERMIONIC_QUANTUM_STATE_CPP
 
-#include <uni10/datatype/fermionic-quantum-number.h>
+#include <uni10/datatype/fermionic-quantum-state.h>
 
 namespace uni10 {
 namespace datatype {
 
 template<>
-fermionic_quantum_number<int,char>
-::fermionic_quantum_number
+fermionic_quantum_state<int,char>
+::fermionic_quantum_state
   ( int U1_
   , int prt_
   , int prtF_
   )
-  : quantum_number(U1_,prt_)
+  : quantum_state(U1_,prt_)
   , _prtF (prtF_)
 {
   assert(_prtF > prt_lbound && _prtF < prt_ubound);
@@ -41,7 +41,7 @@ template<>
 std::ostream&
 operator<<
   ( std::ostream & os
-  , const fermionic_quantum_number<int,char> & obj
+  , const fermionic_quantum_state<int,char> & obj
   )
 {
   os << "U1 = " << std::setprecision(2) << obj._U1 << "\t"
@@ -52,8 +52,8 @@ operator<<
 }
 
 bool operator<
-  ( fermionic_quantum_number<int,char> const & q1
-  , fermionic_quantum_number<int,char> const & q2
+  ( fermionic_quantum_state<int,char> const & q1
+  , fermionic_quantum_state<int,char> const & q2
   )
 {
   return (q1.U1() * 10 + q1.prt() * 2 + q1.prtF()) < (q2.U1() * 10 + q2.prt() * 2 + q2.prtF());
@@ -61,8 +61,8 @@ bool operator<
 
 template<>
 bool operator<=
-  ( fermionic_quantum_number<int,char> const & q1
-  , fermionic_quantum_number<int,char> const & q2
+  ( fermionic_quantum_state<int,char> const & q1
+  , fermionic_quantum_state<int,char> const & q2
   )
 {
   return (q1.U1() * 10 + q1.prt() * 2 + q1.prtF()) <= (q2.U1() * 10 + q2.prt() * 2 + q2.prtF());
@@ -70,30 +70,30 @@ bool operator<=
 
 template<>
 bool operator==
-  ( fermionic_quantum_number<int,char> const & q1
-  , fermionic_quantum_number<int,char> const & q2
+  ( fermionic_quantum_state<int,char> const & q1
+  , fermionic_quantum_state<int,char> const & q2
   )
 {
   return (q1.U1() == q2.U1()) && (q1.prt() == q2.prt()) && (q1.prtF() == q2.prtF());
 }
 
 template<>
-fermionic_quantum_number<int,char>
+fermionic_quantum_state<int,char>
 operator-
-  ( fermionic_quantum_number<int,char> const & q
+  ( fermionic_quantum_state<int,char> const & q
   )
 {
-  return fermionic_quantum_number<int,char>(-q.U1(), q.prt(), q.prtF());
+  return fermionic_quantum_state<int,char>(-q.U1(), q.prt(), q.prtF());
 }
 
 template<>
-fermionic_quantum_number<int,char>
+fermionic_quantum_state<int,char>
 operator*
-  ( fermionic_quantum_number<int,char> const & q1
-  , fermionic_quantum_number<int,char> const & q2
+  ( fermionic_quantum_state<int,char> const & q1
+  , fermionic_quantum_state<int,char> const & q2
   )
 {
-  return fermionic_quantum_number<int,char>(q1.U1() + q2.U1(), q1.prt() ^ q2.prt(), q1.prtF() ^ q2.prtF());
+  return fermionic_quantum_state<int,char>(q1.U1() + q2.U1(), q1.prt() ^ q2.prt(), q1.prtF() ^ q2.prtF());
 }
 
 } // ending namespace datatype
