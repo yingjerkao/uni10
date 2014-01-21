@@ -1,7 +1,7 @@
 SRC := ../src/
 INC := ../src/
-LIB := ../src/
-OBJ := $(LIB)qnumF.o $(LIB)bond.o $(LIB)block.o $(LIB)myLapack.o $(LIB)operate.o $(LIB)syTensor.o $(LIB)network.o $(LIB)matrix.o
+LIB := ../lib/
+OBJ := $(LIB)libtensorF.a
 LINK := -mkl=parallel
 
 asd.e: ascend.cpp $(OBJ)
@@ -37,7 +37,7 @@ rasd.e: rawAscend.cpp $(OBJ)
 dir.e: direct.cpp $(OBJ)
 	cd $(SRC); make all
 	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
-demo.e: demo_s1.cpp $(OBJ)
+demo.e: demo_s1.cpp
 	cd $(SRC); make all
 	icpc -I$(INC) -L$(LIB) $(LINK) -o $@ $< $(OBJ)
 con.e: contract.cpp $(OBJ)

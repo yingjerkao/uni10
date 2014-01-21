@@ -331,6 +331,7 @@ Node_t* Network_t::replaceWith(int idx, SyTensor_t* SyT, bool force){
 	assert(SyT->RBondNum == Rnums[idx]);
 
 	if(leafs[idx] != NULL){
+		assert(tensors[idx]->similar(*SyT));
 		*(tensors[idx]) = *SyT;
 		tensors[idx]->addLabel(label_arr[idx]);
 		tensors[idx]->setName(names[idx]);
@@ -423,7 +424,6 @@ void Network_t::clean(Node_t* nd){
 }
 
 void Network_t::destruct(){
-	cout<<"DESTRUCTING..."<<endl;
 	clean(root);
 	root = NULL;
 	for(int i = 0; i < leafs.size(); i++)
@@ -466,7 +466,6 @@ SyTensor_t Network_t::launch(const string& _name){
 		SyT.reshape(label_arr[idx], Rnums[idx]);
 	SyT.setName(_name);
 	return SyT;
-		
 }
 
 SyTensor_t Network_t::merge(Node_t* nd){

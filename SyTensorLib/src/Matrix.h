@@ -1,9 +1,11 @@
+#pragma once
 #include <iostream>
 #include <iomanip>
 #include <vector>
 #include <assert.h>
 #include <string.h>
 #include <map>
+#include <math.h>
 using namespace std;
 //Type of Matrix
 #include "myLapack.h"
@@ -28,6 +30,7 @@ class Matrix_t {
 		void transpose();
 		friend Matrix_t operator*(const Matrix_t& Ma, double a);
 		friend Matrix_t operator*(double a, const Matrix_t& Ma){return Ma * a;};
+		friend bool operator== (const Matrix_t& m1, const Matrix_t& m2);
 		void operator*= (double a);
 		friend Matrix_t operator+(const Matrix_t& Ma, const Matrix_t& Mb);
 		void operator+= (const Matrix_t& Mb);

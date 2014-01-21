@@ -1,15 +1,16 @@
 #include <boost/random.hpp>
+#include "myTools.h"
 using namespace boost;
 
 mt19937 lapack_rng(777);
 uniform_01<mt19937> lapack_uni01_sampler(lapack_rng);
 
-int64_t GPU_MEM_MAX = 0;
-int64_t GPU_MEM_USAGE = 0;
+size_t MEM_USAGE = 0;
 
 void* myMalloc(void* ptr, size_t memsize, int& status){
-	ptr = realloc(ptr, memsize);
+	ptr = malloc(memsize);
 	assert(ptr != NULL);
+	MEM_USAGE += memsize;
 	return ptr;
 }
 
@@ -17,8 +18,10 @@ void* myMemcpy(void* des, const void* src, size_t memsize, int des_st, int src_s
 	return memcpy(des, src, memsize);
 }
 
-void myFree(void* ptr, int status){
+void myFree(void* ptr, size_t memsize, int status){
 	free(ptr);
+	MEM_USAGE -= memsize;
+	ptr = NULL;
 }
 void membzero(void* ptr, size_t memsize, int status){
 	memset(ptr, 0, memsize);

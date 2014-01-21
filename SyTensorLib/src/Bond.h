@@ -1,9 +1,11 @@
+#pragma once
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
 #include <vector>
 using namespace std;
 //Bond property
+#include "Matrix.h"
 enum bondType{
 	BD_ROW = 1,
 	BD_COL = -1
@@ -22,7 +24,7 @@ class Bond_t {
 		friend ostream& operator<< (ostream& os, const Bond_t& b);
 		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
 		friend bool operator== (const Bond_t& b1, const Bond_t& b2);
-		friend void printRawElem(const SyTensor_t& SyT, const string& fname);
+		friend Matrix_t printRawElem(const SyTensor_t& SyT, const string& fname);
 		void change(bondType tp);
 		~Bond_t();
 	private:

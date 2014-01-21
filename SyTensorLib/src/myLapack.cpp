@@ -1,10 +1,4 @@
 #include "myLapack.h"
-#include <boost/random.hpp>
-using namespace boost;
-
-mt19937 lapack_rng(777);
-uniform_01<mt19937> lapack_uni01_sampler(lapack_rng);
-
 void myDgemm(double* A, double* B, int M, int N, int K, double* C){
 	double alpha = 1, beta = 0;
 	dgemm((char*)"N", (char*)"N", &N, &M, &K, &alpha, B, &N, A, &K, &beta, C, &N);
@@ -48,9 +42,7 @@ void vecScal(double a, double* X, int64_t N){
 void orthoRandomize(double* elem, int M, int N){
 	int eleNum = M*N;
 	double *random = (double*)malloc(eleNum * sizeof(double));
-	for (int i=0 ; i<eleNum ; i++){
-		random[i] = lapack_uni01_sampler();
-	}
+	randomNums(random, M * N, 0);
 	assert(M <= N);
 	int min = M; //min = min(M,N)
 	int ldA = M, ldu = M, ldvT = min;
@@ -63,27 +55,12 @@ void orthoRandomize(double* elem, int M, int N){
 	dgesvd((char*)"N", (char*)"S", &M, &N, random, &ldA, S, u, &ldu, elem, &ldvT, work, &lwork, &info);
 	//reshape from Fortran format to C format
 	memcpy(random, elem, eleNum * sizeof(double));
-	myTranspose(random, N, M, elem);
+	myTranspose(random, N, M, elem, 0);
 	free(random);
 	free(S);
 	free(u);
 	free(work);
 }
-
-void myTranspose(double* A, int M, int N, double* AT){	//OK
-	for(int i = 0; i < M; i++)
-		for(int j = 0; j < N; j++)
-			AT[j * M + i] = A[i * N + j];
-}
-void myEye(double* elem, int M, int N){
-	int min;
-	if(M < N)	min = M;
-	else		min = N;
-	memset(elem, 0, M * N * sizeof(double));
-	for(int i = 0; i < min; i++)
-		elem[i * N + i] = 1;
-}
-
 void syDiag(double* Kij, int N, double* Eig, double* EigVec){
 	memcpy(EigVec, Kij, N * N * sizeof(double));
 	int ldA = N;
