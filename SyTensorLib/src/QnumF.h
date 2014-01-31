@@ -2,13 +2,8 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
-using namespace std;
 
 #define FERMIONIC 1
-const int U1_UPB = 100;	//Upper bound of U1
-const int U1_LOB = -100;//Lower bound of U1
-const int prt_UPB = 2;  //Upper bound of prt
-const int prt_LOB = -1; //Lower bound of prt
 
 class Qnum_t {
 	public:
@@ -33,8 +28,12 @@ class Qnum_t {
 		friend bool operator== (const Qnum_t& q1, const Qnum_t& q2);
 		friend Qnum_t operator- (const Qnum_t& q1);
 		friend Qnum_t operator* (const Qnum_t& q1, const Qnum_t& q2);
-		friend ostream& operator<< (ostream& os, const Qnum_t& q);
+		friend std::ostream& operator<< (std::ostream& os, const Qnum_t& q);
 	private:
+		static const int U1_UPB = 100;	//Upper bound of U1
+		static const int U1_LOB = -100;//Lower bound of U1
+		static const int prt_UPB = 2;  //Upper bound of prt
+		static const int prt_LOB = -1; //Lower bound of prt
 		int U1;
 		char prt;
 		char prtF;

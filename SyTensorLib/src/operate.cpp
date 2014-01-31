@@ -12,25 +12,25 @@ SyTensor_t operator+(const SyTensor_t& Ta, const SyTensor_t& Tb){
 	vecAdd(Tb.elem, Tc.elem, Ta.elemNum);
 	return Tc;
 }
-void SyTensor_t::operator*= (SyTensor_t& Tb){
-	*this = *this * Tb;
+SyTensor_t& SyTensor_t::operator*= (SyTensor_t& Tb){
+	return *this = *this * Tb;
 }
 
 SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
-	assert(Ta.status & Tb.status & INIT);
-	assert(Ta.status & Tb.status & HAVELABEL);
-	assert(Ta.status & Tb.status & HAVEELEM);
+	assert(Ta.status & Tb.status & Ta.INIT);
+	assert(Ta.status & Tb.status & Ta.HAVELABEL);
+	assert(Ta.status & Tb.status & Ta.HAVEELEM);
 	int AbondNum = Ta.bonds.size();
 	int BbondNum = Tb.bonds.size();
-	vector<int> oldLabelA = Ta.labels;
-	vector<int> oldLabelB = Tb.labels;
+	std::vector<int> oldLabelA = Ta.labels;
+	std::vector<int> oldLabelB = Tb.labels;
 	int oldRnumA = Ta.RBondNum;
 	int oldRnumB = Tb.RBondNum;
-	vector<int> newLabelA;
-	vector<int> interLabel;
-	vector<int> newLabelB;
-	vector<int> markB(BbondNum, 0);
-	vector<int> newLabelC;
+	std::vector<int> newLabelA;
+	std::vector<int> interLabel;
+	std::vector<int> newLabelB;
+	std::vector<int> markB(BbondNum, 0);
+	std::vector<int> newLabelC;
 	bool match;
 	for(int a = 0; a < AbondNum; a++){
 		match = false;
@@ -57,7 +57,7 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 	int conBond = interLabel.size();
 	Ta.reshape(newLabelA, AbondNum - conBond);
 	Tb.reshape(newLabelB, conBond);
-	vector<Bond_t> cBonds;
+	std::vector<Bond_t> cBonds;
 	for(int i = 0; i < AbondNum - conBond; i++)
 		cBonds.push_back(Ta.bonds[i]);
 	for(int i = conBond; i < BbondNum; i++)
@@ -65,8 +65,8 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 	SyTensor_t Tc(cBonds);
 	Tc.addLabel(newLabelC);
 	Block_t blockA, blockB, blockC;
-	map<Qnum_t,Block_t>::iterator it; 
-	map<Qnum_t,Block_t>::iterator it2; 
+	std::map<Qnum_t,Block_t>::iterator it; 
+	std::map<Qnum_t,Block_t>::iterator it2; 
 	for(it = Ta.blocks.begin() ; it != Ta.blocks.end(); it++){
 		if((it2 = Tb.blocks.find(it->first)) != Tb.blocks.end()){
 			blockA = it->second;
@@ -76,7 +76,7 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 			myDgemm(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
 		}
 	}
-	Tc.status |= HAVEELEM;
+	Tc.status |= Tc.HAVEELEM;
 	Ta.reshape(oldLabelA, oldRnumA);
 	Tb.reshape(oldLabelB, oldRnumB);
 	return Tc;

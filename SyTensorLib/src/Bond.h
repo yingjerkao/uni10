@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <assert.h>
 #include <vector>
-using namespace std;
+#include <map>
 //Bond property
 #include "Matrix.h"
 enum bondType{
@@ -14,24 +14,27 @@ enum bondType{
 class SyTensor_t;
 class Bond_t {
 	public:
-		Bond_t(bondType, vector<Qnum_t>& qnums);
+		Bond_t(bondType, std::vector<Qnum_t>& qnums);
 		Bond_t(const Bond_t& _b):type(_b.type), dim(_b.dim), Qnums(_b.Qnums), Qdegs(_b.Qdegs), offsets(_b.offsets){
 			//cout<<"Copying Bond "<< this <<" from " << &_b << endl;
 		}
-		void assign(bondType, vector<Qnum_t>& qnums);
+		void assign(bondType, std::vector<Qnum_t>& qnums);
 		friend class SyTensor_t;
 		friend class Node_t;
-		friend ostream& operator<< (ostream& os, const Bond_t& b);
-		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
+		friend std::ostream& operator<< (std::ostream& os, const Bond_t& b);
+		friend std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT);
 		friend bool operator== (const Bond_t& b1, const Bond_t& b2);
-		friend Matrix_t printRawElem(const SyTensor_t& SyT, const string& fname);
+		//friend Matrix_t printRawElem(const SyTensor_t& SyT, const std::string& fname);
 		void change(bondType tp);
+		void combine(Bond_t bd);
+		friend Bond_t combine(bondType tp, const std::vector<Bond_t>& bds);
+		friend Bond_t combine(const std::vector<Bond_t>& bds);
 		~Bond_t();
 	private:
-		void setting(vector<Qnum_t>& qnums);
+		void setting(std::vector<Qnum_t>& qnums);
 		bondType type;
 		int dim;
-		vector<Qnum_t>Qnums;	//Quantum numbers
-		vector<int>Qdegs;	//Degeneracy in each quantum sector
-		vector<int>offsets;	
+		std::vector<Qnum_t>Qnums;	//Quantum numbers
+		std::vector<int>Qdegs;	//Degeneracy in each quantum sector
+		std::vector<int>offsets;	
 };

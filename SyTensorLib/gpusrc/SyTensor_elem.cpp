@@ -219,16 +219,22 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 			outBonds.push_back(bonds[rsp_outin[b]]);
 		for(int b = 0; b < bonds.size(); b++){
 			if(b < rowBondNum){
+				outBonds[b].change(BD_ROW);
+				/*
 				if(outBonds[b].type == BD_COL)
 					for(int q = 0; q < outBonds[b].Qnums.size(); q++)
 						outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
 				outBonds[b].type = BD_ROW;
+				*/
 			}
 			else{
+				outBonds[b].change(BD_COL);
+				/*
 				if(outBonds[b].type == BD_ROW)
 					for(int q = 0; q < outBonds[b].Qnums.size(); q++)
 						outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
 				outBonds[b].type = BD_COL;
+				*/
 			}
 		}
 		SyTensor_t SyTout(outBonds, name);

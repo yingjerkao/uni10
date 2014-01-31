@@ -17,16 +17,16 @@ void SyTensor_t::grouping(){
 		}
 	}
 	RBondNum = row_bondNum;
-	map<Qnum_t,int> row_QnumMdim;
-	vector<int> row_offs(row_bondNum, 0);
-	map<Qnum_t,vector<int> > row_Qnum2Qidx;
+	std::map<Qnum_t,int> row_QnumMdim;
+	std::vector<int> row_offs(row_bondNum, 0);
+	std::map<Qnum_t,std::vector<int> > row_Qnum2Qidx;
 	Qnum_t qnum;
 	int dim;
 	int boff = 0;
-	vector<int>tmpRQidx2Dim(RQdim, 1);
-	vector<int>tmpCQidx2Dim(CQdim, 1);
-	vector<int>tmpRQidx2Off(RQdim, 0);
-	vector<int>tmpCQidx2Off(CQdim, 0);
+	std::vector<int>tmpRQidx2Dim(RQdim, 1);
+	std::vector<int>tmpCQidx2Dim(CQdim, 1);
+	std::vector<int>tmpRQidx2Off(RQdim, 0);
+	std::vector<int>tmpCQidx2Off(CQdim, 0);
 	if(row_bondNum){
 		while(1){
 			qnum.set();
@@ -64,10 +64,10 @@ void SyTensor_t::grouping(){
 		row_QnumMdim[qnum] = 1;
 		row_Qnum2Qidx[qnum].push_back(0);
 	}
-	map<Qnum_t,int>::iterator itt;
-	map<Qnum_t,int> col_QnumMdim;
-	vector<int> col_offs(col_bondNum, 0);
-	map<Qnum_t,vector<int> > col_Qnum2Qidx;
+	std::map<Qnum_t,int>::iterator itt;
+	std::map<Qnum_t,int> col_QnumMdim;
+	std::vector<int> col_offs(col_bondNum, 0);
+	std::map<Qnum_t,std::vector<int> > col_Qnum2Qidx;
 	boff = 0;
 	if(col_bondNum){
 		while(1){
@@ -111,9 +111,9 @@ void SyTensor_t::grouping(){
 		}
 	}
 
-	map<Qnum_t,int>::iterator it;
-	map<Qnum_t,int>::iterator it2;
-	set<int> Qidx;
+	std::map<Qnum_t,int>::iterator it;
+	std::map<Qnum_t,int>::iterator it2;
+	std::set<int> Qidx;
 	Block_t blk;
 	int qidx;
 	int off = 0;
@@ -126,8 +126,8 @@ void SyTensor_t::grouping(){
 		off += blk.Rnum * blk.Cnum;
 		blocks[it->first] = blk;
 		Block_t* blkptr= &(blocks[it->first]);
-		vector<int>& tmpRQidx = row_Qnum2Qidx[it->first];
-		vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];	
+		std::vector<int>& tmpRQidx = row_Qnum2Qidx[it->first];
+		std::vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];	
 		for(int i = 0; i < tmpRQidx.size(); i++){
 			RQidx2Blk[tmpRQidx[i]] = blkptr;
 			for(int j = 0; j < tmpCQidx.size(); j++){
@@ -141,8 +141,8 @@ void SyTensor_t::grouping(){
 		}
 	}
 	int elemEnc = 0;
-	for(map<int, int>::iterator itr = RQidx2Dim.begin(); itr != RQidx2Dim.end(); itr++)
-		for(map<int, int>::iterator itc = CQidx2Dim.begin(); itc != CQidx2Dim.end(); itc++){
+	for(std::map<int, int>::iterator itr = RQidx2Dim.begin(); itr != RQidx2Dim.end(); itr++)
+		for(std::map<int, int>::iterator itc = CQidx2Dim.begin(); itc != CQidx2Dim.end(); itc++){
 			qidx = itr->first * CQdim + itc->first;
 			if(Qidx.find(qidx) != Qidx.end()){
 				QidxEnc[qidx] = elemEnc;
@@ -151,12 +151,12 @@ void SyTensor_t::grouping(){
 		}
 }
 
-void SyTensor_t::addGate(vector<_Swap> swaps){
+void SyTensor_t::addGate(std::vector<_Swap> swaps){
 	assert(status & HAVEELEM);
 	int sign = 1;
 	int bondNum = bonds.size();
-	vector<int> Q_idxs(bondNum, 0); 
-	vector<int> Q_Bdims(bondNum, 0);
+	std::vector<int> Q_idxs(bondNum, 0); 
+	std::vector<int> Q_Bdims(bondNum, 0);
 	for(int b = 0; b < bondNum; b++)
 		Q_Bdims[b] = bonds[b].Qnums.size();
 	int Q_off;
@@ -166,7 +166,7 @@ void SyTensor_t::addGate(vector<_Swap> swaps){
 	int sB_rDim, sB_cDim;	//sub-block of a Qidx
 	int B_cDim;
 	int64_t E_off;
-	for(map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
+	for(std::map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 		Q_off = it->first;
 		tmp = Q_off;
 		for(int b = bondNum - 1; b >= 0; b--){
@@ -191,7 +191,7 @@ void SyTensor_t::addGate(vector<_Swap> swaps){
 	}
 }
 
-void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
+void SyTensor_t::reshape(std::vector<int>& newLabels, int rowBondNum){
 	assert(status & INIT);
 	assert(status & HAVELABEL);
 	assert(labels.size() == newLabels.size());
@@ -204,6 +204,7 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 				rsp_outin[j] = i;	
 				cnt++;
 			}
+
 	assert(cnt == newLabels.size());
 	bool inorder = true;
 	for(int i = 1; i < bondNum; i++)
@@ -213,21 +214,27 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 		}
 	if(inorder  && rsp_outin[0] == 0 && RBondNum == rowBondNum);	//do nothing
 	else{
-		vector<Bond_t> outBonds;
+		std::vector<Bond_t> outBonds;
 		for(int b = 0; b < bonds.size(); b++)
 			outBonds.push_back(bonds[rsp_outin[b]]);
 		for(int b = 0; b < bonds.size(); b++){
 			if(b < rowBondNum){
+				outBonds[b].change(BD_ROW);
+				/*
 				if(outBonds[b].type == BD_COL)
 					for(int q = 0; q < outBonds[b].Qnums.size(); q++)
 						outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
 				outBonds[b].type = BD_ROW;
+				*/
 			}
 			else{
+				outBonds[b].change(BD_COL);
+				/*
 				if(outBonds[b].type == BD_ROW)
 					for(int q = 0; q < outBonds[b].Qnums.size(); q++)
 						outBonds[b].Qnums[q] = -outBonds[b].Qnums[q];
 				outBonds[b].type = BD_COL;
+				*/
 			}
 		}
 		SyTensor_t SyTout(outBonds, name);
@@ -256,11 +263,11 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 				for(int j = 0; j < bondNum; j++)
 					if(inLabelF[i] == outLabelF[j])
 						rspF_outin[j] = i;	
-			vector<_Swap> swaps = _recSwap(rspF_outin, bondNum, ordF);
+			std::vector<_Swap> swaps = _recSwap(rspF_outin, bondNum, ordF);
 #endif
 			//End Fermionic system
-			vector<int> Qin_idxs(bondNum, 0); 
-			vector<int> Qot_idxs(bondNum, 0); 
+			std::vector<int> Qin_idxs(bondNum, 0); 
+			std::vector<int> Qot_idxs(bondNum, 0); 
 			int Qin_off, Qot_off;
 			int tmp;
 			int Qin_RQoff, Qin_CQoff;
@@ -271,13 +278,13 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 			int sBot_r, sBot_c;
 			int Bin_cDim, Bot_cDim;
 			int64_t Ein_off, Eot_off;
-			vector<int> sBin_idxs(bondNum, 0);
-			vector<int> sBin_sBdims(bondNum, 0);
-			vector<int> Qot_acc(bondNum, 1); 
-			vector<int> sBot_acc(bondNum, 1);
+			std::vector<int> sBin_idxs(bondNum, 0);
+			std::vector<int> sBin_sBdims(bondNum, 0);
+			std::vector<int> Qot_acc(bondNum, 1); 
+			std::vector<int> sBot_acc(bondNum, 1);
 			for(int b = bondNum	- 1; b > 0; b--)
 				Qot_acc[b - 1] = Qot_acc[b] * SyTout.bonds[b].Qnums.size();
-			for(map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
+			for(std::map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 				Qin_off = it->first;
 				tmp = Qin_off;
 				int qdim;
@@ -345,11 +352,11 @@ void SyTensor_t::reshape(vector<int>& newLabels, int rowBondNum){
 void SyTensor_t::addRawElem(DOUBLE* rawElem){
 	assert((status & INIT));   //If not INIT, CANNOT add elements
 	int bondNum = bonds.size();
-	vector<int> Q_idxs(bondNum, 0); 
-	vector<int> Q_Bdims(bondNum, 0);
-	vector<int> sB_idxs(bondNum, 0);
-	vector<int> sB_sBdims(bondNum, 0);
-	vector<int> rAcc(bondNum, 1); 
+	std::vector<int> Q_idxs(bondNum, 0); 
+	std::vector<int> Q_Bdims(bondNum, 0);
+	std::vector<int> sB_idxs(bondNum, 0);
+	std::vector<int> sB_sBdims(bondNum, 0);
+	std::vector<int> rAcc(bondNum, 1); 
 	for(int b = 0; b < bondNum; b++)
 		Q_Bdims[b] = bonds[b].Qnums.size();
 	for(int b = bondNum - 1; b > 0; b--)
@@ -362,7 +369,7 @@ void SyTensor_t::addRawElem(DOUBLE* rawElem){
 	int B_cDim;
 	int64_t E_off;
 	int64_t R_off;
-	for(map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
+	for(std::map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 		Q_off = it->first;
 		tmp = Q_off;
 		for(int b = bondNum - 1; b >= 0; b--){
@@ -403,9 +410,9 @@ void SyTensor_t::addRawElem(DOUBLE* rawElem){
 }
 
 
-double SyTensor_t::at(vector<int> idxs)const{
+double SyTensor_t::at(std::vector<int> idxs)const{
 	int bondNum = bonds.size();
-	vector<int> Qidxs(bondNum, 0);
+	std::vector<int> Qidxs(bondNum, 0);
 	for(int b = 0; b < bondNum; b++){
 		for(int q = bonds[b].offsets.size() - 1; q >= 0; q--){
 			if(idxs[b] < bonds[b].offsets[q])
@@ -414,7 +421,7 @@ double SyTensor_t::at(vector<int> idxs)const{
 			break;
 		}
 	}
-	vector<int> Q_acc(bondNum, 1); 
+	std::vector<int> Q_acc(bondNum, 1); 
 	for(int b = bondNum	- 1; b > 0; b--)
 		Q_acc[b - 1] = Q_acc[b] * bonds[b].Qnums.size();
 	int Qoff = 0;
@@ -430,7 +437,7 @@ double SyTensor_t::at(vector<int> idxs)const{
 		int blkCoff = CQidx2Off.find(Q_CQoff)->second;
 		int boff = blk->offset + (blkRoff * B_cDim) + blkCoff;
 		int cnt = 0;
-		vector<int> D_acc(bondNum, 1); 
+		std::vector<int> D_acc(bondNum, 1); 
 		for(int b = bondNum	- 1; b > 0; b--)
 			D_acc[b - 1] = D_acc[b] * bonds[b].Qdegs[Qidxs[b]];
 		for(int b = 0; b < bondNum; b++)
@@ -458,8 +465,8 @@ void SyTensor_t::transpose(){
 			rsp_outin[b] = rbondNum + b;
 		else
 			rsp_outin[b] = b - cbondNum;
-	vector<int> outLabels(bondNum, 0);
-	vector<Bond_t> outBonds;
+	std::vector<int> outLabels(bondNum, 0);
+	std::vector<Bond_t> outBonds;
 	if(status & HAVELABEL)
 		for(int b = 0; b < bonds.size(); b++){
 			outBonds.push_back(bonds[rsp_outin[b]]);
@@ -479,8 +486,8 @@ void SyTensor_t::transpose(){
 	if(status & HAVELABEL)
 		SyTout.addLabel(outLabels);
 	if(status & HAVEELEM){
-		map<Qnum_t,Block_t>::iterator it_in; 
-		map<Qnum_t,Block_t>::iterator it_out; 
+		std::map<Qnum_t,Block_t>::iterator it_in; 
+		std::map<Qnum_t,Block_t>::iterator it_out; 
 		double* elem_in;
 		double* elem_out;
 		int Rnum, Cnum;
@@ -513,38 +520,159 @@ bool SyTensor_t::elemCmp(const SyTensor_t& SyT)const{
 		return false;
 	return true;
 }
-double SyTensor_t::trace(){
-	return 0;	
+double SyTensor_t::trace()const{
+	assert(status & HAVEELEM);		
+	int Rnum;
+	DOUBLE trVal = 0;
+	for(std::map<Qnum_t, Block_t>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+		assert(it->second.Rnum == it->second.Cnum);
+		Rnum = it->second.Rnum;
+		for(int r = 0; r < Rnum; r++)
+			trVal += it->second.elem[r * Rnum + r];
+	}
+	return trVal;	
 }
 
-SyTensor_t SyTensor_t::subTrace(const vector<int>& la, const vector<int>& lb){
+double SyTensor_t::trace(const SyTensor_t& SyT)const{
+	assert((status & HAVEELEM) && (SyT.status & HAVEELEM));
+	int Rnum;
+	int Cnum;
+	DOUBLE trVal = 0;
+	std::map<Qnum_t, Block_t>::const_iterator it2 = SyT.blocks.begin();
+	for(std::map<Qnum_t, Block_t>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+		assert(it->second == it2->second);
+		Rnum = it->second.Rnum;
+		Cnum = it->second.Cnum;
+		for(int r = 0; r < Rnum; r++)
+			for(int c = 0; c < Cnum; c++)
+				trVal += it->second.elem[r * Cnum + c] * it2->second.elem[r * Cnum + c];
+		it2++;
+	}
+	return trVal;	
+	
+	return 0;	
+}
+/*
+SyTensor_t SyTensor_t::partialTrace(const std::vector<int>& la, const std::vector<int>& lb)const{
 	assert(status & HAVELABEL);		
 	assert(status & HAVEELEM);		
 	assert(labels.size() > la.size() + lb.size());
-	vector<int>newLabels(labels.size() - la.size() - lb.size(), 0);
-	vector<Bond_t> newBonds;
+	std::vector<int>newLabels(labels.size() - la.size() - lb.size(), 0);
+	std::vector<Bond_t> newBonds;
 	int cnt = 0;
 	for(int i = 0; i < labels.size(); i++){
+		bool flag = true;
 		for(int a = 0; a < la.size(); a++)
-			if(la[a] != labels[i]){
-				newLabels[cnt] = labels[i];
-				newBonds.push_back(bonds[i]);
-				cnt++;
-			}
+			if(la[a] == labels[i])
+				flag = false;
 		for(int b = 0; b < lb.size(); b++)
-			if(lb[b] != labels[i]){
-				newLabels[cnt] = labels[i];
-				newBonds.push_back(bonds[i]);
-				cnt++;
-			}
+			if(lb[b] == labels[i])
+				flag = false;
+		if(flag){
+			newLabels[cnt] = labels[i];
+			newBonds.push_back(bonds[i]);
+			std::cout<<bonds[i];
+			cnt++;
+		}
 	}
-	SyTensor_t SyT;	 
+	SyTensor_t SyT;
 	return SyT;
-	
 }
+*/
+SyTensor_t& SyTensor_t::partialTrace(int la, int lb){
+	assert(status & HAVELABEL);		
+	assert(status & HAVEELEM);		
+	assert(bonds.size() > 2 && la != lb);
+	int bondNum = bonds.size();
+	std::vector<Bond_t> newBonds;
+	std::vector<int>newLabels(bondNum - 2, 0);
+	std::vector<int>rsp_labels(bondNum);
+	int ia, ib;
+	int enc = 0;
+	for(int l = 0; l < labels.size(); l++){
+		if(labels[l] == la)
+			ia = l;
+		else if(labels[l] == lb)
+			ib = l;
+		else{
+			newBonds.push_back(bonds[l]);
+			newLabels[enc] = labels[l];
+			rsp_labels[enc] = labels[l];
+			enc++;
+		}
+	}
+	assert(enc == newLabels.size());
 
-SyTensor_t SyTensor_t::subTrace(int la, int lb){
-	vector<int> la_arr(1, la);
-	vector<int> lb_arr(1, lb);
-	return subTrace(la_arr, lb_arr);
+	SyTensor_t Tt(newBonds, newLabels);
+	rsp_labels[bondNum - 2] = labels[ia];
+	rsp_labels[bondNum - 1] = labels[ib];
+	ia = bondNum - 2;
+	ib = bondNum - 1;
+	this->reshape(rsp_labels, Tt.RBondNum);
+	std::vector<int> Q_acc(bondNum, 1); 
+	for(int b = bondNum - 1; b > 0; b--)
+		Q_acc[b - 1] = Q_acc[b] * bonds[b].Qnums.size();
+	int tQdim = bonds[ia].Qnums.size();
+	/*Sanity Check*/
+	assert(tQdim == bonds[ib].Qnums.size());
+	Qnum_t q0(0, 0);
+	for(int q = 0; q < tQdim; q++){
+		assert(bonds[ia].Qnums[q] * bonds[ib].Qnums[q] == q0);
+		assert(bonds[ia].Qdegs[q] == bonds[ib].Qdegs[q]);
+	}
+	/*END*/
+	int tBnum = Tt.bonds.size();
+	//std::vector<int> Q_idxs(bondNum, 0); 
+	std::vector<int> Qt_Bdims(tBnum, 0);
+	for(int b = 0; b < tBnum; b++)
+		Qt_Bdims[b] = Tt.bonds[b].Qnums.size();
+
+	int Qt_off;
+	int Q_off;
+	//int tmp;
+	int Qt_RQoff, Qt_CQoff;
+	int Q_RQoff, Q_CQoff;
+	int sBt_rDim, sBt_cDim;	//sub-block of a Qidx of Tt
+	int sB_rDim, sB_cDim;	//sub-block of a Qidx
+	int Bt_cDim;
+	//int B_cDim;
+	int64_t Et_off;
+	std::vector<int64_t> E_offs(tQdim);
+	std::vector<int> B_cDims(tQdim);
+	int tQdim2 = tQdim * tQdim; 
+	int Qenc = Q_acc[ia] + Q_acc[ib];
+	for(std::map<int, int>::iterator it = Tt.QidxEnc.begin(); it != Tt.QidxEnc.end(); it++){
+		Qt_off = it->first;
+
+		Qt_RQoff = Qt_off / Tt.CQdim;
+		Qt_CQoff = Qt_off % Tt.CQdim;
+		Bt_cDim = Tt.RQidx2Blk[Qt_RQoff]->Cnum;
+		Et_off = Tt.RQidx2Blk[Qt_RQoff]->offset + (Tt.RQidx2Off[Qt_RQoff] * Bt_cDim) + Tt.CQidx2Off[Qt_CQoff];
+		sBt_rDim = Tt.RQidx2Dim[Qt_RQoff];
+		sBt_cDim = Tt.CQidx2Dim[Qt_CQoff];
+
+		for(int q = 0; q < tQdim; q++){
+			Q_off = Qt_off * tQdim2 + q * Qenc;
+			Q_RQoff = Q_off / CQdim;
+			Q_CQoff = Q_off % CQdim;
+			B_cDims[q] = RQidx2Blk[Q_RQoff]->Cnum;
+			E_offs[q] = RQidx2Blk[Q_RQoff]->offset + (RQidx2Off[Q_RQoff] * B_cDims[q]) + CQidx2Off[Q_CQoff];
+		}
+		int tQdeg, sB_c_off;
+		DOUBLE trVal;
+		for(int sB_r = 0; sB_r < sBt_rDim; sB_r++)
+			for(int sB_c = 0; sB_c < sBt_cDim; sB_c++){
+				trVal = 0;
+				for(int q = 0; q < tQdim; q++){
+					tQdeg = bonds[ia].Qdegs[q];
+					sB_c_off = sB_c * (tQdeg * tQdeg);
+					for(int t = 0; t < tQdeg; t++){
+						trVal += elem[E_offs[q] + (sB_r * B_cDims[q]) + sB_c_off + t * (tQdeg + 1)];
+					}
+				}
+				Tt.elem[Et_off + sB_r * Bt_cDim + sB_c] = trVal;
+			}
+		Tt.status |= HAVEELEM;
+	}
+	return *this = Tt;
 }

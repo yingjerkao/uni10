@@ -5,8 +5,8 @@ Node_t::Node_t(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), po
 }
 
 Node_t::Node_t(SyTensor_t* Tp): T(Tp), elemNum(Tp->elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){	
-	assert(Tp->status & INIT);
-	assert(Tp->status & HAVELABEL);
+	assert(Tp->status & Tp->INIT);
+	assert(Tp->status & Tp->HAVELABEL);
 }
 
 Node_t::Node_t(const Node_t& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){	

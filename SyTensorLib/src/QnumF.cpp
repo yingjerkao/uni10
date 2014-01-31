@@ -19,8 +19,8 @@ Qnum_t operator* (const Qnum_t& q1, const Qnum_t& q2){
 	return q3;
 }
 
-ostream& operator<< (ostream& os, const Qnum_t& q){
-	os << "(U1 = " << setprecision(2) << q.U1 << ", P = " << setprecision(1) << (int)q.prt << ", " << (int)q.prtF << ")";
+std::ostream& operator<< (std::ostream& os, const Qnum_t& q){
+	os << "(U1 = " << std::setprecision(2) << q.U1 << ", P = " << std::setprecision(1) << (int)q.prt << ", " << (int)q.prtF << ")";
 	return os;
 }
 

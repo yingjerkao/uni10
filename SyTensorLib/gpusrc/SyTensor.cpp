@@ -9,12 +9,12 @@ SyTensor_t::SyTensor_t(): status(0), elem(NULL), RBondNum(0), RQdim(0), CQdim(0)
 }
 
 SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
-	status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks),
+	status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks), labels(SyT.labels),
     RBondNum(SyT.RBondNum), RQdim(SyT.RQdim), CQdim(SyT.CQdim), elemNum(SyT.elemNum), elem(NULL),
 	RQidx2Off(SyT.RQidx2Off), CQidx2Off(SyT.CQidx2Off), RQidx2Dim(SyT.RQidx2Dim), CQidx2Dim(SyT.CQidx2Dim), QidxEnc(SyT.QidxEnc),
 	gpu_meta(NULL), meta_size(SyT.meta_size), allocThread(SyT.allocThread){
 	//cout<<"COPY CONSTRUCTING " << this << endl;
-	status &= ~HAVELABEL;	//Labels are NOT copied to another tensor.
+	//status &= ~HAVELABEL;	//Labels are NOT copied to another tensor.
 	for(map<int, Block_t*>::const_iterator it = SyT.RQidx2Blk.begin(); it != SyT.RQidx2Blk.end(); it++)
 		RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
 	if(SyT.status & INIT){

@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include "QnumF.h"
 
-using namespace std;
 class SyTensor_t;
 class Block_t {
 	public:
@@ -18,11 +17,11 @@ class Block_t {
 		~Block_t(){
 			//cout<<"Destructing Block...\n";
 		};
-		int row()const;
-		int col()const;
+		//int row()const;
+		//int col()const;
 		friend class SyTensor_t;
-		friend ostream& operator<< (ostream& os, const Block_t& b);
-		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
+		friend std::ostream& operator<< (std::ostream& os, const Block_t& b);
+		friend std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT);
 		friend SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb);
 		friend bool operator== (const Block_t& b1, const Block_t& b2);
 	private:

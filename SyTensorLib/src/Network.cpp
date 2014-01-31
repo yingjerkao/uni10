@@ -5,14 +5,14 @@ Node_t::Node_t(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), po
 }
 
 Node_t::Node_t(SyTensor_t* Tp): T(Tp), elemNum(Tp->elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){	
-	assert(Tp->status & INIT);
-	assert(Tp->status & HAVELABEL);
+	assert(Tp->status & Tp->INIT);
+	assert(Tp->status & Tp->HAVELABEL);
 }
 
 Node_t::Node_t(const Node_t& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){	
 }
 
-Node_t::Node_t(vector<Bond_t>& _bonds, vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL), point(0){	
+Node_t::Node_t(std::vector<Bond_t>& _bonds, std::vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL), point(0){	
 	elemNum = cal_elemNum(bonds);
 }
 
@@ -29,9 +29,9 @@ void Node_t::delink(){
 Node_t Node_t::contract(Node_t* nd){
 	int AbondNum = bonds.size();
 	int BbondNum = nd->bonds.size();
-	vector<Bond_t> cBonds;
-	vector<int> markB(BbondNum, 0);
-	vector<int> newLabelC;
+	std::vector<Bond_t> cBonds;
+	std::vector<int> markB(BbondNum, 0);
+	std::vector<int> newLabelC;
 	int conBondNum = 0;
 	bool match;
 	for(int a = 0; a < AbondNum; a++){
@@ -67,8 +67,8 @@ Node_t Node_t::contract(Node_t* nd){
 float Node_t::metric(Node_t* nd){	//Bigger is better
 	int AbondNum = bonds.size();
 	int BbondNum = nd->bonds.size();
-	vector<Bond_t> cBonds;
-	vector<int> markB(BbondNum, 0);
+	std::vector<Bond_t> cBonds;
+	std::vector<int> markB(BbondNum, 0);
 	int conBondNum = 0;
 	bool match;
 	for(int a = 0; a < AbondNum; a++){
@@ -98,7 +98,7 @@ float Node_t::metric(Node_t* nd){	//Bigger is better
 	return float(elemNum + nd->elemNum) / newElemNum;
 }
 
-int64_t Node_t::cal_elemNum(vector<Bond_t>& _bonds){
+int64_t Node_t::cal_elemNum(std::vector<Bond_t>& _bonds){
 	int rBondNum = 0;
 	int cBondNum = 0;
 	for(int b = 0; b < _bonds.size(); b++)
@@ -108,8 +108,8 @@ int64_t Node_t::cal_elemNum(vector<Bond_t>& _bonds){
 			cBondNum++;
 	Qnum_t qnum(0, 0);
 	int dim;
-	map<Qnum_t,int> row_QnumMdim;
-	vector<int> row_offs(rBondNum, 0);
+	std::map<Qnum_t,int> row_QnumMdim;
+	std::vector<int> row_offs(rBondNum, 0);
 	if(rBondNum){
 		while(1){
 			qnum.set();
@@ -139,8 +139,8 @@ int64_t Node_t::cal_elemNum(vector<Bond_t>& _bonds){
 		row_QnumMdim[qnum] = 1;
 	}
 
-	map<Qnum_t,int> col_QnumMdim;
-	vector<int> col_offs(cBondNum, 0);
+	std::map<Qnum_t,int> col_QnumMdim;
+	std::vector<int> col_offs(cBondNum, 0);
 	if(cBondNum){
 		while(1){
 			qnum.set();
@@ -173,8 +173,8 @@ int64_t Node_t::cal_elemNum(vector<Bond_t>& _bonds){
 			col_QnumMdim[qnum] = 1;
 	}
 	int64_t _elemNum = 0;
-	map<Qnum_t,int>::iterator it;
-	map<Qnum_t,int>::iterator it2;
+	std::map<Qnum_t,int>::iterator it;
+	std::map<Qnum_t,int>::iterator it2;
 	for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
 		it = row_QnumMdim.find(it2->first);
 		_elemNum += it->second * it2->second;
@@ -187,28 +187,28 @@ Network_t::Network_t(): root(NULL), load(false), times(0), tot_elem(0), max_elem
 }
 */
 /*
-Network_t::Network_t(vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
+Network_t::Network_t(std::vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	for(int i = 0; i < tens.size(); i++)
 		add(tens[i]);
 }
 */
 
-Network_t::Network_t(const string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
+Network_t::Network_t(const std::string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	fromfile(fname);
 	int Tnum = label_arr.size() - 1;
 	swapflags.assign(Tnum, false);
-	vector<_Swap> swaps;
+	std::vector<_Swap> swaps;
 	swaps_arr.assign(Tnum, swaps);
 	leafs.assign(Tnum, NULL);
 	tensors.assign(Tnum, NULL);
 }
 
-Network_t::Network_t(const string& fname, const vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
+Network_t::Network_t(const std::string& fname, const std::vector<SyTensor_t*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	fromfile(fname);
 	assert((label_arr.size() - 1) == tens.size());
 	int Tnum = tens.size();
 	swapflags.assign(Tnum, false);
-	vector<_Swap> swaps;
+	std::vector<_Swap> swaps;
 	swaps_arr.assign(Tnum, swaps);
 	leafs.assign(Tnum, NULL);
 	tensors.assign(Tnum, NULL);
@@ -225,53 +225,53 @@ Network_t::Network_t(const string& fname, const vector<SyTensor_t*>& tens): root
 	}
 }
 
-void Network_t::fromfile(const string& fname){
-	string str;
-	ifstream infile;
+void Network_t::fromfile(const std::string& fname){
+	std::string str;
+	std::ifstream infile;
 	infile.open (fname.c_str());
 	int lnum = 0;
 	int MAXLINES = 1000;
 	int pos = 0;
 	int endpos = 0;
-	string tar("1234567890-");
-	vector<string> ord;
+	std::string tar("1234567890-");
+	std::vector<std::string> ord;
 	while(lnum < MAXLINES){
 		getline(infile, str); // Saves the line in STRING.
 		if(infile.eof())
 			break;
 		pos = str.find(":");
-		if(pos == string::npos)
+		if(pos == std::string::npos)
 			break;
-		string name = str.substr(0, pos);
+		std::string name = str.substr(0, pos);
 		boost::algorithm::trim(name);
 		if(name == "ORDER"){
-			string del(" ,;");
-			while(((pos = str.find_first_not_of(del, pos + 1)) != string::npos)){
+			std::string del(" ,;");
+			while(((pos = str.find_first_not_of(del, pos + 1)) != std::string::npos)){
 				endpos = str.find_first_of(del, pos + 1);
-				if(endpos == string::npos)
+				if(endpos == std::string::npos)
 					ord.push_back(str.substr(pos));
 				else
 					ord.push_back(str.substr(pos, endpos - pos));
 				pos = endpos;
-				if(pos == string::npos)
+				if(pos == std::string::npos)
 					break;
 			}
 			break;
 		}
 		names.push_back(name);
-		vector<int> labels;
+		std::vector<int> labels;
 		int Rnum = 0;
 		int cnt = 0;
 		int tmp;
-		while((pos = str.find_first_of(tar, pos + 1)) != string::npos){
+		while((pos = str.find_first_of(tar, pos + 1)) != std::string::npos){
 			if(Rnum == 0){
 				tmp = str.find(";", endpos);
-				if(tmp != string::npos && tmp < pos)
+				if(tmp != std::string::npos && tmp < pos)
 					Rnum = cnt;
 			}
 			endpos = str.find_first_not_of(tar, pos + 1);
-			string label;
-			if(endpos == string::npos)
+			std::string label;
+			if(endpos == std::string::npos)
 				label = str.substr(pos);
 			else
 				label = str.substr(pos, endpos - pos);
@@ -280,7 +280,7 @@ void Network_t::fromfile(const string& fname){
 			pos = endpos;
 			if(Rnum == 0)
 				cnt++;
-			if(pos == string::npos)
+			if(pos == std::string::npos)
 				break;
 		}
 		label_arr.push_back(labels);
@@ -452,7 +452,7 @@ void Network_t::construct(){
 //	assert(false);//not a ready function
 //}
 
-SyTensor_t Network_t::launch(const string& _name){
+SyTensor_t Network_t::launch(const std::string& _name){
 	if(!load)
 		construct();
 	for(int t = 0; t < tensors.size(); t++)
@@ -499,7 +499,7 @@ Network_t::~Network_t(){
 		delete tensors[i];
 }
 
-void Network_t::preprint(ostream& os, Node_t* nd, int layer){
+void Network_t::preprint(std::ostream& os, Node_t* nd, int layer){
 	if(nd == NULL)
 		return;
 	for(int i = 0; i < layer; i++)
@@ -510,27 +510,27 @@ void Network_t::preprint(ostream& os, Node_t* nd, int layer){
 		os<<"*("<<nd->elemNum<<"): ";
 	for(int i = 0; i < nd->labels.size(); i++)
 		os<< nd->labels[i] << ", ";
-	os<<endl;
+	os<<std::endl;
 	preprint(os, nd->left, layer+1);
 	preprint(os, nd->right, layer+1);
 }
 
-ostream& operator<< (ostream& os, Network_t& net){
+std::ostream& operator<< (std::ostream& os, Network_t& net){
 	if(!net.load)
 		net.construct();
 	net.preprint(os, net.root, 0);
 	return os;
 }
-ostream& operator<< (ostream& os, const Node_t& nd){
-	os << "Tensor: " << nd.T<<endl;
-	os << "elemNum: " << nd.elemNum<<endl;
-	os << "parent: " << nd.parent<<endl;
-	os << "left: " << nd.left<<endl;
-	os << "right: " << nd.right<<endl;
+std::ostream& operator<< (std::ostream& os, const Node_t& nd){
+	os << "Tensor: " << nd.T<<std::endl;
+	os << "elemNum: " << nd.elemNum<<std::endl;
+	os << "parent: " << nd.parent<<std::endl;
+	os << "left: " << nd.left<<std::endl;
+	os << "right: " << nd.right<<std::endl;
 	os << "labels: ";
 	for(int i = 0; i < nd.labels.size(); i++)
 		os << nd.labels[i] << ", ";
-	os << endl;
+	os << std::endl;
 	for(int i = 0; i < nd.bonds.size(); i++)
 		os << "    " <<  nd.bonds[i];
 	return os;
@@ -559,16 +559,16 @@ void Network_t::addSwap(){
 	assert(Tnum == conOrder.size());
 	int tenOrder[conOrder.size()];
 	memcpy(tenOrder, &(conOrder[0]), Tnum * sizeof(int));
-	vector<_Swap> tenSwaps = _recSwap(tenOrder, Tnum);
-	vector<_Swap> swtmp;
+	std::vector<_Swap> tenSwaps = _recSwap(tenOrder, Tnum);
+	std::vector<_Swap> swtmp;
 	for(int s = 0; s < tenSwaps.size(); s++){
 		swtmp = tensors[tenSwaps[s].b1]->exSwap(*(tensors[tenSwaps[s].b2]));
 		swaps_arr[tenSwaps[s].b1].insert(swaps_arr[tenSwaps[s].b1].end(), swtmp.begin(), swtmp.end());
 	}
 	//Distinct Swaps of each tensors
 	for(int t = 0; t < Tnum; t++){
-		map<int, bool> recs;
-		map<int, bool>::iterator it;
+		std::map<int, bool> recs;
+		std::map<int, bool>::iterator it;
 		int bondNum = tensors[t]->bonds.size();
 		int is, ib;
 		int hash;

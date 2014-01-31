@@ -4,9 +4,7 @@
 #include <vector>
 #include <assert.h>
 #include <string.h>
-#include <map>
 #include <math.h>
-using namespace std;
 //Type of Matrix
 #include "myLapack.h"
 
@@ -20,24 +18,30 @@ class Matrix_t {
 		int row()const;
 		int col()const;
 		bool isDiag()const{return diag;};
+		size_t getElemNum()const;
 		Matrix_t& operator=(const Matrix_t& _m);
 		friend Matrix_t operator* (const Matrix_t& Ma, const Matrix_t& Mb);
-		void operator*= (const Matrix_t& Mb);
-		friend ostream& operator<< (ostream& os, const Matrix_t& b);
-		vector<Matrix_t> diagonalize();
-		vector<Matrix_t> svd();
+		Matrix_t& operator*= (const Matrix_t& Mb);
+		friend std::ostream& operator<< (std::ostream& os, const Matrix_t& b);
+		std::vector<Matrix_t> diagonalize();
+		std::vector<Matrix_t> svd();
 		void orthoRand();
+		void bzero();
 		void transpose();
+		double trace();
+		void save(const std::string fname);
+		void load(const std::string fname);
 		friend Matrix_t operator*(const Matrix_t& Ma, double a);
 		friend Matrix_t operator*(double a, const Matrix_t& Ma){return Ma * a;};
 		friend bool operator== (const Matrix_t& m1, const Matrix_t& m2);
 		void operator*= (double a);
 		friend Matrix_t operator+(const Matrix_t& Ma, const Matrix_t& Mb);
 		void operator+= (const Matrix_t& Mb);
+		double& operator[](size_t idx);
 		double* elem;
 	private:
 		int Rnum;		//number of rows of the block
 		int Cnum;		//number of columns of the block
-		int elemNum;
+		size_t elemNum;
 		bool diag;
 };

@@ -32,7 +32,7 @@ int main(){
 	Qnum_t q00(0, 0);
 	Matrix_t H00 = H0.getBlock(q00);
 	cout <<H00;
-	H00.elem[2] = 9;
+	H00[2] = 9;
 	H0.putBlock(q00, H00);
 	cout<< H0;
 
@@ -50,7 +50,6 @@ int main(){
 	cout << mat;
 
 	//-------
-		
 	Matrix_t Msvd(4, 5);
 	Msvd.orthoRand();
 	cout << Msvd;
@@ -60,6 +59,7 @@ int main(){
 	cout << "=====================\n";
 	vector<Matrix_t> outs2 = Msvd.svd();
 	cout << outs2[0];
+	cout<<"Trace: "<<outs2[0].trace()<<endl;	
 	cout << outs2[1];
 	cout << outs2[2];
 	Matrix_t ret = outs2[0] * outs2[2];

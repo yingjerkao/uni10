@@ -11,14 +11,13 @@
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <map>
 #include <set>
 #include <string>
 #include <assert.h>
 #include <stdint.h>
-using namespace std;
 #include "Block.h"
 #include "Bond.h"
 #include "myLapack.h"
@@ -26,17 +25,14 @@ using namespace std;
 #define DOUBLE	double
 
 
-const int INIT = 1;		      /**< A flag for initialization */
-const int HAVELABEL = 2;		/**< A flag for having labels added */
-const int HAVEELEM = 4;		  /**< A flag for having element assigned */
 
 typedef struct{
 	int b1; 
 	int b2; 
 }_Swap;
 
-vector<_Swap> _recSwap(int* ord, int n, int* ordF);
-vector<_Swap> _recSwap(int* _ord, int n);	//Given the reshape order out to in. 
+std::vector<_Swap> _recSwap(int* ord, int n, int* ordF);
+std::vector<_Swap> _recSwap(int* _ord, int n);	//Given the reshape order out to in. 
 /**
  * @brief Class of the symmetry tensor.
  */
@@ -52,49 +48,49 @@ class SyTensor_t{
     /**
      * @brief To read in a binary file of a tensor which is written out by member function @c save().\n
      * How frequent it is used: * * *
-     * @param fname The file name of the tensor being loaded, which is of type STL @c string.
+     * @param fname The file name of the tensor being loaded, which is of type STL @c std::string.
      * @see File demo/SyTensor_basic.cpp
      */
-		SyTensor_t(const string& fname);
+		SyTensor_t(const std::string& fname);
 
     /**
      * @brief To construct a tensor from a given bond array.\n
      * How frequent it is used: * * *
      * @param _bonds an STL vector of object @c Bond_t.
-     * @param _name The given name of a tensor, STL string.
+     * @param _name The given name of a tensor, STL std::string.
      * @see File demo/SyTensor_basic.cpp
      * @note The number of bonds must be larger than one, that is, the library does not support rank 0 tensor.
      * @warning <tt>assert( _bonds.size() > 0 )</tt>
      */
-		SyTensor_t(vector<Bond_t>& _bonds, const string& _name = "");
+		SyTensor_t(std::vector<Bond_t>& _bonds, const std::string& _name = "");
 
     /**
      * @brief To construct a tensor from a given bond array and a given label array.\n
      * How frequent it is used: * *
      * @param _bonds An STL vector of object @c Bond_t.
      * @param _labels An STL interger vector, describing the labels of bonds.
-     * @param _name The given name of a tensor, STL string.
+     * @param _name The given name of a tensor, STL std::string.
      * @see File demo/SyTensor_basic.cpp
      * @note The number of bonds must be larger than one, that is, the library does not support rank 0 tensor.
      * @note Each label is 1-1 corresponding to each bond in the order of array.
      * @warning <tt>assert( _bonds.size() > 0 )</tt>
      * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
      */
-		SyTensor_t(vector<Bond_t>& _bonds, vector<int>& labels, const string& _name = "");
+		SyTensor_t(std::vector<Bond_t>& _bonds, std::vector<int>& labels, const std::string& _name = "");
 
     /**
      * @brief To construct a tensor from a given bond array and a given label array.\n
      * How frequent it is used: * *
      * @param _bonds An STL vector of object @c Bond_t.
      * @param _labels An integer array, describing the labels of bonds.
-     * @param _name The given name of a tensor, STL string.
+     * @param _name The given name of a tensor, STL std::string.
      * @see File demo/SyTensor_basic.cpp
      * @note The number of bonds must be larger than one, that is, the library does not support rank 0 tensor.
      * @note Each label is 1-1 corresponding to each bond in the order of array.
      * @warning <tt>assert( _bonds.size() > 0 )</tt>
      * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
      */
-		SyTensor_t(vector<Bond_t>& _bonds, int* labels, const string& _name = "");
+		SyTensor_t(std::vector<Bond_t>& _bonds, int* labels, const std::string& _name = "");
 
     /**
      * @brief A deep copy constructor.\n
@@ -120,7 +116,7 @@ class SyTensor_t{
      * @note Each added label is 1-1 corresponding to each bond in the order of array.
      * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
      */
-		void addLabel(vector<int>& newLabels);
+		void addLabel(std::vector<int>& newLabels);
 
     /**
      * @brief Add labels to the Tensor.\n
@@ -131,6 +127,7 @@ class SyTensor_t{
      * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
      */
 		void addLabel(int* newLabels);
+		std::vector<int> getLabel()const;
 
     /**
      * @brief Add non-blocked elements to the tensor.\n
@@ -147,7 +144,7 @@ class SyTensor_t{
      * @para idxs An STL vector of interger array, describing the indices.
      * @see File demo/SyTensor_basic.cpp
      */
-		double at(vector<int>idxs)const;
+		double at(std::vector<int>idxs)const;
 
     /**
      * @brief Get an array of quantum numbers of the blocks.\n
@@ -155,15 +152,15 @@ class SyTensor_t{
      * @return An STL vector of type @c Qnum_t.
      * @see File demo/SyTensor_basic.cpp
      */
-    	vector<Qnum_t> qnums();
+    	std::vector<Qnum_t> qnums();
 
     /**
      * @brief Write the tensor to an output file of filename @p fname.\n
      * How frequent it is used: *
-     * @para fname A STL string, describing the filename of the output file.
+     * @para fname A STL std::string, describing the filename of the output file.
      * @see File demo/SyTensor_basic.cpp
      */
-		void save(const string& fname);
+		void save(const std::string& fname);
 
     /**
      * @brief Reshape the element of the tensor, that is, change the order of bonds to the order of @p newLabels and also change the element alignment to the corresponding order.\n
@@ -174,7 +171,7 @@ class SyTensor_t{
      * @note Reshape may cause change of the order of bonds, quantum numbers of blocks of the tensor and the alignment of tensor elements.
      * @warning The only difference between @p newLabels and the original @p labels is the order of the array elements.
      */
-		void reshape(vector<int>& newLabels, int rowBondNum);
+		void reshape(std::vector<int>& newLabels, int rowBondNum);
 
     /**
      * @brief Reshape the element of the tensor, that is, change the order of bonds to the order of @p newLabels and also change the element alignment to the corresponding order.\n
@@ -201,14 +198,16 @@ class SyTensor_t{
      */
 		void randomize();
 
-		void setName(const string& _name);
-		string getName();
-		int64_t getElemNum()const{return elemNum;};
+		void setName(const std::string& _name);
+		std::string getName();
+		int64_t getElemNum()const;
+		int getBondNum()const;
+		int getRBondNum()const;
 
 		void check();
-		friend ostream& operator<< (ostream& os, SyTensor_t& SyT);
+		friend std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT);
 		friend SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb);
-		void operator*= (SyTensor_t& Tb);
+		SyTensor_t& operator*= (SyTensor_t& Tb);
 		friend SyTensor_t operator+ (const SyTensor_t& Ta, const SyTensor_t& Tb);
 		void operator+= (const SyTensor_t& Tb);
 		friend SyTensor_t operator* (const SyTensor_t& Ta, double a);
@@ -216,8 +215,8 @@ class SyTensor_t{
 		void operator*= (double a);
 		Matrix_t getBlock(Qnum_t qnum, bool diag = false);
 		void putBlock(const Qnum_t& qnum, Matrix_t& mat);
-		map<Qnum_t, Matrix_t> getBlocks();
-		friend Matrix_t printRawElem(const SyTensor_t& SyT, const string& fname="");
+		std::map<Qnum_t, Matrix_t> getBlocks();
+		Matrix_t printRawElem(bool flag = true);
 		friend class Node_t;
 		friend class Network_t;
 		void orthoRand();
@@ -226,31 +225,33 @@ class SyTensor_t{
 		void eye(const Qnum_t& qnum);
 		void bzero(const Qnum_t& qnum);
 		void bzero();
-		vector<_Swap> exSwap(const SyTensor_t& Tb)const;
+		std::vector<_Swap> exSwap(const SyTensor_t& Tb)const;
 		bool similar(const SyTensor_t& Tb)const;
-		void addGate(vector<_Swap> swaps);
-		void packMeta();
+		void addGate(std::vector<_Swap> swaps);
 		bool elemCmp(const SyTensor_t& SyT)const;
-		double trace();
-		SyTensor_t subTrace(const vector<int>& labelA, const vector<int>& labelB);
-		SyTensor_t subTrace(int la, int lb);
+		double trace()const;
+		double trace(const SyTensor_t&)const;
+		void combineIndex(const std::vector<int>& combined_labels);
+		//SyTensor_t partialTrace(const std::vector<int>& labelA, const std::vector<int>& labelB)const;
+		SyTensor_t& partialTrace(int la, int lb);
 	private:
-		string name;
+		std::string name;
 		DOUBLE *elem;		//Array of elements
 		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
-		vector<Bond_t> bonds;
-		map<Qnum_t, Block_t> blocks;
-		vector<int>labels;
+		std::vector<Bond_t> bonds;
+		std::map<Qnum_t, Block_t> blocks;
+		std::vector<int>labels;
+		void packMeta();
 		int RBondNum;	//Row bond number
 		int RQdim;
 		int CQdim;
 		int64_t elemNum;
-		map<int, Block_t*> RQidx2Blk;	//Qidx to the Block
-		map<int, int> QidxEnc;
-		map<int, int> RQidx2Off;	//the row offset starts from the block origin of a qnum
-		map<int, int> CQidx2Off;	//the col offset starts from the block origin of a qnum
-		map<int, int> RQidx2Dim;
-		map<int, int> CQidx2Dim;
+		std::map<int, Block_t*> RQidx2Blk;	//Qidx to the Block
+		std::map<int, int> QidxEnc;
+		std::map<int, int> RQidx2Off;	//the row offset starts from the block origin of a qnum
+		std::map<int, int> CQidx2Off;	//the col offset starts from the block origin of a qnum
+		std::map<int, int> RQidx2Dim;
+		std::map<int, int> CQidx2Dim;
 		static int COUNTER;
 		static int64_t ELEMNUM;
 		static int64_t MAXELEMNUM;
@@ -258,4 +259,7 @@ class SyTensor_t{
 		//Private Functions
 		void grouping();
 		void initSyT();
+		static const int INIT = 1;		      /**< A flag for initialization */
+		static const int HAVELABEL = 2;		/**< A flag for having labels added */
+		static const int HAVEELEM = 4;		  /**< A flag for having element assigned */
 };
