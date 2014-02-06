@@ -7,7 +7,9 @@
  * @see http://www.stack.nl/~dimitri/doxygen/docblocks.html
  * @see http://www.stack.nl/~dimitri/doxygen/commands.html
  */
-#pragma once
+#ifndef SYTENSOR_H
+#define SYTENSOR_H
+
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
@@ -20,11 +22,10 @@
 #include <stdint.h>
 #define DOUBLE	double
 
-
-typedef struct{
-	int b1; 
-	int b2; 
-}_Swap;
+#include <uni10/data-structure/uni10_struct.h>
+#include <uni10/data-structure/Bond.h>
+#include <uni10/data-structure/Block.h>
+#include <uni10/tensor-network/Matrix.h>
 
 std::vector<_Swap> _recSwap(int* ord, int n, int* ordF);
 std::vector<_Swap> _recSwap(int* _ord, int n);	//Given the reshape order out to in. 
@@ -144,10 +145,10 @@ class SyTensor_t{
     /**
      * @brief Get an array of quantum numbers of the blocks.\n
      * How frequent it is used: * *
-     * @return An STL vector of type @c Qnum_t.
+     * @return An STL vector of type @c Qnum.
      * @see File demo/SyTensor_basic.cpp
      */
-    	std::vector<Qnum_t> qnums();
+    	std::vector<Qnum> qnums();
 
     /**
      * @brief Write the tensor to an output file of filename @p fname.\n
@@ -208,17 +209,17 @@ class SyTensor_t{
 		friend SyTensor_t operator* (const SyTensor_t& Ta, double a);
 		friend SyTensor_t operator* (double a, const SyTensor_t& Ta){return Ta * a;};
 		void operator*= (double a);
-		Matrix_t getBlock(Qnum_t qnum, bool diag = false);
-		void putBlock(const Qnum_t& qnum, Matrix_t& mat);
-		std::map<Qnum_t, Matrix_t> getBlocks();
+		Matrix_t getBlock(Qnum qnum, bool diag = false);
+		void putBlock(const Qnum& qnum, Matrix_t& mat);
+		std::map<Qnum, Matrix_t> getBlocks();
 		Matrix_t printRawElem(bool flag = true);
 		friend class Node_t;
 		friend class Network_t;
 		void orthoRand();
-		void orthoRand(const Qnum_t& qnum);
+		void orthoRand(const Qnum& qnum);
 		void eye();
-		void eye(const Qnum_t& qnum);
-		void bzero(const Qnum_t& qnum);
+		void eye(const Qnum& qnum);
+		void bzero(const Qnum& qnum);
 		void bzero();
 		std::vector<_Swap> exSwap(const SyTensor_t& Tb)const;
 		bool similar(const SyTensor_t& Tb)const;
@@ -234,7 +235,7 @@ class SyTensor_t{
 		DOUBLE *elem;		//Array of elements
 		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
 		std::vector<Bond_t> bonds;
-		std::map<Qnum_t, Block_t> blocks;
+		std::map<Qnum, Block_t> blocks;
 		std::vector<int>labels;
 		void packMeta();
 		int RBondNum;	//Row bond number
@@ -258,3 +259,4 @@ class SyTensor_t{
 		static const int HAVELABEL = 2;		/**< A flag for having labels added */
 		static const int HAVEELEM = 4;		  /**< A flag for having element assigned */
 };
+#endif /* SYTENSOR_H */

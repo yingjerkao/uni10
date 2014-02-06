@@ -1,11 +1,7 @@
-#include "../../datatype/QnumF.h"
-using namespace uni10::datatype;
-#include "../../data-structure/Block.h"
-#include "../../datatype/Bond.h"
-#include "../myTools.h"
-#include "../../numeric/myLapack.h"
-#include "../Matrix.h"
-#include "../SyTensor.h"
+#include <uni10/tensor-network/SyTensor.h>
+#include <uni10/numeric/uni10_lapack.h>
+#include <uni10/tools/uni10_tools.h>
+//using namespace uni10::datatype;
 
 int64_t SyTensor_t::ELEMNUM = 0;
 int SyTensor_t::COUNTER = 0;
@@ -29,7 +25,7 @@ SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
 		RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
 	if(SyT.status & INIT){
 		elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * elemNum, status);
-		std::map<Qnum_t,Block_t>::iterator it; 
+		std::map<Qnum,Block_t>::iterator it; 
 		for ( it = blocks.begin() ; it != blocks.end(); it++ )
 			it->second.elem = &(elem[it->second.offset]);
 		ELEMNUM += elemNum;
@@ -66,7 +62,7 @@ SyTensor_t& SyTensor_t::operator=(const SyTensor_t& SyT){
 		status = SyT.status;
 		elemNum = SyT.elemNum;
 		elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * elemNum, status);
-		std::map<Qnum_t,Block_t>::iterator it; 
+		std::map<Qnum,Block_t>::iterator it; 
 		for ( it = blocks.begin(); it != blocks.end(); it++ )
 			it->second.elem = &(elem[it->second.offset]);
 		ELEMNUM += elemNum;
@@ -108,19 +104,19 @@ SyTensor_t::SyTensor_t(const std::string& fname): status(0){	//load Tensor from 
 	int bondNum;
 	fread(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
 	size_t qnum_sz;
-	fread(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum_t)
-	assert(qnum_sz == sizeof(Qnum_t));
+	fread(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum)
+	assert(qnum_sz == sizeof(Qnum));
 	for(int b = 0; b < bondNum; b++){
 		int num_q;
 		bondType tp;
 		fread(&tp, 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
 		fread(&num_q, 1, sizeof(int), fp);	//OUT: Number of Qnums in the bond(4 bytes)
-		Qnum_t q0;
-		std::vector<Qnum_t> qnums(num_q, q0);
+		Qnum q0;
+		std::vector<Qnum> qnums(num_q, q0);
 		fread(&(qnums[0]), num_q, qnum_sz, fp);
 		std::vector<int> qdegs(num_q, 0);
 		fread(&(qdegs[0]), num_q, sizeof(int), fp);
-		std::vector<Qnum_t> tot_qnums;
+		std::vector<Qnum> tot_qnums;
 		for(int q = 0; q < num_q; q++)
 			for(int d = 0; d < qdegs[q]; d++)
 				tot_qnums.push_back(qnums[q]);
@@ -159,9 +155,9 @@ int64_t SyTensor_t::getElemNum()const{return elemNum;}
 int SyTensor_t::getRBondNum()const{return RBondNum;}
 int SyTensor_t::getBondNum()const{return bonds.size();}
 
-std::vector<Qnum_t> SyTensor_t::qnums(){
-	std::vector<Qnum_t> keys;
-	for(std::map<Qnum_t,Block_t>::iterator it = blocks.begin(); it != blocks.end(); it++)
+std::vector<Qnum> SyTensor_t::qnums(){
+	std::vector<Qnum> keys;
+	for(std::map<Qnum,Block_t>::iterator it = blocks.begin(); it != blocks.end(); it++)
 		keys.push_back(it->first);
 	return keys;
 }
@@ -231,7 +227,7 @@ void SyTensor_t::initSyT(){
 	elem = NULL;
 	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * elemNum, status);
 	//elem = (DOUBLE*)malloc(sizeof(DOUBLE) * elemNum);
-	std::map<Qnum_t,Block_t>::iterator it; 
+	std::map<Qnum,Block_t>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
 
@@ -254,7 +250,7 @@ void SyTensor_t::save(const std::string& fname){
 	int bondNum = bonds.size();
 	fwrite(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
 	size_t qnum_sz = sizeof(bonds[0].Qnums[0]);
-	fwrite(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum_t)
+	fwrite(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum)
 	for(int b = 0; b < bondNum; b++){
 		int num_q = bonds[b].Qnums.size();
 		fwrite(&(bonds[b].type), 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
@@ -281,31 +277,31 @@ void SyTensor_t::randomize(){
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::orthoRand(const Qnum_t& qnum){
+void SyTensor_t::orthoRand(const Qnum& qnum){
 	Block_t& block = blocks[qnum];
 	orthoRandomize(block.elem, block.Rnum, block.Cnum);
 }
 
 void SyTensor_t::orthoRand(){
-	std::map<Qnum_t,Block_t>::iterator it; 
+	std::map<Qnum,Block_t>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		orthoRandomize(it->second.elem, it->second.Rnum, it->second.Cnum);
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::eye(const Qnum_t& qnum){
+void SyTensor_t::eye(const Qnum& qnum){
 	Block_t& block = blocks[qnum];
 	myEye(block.elem, block.Rnum, block.Cnum, status);
 }
 
 void SyTensor_t::eye(){
-	std::map<Qnum_t,Block_t>::iterator it; 
+	std::map<Qnum,Block_t>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		myEye(it->second.elem, it->second.Rnum, it->second.Cnum, status);
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::bzero(const Qnum_t& qnum){
+void SyTensor_t::bzero(const Qnum& qnum){
 	Block_t& block = blocks[qnum];
 	membzero(block.elem, block.Rnum * block.Cnum * sizeof(DOUBLE), status);
 	//memset(block.elem, 0, block.Rnum * block.Cnum * sizeof(DOUBLE));
@@ -374,15 +370,15 @@ Matrix_t SyTensor_t::printRawElem(bool flag){
 			else
 				rowNum *= bonds[b].dim;
 		}
-		std::vector<Qnum_t> rowQ;
-		std::vector<Qnum_t> colQ;
+		std::vector<Qnum> rowQ;
+		std::vector<Qnum> colQ;
 		int Rnum = RBondNum;
 		int Cnum = bondNum - RBondNum;
 		std::vector<int> idxs(Rnum, 0);
 		std::vector<int> qidxs(Rnum, 0);
 		int bend;
 		while(1){
-			Qnum_t qnum;
+			Qnum qnum;
 			for(int b = 0; b < Rnum; b++)
 				qnum = qnum * bonds[b].Qnums[qidxs[b]];
 			rowQ.push_back(qnum);
@@ -406,7 +402,7 @@ Matrix_t SyTensor_t::printRawElem(bool flag){
 		idxs.assign(Cnum, 0);
 		qidxs.assign(Cnum, 0);
 		while(1){
-			Qnum_t qnum;
+			Qnum qnum;
 			for(int b = 0; b < Cnum; b++)
 				qnum = qnum * bonds[Rnum + b].Qnums[qidxs[b]];
 			colQ.push_back(qnum);
@@ -531,7 +527,7 @@ std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT){
 		os << SyT.bonds[b];
 	}   
 	os<<"\n===============BLOCKS===============\n";
-	std::map<Qnum_t,Block_t>::iterator it; 
+	std::map<Qnum,Block_t>::iterator it; 
 	int Rnum, Cnum;
 	bool printElem = true;
 	for ( it = SyT.blocks.begin() ; it != SyT.blocks.end(); it++ ){
@@ -553,7 +549,7 @@ std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT){
 	return os;
 }
 
-Matrix_t SyTensor_t::getBlock(Qnum_t qnum, bool diag){
+Matrix_t SyTensor_t::getBlock(Qnum qnum, bool diag){
 	assert(blocks.find(qnum) != blocks.end());
 	Block_t blk = blocks[qnum];
 	if(diag){
@@ -569,16 +565,16 @@ Matrix_t SyTensor_t::getBlock(Qnum_t qnum, bool diag){
 	}
 }
 
-std::map<Qnum_t, Matrix_t> SyTensor_t::getBlocks(){
-	std::map<Qnum_t, Matrix_t> mats;
-	for(std::map<Qnum_t,Block_t>::iterator it = blocks.begin(); it != blocks.end(); it++){
+std::map<Qnum, Matrix_t> SyTensor_t::getBlocks(){
+	std::map<Qnum, Matrix_t> mats;
+	for(std::map<Qnum,Block_t>::iterator it = blocks.begin(); it != blocks.end(); it++){
 		Matrix_t mat(it->second.Rnum, it->second.Cnum, it->second.elem);
-		mats.insert(std::pair<Qnum_t, Matrix_t>(it->first, mat));
+		mats.insert(std::pair<Qnum, Matrix_t>(it->first, mat));
 	}
 	return mats;
 }
 
-void SyTensor_t::putBlock(const Qnum_t& qnum, Matrix_t& mat){
+void SyTensor_t::putBlock(const Qnum& qnum, Matrix_t& mat){
 	assert(blocks.find(qnum) != blocks.end());
 	Block_t& blk = blocks[qnum];
 	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
@@ -652,7 +648,7 @@ void SyTensor_t::combineIndex(const std::vector<int>&cmbLabels){
 		std::cout<<rsp_labels[i]<<std::endl;
 	*/
 	/*
-	std::map<Qnum_t,Block_t>::iterator it; 
+	std::map<Qnum,Block_t>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ ){
 		std::cout<<it->first<<" offset = "<<it->second.offset<<"\n";
 	}

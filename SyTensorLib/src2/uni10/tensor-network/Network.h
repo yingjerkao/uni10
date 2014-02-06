@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NETWORK_H
+#define NETWORK_H
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -6,31 +7,8 @@
 #include <assert.h>
 #include <vector>
 //Bond property
-class Node_t{
-	public:
-		Node_t();
-		Node_t(SyTensor_t* Tp);
-		Node_t(const Node_t& nd);
-		Node_t(std::vector<Bond_t>& _bonds, std::vector<int>& _labels);
-		~Node_t();
-		Node_t contract(Node_t* nd);
-		float metric(Node_t* nd);
-		friend std::ostream& operator<< (std::ostream& os, const Node_t& nd);
-		friend class Network_t;
-	private:
-		SyTensor_t* T;	//if T != NULL, it is leaf node
-		std::vector<int> labels;
-		std::vector<Bond_t> bonds;
-		int64_t elemNum;
-		std::string name;
-		Node_t* parent;
-		Node_t* left;
-		Node_t* right;
-		float point;
-		int64_t cal_elemNum(std::vector<Bond_t>& _bonds);
-		void delink();
-};
-
+#include <uni10/data-structure/uni10_struct.h>
+#include <uni10/data-structure/Bond.h>
 class Network_t {
 	public:
 		//Network_t();
@@ -72,3 +50,4 @@ class Network_t {
 		void findConOrd(Node_t* nd);
 		void addSwap();
 };
+#endif /* NETWORK_H */

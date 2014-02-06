@@ -1,9 +1,5 @@
-#include "../../datatype/QnumF.h"
-using namespace uni10::datatype;
-#include "../../data-structure/Block.h"
-#include "../../datatype/Bond.h"
-#include "../Matrix.h"
-#include "../SyTensor.h"
+#include <uni10/tensor-network/SyTensor.h>
+//using namespace uni10::datatype;
 
 void SyTensor_t::grouping(){
 	blocks.clear();
@@ -22,10 +18,10 @@ void SyTensor_t::grouping(){
 		}
 	}
 	RBondNum = row_bondNum;
-	std::map<Qnum_t,int> row_QnumMdim;
+	std::map<Qnum,int> row_QnumMdim;
 	std::vector<int> row_offs(row_bondNum, 0);
-	std::map<Qnum_t,std::vector<int> > row_Qnum2Qidx;
-	Qnum_t qnum;
+	std::map<Qnum,std::vector<int> > row_Qnum2Qidx;
+	Qnum qnum;
 	int dim;
 	int boff = 0;
 	std::vector<int>tmpRQidx2Dim(RQdim, 1);
@@ -69,10 +65,10 @@ void SyTensor_t::grouping(){
 		row_QnumMdim[qnum] = 1;
 		row_Qnum2Qidx[qnum].push_back(0);
 	}
-	std::map<Qnum_t,int>::iterator itt;
-	std::map<Qnum_t,int> col_QnumMdim;
+	std::map<Qnum,int>::iterator itt;
+	std::map<Qnum,int> col_QnumMdim;
 	std::vector<int> col_offs(col_bondNum, 0);
-	std::map<Qnum_t,std::vector<int> > col_Qnum2Qidx;
+	std::map<Qnum,std::vector<int> > col_Qnum2Qidx;
 	boff = 0;
 	if(col_bondNum){
 		while(1){
@@ -116,8 +112,8 @@ void SyTensor_t::grouping(){
 		}
 	}
 
-	std::map<Qnum_t,int>::iterator it;
-	std::map<Qnum_t,int>::iterator it2;
+	std::map<Qnum,int>::iterator it;
+	std::map<Qnum,int>::iterator it2;
 	std::set<int> Qidx;
 	Block_t blk;
 	int qidx;
@@ -491,8 +487,8 @@ void SyTensor_t::transpose(){
 	if(status & HAVELABEL)
 		SyTout.addLabel(outLabels);
 	if(status & HAVEELEM){
-		std::map<Qnum_t,Block_t>::iterator it_in; 
-		std::map<Qnum_t,Block_t>::iterator it_out; 
+		std::map<Qnum,Block_t>::iterator it_in; 
+		std::map<Qnum,Block_t>::iterator it_out; 
 		double* elem_in;
 		double* elem_out;
 		int Rnum, Cnum;
@@ -529,7 +525,7 @@ double SyTensor_t::trace()const{
 	assert(status & HAVEELEM);		
 	int Rnum;
 	DOUBLE trVal = 0;
-	for(std::map<Qnum_t, Block_t>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+	for(std::map<Qnum, Block_t>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
 		assert(it->second.Rnum == it->second.Cnum);
 		Rnum = it->second.Rnum;
 		for(int r = 0; r < Rnum; r++)
@@ -543,8 +539,8 @@ double SyTensor_t::trace(const SyTensor_t& SyT)const{
 	int Rnum;
 	int Cnum;
 	DOUBLE trVal = 0;
-	std::map<Qnum_t, Block_t>::const_iterator it2 = SyT.blocks.begin();
-	for(std::map<Qnum_t, Block_t>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+	std::map<Qnum, Block_t>::const_iterator it2 = SyT.blocks.begin();
+	for(std::map<Qnum, Block_t>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
 		assert(it->second == it2->second);
 		Rnum = it->second.Rnum;
 		Cnum = it->second.Cnum;
@@ -620,7 +616,7 @@ SyTensor_t& SyTensor_t::partialTrace(int la, int lb){
 	int tQdim = bonds[ia].Qnums.size();
 	/*Sanity Check*/
 	assert(tQdim == bonds[ib].Qnums.size());
-	Qnum_t q0(0, 0);
+	Qnum q0(0, 0);
 	for(int q = 0; q < tQdim; q++){
 		assert(bonds[ia].Qnums[q] * bonds[ib].Qnums[q] == q0);
 		assert(bonds[ia].Qdegs[q] == bonds[ib].Qdegs[q]);

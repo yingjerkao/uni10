@@ -1,10 +1,6 @@
-#include "../../datatype/QnumF.h"
-using namespace uni10::datatype;
-#include "../../data-structure/Block.h"
-#include "../../datatype/Bond.h"
-#include "../../numeric/myLapack.h"
-#include "../Matrix.h"
-#include "../SyTensor.h"
+#include <uni10/tensor-network/SyTensor.h>
+#include <uni10/numeric/uni10_lapack.h>
+//using namespace uni10::datatype;
 
 void SyTensor_t::operator+= (const SyTensor_t& Tb){
 	assert(bonds == Tb.bonds);
@@ -71,8 +67,8 @@ SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb){
 	SyTensor_t Tc(cBonds);
 	Tc.addLabel(newLabelC);
 	Block_t blockA, blockB, blockC;
-	std::map<Qnum_t,Block_t>::iterator it; 
-	std::map<Qnum_t,Block_t>::iterator it2; 
+	std::map<Qnum,Block_t>::iterator it; 
+	std::map<Qnum,Block_t>::iterator it2; 
 	for(it = Ta.blocks.begin() ; it != Ta.blocks.end(); it++){
 		if((it2 = Tb.blocks.find(it->first)) != Tb.blocks.end()){
 			blockA = it->second;

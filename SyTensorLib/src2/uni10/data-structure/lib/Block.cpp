@@ -1,6 +1,5 @@
-#include "../../datatype/QnumF.h"
-using namespace uni10::datatype;
-#include "../Block.h"
+#include <uni10/data-structure/Block.h>
+//using namespace uni10::datatype;
 std::ostream& operator<< (std::ostream& os, const Block_t& b){
 	os << "--- " << b.qnum<< ": " << b.Rnum << " x " << b.Cnum << " = " << b.Rnum * b.Cnum << " ---\n\n";
 	for(int r = 0; r < b.Rnum; r++){
@@ -10,13 +9,6 @@ std::ostream& operator<< (std::ostream& os, const Block_t& b){
 	}
 	return os;
 }
-/*
-int Block_t::row()const{
-	return Rnum;
-}
-int Block_t::col()const{
-	return Cnum;
-}*/
 bool operator== (const Block_t& b1, const Block_t& b2){
 	return (b1.qnum == b2.qnum) && (b1.Rnum == b2.Rnum) && (b1.Cnum == b2.Cnum);
 }

@@ -1,12 +1,7 @@
-#include "../../datatype/QnumF.h"
-using namespace uni10::datatype;
-#include "../../data-structure/Block.h"
-#include "../../datatype/Bond.h"
-#include "../../numeric/myLapack.h"
-#include "../Matrix.h"
-#include "../SyTensor.h"
-#include "../Network.h"
+#include <uni10/tensor-network/Network.h>
 #include <boost/algorithm/string.hpp>
+#include <uni10/tensor-network/SyTensor.h>
+
 Node_t::Node_t(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }
 
@@ -112,9 +107,9 @@ int64_t Node_t::cal_elemNum(std::vector<Bond_t>& _bonds){
 			rBondNum++;
 		else if(_bonds[b].type == BD_COL)
 			cBondNum++;
-	Qnum_t qnum(0, 0);
+	Qnum qnum(0, 0);
 	int dim;
-	std::map<Qnum_t,int> row_QnumMdim;
+	std::map<Qnum,int> row_QnumMdim;
 	std::vector<int> row_offs(rBondNum, 0);
 	if(rBondNum){
 		while(1){
@@ -145,7 +140,7 @@ int64_t Node_t::cal_elemNum(std::vector<Bond_t>& _bonds){
 		row_QnumMdim[qnum] = 1;
 	}
 
-	std::map<Qnum_t,int> col_QnumMdim;
+	std::map<Qnum,int> col_QnumMdim;
 	std::vector<int> col_offs(cBondNum, 0);
 	if(cBondNum){
 		while(1){
@@ -179,8 +174,8 @@ int64_t Node_t::cal_elemNum(std::vector<Bond_t>& _bonds){
 			col_QnumMdim[qnum] = 1;
 	}
 	int64_t _elemNum = 0;
-	std::map<Qnum_t,int>::iterator it;
-	std::map<Qnum_t,int>::iterator it2;
+	std::map<Qnum,int>::iterator it;
+	std::map<Qnum,int>::iterator it2;
 	for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
 		it = row_QnumMdim.find(it2->first);
 		_elemNum += it->second * it2->second;

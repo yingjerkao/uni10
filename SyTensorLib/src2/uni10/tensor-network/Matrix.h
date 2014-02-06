@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATRIX_H
+#define MATRIX_H
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -6,8 +7,7 @@
 #include <string.h>
 #include <math.h>
 //Type of Matrix
-
-class SyTensor_t;
+//#include <uni10/tensor-network/SyTensor.h>
 class Matrix_t {
 	public:
 		Matrix_t(int _Rnum, int _Cnum, bool _diag=false);
@@ -44,3 +44,4 @@ class Matrix_t {
 		size_t elemNum;
 		bool diag;
 };
+#endif /* MATRIX_H */

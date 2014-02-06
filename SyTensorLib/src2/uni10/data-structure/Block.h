@@ -1,8 +1,13 @@
-#pragma once
+#ifndef BLOCK_H
+#define BLOCK_H
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
 #include <stdint.h>
+#include <uni10/datatype.hpp>
+
+//namespace uni10{
+//namespace datatype{
 class SyTensor_t;
 class Block_t {
 	public:
@@ -15,17 +20,19 @@ class Block_t {
 		~Block_t(){
 			//cout<<"Destructing Block...\n";
 		};
-		//int row()const;
-		//int col()const;
 		friend class SyTensor_t;
 		friend std::ostream& operator<< (std::ostream& os, const Block_t& b);
 		friend std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT);
 		friend SyTensor_t operator* (SyTensor_t& Ta, SyTensor_t& Tb);
 		friend bool operator== (const Block_t& b1, const Block_t& b2);
 	private:
-		Qnum_t qnum;
+		Qnum qnum;
 		double* elem;
 		int Rnum;		//number of rows of the block
 		int Cnum;		//number of columns of the block
 		int64_t offset;	//index of the first element of a block element in Tensor
 };
+//};
+//};
+#endif /* BLOCK_H */
+

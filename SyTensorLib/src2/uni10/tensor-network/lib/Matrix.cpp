@@ -1,5 +1,5 @@
-#include "../../numeric/myLapack.h"
-#include "../Matrix.h"
+#include <uni10/tensor-network/Matrix.h>
+#include <uni10/numeric/uni10_lapack.h>
 
 std::ostream& operator<< (std::ostream& os, const Matrix_t& m){
 	os << std::endl << m.Rnum << " x " << m.Cnum << " = " << m.elemNum;
