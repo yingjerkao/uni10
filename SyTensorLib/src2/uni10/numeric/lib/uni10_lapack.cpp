@@ -2,6 +2,7 @@
 #include "mkl_lapack.h"
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
+namespace uni10{
 void myDgemm(double* A, double* B, int M, int N, int K, double* C){
 	double alpha = 1, beta = 0;
 	dgemm((char*)"N", (char*)"N", &N, &M, &K, &alpha, B, &N, A, &K, &beta, C, &N);
@@ -104,3 +105,4 @@ void myEye(double* elem, int M, int N, int status){
 		elem[i * N + i] = 1;
 }
 
+};	/* namespace uni10 */	

@@ -52,18 +52,18 @@ class SyTensor_t{
     /**
      * @brief To construct a tensor from a given bond array.\n
      * How frequent it is used: * * *
-     * @param _bonds an STL vector of object @c Bond_t.
+     * @param _bonds an STL vector of object @c Bond.
      * @param _name The given name of a tensor, STL std::string.
      * @see File demo/SyTensor_basic.cpp
      * @note The number of bonds must be larger than one, that is, the library does not support rank 0 tensor.
      * @warning <tt>assert( _bonds.size() > 0 )</tt>
      */
-		SyTensor_t(std::vector<Bond_t>& _bonds, const std::string& _name = "");
+		SyTensor_t(std::vector<Bond>& _bonds, const std::string& _name = "");
 
     /**
      * @brief To construct a tensor from a given bond array and a given label array.\n
      * How frequent it is used: * *
-     * @param _bonds An STL vector of object @c Bond_t.
+     * @param _bonds An STL vector of object @c Bond.
      * @param _labels An STL interger vector, describing the labels of bonds.
      * @param _name The given name of a tensor, STL std::string.
      * @see File demo/SyTensor_basic.cpp
@@ -72,12 +72,12 @@ class SyTensor_t{
      * @warning <tt>assert( _bonds.size() > 0 )</tt>
      * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
      */
-		SyTensor_t(std::vector<Bond_t>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+		SyTensor_t(std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
 
     /**
      * @brief To construct a tensor from a given bond array and a given label array.\n
      * How frequent it is used: * *
-     * @param _bonds An STL vector of object @c Bond_t.
+     * @param _bonds An STL vector of object @c Bond.
      * @param _labels An integer array, describing the labels of bonds.
      * @param _name The given name of a tensor, STL std::string.
      * @see File demo/SyTensor_basic.cpp
@@ -86,7 +86,7 @@ class SyTensor_t{
      * @warning <tt>assert( _bonds.size() > 0 )</tt>
      * @warning <tt>assert( _bonds.size() == _labels.size() )</tt>
      */
-		SyTensor_t(std::vector<Bond_t>& _bonds, int* labels, const std::string& _name = "");
+		SyTensor_t(std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
 
     /**
      * @brief A deep copy constructor.\n
@@ -213,8 +213,8 @@ class SyTensor_t{
 		void putBlock(const Qnum& qnum, Matrix_t& mat);
 		std::map<Qnum, Matrix_t> getBlocks();
 		Matrix_t printRawElem(bool flag = true);
-		friend class Node_t;
-		friend class Network_t;
+		friend class Node;
+		friend class Network;
 		void orthoRand();
 		void orthoRand(const Qnum& qnum);
 		void eye();
@@ -234,15 +234,15 @@ class SyTensor_t{
 		std::string name;
 		DOUBLE *elem;		//Array of elements
 		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
-		std::vector<Bond_t> bonds;
-		std::map<Qnum, Block_t> blocks;
+		std::vector<Bond> bonds;
+		std::map<Qnum, Block> blocks;
 		std::vector<int>labels;
 		void packMeta();
 		int RBondNum;	//Row bond number
 		int RQdim;
 		int CQdim;
 		int64_t elemNum;
-		std::map<int, Block_t*> RQidx2Blk;	//Qidx to the Block
+		std::map<int, Block*> RQidx2Blk;	//Qidx to the Block
 		std::map<int, int> QidxEnc;
 		std::map<int, int> RQidx2Off;	//the row offset starts from the block origin of a qnum
 		std::map<int, int> CQidx2Off;	//the col offset starts from the block origin of a qnum

@@ -1,6 +1,6 @@
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/numeric/uni10_lapack.h>
-
+namespace uni10{
 std::ostream& operator<< (std::ostream& os, const Matrix_t& m){
 	os << std::endl << m.Rnum << " x " << m.Cnum << " = " << m.elemNum;
 	if(m.diag)
@@ -213,3 +213,4 @@ double& Matrix_t::operator[](size_t idx){
 	assert(idx < elemNum);
 	return elem[idx];
 }
+};	/* namespace uni10 */	

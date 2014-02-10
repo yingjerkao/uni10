@@ -1,101 +1,102 @@
-#include <uni10/tensor-network/SyTensor.h>
+#include <uni10/tensor-network/UniTensor.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 //using namespace uni10::datatype;
 
-int64_t SyTensor_t::ELEMNUM = 0;
-int SyTensor_t::COUNTER = 0;
-int64_t SyTensor_t::MAXELEMNUM = 0;
-int64_t SyTensor_t::MAXELEMTEN = 0;
+namespace uni10{
+int64_t UniTensor::ELEMNUM = 0;
+int UniTensor::COUNTER = 0;
+int64_t UniTensor::MAXELEMNUM = 0;
+int64_t UniTensor::MAXELEMTEN = 0;
 
-SyTensor_t::SyTensor_t(): status(0), elem(NULL), RBondNum(0), RQdim(0), CQdim(0), elemNum(0){
+UniTensor::UniTensor(): status(0), elem(NULL), RBondNum(0), RQdim(0), CQdim(0), m_elemNum(0){
 	COUNTER++;
 }
 
-SyTensor_t::SyTensor_t(const SyTensor_t& SyT):
-	status(SyT.status), bonds(SyT.bonds), blocks(SyT.blocks), labels(SyT.labels),
-    RBondNum(SyT.RBondNum), RQdim(SyT.RQdim), CQdim(SyT.CQdim), elemNum(SyT.elemNum), elem(NULL),
-	QidxEnc(SyT.QidxEnc), RQidx2Off(SyT.RQidx2Off), CQidx2Off(SyT.CQidx2Off), RQidx2Dim(SyT.RQidx2Dim), CQidx2Dim(SyT.CQidx2Dim){
+UniTensor::UniTensor(const UniTensor& UniT):
+	status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels),
+    RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL),
+	QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), CQidx2Dim(UniT.CQidx2Dim){
 	//std::cout<<"COPY CONSTRUCTING " << this << std::endl;
 	
 	//status &= ~HAVELABEL;	//Labels are NOT copied to another tensor.
 
 	RQidx2Blk.clear();
-	for(std::map<int, Block_t*>::const_iterator it = SyT.RQidx2Blk.begin(); it != SyT.RQidx2Blk.end(); it++)
+	for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
 		RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
-	if(SyT.status & INIT){
-		elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * elemNum, status);
-		std::map<Qnum,Block_t>::iterator it; 
+	if(UniT.status & INIT){
+		elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
+		std::map<Qnum,Block>::iterator it; 
 		for ( it = blocks.begin() ; it != blocks.end(); it++ )
 			it->second.elem = &(elem[it->second.offset]);
-		ELEMNUM += elemNum;
+		ELEMNUM += m_elemNum;
 		if(ELEMNUM > MAXELEMNUM)
 			MAXELEMNUM = ELEMNUM;
-		if(elemNum > MAXELEMTEN)
-			MAXELEMTEN = elemNum;
-		myMemcpy(elem, SyT.elem, sizeof(DOUBLE) * SyT.elemNum, status, SyT.status);
+		if(m_elemNum > MAXELEMTEN)
+			MAXELEMTEN = m_elemNum;
+		myMemcpy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, status, UniT.status);
 	}
 	COUNTER++;
 }
 
-SyTensor_t& SyTensor_t::operator=(const SyTensor_t& SyT){
+UniTensor& UniTensor::operator=(const UniTensor& UniT){
 	//std::cout<<"ASSING CONSTRUCTING " << this << std::endl;
-	//name = SyT.name;
-	bonds = SyT.bonds;
-	blocks = SyT.blocks;
-	labels = SyT.labels;
-	RBondNum = SyT.RBondNum;
-	RQdim = SyT.RQdim;
-	CQdim = SyT.CQdim;
-	QidxEnc = SyT.QidxEnc;
-	RQidx2Off = SyT.RQidx2Off;
-	CQidx2Off = SyT.CQidx2Off;
-	RQidx2Dim = SyT.RQidx2Dim;
-	CQidx2Dim = SyT.CQidx2Dim;
+	//name = UniT.name;
+	bonds = UniT.bonds;
+	blocks = UniT.blocks;
+	labels = UniT.labels;
+	RBondNum = UniT.RBondNum;
+	RQdim = UniT.RQdim;
+	CQdim = UniT.CQdim;
+	QidxEnc = UniT.QidxEnc;
+	RQidx2Off = UniT.RQidx2Off;
+	CQidx2Off = UniT.CQidx2Off;
+	RQidx2Dim = UniT.RQidx2Dim;
+	CQidx2Dim = UniT.CQidx2Dim;
 	RQidx2Blk.clear();
-	for(std::map<int, Block_t*>::const_iterator it = SyT.RQidx2Blk.begin(); it != SyT.RQidx2Blk.end(); it++)
+	for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
 		RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
-	if(SyT.status & INIT){
-		ELEMNUM -= elemNum;	//free original memory
+	if(UniT.status & INIT){
+		ELEMNUM -= m_elemNum;	//free original memory
 		if(elem != NULL)
-			myFree(elem, sizeof(DOUBLE) * elemNum, status);
-		status = SyT.status;
-		elemNum = SyT.elemNum;
-		elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * elemNum, status);
-		std::map<Qnum,Block_t>::iterator it; 
+			myFree(elem, sizeof(DOUBLE) * m_elemNum, status);
+		status = UniT.status;
+		m_elemNum = UniT.m_elemNum;
+		elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
+		std::map<Qnum,Block>::iterator it; 
 		for ( it = blocks.begin(); it != blocks.end(); it++ )
 			it->second.elem = &(elem[it->second.offset]);
-		ELEMNUM += elemNum;
+		ELEMNUM += m_elemNum;
 		if(ELEMNUM > MAXELEMNUM)
 			MAXELEMNUM = ELEMNUM;
-		if(elemNum > MAXELEMTEN)
-			MAXELEMTEN = elemNum;
-		myMemcpy(elem, SyT.elem, sizeof(DOUBLE) * SyT.elemNum, status, SyT.status);
+		if(m_elemNum > MAXELEMTEN)
+			MAXELEMTEN = m_elemNum;
+		myMemcpy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, status, UniT.status);
 	}
 	return *this;
 }
 
-SyTensor_t::SyTensor_t(std::vector<Bond_t>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	//cout<<"CONSTRUCTING " << this << std::endl;
 	assert(_bonds.size() > 0); //No bond in Tensor, Error!
-	initSyT();
+	initUniT();
 	COUNTER++;
 }
 
-SyTensor_t::SyTensor_t(std::vector<Bond_t>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	assert(_bonds.size() > 0); //No bond in Tensor, Error!
-	initSyT();
+	initUniT();
 	addLabel(_labels);
 	COUNTER++;
 }
-SyTensor_t::SyTensor_t(std::vector<Bond_t>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	assert(_bonds.size() > 0); //No bond in Tensor, Error!
-	initSyT();
+	initUniT();
 	addLabel(_labels);
 	COUNTER++;
 }
 
-SyTensor_t::SyTensor_t(const std::string& fname): status(0){	//load Tensor from file
+UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from file
 	name = fname;
 	FILE* fp = fopen(fname.c_str(), "r");
 	assert(fp != NULL);
@@ -120,208 +121,187 @@ SyTensor_t::SyTensor_t(const std::string& fname): status(0){	//load Tensor from 
 		for(int q = 0; q < num_q; q++)
 			for(int d = 0; d < qdegs[q]; d++)
 				tot_qnums.push_back(qnums[q]);
-		Bond_t bd(tp, tot_qnums);
+		Bond bd(tp, tot_qnums);
 		bonds.push_back(bd);
 	}
-	initSyT();
-	if(st & HAVELABEL){
+	initUniT();
+	//if(st & HAVELABEL){
 		int num_l;
 		fread(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
 		assert(num_l == bonds.size());
 		labels.assign(num_l, 0);
 		fread(&(labels[0]), num_l, sizeof(int), fp);
-		status |= HAVELABEL;
-	}
+		//status |= HAVELABEL;
+	//}
 	if(st & HAVEELEM){
 		int num_el;
-		fread(&num_el, 1, sizeof(elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
-		assert(num_el == elemNum);
-		fread(elem, elemNum, sizeof(DOUBLE), fp);
+		fread(&num_el, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
+		assert(num_el == m_elemNum);
+		fread(elem, m_elemNum, sizeof(DOUBLE), fp);
 		status |= HAVEELEM;
 	}
 	fclose(fp);
 }
 
-SyTensor_t::~SyTensor_t(){
+UniTensor::~UniTensor(){
 	//cout<<"DESTRUCTING " << this << std::endl;
 	if(status & INIT){
-		myFree(elem, sizeof(DOUBLE) * elemNum, status);
-		ELEMNUM -= elemNum;
+		myFree(elem, sizeof(DOUBLE) * m_elemNum, status);
+		ELEMNUM -= m_elemNum;
 	}
 	COUNTER--;
 }
 
-int64_t SyTensor_t::getElemNum()const{return elemNum;}
-int SyTensor_t::getRBondNum()const{return RBondNum;}
-int SyTensor_t::getBondNum()const{return bonds.size();}
+int64_t UniTensor::elemNum()const{return m_elemNum;}
+int UniTensor::inBondNum()const{return RBondNum;}
+int UniTensor::bondNum()const{return bonds.size();}
 
-std::vector<Qnum> SyTensor_t::qnums(){
+std::vector<Qnum> UniTensor::qnums(){
 	std::vector<Qnum> keys;
-	for(std::map<Qnum,Block_t>::iterator it = blocks.begin(); it != blocks.end(); it++)
+	for(std::map<Qnum,Block>::iterator it = blocks.begin(); it != blocks.end(); it++)
 		keys.push_back(it->first);
 	return keys;
 }
 
-void SyTensor_t::check(){
+void UniTensor::check(){
 	std::cout<<"Existing Tensors: " << COUNTER << std::endl; 
 	std::cout<<"Allocated Elem: " << ELEMNUM << std::endl;
 	std::cout<<"Max Allocated Elem: " << MAXELEMNUM << std::endl;
 	std::cout<<"Max Allocated Elem for a Tensor: " << MAXELEMTEN << std::endl;
 }
 
-void SyTensor_t::addLabel(int* newLabels){
+void UniTensor::addLabel(int* newLabels){
 	assert(status & INIT);
 	std::vector<int> labels(newLabels, newLabels + bonds.size());
 	addLabel(labels);
 }
 
-void SyTensor_t::addLabel(std::vector<int>& newLabels){
+void UniTensor::addLabel(const std::vector<int>& newLabels){
 	assert(status & INIT);
 	std::set<int> labelS(&(newLabels[0]), &(newLabels[newLabels.size()]));
 	assert(bonds.size() == labelS.size());
 	labels = newLabels;
-	status |= HAVELABEL;
+	//status |= HAVELABEL;
 }
 
-std::vector<int> SyTensor_t::getLabel()const{
-	assert(status & HAVELABEL);
+std::vector<int> UniTensor::label()const{
+	//assert(status & HAVELABEL);
 	return labels;
 }
-std::vector<_Swap> _recSwap(int* _ord, int n){	//Given the reshape order out to in. 
-	int ordF[n];
-	for(int i = 0; i < n; i++)
-		ordF[i] = i;
-	return _recSwap(_ord, n, ordF);
-}
-std::vector<_Swap> _recSwap(int* _ord, int n, int* ordF){	//Given the reshape order out to in. 
-	int* ord = (int*)malloc(sizeof(int) * n);
-	memcpy(ord, _ord, sizeof(int) * n);
-	std::vector<_Swap> swaps;
-	_Swap sg; 
-	int tmp;
-	for(int i = 0; i < n - 1; i++)
-		for(int j = 0; j < n - i - 1; j++)
-			if(ord[j] > ord[j + 1]){
-				sg.b1 = ordF[ord[j + 1]]; 
-				sg.b2 = ordF[ord[j]];
-				tmp = ord[j];
-				ord[j] = ord[j + 1];
-				ord[j + 1] = tmp;
-				swaps.push_back(sg);
-			}
-	free(ord);
-	return swaps;
-}
 
-void SyTensor_t::reshape(int* newLabels, int rowBondNum){
+void UniTensor::permute(int* newLabels, int rowBondNum){
 	assert(status & INIT);
 	std::vector<int> _labels(newLabels, newLabels + bonds.size());
-	this->reshape(_labels, rowBondNum);
+	this->permute(_labels, rowBondNum);
 
 }
-void SyTensor_t::initSyT(){
+void UniTensor::initUniT(){
 	grouping();
 	assert(blocks.size() > 0); //No block in Tensor, Error!
-	Block_t blk = blocks.rbegin()->second;
-	elemNum = blk.offset + (blk.Rnum * blk.Cnum);
+	Block blk = blocks.rbegin()->second;
+	m_elemNum = blk.offset + (blk.Rnum * blk.Cnum);
 	elem = NULL;
-	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * elemNum, status);
+	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
 	//elem = (DOUBLE*)malloc(sizeof(DOUBLE) * elemNum);
-	std::map<Qnum,Block_t>::iterator it; 
+	std::map<Qnum,Block>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
 
-	ELEMNUM += elemNum;
+	ELEMNUM += m_elemNum;
 	if(ELEMNUM > MAXELEMNUM)
 		MAXELEMNUM = ELEMNUM;
-	if(elemNum > MAXELEMTEN)
-		MAXELEMTEN = elemNum;
-	membzero(elem, sizeof(DOUBLE) * elemNum, status);
+	if(m_elemNum > MAXELEMTEN)
+		MAXELEMTEN = m_elemNum;
+	membzero(elem, sizeof(DOUBLE) * m_elemNum, status);
+	labels.assign(bonds.size(), 0);
+	for(int b = 0; b < bonds.size(); b++)
+		labels[b] = b;
 	//memset(elem, 0, sizeof(DOUBLE) * elemNum);
 	status |= INIT;
+	//status |= HAVELABEL;
 }
 
 
-void SyTensor_t::save(const std::string& fname){
+void UniTensor::save(const std::string& fname){
 	assert((status & INIT));   //If not INIT, NO NEED to write out to file
 	FILE* fp = fopen(fname.c_str(), "w");
 	assert(fp != NULL);
 	fwrite(&status, 1, sizeof(status), fp);	//OUT: status(4 bytes)
 	int bondNum = bonds.size();
 	fwrite(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
-	size_t qnum_sz = sizeof(bonds[0].Qnums[0]);
+	size_t qnum_sz = sizeof(Qnum);
 	fwrite(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum)
 	for(int b = 0; b < bondNum; b++){
 		int num_q = bonds[b].Qnums.size();
-		fwrite(&(bonds[b].type), 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
+		fwrite(&(bonds[b].m_type), 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
 		fwrite(&num_q, 1, sizeof(int), fp);	//OUT: Number of Qnums in the bond(4 bytes)
 		fwrite(&(bonds[b].Qnums[0]), num_q, qnum_sz, fp);
 		fwrite(&(bonds[b].Qdegs[0]), num_q, sizeof(int), fp);
 	}
-	if(status & HAVELABEL){
-		int num_l = labels.size();
-		fwrite(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
-		fwrite(&(labels[0]), num_l, sizeof(int), fp);
-	}
+	//if(status & HAVELABEL){
+	int num_l = labels.size();
+	fwrite(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
+	fwrite(&(labels[0]), num_l, sizeof(int), fp);
+	//}
 	if(status & HAVEELEM){
-		fwrite(&elemNum, 1, sizeof(elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
-		fwrite(elem, elemNum, sizeof(DOUBLE), fp);
+		fwrite(&m_elemNum, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
+		fwrite(elem, m_elemNum, sizeof(DOUBLE), fp);
 	}
 	fclose(fp);
 }
 /*------------------- SET ELEMENTS -----------------*/
 
-void SyTensor_t::randomize(){
+void UniTensor::randomize(){
 	assert((status & INIT));   //If not INIT, CANNOT add elements
-	randomNums(elem, elemNum, status);
+	randomNums(elem, m_elemNum, status);
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::orthoRand(const Qnum& qnum){
-	Block_t& block = blocks[qnum];
+void UniTensor::orthoRand(const Qnum& qnum){
+	Block& block = blocks[qnum];
 	orthoRandomize(block.elem, block.Rnum, block.Cnum);
 }
 
-void SyTensor_t::orthoRand(){
-	std::map<Qnum,Block_t>::iterator it; 
+void UniTensor::orthoRand(){
+	std::map<Qnum,Block>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		orthoRandomize(it->second.elem, it->second.Rnum, it->second.Cnum);
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::eye(const Qnum& qnum){
-	Block_t& block = blocks[qnum];
+void UniTensor::eye(const Qnum& qnum){
+	Block& block = blocks[qnum];
 	myEye(block.elem, block.Rnum, block.Cnum, status);
 }
 
-void SyTensor_t::eye(){
-	std::map<Qnum,Block_t>::iterator it; 
+void UniTensor::eye(){
+	std::map<Qnum,Block>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		myEye(it->second.elem, it->second.Rnum, it->second.Cnum, status);
 	status |= HAVEELEM;
 }
 
-void SyTensor_t::bzero(const Qnum& qnum){
-	Block_t& block = blocks[qnum];
+void UniTensor::set_zero(const Qnum& qnum){
+	Block& block = blocks[qnum];
 	membzero(block.elem, block.Rnum * block.Cnum * sizeof(DOUBLE), status);
 	//memset(block.elem, 0, block.Rnum * block.Cnum * sizeof(DOUBLE));
 }
 
-void SyTensor_t::bzero(){
-	membzero(elem, elemNum * sizeof(DOUBLE), status);
+void UniTensor::set_zero(){
+	membzero(elem, m_elemNum * sizeof(DOUBLE), status);
 	//memset(elem, 0, elemNum * sizeof(DOUBLE));
 }
 
-void SyTensor_t::setName(const std::string& _name){
+void UniTensor::setName(const std::string& _name){
 	name = _name;
 }
 
-std::string SyTensor_t::getName(){
+std::string UniTensor::getName(){
 	return name;
 }
 
-std::vector<_Swap> SyTensor_t::exSwap(const SyTensor_t& Tb) const{
-	assert(status & HAVELABEL & Tb.status);
+std::vector<_Swap> UniTensor::exSwap(const UniTensor& Tb) const{
+	//assert(status & HAVELABEL & Tb.status);
 	int bondNumA = labels.size();
 	int bondNumB = Tb.labels.size();
 	std::vector<int> intersect;
@@ -347,7 +327,7 @@ std::vector<_Swap> SyTensor_t::exSwap(const SyTensor_t& Tb) const{
 	return swaps;
 }
 
-bool SyTensor_t::similar(const SyTensor_t& Tb)const{
+bool UniTensor::similar(const UniTensor& Tb)const{
 	if(bonds.size() != Tb.bonds.size())
 		return false;
 	for(int b = 0; b < bonds.size(); b++){
@@ -359,16 +339,16 @@ bool SyTensor_t::similar(const SyTensor_t& Tb)const{
 
 //=============================ACCESS MEMORY EXPLICITLY=====================================
 
-Matrix_t SyTensor_t::printRawElem(bool flag){
+Matrix_t UniTensor::printRawElem(bool flag){
 	if(status & HAVEELEM){
 		int bondNum = bonds.size();
 		int colNum = 1;
 		int rowNum = 1;
 		for(int b = bondNum - 1; b >= 0; b--){
-			if(bonds[b].type == BD_COL)
-				colNum *= bonds[b].dim;
+			if(bonds[b].type() == BD_OUT)
+				colNum *= bonds[b].dim();
 			else
-				rowNum *= bonds[b].dim;
+				rowNum *= bonds[b].dim();
 		}
 		std::vector<Qnum> rowQ;
 		std::vector<Qnum> colQ;
@@ -426,7 +406,7 @@ Matrix_t SyTensor_t::printRawElem(bool flag){
 		if(flag){
 			std::cout<< "     ";
 			for(int q = 0; q < colQ.size(); q++)
-				std::cout<< "   " << std::setw(2) << colQ[q].getU1() << "," << colQ[q].getPrt();
+				std::cout<< "   " << std::setw(2) << colQ[q].U1() << "," << colQ[q].prt();
 			std::cout<< std::endl << std::setw(5) << "" << std::setw(colQ.size() * 7 + 2) <<std::setfill('-')<<"";
 			std::cout<<std::setfill(' ');
 		}
@@ -437,7 +417,7 @@ Matrix_t SyTensor_t::printRawElem(bool flag){
 		while(1){
 			if(flag){
 				if(cnt % colNum == 0){
-					std::cout<<"\n    |\n" << std::setw(2) << rowQ[r].getU1() << "," << rowQ[r].getPrt() << "|";
+					std::cout<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
 					r++;
 				}
 				std::cout<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
@@ -445,7 +425,7 @@ Matrix_t SyTensor_t::printRawElem(bool flag){
 			rawElem.push_back(at(idxs));
 			for(bend = bondNum - 1; bend >= 0; bend--){
 				idxs[bend]++;
-				if(idxs[bend] < bonds[bend].dim)
+				if(idxs[bend] < bonds[bend].dim())
 					break;
 				else
 					idxs[bend] = 0;
@@ -465,23 +445,23 @@ Matrix_t SyTensor_t::printRawElem(bool flag){
 }
 
 
-std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT){
-	assert(SyT.status & SyT.INIT);
+std::ostream& operator<< (std::ostream& os, UniTensor& UniT){
+	assert(UniT.status & UniT.INIT);
 	int row = 0;
 	int col = 0;
-	for(int i = 0; i < SyT.bonds.size(); i++)
-		if(SyT.bonds[i].type == BD_ROW)
+	for(int i = 0; i < UniT.bonds.size(); i++)
+		if(UniT.bonds[i].type() == BD_IN)
 			row++;
 		else
 			col++;
 	int layer = std::max(row, col);
-	int nmlen = SyT.name.length() + 2;
+	int nmlen = UniT.name.length() + 2;
 	int star = 12 + (14 - nmlen) / 2;
 	os<<std::endl;
 	for(int s = 0; s < star; s++)
 		os << "*";
-	if(SyT.name.length() > 0)
-		os << " " << SyT.name << " ";
+	if(UniT.name.length() > 0)
+		os << " " << UniT.name << " ";
 	for(int s = 0; s < star; s++)
 		os<<"*";	
 	os << "\n             ____________\n";
@@ -491,31 +471,32 @@ std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT){
 	char buf[128];
 	for(int l = 0; l < layer; l++){
 		if(l < row && l < col){
-			if(SyT.status & SyT.HAVELABEL){
-				llab = SyT.labels[l];
-				rlab = SyT.labels[row + l];
-			}
+			//if(UniT.status & UniT.HAVELABEL){
+				llab = UniT.labels[l];
+				rlab = UniT.labels[row + l];
+			//}
+			/*
 			else{
 				llab = l;
 				rlab = row + l;
-			}
-			sprintf(buf, "    %5d___|%-4d    %4d|___%-5d\n", llab, SyT.bonds[l].dim, SyT.bonds[row + l].dim, rlab);
+			}*/
+			sprintf(buf, "    %5d___|%-4d    %4d|___%-5d\n", llab, UniT.bonds[l].dim(), UniT.bonds[row + l].dim(), rlab);
 			os<<buf;
 		}
 		else if(l < row){
-			if(SyT.status & SyT.HAVELABEL)
-				llab = SyT.labels[l];
-			else
-				llab = l;
-			sprintf(buf, "    %5d___|%-4d    %4s|\n", llab, SyT.bonds[l].dim, "");
+			//if(UniT.status & UniT.HAVELABEL)
+				llab = UniT.labels[l];
+			//else
+			//	llab = l;
+			sprintf(buf, "    %5d___|%-4d    %4s|\n", llab, UniT.bonds[l].dim(), "");
 			os<<buf;
 		}
 		else if(l < col){
-			if(SyT.status & SyT.HAVELABEL)
-				rlab = SyT.labels[row + l];
-			else
-				rlab = row + l;
-			sprintf(buf, "    %5s   |%4s    %4d|___%-5d\n", "", "", SyT.bonds[row + l].dim, rlab);
+			//if(UniT.status & UniT.HAVELABEL)
+				rlab = UniT.labels[row + l];
+			//else
+			//	rlab = row + l;
+			sprintf(buf, "    %5s   |%4s    %4d|___%-5d\n", "", "", UniT.bonds[row + l].dim(), rlab);
 			os << buf;
 		}   
 		os << "            |            |   \n";
@@ -523,20 +504,20 @@ std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT){
 	os << "            |____________|\n";
 
 	os << "\n================BONDS===============\n";
-	for(int b = 0; b < SyT.bonds.size(); b++){
-		os << SyT.bonds[b];
+	for(int b = 0; b < UniT.bonds.size(); b++){
+		os << UniT.bonds[b];
 	}   
 	os<<"\n===============BLOCKS===============\n";
-	std::map<Qnum,Block_t>::iterator it; 
+	std::map<Qnum,Block>::iterator it; 
 	int Rnum, Cnum;
 	bool printElem = true;
-	for ( it = SyT.blocks.begin() ; it != SyT.blocks.end(); it++ ){
+	for ( it = UniT.blocks.begin() ; it != UniT.blocks.end(); it++ ){
 
 		Rnum = it->second.Rnum;
 		Cnum = it->second.Cnum;
 		os << "--- " << it->second.qnum << ": " << Rnum << " x " << Cnum << " = " << Rnum * Cnum << " ---\n\n";
-		if((SyT.status & SyT.HAVEELEM) && printElem){ 
-			double* elem = SyT.elem;
+		if((UniT.status & UniT.HAVEELEM) && printElem){ 
+			double* elem = UniT.elem;
 			for(int r = 0; r < Rnum; r++){
 				for(int c = 0; c < Cnum; c++)
 					os<< std::setw(7) << std::fixed << std::setprecision(3) << elem[it->second.offset + r * Cnum + c];
@@ -544,14 +525,14 @@ std::ostream& operator<< (std::ostream& os, SyTensor_t& SyT){
 			}
 		}
 	}   
-	os << "Total elemNum: "<<SyT.elemNum<<std::endl;
+	os << "Total elemNum: "<<UniT.m_elemNum<<std::endl;
 	os << "***************** END ****************\n\n";
 	return os;
 }
 
-Matrix_t SyTensor_t::getBlock(Qnum qnum, bool diag){
+Matrix_t UniTensor::getBlock(Qnum qnum, bool diag){
 	assert(blocks.find(qnum) != blocks.end());
-	Block_t blk = blocks[qnum];
+	Block blk = blocks[qnum];
 	if(diag){
 		Matrix_t mat(blk.Rnum, blk.Cnum, true);
 		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
@@ -565,18 +546,18 @@ Matrix_t SyTensor_t::getBlock(Qnum qnum, bool diag){
 	}
 }
 
-std::map<Qnum, Matrix_t> SyTensor_t::getBlocks(){
+std::map<Qnum, Matrix_t> UniTensor::getBlocks(){
 	std::map<Qnum, Matrix_t> mats;
-	for(std::map<Qnum,Block_t>::iterator it = blocks.begin(); it != blocks.end(); it++){
+	for(std::map<Qnum,Block>::iterator it = blocks.begin(); it != blocks.end(); it++){
 		Matrix_t mat(it->second.Rnum, it->second.Cnum, it->second.elem);
 		mats.insert(std::pair<Qnum, Matrix_t>(it->first, mat));
 	}
 	return mats;
 }
 
-void SyTensor_t::putBlock(const Qnum& qnum, Matrix_t& mat){
+void UniTensor::putBlock(const Qnum& qnum, Matrix_t& mat){
 	assert(blocks.find(qnum) != blocks.end());
-	Block_t& blk = blocks[qnum];
+	Block& blk = blocks[qnum];
 	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
 	if(mat.isDiag()){
 		memset(blk.elem, 0, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
@@ -589,8 +570,8 @@ void SyTensor_t::putBlock(const Qnum& qnum, Matrix_t& mat){
 	}
 }
 
-void SyTensor_t::combineIndex(const std::vector<int>&cmbLabels){
-	assert(status & HAVELABEL);
+void UniTensor::combineIndex(const std::vector<int>&cmbLabels){
+	//assert(status & HAVELABEL);
 	assert(cmbLabels.size() > 1);
 	std::vector<int> rsp_labels(labels.size(), 0);
 	std::vector<int> reduced_labels(labels.size() - cmbLabels.size() + 1, 0);
@@ -614,7 +595,7 @@ void SyTensor_t::combineIndex(const std::vector<int>&cmbLabels){
 		
 	int enc = 0;
 	int enc_r = 0;
-	std::vector<Bond_t> newBonds;
+	std::vector<Bond> newBonds;
 	int RBnum = 0;
 	for(int l = 0; l < labels.size(); l++){
 		if(marked[l] && l == picked[0]){
@@ -622,19 +603,19 @@ void SyTensor_t::combineIndex(const std::vector<int>&cmbLabels){
 				rsp_labels[enc] = cmbLabels[ll];
 				enc++;
 			}
-			std::vector<Bond_t> tmpBonds;
+			std::vector<Bond> tmpBonds;
 			for(int p = 0; p < picked.size(); p++)
 				tmpBonds.push_back(bonds[picked[p]]);
-			if(bonds[picked[0]].type == BD_ROW)
+			if(bonds[picked[0]].type() == BD_IN)
 				RBnum += picked.size();
-			newBonds.push_back(combine(tmpBonds));
+			newBonds.push_back(Bond::combine(tmpBonds));
 			reduced_labels[enc_r] = labels[l];
 			enc_r++;
 		}
 		else if(marked[l] == 0){
 			rsp_labels[enc] = labels[l];
 			reduced_labels[enc_r] = labels[l];
-			if(bonds[l].type == BD_ROW)
+			if(bonds[l].type() == BD_IN)
 				RBnum++;
 			newBonds.push_back(bonds[l]);
 			enc_r++;
@@ -648,7 +629,7 @@ void SyTensor_t::combineIndex(const std::vector<int>&cmbLabels){
 		std::cout<<rsp_labels[i]<<std::endl;
 	*/
 	/*
-	std::map<Qnum,Block_t>::iterator it; 
+	std::map<Qnum,Block>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ ){
 		std::cout<<it->first<<" offset = "<<it->second.offset<<"\n";
 	}
@@ -656,9 +637,10 @@ void SyTensor_t::combineIndex(const std::vector<int>&cmbLabels){
 		std::cout<<it->first<<" offset = "<<it->second.offset<<"\n";
 	}
 	*/
-	this->reshape(rsp_labels, RBnum);
-	SyTensor_t Tout(newBonds, reduced_labels);
-	myMemcpy(Tout.elem, elem, sizeof(DOUBLE) * elemNum, Tout.status, Tout.status);
+	this->permute(rsp_labels, RBnum);
+	UniTensor Tout(newBonds, reduced_labels);
+	myMemcpy(Tout.elem, elem, sizeof(DOUBLE) * m_elemNum, Tout.status, Tout.status);
 	Tout.status |= HAVEELEM;
 	*this = Tout;
 }
+}; /* namespace uni10 */

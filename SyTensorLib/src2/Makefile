@@ -30,13 +30,13 @@ uni10_lapack.o: $(UNI10_ROOT)/numeric/lib/uni10_lapack.cpp $(UNI10_ROOT)/numeric
 matrix.o: $(UNI10_ROOT)/tensor-network/lib/Matrix.cpp $(UNI10_ROOT)/tensor-network/Matrix.h
 	$(CC) -c -I $(SRC) $< -o $@
 
-operate.o: $(UNI10_ROOT)/tensor-network/lib/operate.cpp $(UNI10_ROOT)/tensor-network/SyTensor.h
+operate.o: $(UNI10_ROOT)/tensor-network/lib/operate.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
 	$(CC) -c -I $(SRC) $< -o $@
 
-syTensor_elem.o: $(UNI10_ROOT)/tensor-network/lib/SyTensor_elem.cpp $(UNI10_ROOT)/tensor-network/SyTensor.h
+syTensor_elem.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor_elem.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
 	$(CC) -c -I $(SRC) $< -o $@
 
-syTensor.o: $(UNI10_ROOT)/tensor-network/lib/SyTensor.cpp $(UNI10_ROOT)/tensor-network/SyTensor.h
+syTensor.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
 	$(CC) -c -I $(SRC) $< -o $@
 
 network.o: $(UNI10_ROOT)/tensor-network/lib/Network.cpp $(UNI10_ROOT)/tensor-network/Network.h

@@ -1,34 +1,37 @@
 #ifndef UNI10_STRUCT_H
 #define UNI10_STRUCT_H
+#include <string>
+namespace uni10{
 typedef struct{
 	int b1; 
 	int b2; 
 }_Swap;
-class SyTensor_t;
-class Bond_t;
-class Node_t{
+class UniTensor;
+class Bond;
+class Node{
 	public:
-		Node_t();
-		Node_t(SyTensor_t* Tp);
-		Node_t(const Node_t& nd);
-		Node_t(std::vector<Bond_t>& _bonds, std::vector<int>& _labels);
-		~Node_t();
-		Node_t contract(Node_t* nd);
-		float metric(Node_t* nd);
-		friend std::ostream& operator<< (std::ostream& os, const Node_t& nd);
-		friend class Network_t;
+		Node();
+		Node(UniTensor* Tp);
+		Node(const Node& nd);
+		Node(std::vector<Bond>& _bonds, std::vector<int>& _labels);
+		~Node();
+		Node contract(Node* nd);
+		float metric(Node* nd);
+		friend std::ostream& operator<< (std::ostream& os, const Node& nd);
+		friend class Network;
 	private:
-		SyTensor_t* T;	//if T != NULL, it is leaf node
+		UniTensor* T;	//if T != NULL, it is leaf node
 		std::vector<int> labels;
-		std::vector<Bond_t> bonds;
+		std::vector<Bond> bonds;
 		int64_t elemNum;
 		std::string name;
-		Node_t* parent;
-		Node_t* left;
-		Node_t* right;
+		Node* parent;
+		Node* left;
+		Node* right;
 		float point;
-		int64_t cal_elemNum(std::vector<Bond_t>& _bonds);
+		int64_t cal_elemNum(std::vector<Bond>& _bonds);
 		void delink();
 };
+}; /* namespace uni10 */
 
 #endif /* UNI10_STRUCT_H */

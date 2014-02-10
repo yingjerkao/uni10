@@ -3,29 +3,36 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
+//#include <tuple>
 
 #define FERMIONIC 1
-//namespace uni10{
+namespace uni10{
 //namespace datatype{
+
+enum parityType{
+	PRT_EVEN = 0,
+	PRT_ODD = 1
+};
+enum parityFType{
+	PRTF_EVEN = 0,
+	PRTF_ODD = 1
+};
 
 class Qnum {
 	public:
-		Qnum(): U1(0), prt(0), prtF(0){}
-		Qnum(int _U1): U1(_U1), prt(0), prtF(0){
-			assert(U1 < U1_UPB && U1 > U1_LOB);
-		}
-		Qnum(int _U1, int _prt): U1(_U1), prt(_prt), prtF(0){
-			assert(U1 < U1_UPB && U1 > U1_LOB && prt < prt_UPB && prt > prt_LOB);
-		}
-		Qnum(int _U1, int _prt, int _prtF): U1(_U1), prt(_prt), prtF(_prtF){
-			assert(U1 < U1_UPB && U1 > U1_LOB && prt < prt_UPB && prt > prt_LOB && prtF < prt_UPB && prtF > prt_LOB);
-		}
-		Qnum(const Qnum& _q):U1(_q.U1), prt(_q.prt), prtF(_q.prtF){}
+		Qnum();
+		Qnum(int _U1);
+		Qnum(int _U1, parityType _prt);
+		Qnum(parityFType _prtF);
+		Qnum(parityFType _prtF, int _U1);
+		Qnum(parityFType _prtF, int _U1, parityType _prt);
+		Qnum(const Qnum& _q);
 		~Qnum(){};
-		int getU1()const{return U1;}
-		int getPrt()const{return prt;}
-		int getPrtF()const{return prtF;}
-		void set(int _U1 = 0, int _prt = 0, int _prtF = 0);
+		int U1()const;
+		parityType prt()const;
+		parityFType prtF()const;
+		void assign(int _U1 = 0, parityType _prt = PRT_EVEN);
+		void assign(parityFType _prtF, int _U1 = 0, parityType _prt = PRT_EVEN);
 		friend bool operator< (const Qnum& q1, const Qnum& q2);
 		friend bool operator<= (const Qnum& q1, const Qnum& q2);
 		friend bool operator== (const Qnum& q1, const Qnum& q2);
@@ -35,13 +42,13 @@ class Qnum {
 	private:
 		static const int U1_UPB = 100;	//Upper bound of U1
 		static const int U1_LOB = -100;//Lower bound of U1
-		static const int prt_UPB = 2;  //Upper bound of prt
-		static const int prt_LOB = -1; //Lower bound of prt
-		int U1;
-		char prt;
-		char prtF;
+		static const int PRT_UPB = 2;  //Upper bound of prt
+		static const int PRT_LOB = -1; //Lower bound of prt
+		int m_U1;
+		parityType m_prt;
+		parityFType m_prtF;
 };
 
 //};
-//};
+};
 #endif /* QNUMF_H */
