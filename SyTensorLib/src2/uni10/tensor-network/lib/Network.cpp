@@ -314,16 +314,6 @@ void Network::fromfile(const std::string& fname){
 	infile.close();
 }
 
-/*
-Node* Network::add(UniTensor* UniT){
-	assert(label_arr.size() == 0);
-	Node* ndp = new Node(UniT);
-	order.push_back(leafs.size());
-	leafs.push_back(ndp);
-	return ndp;
-}
-*/
-
 Node* Network::putTensor(int idx, const UniTensor* UniT, bool force){
 	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
 	if((!force) && load)
@@ -432,7 +422,7 @@ void Network::destruct(){
 		leafs[i]->delink();
 	conOrder.clear();
 	for(int t = 0; t < tensors.size(); t++){
-		if(swapflags[t]){
+		if(Qnum::isFermionic() && swapflags[t]){
 			tensors[t]->addGate(swaps_arr[t]);
 			swapflags[t] = false;
 		}
@@ -450,15 +440,11 @@ void Network::construct(){
 	load = true;
 }
 
-//void Network::optimize(int num){
-//	assert(false);//not a ready function
-//}
-
 UniTensor Network::launch(const std::string& _name){
 	if(!load)
 		construct();
 	for(int t = 0; t < tensors.size(); t++)
-		if(!swapflags[t]){
+		if(Qnum::isFermionic() && !swapflags[t]){
 			tensors[t]->addGate(swaps_arr[t]);
 			swapflags[t] = true;
 		}

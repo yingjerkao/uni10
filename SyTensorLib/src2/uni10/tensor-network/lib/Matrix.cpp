@@ -1,8 +1,8 @@
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/numeric/uni10_lapack.h>
 namespace uni10{
-std::ostream& operator<< (std::ostream& os, const Matrix_t& m){
-	os << std::endl << m.Rnum << " x " << m.Cnum << " = " << m.elemNum;
+std::ostream& operator<< (std::ostream& os, const Matrix& m){
+	os << std::endl << m.Rnum << " x " << m.Cnum << " = " << m.m_elemNum;
 	if(m.diag)
 		os << ", Diagonal";
 	os <<std::endl << std::endl;
@@ -10,101 +10,101 @@ std::ostream& operator<< (std::ostream& os, const Matrix_t& m){
 		for(int j = 0; j < m.Cnum; j++)
 			if(m.diag){
 				if(i == j)
-					os << std::setw(7) << std::fixed << std::setprecision(3) << m.elem[i];
+					os << std::setw(7) << std::fixed << std::setprecision(3) << m.m_elem[i];
 				else
 					os << std::setw(7) << std::fixed << std::setprecision(3) << 0.0;
 			}
 			else
-				os << std::setw(7) << std::fixed << std::setprecision(3) << m.elem[i * m.Cnum + j];
+				os << std::setw(7) << std::fixed << std::setprecision(3) << m.m_elem[i * m.Cnum + j];
 		os << std::endl << std::endl;
 	}
 	return os;
 }
 
-Matrix_t::Matrix_t(const Matrix_t& _m): Rnum(_m.Rnum), Cnum(_m.Cnum), elemNum(_m.elemNum), diag(_m.diag), elem(NULL){
-	if(elemNum){
-		elem = (double*)malloc(elemNum * sizeof(double));
-		memcpy(elem, _m.elem, elemNum * sizeof(double));
+Matrix::Matrix(const Matrix& _m): Rnum(_m.Rnum), Cnum(_m.Cnum), m_elemNum(_m.m_elemNum), diag(_m.diag), m_elem(NULL){
+	if(m_elemNum){
+		m_elem = (double*)malloc(m_elemNum * sizeof(double));
+		memcpy(m_elem, _m.m_elem, m_elemNum * sizeof(double));
 	}
 }
 
-Matrix_t::Matrix_t(int _Rnum, int _Cnum, double* _elem, bool _diag): Rnum(_Rnum), Cnum(_Cnum), elemNum(_Rnum * _Cnum), diag(_diag), elem(NULL){
+Matrix::Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
 	if(_diag)
-		elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
-	if(elemNum){
-		elem = (double*)malloc(elemNum * sizeof(double));
-		memcpy(elem, _elem, elemNum * sizeof(double));
+		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
+	if(m_elemNum){
+		m_elem = (double*)malloc(m_elemNum * sizeof(double));
+		memcpy(m_elem, _elem, m_elemNum * sizeof(double));
 	}
 }
 
-Matrix_t::Matrix_t(int _Rnum, int _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), elemNum(_Rnum * _Cnum), diag(_diag), elem(NULL){
+Matrix::Matrix(int _Rnum, int _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
 	if(_diag)
-		elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
-	if(elemNum){
-		elem = (double*)malloc(elemNum * sizeof(double));
-		memset(elem, 0, elemNum * sizeof(double));
+		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
+	if(m_elemNum){
+		m_elem = (double*)malloc(m_elemNum * sizeof(double));
+		memset(m_elem, 0, m_elemNum * sizeof(double));
 	}
 }
 
-Matrix_t& Matrix_t::operator=(const Matrix_t& _m){
+Matrix& Matrix::operator=(const Matrix& _m){
 	Rnum = _m.Rnum;
 	Cnum = _m.Cnum;
-	elemNum = _m.elemNum;
+	m_elemNum = _m.m_elemNum;
 	diag = _m.diag;
-	elem = (double*)realloc(elem, Rnum * Cnum * sizeof(double));
-	memcpy(elem, _m.elem, Rnum * Cnum * sizeof(double));
+	m_elem = (double*)realloc(m_elem, Rnum * Cnum * sizeof(double));
+	memcpy(m_elem, _m.m_elem, Rnum * Cnum * sizeof(double));
 	return *this;
 }
 
-Matrix_t::~Matrix_t(){
-	if(elem != NULL)
-		free(elem);
+Matrix::~Matrix(){
+	if(m_elem != NULL)
+		free(m_elem);
 }
 
-int Matrix_t::row()const{
+int Matrix::row()const{
 	return Rnum;
 }
 
-int Matrix_t::col()const{
+int Matrix::col()const{
 	return Cnum;
 }
-size_t Matrix_t::getElemNum()const{
-	return elemNum;
+size_t Matrix::elemNum()const{
+	return m_elemNum;
 }
 
-Matrix_t operator* (const Matrix_t& Ma, const Matrix_t& Mb){
+Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 	assert(Ma.Cnum == Mb.Rnum);
 	if((!Ma.diag) && (!Mb.diag)){
-		Matrix_t Mc(Ma.Rnum, Mb.Cnum);	
-		myDgemm(Ma.elem, Mb.elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.elem);
+		Matrix Mc(Ma.Rnum, Mb.Cnum);	
+		myDgemm(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem);
 		return Mc;
 	}
 	else if(Ma.diag && (!Mb.diag)){
-		Matrix_t Mc(Ma.Rnum, Mb.Cnum);	
-		for(int i = 0; i < Ma.elemNum; i++)
+		Matrix Mc(Ma.Rnum, Mb.Cnum);	
+		for(int i = 0; i < Ma.m_elemNum; i++)
 			for(int j = 0; j < Mb.Cnum; j++)
-				Mc.elem[i * Mb.Cnum + j] = Ma.elem[i] * Mb.elem[i * Mb.Cnum + j];
+				Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i] * Mb.m_elem[i * Mb.Cnum + j];
 		return Mc;
 	}
 	else if((!Ma.diag) && Mb.diag){
-		Matrix_t Mc(Ma.Rnum, Mb.Cnum);	
+		Matrix Mc(Ma.Rnum, Mb.Cnum);	
 		for(int i = 0; i < Ma.Rnum; i++)
-			for(int j = 0; j < Mb.elemNum; j++)
-				Mc.elem[i * Mb.Cnum + j] = Ma.elem[i * Ma.Cnum + j] * Mb.elem[j];
+			for(int j = 0; j < Mb.m_elemNum; j++)
+				Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i * Ma.Cnum + j] * Mb.m_elem[j];
 		return Mc;
 	}
 	else{
-		Matrix_t Mc(Ma.Rnum, Mb.Cnum, true);	
+		Matrix Mc(Ma.Rnum, Mb.Cnum, true);	
 		for(int i = 0; i < Ma.Rnum; i++)
-			Mc.elem[i] = Ma.elem[i] * Mb.elem[i];
+			Mc.m_elem[i] = Ma.m_elem[i] * Mb.m_elem[i];
 		return Mc;
 	}
 }
-bool operator== (const Matrix_t& m1, const Matrix_t& m2){
+bool operator== (const Matrix& m1, const Matrix& m2){
 	double diff;
-	if(m1.elemNum == m2.elemNum){	
-		for(int i = 0; i < m1.elemNum; i++){
-			diff = fabs(m1.elem[i] - m2.elem[i]);
+	if(m1.m_elemNum == m2.m_elemNum){	
+		for(int i = 0; i < m1.m_elemNum; i++){
+			diff = fabs(m1.m_elem[i] - m2.m_elem[i]);
 			if(diff > 1E-6)
 				return false;
 		}
@@ -115,102 +115,117 @@ bool operator== (const Matrix_t& m1, const Matrix_t& m2){
 }
 
 
-Matrix_t& Matrix_t::operator*= (const Matrix_t& Mb){
+Matrix& Matrix::operator*= (const Matrix& Mb){
 	return *this = *this * Mb;
 }
 
-std::vector<Matrix_t> Matrix_t::diagonalize(){
+std::vector<Matrix> Matrix::diagonalize(){
 	assert(Rnum == Cnum);
 	assert(!diag);
-	std::vector<Matrix_t> outs;
-	Matrix_t Eig(Rnum, Cnum, true);
-	Matrix_t EigV(Rnum, Cnum);
-	syDiag(elem, Rnum, Eig.elem, EigV.elem);
+	std::vector<Matrix> outs;
+	Matrix Eig(Rnum, Cnum, true);
+	Matrix EigV(Rnum, Cnum);
+	syDiag(m_elem, Rnum, Eig.m_elem, EigV.m_elem);
 	outs.push_back(Eig);
 	outs.push_back(EigV);	
 	return outs;
 }
 
-std::vector<Matrix_t> Matrix_t::svd(){
+std::vector<Matrix> Matrix::svd(){
 	assert(!diag);
-	std::vector<Matrix_t> outs;
+	std::vector<Matrix> outs;
 	int min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
-	Matrix_t U(Rnum, min);
-	Matrix_t S(min, min, true);
-	Matrix_t VT(min, Cnum);
-	myDgesvd(elem, Rnum, Cnum, U.elem, S.elem, VT.elem);
+	Matrix U(Rnum, min);
+	Matrix S(min, min, true);
+	Matrix VT(min, Cnum);
+	myDgesvd(m_elem, Rnum, Cnum, U.m_elem, S.m_elem, VT.m_elem);
 	outs.push_back(U);
 	outs.push_back(S);
 	outs.push_back(VT);
 	return outs;
 }
 
-void Matrix_t::orthoRand(){
+void Matrix::orthoRand(){
 	assert(!diag);
-	orthoRandomize(elem, Rnum, Cnum);
+	orthoRandomize(m_elem, Rnum, Cnum);
 }
 
-void Matrix_t::bzero(){
-	if(elemNum)
-		memset(elem, 0, elemNum * sizeof(double));
+void Matrix::set_zero(){
+	if(m_elemNum)
+		memset(m_elem, 0, m_elemNum * sizeof(double));
 }
 
-Matrix_t operator*(const Matrix_t& Ma, double a){
-	Matrix_t Mb(Ma);
-	vecScal(a, Mb.elem, Mb.elemNum);
+Matrix operator*(const Matrix& Ma, double a){
+	Matrix Mb(Ma);
+	vecScal(a, Mb.m_elem, Mb.m_elemNum);
 	return Mb;
 }
 
-void Matrix_t::operator*= (double a){
-	vecScal(a, elem, elemNum);
+Matrix& Matrix::operator*= (double a){
+	vecScal(a, m_elem, m_elemNum);
+	return *this;
 }
 
-Matrix_t operator+(const Matrix_t& Ma, const Matrix_t& Mb){
-	Matrix_t Mc(Ma);
-	vecAdd(Mb.elem, Mc.elem, Ma.elemNum);
+Matrix operator+(const Matrix& Ma, const Matrix& Mb){
+	Matrix Mc(Ma);
+	vecAdd(Mb.m_elem, Mc.m_elem, Ma.m_elemNum);
 	return Mc;
 }
 
-void Matrix_t::operator+= (const Matrix_t& Mb){
-	vecAdd(Mb.elem, elem, elemNum);
+Matrix& Matrix::operator+= (const Matrix& Mb){
+	vecAdd(Mb.m_elem, m_elem, m_elemNum);
+	return *this;
 }
 
-void Matrix_t::transpose(){
+void Matrix::transpose(){
 	if(!diag){
-		double* oldElem = (double*)malloc(elemNum * sizeof(double));
-		memcpy(oldElem, elem, elemNum * sizeof(double));
-		myTranspose(oldElem, Rnum, Cnum, elem, 0);
+		double* oldElem = (double*)malloc(m_elemNum * sizeof(double));
+		memcpy(oldElem, m_elem, m_elemNum * sizeof(double));
+		myTranspose(oldElem, Rnum, Cnum, m_elem, 0);
 		free(oldElem);
 	}
 	int tmp = Rnum;
 	Rnum = Cnum;
 	Cnum = tmp;
 }
-double Matrix_t::trace(){
+double Matrix::trace(){
 	assert(Rnum == Cnum);
 	double sum = 0;
 	if(diag)
-		for(int i = 0; i < elemNum; i++)
-			sum += elem[i];
+		for(int i = 0; i < m_elemNum; i++)
+			sum += m_elem[i];
 	else
 		for(int i = 0; i < Rnum; i++)
-			sum += elem[i * Cnum + i];
+			sum += m_elem[i * Cnum + i];
 	return sum;
 }
-void Matrix_t::save(const std::string fname){
+void Matrix::save(const std::string fname){
 	FILE *fp = fopen(fname.c_str(), "w");
 	assert(fp != NULL);
-	fwrite(elem, sizeof(double), elemNum, fp);
+	fwrite(m_elem, sizeof(double), m_elemNum, fp);
 	fclose(fp);
 }
-void Matrix_t::load(const std::string fname){
+void Matrix::load(const std::string fname){
 	FILE *fp = fopen(fname.c_str(), "r");
 	assert(fp != NULL);
-	fread(elem, sizeof(double), elemNum, fp);
+	fread(m_elem, sizeof(double), m_elemNum, fp);
 	fclose(fp);
 }
-double& Matrix_t::operator[](size_t idx){
-	assert(idx < elemNum);
-	return elem[idx];
+double& Matrix::operator[](size_t idx){
+	assert(idx < m_elemNum);
+	return m_elem[idx];
+}
+double* Matrix::elem(){
+	return m_elem;
+}
+double& Matrix::at(int r, int c){
+	assert(r < Rnum);
+	assert(c < Cnum);
+	if(diag){
+		assert(r == c && r < m_elemNum);
+		return m_elem[r];
+	}
+	else
+		return m_elem[r * Cnum + c];
 }
 };	/* namespace uni10 */	

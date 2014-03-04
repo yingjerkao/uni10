@@ -33,6 +33,8 @@ class Qnum {
 		parityFType prtF()const;
 		void assign(int _U1 = 0, parityType _prt = PRT_EVEN);
 		void assign(parityFType _prtF, int _U1 = 0, parityType _prt = PRT_EVEN);
+		//static bool isFermionic();
+		static bool isFermionic(){return Fermionic;}
 		friend bool operator< (const Qnum& q1, const Qnum& q2);
 		friend bool operator<= (const Qnum& q1, const Qnum& q2);
 		friend bool operator== (const Qnum& q1, const Qnum& q2);
@@ -44,6 +46,7 @@ class Qnum {
 		static const int U1_LOB = -100;//Lower bound of U1
 		static const int PRT_UPB = 2;  //Upper bound of prt
 		static const int PRT_LOB = -1; //Lower bound of prt
+		static bool Fermionic;
 		int m_U1;
 		parityType m_prt;
 		parityFType m_prtF;

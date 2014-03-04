@@ -339,7 +339,7 @@ bool UniTensor::similar(const UniTensor& Tb)const{
 
 //=============================ACCESS MEMORY EXPLICITLY=====================================
 
-Matrix_t UniTensor::printRawElem(bool flag){
+Matrix UniTensor::printRawElem(bool flag){
 	if(status & HAVEELEM){
 		int bondNum = bonds.size();
 		int colNum = 1;
@@ -436,11 +436,11 @@ Matrix_t UniTensor::printRawElem(bool flag){
 		}
 		if(flag)
 			std::cout <<"\n    |\n";
-		return Matrix_t(rowNum, colNum, &rawElem[0]);
+		return Matrix(rowNum, colNum, &rawElem[0]);
 	}
 	else{
 		printf("NO ELEMENT IN THE TENSOR!!!\n");
-		return Matrix_t(0, 0);
+		return Matrix(0, 0);
 	}
 }
 
@@ -530,32 +530,32 @@ std::ostream& operator<< (std::ostream& os, UniTensor& UniT){
 	return os;
 }
 
-Matrix_t UniTensor::getBlock(Qnum qnum, bool diag){
+Matrix UniTensor::getBlock(Qnum qnum, bool diag){
 	assert(blocks.find(qnum) != blocks.end());
 	Block blk = blocks[qnum];
 	if(diag){
-		Matrix_t mat(blk.Rnum, blk.Cnum, true);
+		Matrix mat(blk.Rnum, blk.Cnum, true);
 		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
 		for(int i = 0; i < elemNum; i++)
-			mat.elem[i] = blk.elem[i * blk.Cnum + i];
+			mat[i] = blk.elem[i * blk.Cnum + i];
 		return mat;
 	}
 	else{
-		Matrix_t mat(blk.Rnum, blk.Cnum, blk.elem);
+		Matrix mat(blk.Rnum, blk.Cnum, blk.elem);
 		return mat;
 	}
 }
 
-std::map<Qnum, Matrix_t> UniTensor::getBlocks(){
-	std::map<Qnum, Matrix_t> mats;
+std::map<Qnum, Matrix> UniTensor::getBlocks(){
+	std::map<Qnum, Matrix> mats;
 	for(std::map<Qnum,Block>::iterator it = blocks.begin(); it != blocks.end(); it++){
-		Matrix_t mat(it->second.Rnum, it->second.Cnum, it->second.elem);
-		mats.insert(std::pair<Qnum, Matrix_t>(it->first, mat));
+		Matrix mat(it->second.Rnum, it->second.Cnum, it->second.elem);
+		mats.insert(std::pair<Qnum, Matrix>(it->first, mat));
 	}
 	return mats;
 }
 
-void UniTensor::putBlock(const Qnum& qnum, Matrix_t& mat){
+void UniTensor::putBlock(const Qnum& qnum, Matrix& mat){
 	assert(blocks.find(qnum) != blocks.end());
 	Block& blk = blocks[qnum];
 	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
@@ -563,14 +563,14 @@ void UniTensor::putBlock(const Qnum& qnum, Matrix_t& mat){
 		memset(blk.elem, 0, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
 		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
 		for(int i = 0; i < elemNum; i++)
-			blk.elem[i * blk.Cnum + i] = mat.elem[i];
+			blk.elem[i * blk.Cnum + i] = mat[i];
 	}
 	else{
-		memcpy(blk.elem, mat.elem, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
+		memcpy(blk.elem, &(mat[0]), blk.Rnum * blk.Cnum * sizeof(DOUBLE));
 	}
 }
 
-void UniTensor::combineIndex(const std::vector<int>&cmbLabels){
+void UniTensor::combineBond(const std::vector<int>&cmbLabels){
 	//assert(status & HAVELABEL);
 	assert(cmbLabels.size() > 1);
 	std::vector<int> rsp_labels(labels.size(), 0);

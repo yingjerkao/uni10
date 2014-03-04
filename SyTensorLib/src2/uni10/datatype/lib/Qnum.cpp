@@ -1,6 +1,7 @@
 #include <uni10/datatype/Qnum.h>
 //using namespace uni10::datatype;
 namespace uni10{
+bool Qnum::Fermionic = false;
 Qnum::Qnum(): m_U1(0), m_prt(PRT_EVEN), m_prtF(PRTF_EVEN){}
 Qnum::Qnum(int _U1): m_U1(_U1), m_prt(PRT_EVEN), m_prtF(PRTF_EVEN){
 	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
@@ -10,12 +11,18 @@ Qnum::Qnum(int _U1, parityType _prt): m_U1(_U1), m_prt(_prt), m_prtF(PRTF_EVEN){
 }
 Qnum::Qnum(parityFType _prtF): m_prtF(_prtF), m_U1(0), m_prt(PRT_EVEN){
 	assert(m_prtF < PRT_UPB && m_prtF > PRT_LOB);
+	if(_prtF == PRTF_ODD)
+		Fermionic = true;
 }
 Qnum::Qnum(parityFType _prtF, int _U1): m_prtF(_prtF), m_U1(_U1), m_prt(PRT_EVEN){
 	assert(m_prtF < PRT_UPB && m_prtF > PRT_LOB && m_U1 < U1_UPB && m_U1 > U1_LOB);
+	if(_prtF == PRTF_ODD)
+		Fermionic = true;
 }
 Qnum::Qnum(parityFType _prtF, int _U1, parityType _prt): m_U1(_U1), m_prt(_prt), m_prtF(_prtF){
 	assert(m_prtF < PRT_UPB && m_prtF > PRT_LOB && m_U1 < U1_UPB && m_U1 > U1_LOB && m_prt < PRT_UPB && m_prt > PRT_LOB);
+	if(_prtF == PRTF_ODD)
+		Fermionic = true;
 }
 Qnum::Qnum(const Qnum& _q):m_U1(_q.m_U1), m_prt(_q.m_prt), m_prtF(_q.m_prtF){}
 bool operator< (const Qnum& q1, const Qnum& q2){
@@ -49,6 +56,8 @@ void Qnum::assign(parityFType _prtF, int _U1, parityType _prt){
 	m_U1 = _U1;	
 	m_prt = _prt;
 	m_prtF = _prtF;
+	if(_prtF == PRTF_ODD)
+		Fermionic = true;
 }
 
 int Qnum::U1()const{return m_U1;}

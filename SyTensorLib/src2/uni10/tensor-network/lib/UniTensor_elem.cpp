@@ -227,32 +227,33 @@ void UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
 		}
 		UniTensor UniTout(outBonds, name);
 		if(status & HAVEELEM){
-			//For Fermionic system
-#ifdef FERMIONIC
 			int sign = 1;
-			int inLabelF[bondNum];
-			int outLabelF[bondNum];
-			int ordF[bondNum];
-			for(int b = 0; b < RBondNum; b++){
-				inLabelF[b] = labels[b];
-				ordF[b] = b;
-			}
-			for(int b = 0; b < UniTout.RBondNum; b++)
-				outLabelF[b] = newLabels[b];
-			for(int b = bondNum - 1; b >= RBondNum; b--){
-				ordF[b] = bondNum - b + RBondNum - 1;
-				inLabelF[ordF[b]] = labels[b];
-			}
-			for(int b = bondNum - 1; b >= UniTout.RBondNum; b--)
-				outLabelF[bondNum - b + UniTout.RBondNum - 1] = newLabels[b];
+			//For Fermionic system
+			std::vector<_Swap> swaps;
+			if(Qnum::isFermionic()){
+				int inLabelF[bondNum];
+				int outLabelF[bondNum];
+				int ordF[bondNum];
+				for(int b = 0; b < RBondNum; b++){
+					inLabelF[b] = labels[b];
+					ordF[b] = b;
+				}
+				for(int b = 0; b < UniTout.RBondNum; b++)
+					outLabelF[b] = newLabels[b];
+				for(int b = bondNum - 1; b >= RBondNum; b--){
+					ordF[b] = bondNum - b + RBondNum - 1;
+					inLabelF[ordF[b]] = labels[b];
+				}
+				for(int b = bondNum - 1; b >= UniTout.RBondNum; b--)
+					outLabelF[bondNum - b + UniTout.RBondNum - 1] = newLabels[b];
 
-			int rspF_outin[bondNum];
-			for(int i = 0; i < bondNum; i++)
-				for(int j = 0; j < bondNum; j++)
-					if(inLabelF[i] == outLabelF[j])
-						rspF_outin[j] = i;	
-			std::vector<_Swap> swaps = recSwap(rspF_outin, bondNum, ordF);
-#endif
+				int rspF_outin[bondNum];
+				for(int i = 0; i < bondNum; i++)
+					for(int j = 0; j < bondNum; j++)
+						if(inLabelF[i] == outLabelF[j])
+							rspF_outin[j] = i;	
+				swaps = recSwap(rspF_outin, bondNum, ordF);
+			}
 			//End Fermionic system
 			std::vector<int> Qin_idxs(bondNum, 0); 
 			std::vector<int> Qot_idxs(bondNum, 0); 
@@ -302,21 +303,17 @@ void UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
 				sBot_cDim = UniTout.CQidx2Dim[Qot_CQoff];
 				int cnt_ot = 0;
 				sBin_idxs.assign(bondNum, 0);
-#ifdef FERMIONIC
-				int sign01 = 0;
-				for(int i = 0; i < swaps.size(); i++)
-					sign01 ^= (bonds[swaps[i].b1].Qnums[Qin_idxs[swaps[i].b1]].prtF() & bonds[swaps[i].b2].Qnums[Qin_idxs[swaps[i].b2]].prtF());
-				sign = sign01 ? -1 : 1;
-#endif
+				if(Qnum::isFermionic()){
+					int sign01 = 0;
+					for(int i = 0; i < swaps.size(); i++)
+						sign01 ^= (bonds[swaps[i].b1].Qnums[Qin_idxs[swaps[i].b1]].prtF() & bonds[swaps[i].b2].Qnums[Qin_idxs[swaps[i].b2]].prtF());
+					sign = sign01 ? -1 : 1;
+				}
 				for(sBin_r = 0; sBin_r < sBin_rDim; sBin_r++)
 					for(sBin_c = 0; sBin_c < sBin_cDim; sBin_c++){
 						sBot_r = cnt_ot / sBot_cDim;
 						sBot_c = cnt_ot % sBot_cDim;
-#ifdef FERMIONIC
 						UniTout.elem[Eot_off + (sBot_r * Bot_cDim) + sBot_c] = sign * elem[Ein_off + (sBin_r * Bin_cDim) + sBin_c];
-#else
-						UniTout.elem[Eot_off + (sBot_r * Bot_cDim) + sBot_c] = elem[Ein_off + (sBin_r * Bin_cDim) + sBin_c];
-#endif
 						for(int bend = bondNum - 1; bend >= 0; bend--){
 							sBin_idxs[bend]++;
 							if(sBin_idxs[bend] < sBin_sBdims[bend]){

@@ -67,10 +67,10 @@ class UniTensor{
 		friend UniTensor operator* (const UniTensor& Ta, double a);
 		friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};
 		UniTensor& operator*= (double a);
-		Matrix_t getBlock(Qnum qnum, bool diag = false);
-		void putBlock(const Qnum& qnum, Matrix_t& mat);
-		std::map<Qnum, Matrix_t> getBlocks();
-		Matrix_t printRawElem(bool flag = true);
+		Matrix getBlock(Qnum qnum, bool diag = false);
+		void putBlock(const Qnum& qnum, Matrix& mat);
+		std::map<Qnum, Matrix> getBlocks();
+		Matrix printRawElem(bool flag = true);
 		friend class Node;
 		friend class Network;
 		void orthoRand();
@@ -85,7 +85,7 @@ class UniTensor{
 		bool elemCmp(const UniTensor& UniT)const;
 		double trace()const;
 		double trace(const UniTensor&)const;
-		void combineIndex(const std::vector<int>& combined_labels);
+		void combineBond(const std::vector<int>& combined_labels);
 		UniTensor& partialTrace(int la, int lb);
 	private:
 		std::string name;

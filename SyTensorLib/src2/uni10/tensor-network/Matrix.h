@@ -10,40 +10,42 @@
 //#include <uni10/tensor-network/UniTensor.h>
 namespace uni10{
 
-class Matrix_t {
+class Matrix {
 	public:
-		Matrix_t(int _Rnum, int _Cnum, bool _diag=false);
-		Matrix_t(int _Rnum, int _Cnum, double* _elem, bool _diag=false);
-		Matrix_t(const Matrix_t& _m);
-		~Matrix_t();
+		Matrix(int _Rnum, int _Cnum, bool _diag=false);
+		Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag=false);
+		Matrix(const Matrix& _m);
+		~Matrix();
 		int row()const;
 		int col()const;
 		bool isDiag()const{return diag;};
-		size_t getElemNum()const;
-		Matrix_t& operator=(const Matrix_t& _m);
-		friend Matrix_t operator* (const Matrix_t& Ma, const Matrix_t& Mb);
-		Matrix_t& operator*= (const Matrix_t& Mb);
-		friend std::ostream& operator<< (std::ostream& os, const Matrix_t& b);
-		std::vector<Matrix_t> diagonalize();
-		std::vector<Matrix_t> svd();
+		size_t elemNum()const;
+		Matrix& operator=(const Matrix& _m);
+		friend Matrix operator* (const Matrix& Ma, const Matrix& Mb);
+		Matrix& operator*= (const Matrix& Mb);
+		friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
+		std::vector<Matrix> diagonalize();
+		std::vector<Matrix> svd();
 		void orthoRand();
-		void bzero();
+		void set_zero();
 		void transpose();
 		double trace();
 		void save(const std::string fname);
 		void load(const std::string fname);
-		friend Matrix_t operator*(const Matrix_t& Ma, double a);
-		friend Matrix_t operator*(double a, const Matrix_t& Ma){return Ma * a;};
-		friend bool operator== (const Matrix_t& m1, const Matrix_t& m2);
-		void operator*= (double a);
-		friend Matrix_t operator+(const Matrix_t& Ma, const Matrix_t& Mb);
-		void operator+= (const Matrix_t& Mb);
+		friend Matrix operator*(const Matrix& Ma, double a);
+		friend Matrix operator*(double a, const Matrix& Ma){return Ma * a;};
+		friend bool operator== (const Matrix& m1, const Matrix& m2);
+		Matrix& operator*= (double a);
+		friend Matrix operator+(const Matrix& Ma, const Matrix& Mb);
+		Matrix& operator+= (const Matrix& Mb);
 		double& operator[](size_t idx);
-		double* elem;
+		double* elem();
+		double& at(int i, int j);
 	private:
 		int Rnum;		//number of rows of the block
 		int Cnum;		//number of columns of the block
-		size_t elemNum;
+		double* m_elem;
+		size_t m_elemNum;
 		bool diag;
 };
 
