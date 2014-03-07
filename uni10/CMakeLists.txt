@@ -2,6 +2,10 @@
 #  Distributed under the Boost Software License, Version 1.0.
 #      (See accompanying file LICENSE_1_0.txt or copy at
 #          http://www.boost.org/LICENSE_1_0.txt)
+######################################################################
+### CMAKE VERSION
+######################################################################
+cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 
 
 ######################################################################
@@ -43,13 +47,6 @@ project(uni10)
 
 
 ######################################################################
-### CMAKE VERSION
-######################################################################
-
-cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
-
-
-######################################################################
 ### CMAKE BUILD TYPE
 ######################################################################
 
@@ -77,6 +74,16 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
     "
   )
 endif()
+
+
+######################################################################
+### Check for BOOST
+######################################################################
+
+find_package( Boost 1.36.0 )
+          if(Boost_FOUND)
+             include_directories(${Boost_INCLUDE_DIRS})
+          endif()
 
 
 ######################################################################
@@ -126,4 +133,6 @@ install(	DIRECTORY 			src/
 					FILES_MATCHING 
 							PATTERN 		"*.hpp"
 )
+
+
 
