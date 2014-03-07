@@ -89,6 +89,7 @@ find_package( Boost 1.36.0 )
 ######################################################################
 ### FLAGS
 ######################################################################
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 endif()
@@ -119,6 +120,23 @@ endif (UNIX)
 
 add_subdirectory(src)
 
+######################################################################
+### ADD LIBRARY
+######################################################################
+set(uni10-objects
+$<TARGET_OBJECTS:uni10-datatype>
+$<TARGET_OBJECTS:uni10-data-structure>
+$<TARGET_OBJECTS:uni10-tools>
+$<TARGET_OBJECTS:uni10-tensor-network>
+$<TARGET_OBJECTS:uni10-numeric>
+)
+add_library(uni10 SHARED ${uni10-objects})
+
+
+######################################################################
+### INSTALL
+######################################################################
+install(TARGETS uni10 DESTINATION lib COMPONENT libraries)
 
 ######################################################################
 ### ADD HEADER FILES

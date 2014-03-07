@@ -14,13 +14,13 @@ set(datatype_lib_sources
 ### BUILD SHARED LIBRARY
 ######################################################################
 
-add_library(uni10-datatype SHARED ${datatype_lib_sources})
+add_library(uni10-datatype OBJECT ${datatype_lib_sources})
 
 
 ######################################################################
 ### INSTALL
 ######################################################################
 
-install(TARGETS uni10-datatype DESTINATION lib COMPONENT libraries)
+#install(TARGETS uni10-datatype DESTINATION lib COMPONENT libraries)
 
 

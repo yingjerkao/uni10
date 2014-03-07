@@ -14,13 +14,13 @@ set(tools_lib_sources
 ### BUILD SHARED LIBRARY
 ######################################################################
 
-add_library(uni10-tools SHARED ${tools_lib_sources})
+add_library(uni10-tools OBJECT ${tools_lib_sources})
 
 
 ######################################################################
 ### INSTALL
 ######################################################################
 
-install(TARGETS uni10-tools DESTINATION lib COMPONENT libraries)
+#install(TARGETS uni10-tools DESTINATION lib COMPONENT libraries)
 
 

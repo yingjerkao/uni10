@@ -14,13 +14,13 @@ set(numeric_lib_sources
 ### BUILD SHARED LIBRARY
 ######################################################################
 
-add_library(uni10-numeric SHARED ${numeric_lib_sources})
+add_library(uni10-numeric OBJECT ${numeric_lib_sources})
 
 
 ######################################################################
 ### INSTALL
 ######################################################################
 
-install(TARGETS uni10-numeric DESTINATION lib COMPONENT libraries)
+#install(TARGETS uni10-numeric DESTINATION lib COMPONENT libraries)
 
 

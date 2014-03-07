@@ -19,13 +19,13 @@ set(tensor_network_lib_sources
 ### BUILD SHARED LIBRARY
 ######################################################################
 
-add_library(uni10-tensor-network SHARED ${tensor_network_lib_sources})
+add_library(uni10-tensor-network OBJECT ${tensor_network_lib_sources})
 
 
 ######################################################################
 ### INSTALL
 ######################################################################
 
-install(TARGETS uni10-tensor-network DESTINATION lib COMPONENT libraries)
+#install(TARGETS uni10-tensor-network DESTINATION lib COMPONENT libraries)
 
 

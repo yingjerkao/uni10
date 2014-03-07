@@ -15,13 +15,13 @@ set(data_structure_lib_sources
 ### BUILD SHARED LIBRARY
 ######################################################################
 
-add_library(uni10-data-structure SHARED ${data_structure_lib_sources})
+add_library(uni10-data-structure OBJECT ${data_structure_lib_sources})
 
 
 ######################################################################
 ### INSTALL
 ######################################################################
 
-install(TARGETS uni10-data-structure DESTINATION lib COMPONENT libraries)
+#install(TARGETS uni10-data-structure DESTINATION lib COMPONENT libraries)
 
 
