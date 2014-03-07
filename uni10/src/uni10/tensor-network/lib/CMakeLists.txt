@@ -6,11 +6,10 @@
 ######################################################################
 
 set(tensor_network_lib_sources 
-  Bond.cpp
   Network.cpp
-  SyTensor.cpp
-  SyTensor_elem.cpp
-  myTools.cpp
+  UniTensor.cpp
+  UniTensor_elem.cpp
+  Matrix.cpp
   operate.cpp 
 )
 
@@ -19,7 +18,7 @@ set(tensor_network_lib_sources
 ### BUILD SHARED LIBRARY
 ######################################################################
 
-add_library(uni10-tensor-network SHARED ${uni10_tensor_network_lib_sources})
+add_library(uni10-tensor-network SHARED ${tensor_network_lib_sources})
 
 
 ######################################################################

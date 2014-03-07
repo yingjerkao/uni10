@@ -20,5 +20,6 @@
 #define UNI10_HPP
 
 #include <uni10/datatype.hpp>
+#include <uni10/tensor-network.hpp>
 
 #endif

@@ -1,8 +1,9 @@
+#ifndef UNI10_LAPACK_H
+#define UNI10_LAPACK_H
 #include <stdint.h>
 #include <limits.h>
 #include <assert.h>
-#include "mkl.h"
-#include "mkl_lapack.h"
+namespace uni10{
 void myDgemm(double* A, double* B, int M, int N, int K, double* C);
 void vecAdd(double* X, double* Y, int64_t N);	// Y = X + Y
 void vecScal(double a, double* X, int64_t N);	// X = a * X
@@ -12,7 +13,10 @@ void vecScal(double a, double* X, int64_t N);	// X = a * X
  */
 void orthoRandomize(double* elem, int M, int N);
 
-void myTranspose(double* A, int M, int N, double* AT);
-void myEye(double* elem, int M, int N);
 void syDiag(double* Kij, int N, double* Eig, double* EigVec);
 void myDgesvd(double* Mij_ori, int M, int N, double* U, double* S, double* vT);
+void myTranspose(double* A, int M, int N, double* AT, int status);
+void myEye(double* elem, int M, int N, int status);
+
+};	/* namespace uni10 */	
+#endif /* UNI10_LAPACK_H */

@@ -5,8 +5,4 @@
 ### ADD SUB-DIRECTORIES
 ######################################################################
 
-add_subdirectory(datatype)
-add_subdirectory(data-structure)
-add_subdirectory(numeric)
-add_subdirectory(tensor-network)
-add_subdirectory(tools)
+add_subdirectory(uni10)
