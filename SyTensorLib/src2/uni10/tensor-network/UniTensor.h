@@ -32,7 +32,7 @@
 namespace uni10{
 class UniTensor{
 	public:
-		UniTensor();
+		UniTensor(double val = 1.0);
 		UniTensor(const std::string& fname);
 		UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
 		UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
@@ -44,6 +44,7 @@ class UniTensor{
 		void addLabel(int* newLabels);
 		void addRawElem(double* rawElem);
 		double at(std::vector<int>idxs)const;
+		double& operator[](size_t idx);
     	std::vector<Qnum> qnums();
 		void save(const std::string& fname);
 		void permute(std::vector<int>& newLabels, int inBondNum);
@@ -52,6 +53,9 @@ class UniTensor{
 		void randomize();
 
 		std::vector<int> label()const;
+		int label(int idx)const;
+		std::vector<Bond> bond()const;
+		Bond bond(int idx)const;
 		void setName(const std::string& _name);
 		std::string getName();
 		int64_t elemNum()const;
@@ -59,7 +63,7 @@ class UniTensor{
 		int inBondNum()const;
 
 		void check();
-		friend std::ostream& operator<< (std::ostream& os, UniTensor& UniT);
+		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
 		friend UniTensor operator* (UniTensor& Ta, UniTensor& Tb);
 		UniTensor& operator*= (UniTensor& Tb);
 		friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
@@ -67,10 +71,10 @@ class UniTensor{
 		friend UniTensor operator* (const UniTensor& Ta, double a);
 		friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};
 		UniTensor& operator*= (double a);
-		Matrix getBlock(Qnum qnum, bool diag = false);
+		Matrix getBlock(Qnum qnum, bool diag = false)const;
 		void putBlock(const Qnum& qnum, Matrix& mat);
-		std::map<Qnum, Matrix> getBlocks();
-		Matrix printRawElem(bool flag = true);
+		std::map<Qnum, Matrix> getBlocks()const;
+		Matrix printRawElem(bool flag = true)const;
 		friend class Node;
 		friend class Network;
 		void orthoRand();
@@ -112,8 +116,7 @@ class UniTensor{
 		//Private Functions
 		void grouping();
 		void initUniT();
-		static const int INIT = 1;		      /**< A flag for initialization */
-		//static const int HAVELABEL = 2;		/**< A flag for having labels added */
+		static const int HAVEBOND = 1;		  /**< A flag for initialization */
 		static const int HAVEELEM = 2;		  /**< A flag for having element assigned */
 };
 };	/* namespace uni10 */	

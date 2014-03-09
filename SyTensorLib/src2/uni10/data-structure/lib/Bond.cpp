@@ -7,10 +7,10 @@ Bond::Bond(bondType _type, std::vector<Qnum>& qnums) : m_type(_type){
 
 Bond::Bond(const Bond& _b):m_type(_b.m_type), m_dim(_b.m_dim), Qnums(_b.Qnums), Qdegs(_b.Qdegs), offsets(_b.offsets){
 }
-bondType Bond::type(){
+bondType Bond::type()const{
 	return m_type;
 }
-int Bond::dim(){
+int Bond::dim()const{
 	return m_dim;
 }
 void Bond::assign(bondType _type, std::vector<Qnum>& qnums){
@@ -61,11 +61,31 @@ std::ostream& operator<< (std::ostream& os, const Bond& b){
 	else
 		os<<"OUT: ";
 	for(int i = 0; i < b.Qnums.size(); i++)
-		os << b.Qnums[i] << "|" << b.offsets[i] << "-"<<b.Qdegs[i]<<", ";
+		os << b.Qnums[i] << "|" << b.Qdegs[i]<<", ";
 	os<<"Dim = "<< b.m_dim << std::endl;
 	return os;
 }
 
+std::map<Qnum, int> Bond::degeneracy()const{
+	std::map<Qnum, int>hst;
+	for(int i = 0; i < Qnums.size(); i++){
+		if(hst.find(Qnums[i]) == hst.end())
+			hst[Qnums[i]] = Qdegs[i];
+		else
+			hst[Qnums[i]] += Qdegs[i];
+	}
+	return hst;
+}
+std::vector<Qnum> Bond::Qlist()const{
+	std::vector<Qnum>list(m_dim);
+	int cnt = 0;
+	for(int q = 0; q < Qnums.size(); q++)
+		for(int d = 0; d < Qdegs[q]; d++){
+			list[cnt] = Qnums[q];
+			cnt++;
+		}
+	return list;
+}
 bool operator== (const Bond& b1, const Bond& b2){
 	return (b1.m_type == b2.m_type) && (b1.Qnums == b2.Qnums) && (b1.Qdegs == b2.Qdegs);
 }
@@ -86,19 +106,20 @@ Bond& Bond::combine(Bond bd){
 	int qdim;
 	int cnt = 0;
 	for(int q = 0; q < Qnums.size(); q++)
-		for(int qq = 0; qq < bd.Qnums.size(); qq++){
-			qnum = Qnums[q] * bd.Qnums[qq];
-			qdim = Qdegs[q] * bd.Qdegs[qq];
-			if(qnums.size() == 0 || !(qnum == qnums[cnt - 1])){
-				qnums.push_back(qnum);
-				qdegs.push_back(qdim);
-				offsets.push_back(m_dim);
-				cnt++;
+		for(int d = 0; d < Qdegs[q]; d++){
+			for(int qq = 0; qq < bd.Qnums.size(); qq++){
+				qnum = Qnums[q] * bd.Qnums[qq];
+				qdim = bd.Qdegs[qq];
+				if(qnums.size() == 0 || !(qnum == qnums[cnt - 1])){
+					qnums.push_back(qnum);
+					qdegs.push_back(qdim);
+					offsets.push_back(m_dim);
+					cnt++;
+				}
+				else
+					qdegs[cnt - 1] += qdim;
+				m_dim += qdim;
 			}
-			else{
-				qdegs[cnt - 1] += qdim;
-			}
-			m_dim += qdim;
 		}
 	Qnums = qnums;
 	Qdegs = qdegs;
@@ -106,7 +127,8 @@ Bond& Bond::combine(Bond bd){
 }
 
 Bond Bond::combine(bondType tp, const std::vector<Bond>& bds){
-	assert(bds.size() > 1);
+	assert(bds.size() > 0);
+	if(bds.size() > 1){
 	int bd_num = bds.size();
 	Bond outBond1 = bds[bd_num - 1];
 	Bond outBond2 = bds[bd_num - 2];
@@ -129,6 +151,10 @@ Bond Bond::combine(bondType tp, const std::vector<Bond>& bds){
 		return outBond2;
 	else
 		return outBond1;	
+	}
+	else{
+		return bds[0];
+	}
 }
 Bond Bond::combine(const std::vector<Bond>& bds){
 	return combine(bds[0].m_type, bds);
