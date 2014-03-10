@@ -1,5 +1,5 @@
+#include <algorithm>
 #include <uni10/tensor-network/Network.h>
-#include <boost/algorithm/string.hpp>
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/tools/uni10_tools.h>
 namespace uni10{
@@ -7,7 +7,7 @@ Node::Node(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(
 }
 
 Node::Node(UniTensor* Tp): T(Tp), elemNum(Tp->m_elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){	
-	assert(Tp->status & Tp->INIT);
+	assert(Tp->status & Tp->HAVEBOND);
 	//assert(Tp->status & Tp->HAVELABEL);
 }
 
@@ -62,8 +62,8 @@ Node Node::contract(Node* nd){
 	for(int a = 0; a < cBondNum; a++)
 		cBonds[rBondNum + a].change(BD_OUT);
 
-	Node par(cBonds, newLabelC);
-	return par;
+	//Node par(cBonds, newLabelC);
+	return Node(cBonds, newLabelC);
 }
 
 float Node::metric(Node* nd){	//Bigger is better
@@ -225,9 +225,10 @@ Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens):
 		Node* ndp = new Node(ten);
 		leafs[i] = ndp;
 	}
+	construct();
 }
 
-void Network::fromfile(const std::string& fname){
+void Network::fromfile(const std::string& fname){//names, label_arr, Rnums, order, brakets
 	std::string str;
 	std::ifstream infile;
 	infile.open (fname.c_str());
@@ -245,28 +246,68 @@ void Network::fromfile(const std::string& fname){
 		if(pos == std::string::npos)
 			break;
 		std::string name = str.substr(0, pos);
-		boost::algorithm::trim(name);
+		//boost::algorithm::trim(name);
+		trim(name);
 		if(name == "ORDER"){
-			std::string del(" ,;");
-			while(((pos = str.find_first_not_of(del, pos + 1)) != std::string::npos)){
+			std::string bra("(");
+			if(str.find(bra, pos+1) == std::string::npos){
+				std::string del(" ,;");
+				while(((pos = str.find_first_not_of(del, pos + 1)) != std::string::npos)){
+					endpos = str.find_first_of(del, pos + 1);
+					if(endpos == std::string::npos)
+						ord.push_back(str.substr(pos));
+					else
+						ord.push_back(str.substr(pos, endpos - pos));
+					pos = endpos;
+					if(pos == std::string::npos)
+						break;
+				}
+			}
+			else{
+				std::string del(" ,;*()");
 				endpos = str.find_first_of(del, pos + 1);
-				if(endpos == std::string::npos)
-					ord.push_back(str.substr(pos));
-				else
-					ord.push_back(str.substr(pos, endpos - pos));
-				pos = endpos;
-				if(pos == std::string::npos)
-					break;
+				while(((pos = str.find_first_not_of(del, pos + 1)) != std::string::npos)){
+					std::string bras = str.substr(endpos, pos - endpos);
+					int minus = std::count(bras.begin(), bras.end(), ')');
+					int plus = std::count(bras.begin(), bras.end(), '(');
+					if(minus)
+						brakets.push_back(-minus);
+					if(plus)
+						brakets.push_back(plus);
+					endpos = str.find_first_of(del, pos + 1);
+					if(endpos == std::string::npos){
+						ord.push_back(str.substr(pos));
+						brakets.push_back(0);
+					}
+					else{
+						ord.push_back(str.substr(pos, endpos - pos));
+						brakets.push_back(0);
+					}
+					pos = endpos;
+					if(pos == std::string::npos)
+						break;
+				}
+				if(endpos != std::string::npos){
+					std::string bras = str.substr(endpos);
+					int minus = std::count(bras.begin(), bras.end(), ')');
+					if(minus)
+						brakets.push_back(-minus);
+				}
+				int sum = 0;
+				for(int i = 0; i < brakets.size(); i++){
+					sum += brakets[i];
+				}
+				assert(sum == 0);
 			}
 			break;
 		}
 		names.push_back(name);
 		std::vector<int> labels;
-		int Rnum = 0;
+		int Rnum = -1;
 		int cnt = 0;
 		int tmp;
 		while((pos = str.find_first_of(tar, pos + 1)) != std::string::npos){
-			if(Rnum == 0){
+			if(Rnum == -1){
 				tmp = str.find(";", endpos);
 				if(tmp != std::string::npos && tmp < pos)
 					Rnum = cnt;
@@ -280,12 +321,14 @@ void Network::fromfile(const std::string& fname){
 			char* pEnd;
 			labels.push_back(strtol(label.c_str(), &pEnd, 10));
 			pos = endpos;
-			if(Rnum == 0)
+			if(Rnum == -1)
 				cnt++;
 			if(pos == std::string::npos)
 				break;
 		}
 		label_arr.push_back(labels);
+		if(Rnum == -1)
+			Rnum = labels.size();
 		Rnums.push_back(Rnum);
 		lnum ++;
 	}
@@ -293,7 +336,8 @@ void Network::fromfile(const std::string& fname){
 	assert(names[numT] == "TOUT");
 	assert(names.size() > 0);
 	order.assign(numT, 0);
-	if(ord.size() == numT){
+	if(ord.size() > 0){
+		assert(ord.size() == numT);
 		bool found;
 		for(int i = 0; i < numT; i++){
 			found = false;
@@ -311,7 +355,62 @@ void Network::fromfile(const std::string& fname){
 		for(int i = 0; i < numT; i++)
 			order[i] = i;
 	}
+	/*
+	std::cout<<"Brakets: ";
+	for(int i = 0; i < brakets.size(); i++)
+		std::cout<<brakets[i]<<", ";
+	std::cout<<"\norder: ";
+	for(int i = 0; i < numT; i++)
+		std::cout<<order[i]<<", ";
+	std::cout<<std::endl;
+	*/
 	infile.close();
+}
+
+void Network::construct(){
+	if(brakets.size()){
+		std::vector<Node*> stack(leafs.size(), NULL);
+		int cursor = 0;
+		int cnt = 0;
+		for(int i = 0; i < brakets.size(); i++){
+			if(brakets[i] < 0){
+				for(int c = 0; c < -brakets[i]; c++){
+					Node* par = new Node(stack[cursor - 2]->contract(stack[cursor - 1]));
+					par->left = stack[cursor - 2];
+					par->right = stack[cursor - 1];
+					par->left->parent = par;
+					par->right->parent = par;
+					stack[cursor - 2] = par;
+					cursor--;
+					if(cursor < 2)	//prevent breakdown because of extra braket
+						break;
+				}
+			}
+			else if(brakets[i] == 0){
+				stack[cursor] = leafs[order[cnt]];
+				cnt++;
+				cursor++;
+			}
+		}
+		while(cursor > 1){//for imcomplete brakets
+			Node* par = new Node(stack[cursor - 2]->contract(stack[cursor - 1]));
+			par->left = stack[cursor - 2];
+			par->right = stack[cursor - 1];
+			par->left->parent = par;
+			par->right->parent = par;
+			stack[cursor - 2] = par;
+			cursor--;
+		}
+		root = stack[0];
+	}
+	else{
+		for(int i = 0; i < order.size(); i++){
+			assert(leafs[order[i]] != NULL);
+			matching(leafs[order[i]], root);
+		}
+	}
+	addSwap();
+	load = true;
 }
 
 Node* Network::putTensor(int idx, const UniTensor* UniT, bool force){
@@ -374,7 +473,6 @@ void Network::branch(Node* sbj, Node* tar){
 	tar->parent = par;
 	sbj->parent = par;
 	par->point = tar->metric(sbj);
-
 	if(sbj->parent->parent != NULL){	//propagate up
 		sbj = sbj->parent;
 		branch(sbj->parent->right, sbj->parent->left);
@@ -431,14 +529,6 @@ void Network::destruct(){
 	load = false;
 }
 
-void Network::construct(){
-	for(int i = 0; i < order.size(); i++){
-		assert(leafs[order[i]] != NULL);
-		matching(leafs[order[i]], root);
-	}
-	addSwap();
-	load = true;
-}
 
 UniTensor Network::launch(const std::string& _name){
 	if(!load)
@@ -450,7 +540,7 @@ UniTensor Network::launch(const std::string& _name){
 		}
 	UniTensor UniT = merge(root);
 	int idx = label_arr.size() - 1;
-	if(label_arr.size() > 0)
+	if(label_arr.size() > 0 && label_arr[idx].size() > 1)
 		UniT.permute(label_arr[idx], Rnums[idx]);
 	UniT.setName(_name);
 	return UniT;
@@ -504,9 +594,33 @@ void Network::preprint(std::ostream& os, Node* nd, int layer){
 }
 
 std::ostream& operator<< (std::ostream& os, Network& net){
-	if(!net.load)
-		net.construct();
-	net.preprint(os, net.root, 0);
+	os<<std::endl;
+	for(int i = 0; i < net.names.size(); i++){
+		os<<net.names[i]<< ": ";
+		if(net.Rnums[i])
+			os<<"i[";
+		for(int l = 0; l < net.Rnums[i]; l++){
+			os<<net.label_arr[i][l];
+			if(l < net.Rnums[i] - 1)
+				os<<", ";
+		}
+		if(net.Rnums[i])
+			os<<"] ";
+		if(net.label_arr[i].size() - net.Rnums[i])
+			os<<"o[";
+		for(int l = net.Rnums[i]; l < net.label_arr[i].size(); l++){
+			os<<net.label_arr[i][l];
+			if(l < net.label_arr[i].size() - 1)
+				os<<", ";
+		}
+		if(net.label_arr[i].size() - net.Rnums[i])
+			os<<"]";
+		os<<std::endl;
+	}
+	os<<std::endl;
+	if(net.load)
+		net.preprint(os, net.root, 0);
+
 	return os;
 }
 std::ostream& operator<< (std::ostream& os, const Node& nd){

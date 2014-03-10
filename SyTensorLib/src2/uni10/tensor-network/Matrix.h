@@ -39,7 +39,7 @@ class Matrix {
 		friend Matrix operator+(const Matrix& Ma, const Matrix& Mb);
 		Matrix& operator+= (const Matrix& Mb);
 		double& operator[](size_t idx);
-		double* elem();
+		double* elem()const;
 		double& at(int i, int j);
 	private:
 		int Rnum;		//number of rows of the block
