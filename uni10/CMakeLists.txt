@@ -125,9 +125,9 @@ if(USE_MKL)
 #message( STATUS "MKL found: ${MKL_INCLUDE_DIR}" )
 else (USE_MKL)
   find_package( BLAS REQUIRED)
-#message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
+message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
   find_package( LAPACK REQUIRED)
-#message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
+message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
 endif(USE_MKL)
 
 
@@ -177,7 +177,10 @@ $<TARGET_OBJECTS:uni10-numeric>
 )
 add_library(uni10 SHARED ${uni10-objects} )
 add_library(uni10_s STATIC ${uni10-objects})
-
+if(APPLE)
+target_link_libraries(uni10 ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(uni10_s ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+endif(APPLE)
 
 ######################################################################
 ### INSTALL
