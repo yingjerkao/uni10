@@ -6,7 +6,7 @@
 ### CMAKE VERSION
 ######################################################################
 cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
-
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 ######################################################################
 # Version information
@@ -36,8 +36,37 @@ if (APPLE)
 		/opt/local 
 		${CMAKE_PREFIX_PATH}
 	)
+  IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOSX")
+  ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif (APPLE)
 
+
+
+ 
+option(INTEL_CC "Use the Intel compiler." OFF)
+
+if (INTEL_CC)
+  find_program(CMAKE_C_COMPILER NAMES icc)
+  find_program(CMAKE_CXX_COMPILER NAMES icpc)
+  find_program(CMAKE_AR NAMES xiar)
+  find_program(CMAKE_LINKER NAMES xild)
+ 
+  if (CMAKE_C_COMPILER MATCHES CMAKE_C_COMPILER-NOTFOUND OR
+    CMAKE_CXX_COMPILER MATCHES CMAKE_CXX_COMPILER-NOTFOUND OR
+    CMAKE_AR MATCHES CMAKE_AR-NOTFOUND OR
+    CMAKE_LINKER MATCHES CMAKE_LINKER-NOTFOUND)
+    message(FATAL_ERROR "Cannot find Intel compiler.  You may need to run `. /opt/intel/bin/compilervars.sh intel64'")
+  endif ()
+endif (INTEL_CC)
+
+######################################################################
+### COMMAND LINE OPTIONS
+######################################################################
+option(BUILD_STATIC_LIBS "Build the static library" ON)
+option(BUILD_SHARED_LIBS "Build the shared library" ON)
+option(BUILD_TESTS "Build test programs" OFF)
+option(USE_MKL OFF)
 
 ######################################################################
 ### PROJECT
@@ -53,12 +82,6 @@ project(uni10)
 set(CMAKE_BUILD_TYPE Release)
 
 
-######################################################################
-### COMMAND LINE OPTIONS
-######################################################################
-option(BUILD_STATIC_LIBS "Build the static library" OFF)
-option(BUILD_SHARED_LIBS "Build the shared library" ON)
-option(BUILD_TESTS "Build test programs" OFF)
 
 ######################################################################
 ### DISABLING IN-SOURCE BUILD
@@ -87,10 +110,25 @@ endif()
 ### Check for BOOST
 ######################################################################
 
-find_package( Boost 1.47.0 )
-          if(Boost_FOUND)
-             include_directories(${Boost_INCLUDE_DIRS})
-          endif()
+#find_package( Boost 1.47.0 )
+#          if(Boost_FOUND)
+#             include_directories(${Boost_INCLUDE_DIRS})
+#          endif()
+
+######################################################################
+### Find BLAS and LAPACK
+######################################################################
+
+if(USE_MKL)
+  find_package( MKL REQUIRED)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMKL")
+#message( STATUS "MKL found: ${MKL_INCLUDE_DIR}" )
+else (USE_MKL)
+  find_package( BLAS REQUIRED)
+#message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
+  find_package( LAPACK REQUIRED)
+#message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
+endif(USE_MKL)
 
 
 ######################################################################
@@ -137,35 +175,30 @@ $<TARGET_OBJECTS:uni10-tools>
 $<TARGET_OBJECTS:uni10-tensor-network>
 $<TARGET_OBJECTS:uni10-numeric>
 )
-add_library(uni10 SHARED ${uni10-objects})
-add_library(uni10_static STATIC ${uni10-objects})
+add_library(uni10 SHARED ${uni10-objects} )
+add_library(uni10_s STATIC ${uni10-objects})
 
 
 ######################################################################
 ### INSTALL
 ######################################################################
-install(TARGETS uni10 DESTINATION lib COMPONENT libraries)
-install(TARGETS uni10_static DESTINATION lib COMPONENT libraries)
+install(TARGETS uni10 uni10_s
+        LIBRARY 
+        DESTINATION lib 
+        COMPONENT libraries
+        ARCHIVE
+        DESTINATION lib 
+        COMPONENT libraries)
 
-######################################################################
-### ADD HEADER FILES
-######################################################################
-
-file(	COPY 					src/
-			DESTINATION 	include
-			FILES_MATCHING
-				PATTERN			"*.h*"
-)
 
 
 ######################################################################
 ### INSTALL HEADER FILES
 ######################################################################
 
-install(	DIRECTORY 			src/ 
-					DESTINATION 		include 
-					FILES_MATCHING 
-							PATTERN 		"*.hpp"
+install(DIRECTORY src/
+	DESTINATION include 
+	FILES_MATCHING PATTERN 		"*.h*"	
 )
 
 
