@@ -12,7 +12,7 @@ cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 # Version information
 ######################################################################
 set(UNI10_VERSION_MAJOR 0)
-set(UNI10_VERSION_MINOR 0)
+set(UNI10_VERSION_MINOR 1)
 set(UNI10_VERSION_PATCH 0)
 set(UNI10_VERSION
   ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
@@ -54,6 +54,13 @@ set(CMAKE_BUILD_TYPE Release)
 
 
 ######################################################################
+### COMMAND LINE OPTIONS
+######################################################################
+option(BUILD_STATIC_LIBS "Build the static library" OFF)
+option(BUILD_SHARED_LIBS "Build the shared library" ON)
+option(BUILD_TESTS "Build test programs" OFF)
+
+######################################################################
 ### DISABLING IN-SOURCE BUILD
 ### (DO NOT MODIFY)
 ######################################################################
@@ -80,7 +87,7 @@ endif()
 ### Check for BOOST
 ######################################################################
 
-find_package( Boost 1.36.0 )
+find_package( Boost 1.47.0 )
           if(Boost_FOUND)
              include_directories(${Boost_INCLUDE_DIRS})
           endif()
@@ -131,12 +138,14 @@ $<TARGET_OBJECTS:uni10-tensor-network>
 $<TARGET_OBJECTS:uni10-numeric>
 )
 add_library(uni10 SHARED ${uni10-objects})
+add_library(uni10_static STATIC ${uni10-objects})
 
 
 ######################################################################
 ### INSTALL
 ######################################################################
 install(TARGETS uni10 DESTINATION lib COMPONENT libraries)
+install(TARGETS uni10_static DESTINATION lib COMPONENT libraries)
 
 ######################################################################
 ### ADD HEADER FILES
