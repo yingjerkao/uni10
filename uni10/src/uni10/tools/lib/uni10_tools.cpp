@@ -1,10 +1,9 @@
-#include <boost/random.hpp>
 #include <uni10/tools/uni10_tools.h>
 //using namespace boost;
 
 namespace uni10{
-boost::mt19937 lapack_rng(777);
-boost::uniform_01<boost::mt19937> lapack_uni01_sampler(lapack_rng);
+//mt19937 lapack_rng(777);
+//uniform_01<mt19937> lapack_uni01_sampler(lapack_rng);
 
 size_t MEM_USAGE = 0;
 
@@ -30,7 +29,7 @@ void membzero(void* ptr, size_t memsize, int status){
 
 void randomNums(double* elem, int N, int status){
 	for(int i = 0; i < N; i++)
-		elem[i] = lapack_uni01_sampler();
+		elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
 }
 
 std::vector<_Swap> recSwap(int* _ord, int n){	//Given the reshape order out to in. 

@@ -36,6 +36,7 @@ class Network {
 		std::vector<bool> swapflags;
 		std::vector<int> conOrder;	//contraction order;
 		std::vector<int> order;	//add order
+		std::vector<int> brakets;	//add order
 		Node* root;
 		bool load;	//whether or not the network is ready for contraction, construct=> load=true, destruct=>load=false
 		int times;	//construction times
