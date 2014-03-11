@@ -37,7 +37,7 @@ if (APPLE)
 		${CMAKE_PREFIX_PATH}
 	)
   IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOSX")
+     ADD_DEFINITIONS("-DOSX")
   ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif (APPLE)
 
@@ -63,9 +63,9 @@ endif (INTEL_CC)
 ######################################################################
 ### COMMAND LINE OPTIONS
 ######################################################################
-option(BUILD_STATIC_LIBS "Build the static library" ON)
-option(BUILD_SHARED_LIBS "Build the shared library" ON)
-option(BUILD_TESTS "Build test programs" OFF)
+#option(BUILD_STATIC_LIBS "Build the static library" ON)
+#option(BUILD_SHARED_LIBS "Build the shared library" ON)
+#option(BUILD_TESTS "Build test programs" OFF)
 option(USE_MKL OFF)
 
 ######################################################################
@@ -107,21 +107,13 @@ endif()
 
 
 ######################################################################
-### Check for BOOST
-######################################################################
-
-#find_package( Boost 1.47.0 )
-#          if(Boost_FOUND)
-#             include_directories(${Boost_INCLUDE_DIRS})
-#          endif()
-
-######################################################################
 ### Find BLAS and LAPACK
 ######################################################################
 
 if(USE_MKL)
   find_package( MKL REQUIRED)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMKL")
+  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMKL")
+  ADD_DEFINITIONS("-DMKL")
 #message( STATUS "MKL found: ${MKL_INCLUDE_DIR}" )
 else (USE_MKL)
   find_package( BLAS REQUIRED)
@@ -134,7 +126,9 @@ endif(USE_MKL)
 ######################################################################
 ### FLAGS
 ######################################################################
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+if(UNIX) 
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+endif(UNIX)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 endif()
@@ -176,16 +170,21 @@ $<TARGET_OBJECTS:uni10-tensor-network>
 $<TARGET_OBJECTS:uni10-numeric>
 )
 add_library(uni10 SHARED ${uni10-objects} )
-add_library(uni10_s STATIC ${uni10-objects})
-if(APPLE)
+add_library(uni10-static STATIC ${uni10-objects})
+SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
+if(USE_MKL)
+target_link_libraries(uni10 ${MKL_CORE} ${MKL_INTEL})
+message("Linking MKL")
+target_link_libraries(uni10-static ${MKL_CORE} ${MKL_INTEL})
+else(USE_MKL)
 target_link_libraries(uni10 ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-target_link_libraries(uni10_s ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-endif(APPLE)
+target_link_libraries(uni10-static ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+endif(USE_MKL)
 
 ######################################################################
 ### INSTALL
 ######################################################################
-install(TARGETS uni10 uni10_s
+install(TARGETS uni10 uni10-static
         LIBRARY 
         DESTINATION lib 
         COMPONENT libraries

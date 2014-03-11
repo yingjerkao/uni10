@@ -6,7 +6,7 @@
 #else
   #include <uni10/numeric/uni10_lapack_wrapper.h>
 #endif
-
+#include <string.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 namespace uni10{

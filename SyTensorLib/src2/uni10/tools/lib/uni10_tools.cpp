@@ -1,4 +1,5 @@
 #include <uni10/tools/uni10_tools.h>
+#include <string.h>
 //using namespace boost;
 
 namespace uni10{
