@@ -112,15 +112,14 @@ endif()
 
 if(USE_MKL)
   find_package( MKL REQUIRED)
-  #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMKL")
   ADD_DEFINITIONS("-DMKL")
-#message( STATUS "MKL found: ${MKL_INCLUDE_DIR}" )
-else (USE_MKL)
+  message( STATUS "MKL found: ${MKL_MINIMAL_LIBRARY}")
+else ()
   find_package( BLAS REQUIRED)
-message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
+  message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
   find_package( LAPACK REQUIRED)
-message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
-endif(USE_MKL)
+  message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
+endif()
 
 
 ######################################################################
@@ -173,13 +172,12 @@ add_library(uni10 SHARED ${uni10-objects} )
 add_library(uni10-static STATIC ${uni10-objects})
 SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
 if(USE_MKL)
-target_link_libraries(uni10 ${MKL_CORE} ${MKL_INTEL})
-message("Linking MKL")
-target_link_libraries(uni10-static ${MKL_CORE} ${MKL_INTEL})
-else(USE_MKL)
+target_link_libraries(uni10 ${MKL_MINIMAL_LIBRARY})
+target_link_libraries(uni10-static ${MKL_MINIMAL_LIBRARY})
+else()
 target_link_libraries(uni10 ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries(uni10-static ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-endif(USE_MKL)
+endif()
 
 ######################################################################
 ### INSTALL
