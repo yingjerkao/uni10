@@ -3,6 +3,7 @@
 //using namespace uni10::datatype;
 namespace uni10{
 void UniTensor::grouping(){
+	assert(bonds.size() > 0);
 	blocks.clear();
 	int row_bondNum = 0;
 	int col_bondNum = 0;
@@ -154,6 +155,7 @@ void UniTensor::grouping(){
 }
 
 void UniTensor::addGate(std::vector<_Swap> swaps){
+	assert(status & HAVEBOND);
 	assert(status & HAVEELEM);
 	int sign = 1;
 	int bondNum = bonds.size();
@@ -194,7 +196,7 @@ void UniTensor::addGate(std::vector<_Swap> swaps){
 }
 
 void UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
-	assert(status & INIT);
+	assert(status & HAVEBOND);
 	//assert(status & HAVELABEL);
 	assert(labels.size() == newLabels.size());
 	int bondNum = bonds.size();
@@ -335,7 +337,7 @@ void UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
 }
 
 void UniTensor::addRawElem(DOUBLE* rawElem){
-	assert((status & INIT));   //If not INIT, CANNOT add elements
+	assert((status & HAVEBOND));   //If not INIT, CANNOT add elements
 	int bondNum = bonds.size();
 	std::vector<int> Q_idxs(bondNum, 0); 
 	std::vector<int> Q_Bdims(bondNum, 0);
@@ -396,6 +398,7 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 
 
 double UniTensor::at(std::vector<int> idxs)const{
+	assert(status & HAVEBOND);
 	int bondNum = bonds.size();
 	std::vector<int> Qidxs(bondNum, 0);
 	for(int b = 0; b < bondNum; b++){
@@ -433,9 +436,13 @@ double UniTensor::at(std::vector<int> idxs)const{
 		return 0.0;;
 	}
 }
+double& UniTensor::operator[](size_t idx){
+	assert(idx < m_elemNum);
+	return elem[idx];
+}
 
 void UniTensor::transpose(){
-	assert(status & INIT);
+	assert(status & HAVEBOND);
 	int bondNum = bonds.size();
 	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
 	int rbondNum = 0;
@@ -492,7 +499,6 @@ void UniTensor::transpose(){
 }
 
 bool UniTensor::elemCmp(const UniTensor& UniT)const{
-	assert(status & HAVEELEM);
 	double diff;
 	if(m_elemNum == UniT.m_elemNum){
 		for(int i = 0; i < m_elemNum; i++){
@@ -507,17 +513,22 @@ bool UniTensor::elemCmp(const UniTensor& UniT)const{
 }
 double UniTensor::trace()const{
 	assert(status & HAVEELEM);		
-	int Rnum;
-	DOUBLE trVal = 0;
-	for(std::map<Qnum, Block>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-		assert(it->second.Rnum == it->second.Cnum);
-		Rnum = it->second.Rnum;
-		for(int r = 0; r < Rnum; r++)
-			trVal += it->second.elem[r * Rnum + r];
+	if(status & HAVEBOND){
+		int Rnum;
+		DOUBLE trVal = 0;
+		for(std::map<Qnum, Block>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+			assert(it->second.Rnum == it->second.Cnum);
+			Rnum = it->second.Rnum;
+			for(int r = 0; r < Rnum; r++)
+				trVal += it->second.elem[r * Rnum + r];
+		}
+		return trVal;	
 	}
-	return trVal;	
+	else
+		return elem[0];
 }
 
+/*
 double UniTensor::trace(const UniTensor& UniT)const{
 	assert((status & HAVEELEM) && (UniT.status & HAVEELEM));
 	int Rnum;
@@ -537,9 +548,11 @@ double UniTensor::trace(const UniTensor& UniT)const{
 	
 	return 0;	
 }
+*/
+
 UniTensor& UniTensor::partialTrace(int la, int lb){
-	//assert(status & HAVELABEL);		
 	assert(status & HAVEELEM);		
+	assert(status & HAVEBOND);		
 	assert(bonds.size() > 2 && la != lb);
 	int bondNum = bonds.size();
 	std::vector<Bond> newBonds;

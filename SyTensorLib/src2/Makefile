@@ -1,4 +1,4 @@
-OBJ := qnum.o bond.o block.o uni10_tools.o uni10_lapack.o matrix.o operate.o syTensor_elem.o syTensor.o network.o
+OBJ := qnum.o bond.o block.o uni10_tools.o uni10_lapack.o matrix.o operate.o UniTensor_elem.o UniTensor.o network.o
 LINK := -mkl=parallel
 CC := icpc
 UNI10_ROOT := uni10
@@ -33,10 +33,10 @@ matrix.o: $(UNI10_ROOT)/tensor-network/lib/Matrix.cpp $(UNI10_ROOT)/tensor-netwo
 operate.o: $(UNI10_ROOT)/tensor-network/lib/operate.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
 	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-syTensor_elem.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor_elem.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
+UniTensor_elem.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor_elem.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
 	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-syTensor.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
+UniTensor.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
 	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
 network.o: $(UNI10_ROOT)/tensor-network/lib/Network.cpp $(UNI10_ROOT)/tensor-network/Network.h

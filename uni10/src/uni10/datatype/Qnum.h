@@ -3,11 +3,8 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
-//#include <tuple>
 
-#define FERMIONIC 1
 namespace uni10{
-//namespace datatype{
 
 enum parityType{
 	PRT_EVEN = 0,

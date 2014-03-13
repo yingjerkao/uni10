@@ -19,8 +19,8 @@ class Bond {
 		Bond(bondType, std::vector<Qnum>& qnums);
 		Bond(const Bond& _b);
 		void assign(bondType, std::vector<Qnum>& qnums);
-		bondType type();
-		int dim();
+		bondType type()const;
+		int dim()const;
 		friend class UniTensor;
 		friend class Node;
 		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
@@ -30,6 +30,8 @@ class Bond {
 		Bond& combine(const Bond bd);
 		static Bond combine(bondType tp, const std::vector<Bond>& bds);
 		static Bond combine(const std::vector<Bond>& bds);
+		std::map<Qnum, int> degeneracy()const;
+		std::vector<Qnum> Qlist()const;
 		~Bond();
 	private:
 		void setting(std::vector<Qnum>& qnums);

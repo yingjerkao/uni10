@@ -1,7 +1,6 @@
 #ifndef UNI10_STRUCT_H
 #define UNI10_STRUCT_H
 #include <string>
-#include <stdint.h>
 namespace uni10{
 typedef struct{
 	int b1; 

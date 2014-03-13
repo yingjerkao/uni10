@@ -1,10 +1,8 @@
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/numeric/uni10_lapack.h>
-#include <stdlib.h> // for malloc
-#include <stdio.h> // for fopen,fclose, etc
 namespace uni10{
 std::ostream& operator<< (std::ostream& os, const Matrix& m){
-	os << std::endl << m.Rnum << " x " << m.Cnum << " = " << m.m_elemNum;
+	os << m.Rnum << " x " << m.Cnum << " = " << m.m_elemNum;
 	if(m.diag)
 		os << ", Diagonal";
 	os <<std::endl << std::endl;
@@ -217,7 +215,7 @@ double& Matrix::operator[](size_t idx){
 	assert(idx < m_elemNum);
 	return m_elem[idx];
 }
-double* Matrix::elem(){
+double* Matrix::elem()const{
 	return m_elem;
 }
 double& Matrix::at(int r, int c){
