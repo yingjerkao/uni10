@@ -88,7 +88,6 @@ class UniTensor{
 		void addGate(std::vector<_Swap> swaps);
 		bool elemCmp(const UniTensor& UniT)const;
 		double trace()const;
-		double trace(const UniTensor&)const;
 		void combineBond(const std::vector<int>& combined_labels);
 		UniTensor& partialTrace(int la, int lb);
 	private:

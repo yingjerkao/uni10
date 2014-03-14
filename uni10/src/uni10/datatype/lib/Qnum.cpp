@@ -7,20 +7,19 @@ Qnum::Qnum(int _U1): m_U1(_U1), m_prt(PRT_EVEN), m_prtF(PRTF_EVEN){
 	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
 }
 Qnum::Qnum(int _U1, parityType _prt): m_U1(_U1), m_prt(_prt), m_prtF(PRTF_EVEN){
-	assert(m_U1 < U1_UPB && m_U1 > U1_LOB && m_prt < PRT_UPB && m_prt > PRT_LOB);
+	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
 }
 Qnum::Qnum(parityFType _prtF): m_prtF(_prtF), m_U1(0), m_prt(PRT_EVEN){
-	assert(m_prtF < PRT_UPB && m_prtF > PRT_LOB);
 	if(_prtF == PRTF_ODD)
 		Fermionic = true;
 }
 Qnum::Qnum(parityFType _prtF, int _U1): m_prtF(_prtF), m_U1(_U1), m_prt(PRT_EVEN){
-	assert(m_prtF < PRT_UPB && m_prtF > PRT_LOB && m_U1 < U1_UPB && m_U1 > U1_LOB);
+	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
 	if(_prtF == PRTF_ODD)
 		Fermionic = true;
 }
 Qnum::Qnum(parityFType _prtF, int _U1, parityType _prt): m_U1(_U1), m_prt(_prt), m_prtF(_prtF){
-	assert(m_prtF < PRT_UPB && m_prtF > PRT_LOB && m_U1 < U1_UPB && m_U1 > U1_LOB && m_prt < PRT_UPB && m_prt > PRT_LOB);
+	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
 	if(_prtF == PRTF_ODD)
 		Fermionic = true;
 }

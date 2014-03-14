@@ -232,6 +232,7 @@ void Network::fromfile(const std::string& fname){//names, label_arr, Rnums, orde
 	std::string str;
 	std::ifstream infile;
 	infile.open (fname.c_str());
+	assert(infile.is_open());
 	int lnum = 0;
 	int MAXLINES = 1000;
 	int pos = 0;
@@ -387,6 +388,7 @@ void Network::construct(){
 				}
 			}
 			else if(brakets[i] == 0){
+				assert(leafs[order[cnt]] != NULL);
 				stack[cursor] = leafs[order[cnt]];
 				cnt++;
 				cursor++;

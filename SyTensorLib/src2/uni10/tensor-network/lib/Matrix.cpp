@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/numeric/uni10_lapack.h>
 namespace uni10{

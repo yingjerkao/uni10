@@ -5,7 +5,6 @@
 #include <assert.h>
 
 namespace uni10{
-
 enum parityType{
 	PRT_EVEN = 0,
 	PRT_ODD = 1
@@ -38,11 +37,9 @@ class Qnum {
 		friend Qnum operator- (const Qnum& q1);
 		friend Qnum operator* (const Qnum& q1, const Qnum& q2);
 		friend std::ostream& operator<< (std::ostream& os, const Qnum& q);
-	private:
 		static const int U1_UPB = 100;	//Upper bound of U1
 		static const int U1_LOB = -100;//Lower bound of U1
-		static const int PRT_UPB = 2;  //Upper bound of prt
-		static const int PRT_LOB = -1; //Lower bound of prt
+	private:
 		static bool Fermionic;
 		int m_U1;
 		parityType m_prt;
