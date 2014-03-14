@@ -10,6 +10,11 @@ all:
 	rm -f scl.e
 	make scl.e
 
+egQ1.e: egQ1.cpp
+	#cd $(SRC); make all
+	#icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+	#g++ -I$(INC) -I$(MKL_INC) -fopenmp -L${LIB} -m64 -o $@ -L$(MKLROOT)/lib/intel64 -lmkl_intel_lp64 -lmkl_core -lmkl_gnu_thread -ldl -lpthread -lm -luni10 $<
+	g++ -I$(INC) -L${LIB} -m64 -o $@ -lblas -llapack -lm -luni10 $<
 asd.e: Ascend.cpp
 	#cd $(SRC); make all
 	#icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
