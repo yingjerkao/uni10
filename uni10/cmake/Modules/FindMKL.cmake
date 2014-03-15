@@ -16,10 +16,17 @@
 
 
 include(FindPackageHandleStandardArgs)
-
-set(INTEL_ROOT "/opt/intel" CACHE PATH "Folder contains intel libs")
-set(MKL_ROOT ${INTEL_ROOT}/mkl CACHE PATH "Folder contains MKL")
-
+if (DEFINED ENV{MKLROOT})
+    set(MKL_ROOT $ENV{MKLROOT} CACHE PATH "Folder contains MKL")
+    set(INTEL_ROOT $ENV{MKLROOT}/../../ CACHE PATH "Folder contains intel libs")
+else()
+    set(INTEL_ROOT "/opt/intel" CACHE PATH "Folder contains intel libs")
+    set(MKL_ROOT ${INTEL_ROOT}/mkl CACHE PATH "Folder contains MKL")
+  endif()
+ 
+#message("MKL_ROOT:" ${MKL_ROOT})
+#message("INTEL_ROOT:" ${INTEL_ROOT})
+#message("MKLROOT:" $ENV{MKLROOT})
 # Find include dir
 find_path(MKL_INCLUDE_DIR mkl.h
     PATHS ${MKL_ROOT}/include)
@@ -33,10 +40,10 @@ endif()
 
 # Find libraries
 if( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
-  find_path(MKL_LIB_PATH  libmkl_core.a PATHS ${MKL_ROOT}/lib/intel64)
-  message("architecture:x86_64 " ${MKL_LIB_PATH})
+  find_path(MKL_LIB_PATH  libmkl_core.a PATHS ${MKL_ROOT}/lib/intel64 ${MKL_ROOT}/lib/64 )
+#  message("architecture:x86_64 " ${MKL_LIB_PATH})
 else()
-  find_path(MKL_LIB_PATH  libmkl_core.a PATHS ${MKL_ROOT}/lib/ia32)
+  find_path(MKL_LIB_PATH  libmkl_core.a PATHS ${MKL_ROOT}/lib/ia32 ${MKL_ROOT}/lib/32 )
 endif()
 # Handle suffix
 set(_MKL_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
@@ -116,6 +123,7 @@ else()
     set(MKL_LIBRARY ${MKL_INTERFACE_LIBRARY} ${MKL_THREADING_LIBRARY} ${MKL_CORE_LIBRARY} ${MKL_FFT_LIBRARY} ${MKL_SCALAPACK_LIBRARY} ${MKL_RTL_LIBRARY})
     set(MKL_MINIMAL_LIBRARY ${MKL_INTERFACE_LIBRARY} ${MKL_THREADING_LIBRARY} ${MKL_CORE_LIBRARY} ${MKL_RTL_LIBRARY})
 endif()
+#message("MKL_LIBRARY: ${MKL_LIBRARY}")
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${_MKL_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES})
 
 find_package_handle_standard_args(MKL DEFAULT_MSG MKL_INCLUDE_DIR MKL_LIBRARY MKL_MINIMAL_LIBRARY)
@@ -123,5 +131,5 @@ find_package_handle_standard_args(MKL DEFAULT_MSG MKL_INCLUDE_DIR MKL_LIBRARY MK
 if(MKL_FOUND)
     set(MKL_INCLUDE_DIRS ${MKL_INCLUDE_DIR})
     set(MKL_LIBRARIES ${MKL_LIBRARY})
-    set(MKL_MINIMAL_LIBRARIES ${MKL_LIBRARY})
+    set(MKL_MINIMAL_LIBRARIES ${MKL_MINIMAL_LIBRARY})
 endif()

@@ -5,7 +5,7 @@
 ######################################################################
 ### CMAKE VERSION
 ######################################################################
-cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 ######################################################################
@@ -22,28 +22,35 @@ set(UNI10_VERSION
 ######################################################################
 ### CMAKE INSTALL OPTIONS 
 ######################################################################
-
-if (UNIX)
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  if (UNIX)
 	set(CMAKE_INSTALL_PREFIX 
-	  "/opt/uni10/Library/uni10-${UNI10_VERSION}" 
+	  "/opt/uni10/uni10-${UNI10_VERSION}" 
 		CACHE PATH "UNI10 install prefix" 
   	FORCE
 	)
-endif (UNIX)
+  endif (UNIX)
 
-if (APPLE)
+  if (APPLE)
 	set(CMAKE_PREFIX_PATH 
 		/opt/local 
 		${CMAKE_PREFIX_PATH}
-	)
-  IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-     ADD_DEFINITIONS("-DOSX")
-  ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-endif (APPLE)
-
+	   )
+    IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+       ADD_DEFINITIONS("-DOSX")
+    ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  endif (APPLE)
+endif()
 
 
  
+######################################################################
+### COMMAND LINE OPTIONS
+######################################################################
+#option(BUILD_STATIC_LIBS "Build the static library" ON)
+#option(BUILD_SHARED_LIBS "Build the shared library" ON)
+#option(BUILD_TESTS "Build test programs" OFF)
+option(USE_MKL "Use the Intel Math Kernal Library." OFF)
 option(INTEL_CC "Use the Intel compiler." OFF)
 
 if (INTEL_CC)
@@ -59,14 +66,6 @@ if (INTEL_CC)
     message(FATAL_ERROR "Cannot find Intel compiler.  You may need to run `. /opt/intel/bin/compilervars.sh intel64'")
   endif ()
 endif (INTEL_CC)
-
-######################################################################
-### COMMAND LINE OPTIONS
-######################################################################
-#option(BUILD_STATIC_LIBS "Build the static library" ON)
-#option(BUILD_SHARED_LIBS "Build the shared library" ON)
-#option(BUILD_TESTS "Build test programs" OFF)
-option(USE_MKL OFF)
 
 ######################################################################
 ### PROJECT
@@ -157,7 +156,7 @@ endif (UNIX)
 ######################################################################
 
 add_subdirectory(src)
-
+add_subdirectory(examples)
 ######################################################################
 ### ADD LIBRARY
 ######################################################################
@@ -172,12 +171,11 @@ add_library(uni10 SHARED ${uni10-objects} )
 add_library(uni10-static STATIC ${uni10-objects})
 SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
 if(USE_MKL)
-target_link_libraries(uni10 ${MKL_MINIMAL_LIBRARY})
-target_link_libraries(uni10-static ${MKL_MINIMAL_LIBRARY})
-else()
-target_link_libraries(uni10 ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-target_link_libraries(uni10-static ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+set(LAPACK_LIBRARIES ${MKL_MINIMAL_LIBRARY})
+message("MKL: ${MKL_MINIMAL_LIBRARY}")
 endif()
+target_link_libraries(uni10 ${LAPACK_LIBRARIES})
+target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
 
 ######################################################################
 ### INSTALL
@@ -202,3 +200,11 @@ install(DIRECTORY src/
 )
 
 
+######################################################################
+### INSTALL EXAMPLES
+######################################################################
+
+install(DIRECTORY examples/
+	DESTINATION examples/
+	PATTERN "CMakeLists*" EXCLUDE
+)
