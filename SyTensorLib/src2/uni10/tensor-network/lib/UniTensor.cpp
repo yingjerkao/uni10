@@ -146,15 +146,27 @@ UniTensor::~UniTensor(){
 	COUNTER--;
 }
 
-int64_t UniTensor::elemNum()const{return m_elemNum;}
+size_t UniTensor::elemNum()const{return m_elemNum;}
 int UniTensor::inBondNum()const{return RBondNum;}
-int UniTensor::bondNum()const{return bonds.size();}
+size_t UniTensor::bondNum()const{return bonds.size();}
 
-std::vector<Qnum> UniTensor::qnums(){
+std::vector<Qnum> UniTensor::blockQnum()const{
 	std::vector<Qnum> keys;
-	for(std::map<Qnum,Block>::iterator it = blocks.begin(); it != blocks.end(); it++)
+	for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++)
 		keys.push_back(it->first);
 	return keys;
+}
+Qnum UniTensor::blockQnum(int idx)const{
+	assert(idx < blocks.size());
+	for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
+		if(idx == 0)
+			return it->first;
+		idx--;
+	}
+	return Qnum(0);
+}
+size_t UniTensor::blockNum()const{
+	return blocks.size();
 }
 
 void UniTensor::check(){
@@ -193,10 +205,11 @@ Bond UniTensor::bond(int idx)const{
 	return bonds[idx];
 }
 
-void UniTensor::permute(int* newLabels, int rowBondNum){
+UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
 	assert(status & HAVEBOND);
 	std::vector<int> _labels(newLabels, newLabels + bonds.size());
 	this->permute(_labels, rowBondNum);
+	return *this;
 }
 
 void UniTensor::initUniT(){
@@ -355,7 +368,7 @@ bool UniTensor::similar(const UniTensor& Tb)const{
 
 //=============================ACCESS MEMORY EXPLICITLY=====================================
 
-Matrix UniTensor::printRawElem(bool flag)const{
+Matrix UniTensor::printRaw(bool flag)const{
 	if(status & HAVEBOND && status & HAVEELEM){
 		int bondNum = bonds.size();
 		std::vector<Bond> ins;
@@ -419,6 +432,12 @@ Matrix UniTensor::printRawElem(bool flag)const{
 	}
 }
 
+void UniTensor::printRawElem()const{
+	printRaw(true);
+}
+Matrix UniTensor::rawElem()const{
+	return printRaw(false);
+}
 
 std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	if(!(UniT.status & UniT.HAVEBOND)){
@@ -544,7 +563,7 @@ void UniTensor::putBlock(const Qnum& qnum, Matrix& mat){
 	}
 }
 
-void UniTensor::combineBond(const std::vector<int>&cmbLabels){
+UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 	assert(status & HAVEBOND);
 	assert(cmbLabels.size() > 1);
 	std::vector<int> rsp_labels(labels.size(), 0);
@@ -600,6 +619,7 @@ void UniTensor::combineBond(const std::vector<int>&cmbLabels){
 	UniTensor Tout(newBonds, reduced_labels);
 	myMemcpy(Tout.elem, elem, sizeof(DOUBLE) * m_elemNum, Tout.status, Tout.status);
 	Tout.status |= HAVEELEM;
-	*this = Tout;
+	return (*this = Tout);
+	
 }
 }; /* namespace uni10 */

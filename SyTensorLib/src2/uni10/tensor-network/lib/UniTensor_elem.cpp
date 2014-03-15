@@ -195,7 +195,7 @@ void UniTensor::addGate(std::vector<_Swap> swaps){
 	}
 }
 
-void UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
+UniTensor& UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
 	assert(status & HAVEBOND);
 	//assert(status & HAVELABEL);
 	assert(labels.size() == newLabels.size());
@@ -216,7 +216,8 @@ void UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
 			inorder = false;
 			break;
 		}
-	if(inorder  && rsp_outin[0] == 0 && RBondNum == rowBondNum);	//do nothing
+	if(inorder  && rsp_outin[0] == 0 && RBondNum == rowBondNum)	//do nothing
+		return *this;
 	else{
 		std::vector<Bond> outBonds;
 		for(int b = 0; b < bonds.size(); b++)
@@ -333,6 +334,7 @@ void UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
 		}
 		*this = UniTout;
 		this->addLabel(newLabels);
+		return *this;
 	}
 }
 
@@ -441,7 +443,7 @@ double& UniTensor::operator[](size_t idx){
 	return elem[idx];
 }
 
-void UniTensor::transpose(){
+UniTensor& UniTensor::transpose(){
 	assert(status & HAVEBOND);
 	int bondNum = bonds.size();
 	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
@@ -495,7 +497,7 @@ void UniTensor::transpose(){
 		}   
 		UniTout.status |= HAVEELEM;
 	}
-	*this = UniTout;
+	return *this = UniTout;
 }
 
 bool UniTensor::elemCmp(const UniTensor& UniT)const{
@@ -527,28 +529,6 @@ double UniTensor::trace()const{
 	else
 		return elem[0];
 }
-
-/*
-double UniTensor::trace(const UniTensor& UniT)const{
-	assert((status & HAVEELEM) && (UniT.status & HAVEELEM));
-	int Rnum;
-	int Cnum;
-	DOUBLE trVal = 0;
-	std::map<Qnum, Block>::const_iterator it2 = UniT.blocks.begin();
-	for(std::map<Qnum, Block>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-		assert(it->second == it2->second);
-		Rnum = it->second.Rnum;
-		Cnum = it->second.Cnum;
-		for(int r = 0; r < Rnum; r++)
-			for(int c = 0; c < Cnum; c++)
-				trVal += it->second.elem[r * Cnum + c] * it2->second.elem[r * Cnum + c];
-		it2++;
-	}
-	return trVal;	
-	
-	return 0;	
-}
-*/
 
 UniTensor& UniTensor::partialTrace(int la, int lb){
 	assert(status & HAVEELEM);		

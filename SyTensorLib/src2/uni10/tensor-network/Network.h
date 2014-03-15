@@ -12,14 +12,11 @@
 namespace uni10{
 class Network {
 	public:
-		//Network();
-		//Network(const std::vector<UniTensor*>& tens);
 		Network(const std::string& fname, const std::vector<UniTensor*>& tens);
-		Network(const std::vector< std::vector<int> > _label_arr);
 		Network(const std::string& fname);
 		~Network();
 		//Node* add(UniTensor*);
-		Node* putTensor(int idx, const UniTensor* UniT, bool force=false);	//if force is true, force replace without change the all network
+		void putTensor(int idx, const UniTensor* UniT, bool force=false);	//if force is true, force replace without change the all network
 		UniTensor launch(const std::string& name="");
 		UniTensor launch(int* outLabels, int Rnum = 0, const std::string& name="");
 		UniTensor launch(const std::vector<int>& outLabels, int Rnum = 0, const std::string& name="");

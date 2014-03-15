@@ -10,6 +10,8 @@ all:
 
 egQ1.e: egQ1.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+egB1.e: egB1.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 scl.e: Scalar.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 trc.e: Trace.cpp

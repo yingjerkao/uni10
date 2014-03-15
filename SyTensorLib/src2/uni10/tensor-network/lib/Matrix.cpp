@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/numeric/uni10_lapack.h>
+#include <uni10/tools/uni10_tools.h>
 namespace uni10{
 std::ostream& operator<< (std::ostream& os, const Matrix& m){
 	os << m.Rnum << " x " << m.Cnum << " = " << m.m_elemNum;
@@ -121,6 +122,10 @@ Matrix& Matrix::operator*= (const Matrix& Mb){
 	return *this = *this * Mb;
 }
 
+void Matrix::addElem(double* elem){
+	memcpy(m_elem, elem, m_elemNum * sizeof(double));
+}
+
 std::vector<Matrix> Matrix::diagonalize(){
 	assert(Rnum == Cnum);
 	assert(!diag);
@@ -147,9 +152,12 @@ std::vector<Matrix> Matrix::svd(){
 	return outs;
 }
 
+void Matrix::randomize(){
+	randomNums(m_elem, m_elemNum, 0);	
+}
 void Matrix::orthoRand(){
-	assert(!diag);
-	orthoRandomize(m_elem, Rnum, Cnum);
+	if(!diag)
+		orthoRandomize(m_elem, Rnum, Cnum);
 }
 
 void Matrix::set_zero(){
@@ -201,13 +209,13 @@ double Matrix::trace(){
 			sum += m_elem[i * Cnum + i];
 	return sum;
 }
-void Matrix::save(const std::string fname){
+void Matrix::save(const std::string& fname){
 	FILE *fp = fopen(fname.c_str(), "w");
 	assert(fp != NULL);
 	fwrite(m_elem, sizeof(double), m_elemNum, fp);
 	fclose(fp);
 }
-void Matrix::load(const std::string fname){
+void Matrix::load(const std::string& fname){
 	FILE *fp = fopen(fname.c_str(), "r");
 	assert(fp != NULL);
 	fread(m_elem, sizeof(double), m_elemNum, fp);
