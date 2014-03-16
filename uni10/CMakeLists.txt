@@ -22,26 +22,20 @@ set(UNI10_VERSION
 ######################################################################
 ### CMAKE INSTALL OPTIONS 
 ######################################################################
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  if (UNIX)
-	set(CMAKE_INSTALL_PREFIX 
-	  "/opt/uni10/uni10-${UNI10_VERSION}" 
-		CACHE PATH "UNI10 install prefix" 
-  	FORCE
-	)
-  endif (UNIX)
 
-  if (APPLE)
-	set(CMAKE_PREFIX_PATH 
-		/opt/local 
-		${CMAKE_PREFIX_PATH}
-	   )
-    IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-       ADD_DEFINITIONS("-DOSX")
-    ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  endif (APPLE)
-endif()
-
+#if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+#  if (UNIX)
+#	set(CMAKE_INSTALL_PREFIX 
+#	  "/opt/uni10/uni10-${UNI10_VERSION}" 
+#		CACHE PATH "UNI10 install prefix" 
+#  	FORCE
+#	)
+#  endif (UNIX)
+#
+#  if (APPLE)
+#	set(CMAKE_PREFIX_PATH /opt/local ${CMAKE_PREFIX_PATH})
+#  endif (APPLE)
+#endif()
 
  
 ######################################################################
@@ -114,8 +108,8 @@ if(USE_MKL)
   ADD_DEFINITIONS("-DMKL")
   #message( STATUS "MKL found: ${MKL_MINIMAL_LIBRARY}")
 else ()
-  find_package( BLAS REQUIRED)
-  message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
+#  find_package( BLAS REQUIRED)
+#  message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
   find_package( LAPACK REQUIRED)
   message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
 endif()

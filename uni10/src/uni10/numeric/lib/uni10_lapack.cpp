@@ -1,8 +1,6 @@
 #include "stdlib.h"
 #ifdef MKL
   #include "mkl.h"
-#elif defined OSX
-  #include <uni10/numeric/uni10_lapack_wapper_OSX.h>
 #else
   #include <uni10/numeric/uni10_lapack_wrapper.h>
 #endif
