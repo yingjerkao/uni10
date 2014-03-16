@@ -156,8 +156,16 @@ void Matrix::randomize(){
 	randomNums(m_elem, m_elemNum, 0);	
 }
 void Matrix::orthoRand(){
-	if(!diag)
-		orthoRandomize(m_elem, Rnum, Cnum);
+	if(!diag){
+		if(Rnum <= Cnum)
+			orthoRandomize(m_elem, Rnum, Cnum);
+		else{
+			Matrix M(Cnum, Rnum);
+			orthoRandomize(M.elem(), Cnum, Rnum);
+			myTranspose(M.elem(), Cnum, Rnum, m_elem, 0);
+		}
+
+	}
 }
 
 void Matrix::set_zero(){

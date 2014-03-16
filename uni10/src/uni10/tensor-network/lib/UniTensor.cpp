@@ -284,14 +284,26 @@ void UniTensor::randomize(){
 
 void UniTensor::orthoRand(const Qnum& qnum){
 	Block& block = blocks[qnum];
-	orthoRandomize(block.elem, block.Rnum, block.Cnum);
+	if(block.Rnum <= block.Cnum)
+		orthoRandomize(block.elem, block.Rnum, block.Cnum);
+	else{
+		Matrix M(block.Cnum, block.Rnum);
+		orthoRandomize(M.elem(), block.Cnum, block.Rnum);
+		myTranspose(M.elem(), block.Cnum, block.Rnum, block.elem, 0);
+	}
 	status |= HAVEELEM;
 }
 
 void UniTensor::orthoRand(){
 	std::map<Qnum,Block>::iterator it; 
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
-		orthoRandomize(it->second.elem, it->second.Rnum, it->second.Cnum);
+		if(it->second.Rnum <= it->second.Cnum)
+			orthoRandomize(it->second.elem, it->second.Rnum, it->second.Cnum);
+		else{
+			Matrix M(it->second.Cnum, it->second.Rnum);
+			orthoRandomize(M.elem(), it->second.Cnum, it->second.Rnum);
+			myTranspose(M.elem(), it->second.Cnum, it->second.Rnum, it->second.elem, 0);
+		}
 	status |= HAVEELEM;
 }
 
