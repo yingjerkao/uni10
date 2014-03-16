@@ -18,12 +18,14 @@
 include(FindPackageHandleStandardArgs)
 if (DEFINED ENV{MKLROOT})
     set(MKL_ROOT $ENV{MKLROOT} CACHE PATH "Folder contains MKL")
-    set(INTEL_ROOT $ENV{MKLROOT}/../../ CACHE PATH "Folder contains intel libs")
+    STRING(REGEX REPLACE "(.*intel/).*" "\\1" INTEL_ROOT "$ENV{MKLROOT}" )
+
+    #message("INTEL_ROOT_FOUND" ${INTEL_ROOT})
+    set(INTEL_ROOT ${INTEL_ROOT} CACHE PATH "Folder contains intel libs")
 else()
     set(INTEL_ROOT "/opt/intel" CACHE PATH "Folder contains intel libs")
     set(MKL_ROOT ${INTEL_ROOT}/mkl CACHE PATH "Folder contains MKL")
   endif()
- 
 #message("MKL_ROOT:" ${MKL_ROOT})
 #message("INTEL_ROOT:" ${INTEL_ROOT})
 #message("MKLROOT:" $ENV{MKLROOT})
