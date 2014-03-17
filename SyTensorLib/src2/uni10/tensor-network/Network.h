@@ -18,8 +18,6 @@ class Network {
 		//Node* add(UniTensor*);
 		void putTensor(int idx, const UniTensor* UniT, bool force=false);	//if force is true, force replace without change the all network
 		UniTensor launch(const std::string& name="");
-		UniTensor launch(int* outLabels, int Rnum = 0, const std::string& name="");
-		UniTensor launch(const std::vector<int>& outLabels, int Rnum = 0, const std::string& name="");
 		//void optimize(int num=1);
 		friend std::ostream& operator<< (std::ostream& os, Network& nd);
 	private:

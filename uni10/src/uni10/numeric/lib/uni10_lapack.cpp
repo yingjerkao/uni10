@@ -1,6 +1,8 @@
 #include "stdlib.h"
 #ifdef MKL
   #include "mkl.h"
+#elif defined OSX
+  #include <uni10/numeric/uni10_lapack_wapper_OSX.h>
 #else
   #include <uni10/numeric/uni10_lapack_wrapper.h>
 #endif
@@ -81,15 +83,21 @@ void syDiag(double* Kij, int N, double* Eig, double* EigVec){
 	free(work);
 }
 
-void myDgesvd(double* Mij_ori, int M, int N, double* U, double* S, double* vT){ //not tested yet
+void myDgesvd(double* Mij_ori, int M, int N, double* U, double* S, double* vT){
 	//Mij = U * S * VT
 	double* Mij = (double*)malloc(M * N * sizeof(double));
 	memcpy(Mij, Mij_ori, M * N * sizeof(double));
 	int min = M < N ? M : N;	//min = min(M,N)
 	int ldA = N, ldu = N, ldvT = min;
-	int lwork = 12*N;
-	double *work = (double*)malloc(lwork*sizeof(double));
+	//int lwork = 12 * N;
+	int lwork = -1;
+	double worktest;
 	int info;
+	dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, &worktest, &lwork, &info);
+	assert(info == 0);
+	lwork = (int)worktest;
+	printf("lwork = %d\n", lwork);
+	double *work = (double*)malloc(lwork*sizeof(double));
 	dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, work, &lwork, &info);
 	assert(info == 0);
 	free(work);
