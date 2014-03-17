@@ -201,4 +201,11 @@ install(DIRECTORY src/
 	FILES_MATCHING PATTERN 		"*.h*"	
 )
 
+######################################################################
+### INSTALL DOCUMENTATION
+######################################################################
 
+install(DIRECTORY doc/
+	DESTINATION doc )
+install(FILES INSTALL.txt README.txt DESTINATION .)
+include(CPACK)
