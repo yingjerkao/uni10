@@ -19,16 +19,6 @@ set(UNI10_VERSION
 )
 
 
-######################################################################
-### CMAKE INSTALL OPTIONS 
-######################################################################
-
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	set(CMAKE_INSTALL_PREFIX "/usr/local/uni10" 
-		CACHE PATH "UNI10 install prefix" 
-   		FORCE
-	)
-endif()
 
  
 ######################################################################
@@ -61,6 +51,15 @@ endif (INTEL_CC)
 project(uni10)
 
 
+######################################################################
+### CMAKE INSTALL OPTIONS 
+######################################################################
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	set(CMAKE_INSTALL_PREFIX "/usr/local/uni10" 
+		CACHE PATH "UNI10 install prefix" 
+   		FORCE
+	)
+endif()
 ######################################################################
 ### CMAKE BUILD TYPE
 ######################################################################
@@ -201,4 +200,4 @@ install(DIRECTORY examples/
 install(DIRECTORY doc/
 	DESTINATION doc )
 install(FILES INSTALL.txt README.txt DESTINATION .)
-include(CPACK)
+#include(CPACK)
