@@ -7,8 +7,8 @@ MKL_INC:=/opt/intel/mkl/include
 #LINK := -mkl=parallel -luni10
 OPT:=-W1,--no-as-needed 
 all:
-	rm -f scl.e
-	make scl.e
+	rm -f egQ1.e
+	make egQ1.e
 
 egQ1.e: egQ1.cpp
 	#cd $(SRC); make all

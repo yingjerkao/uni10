@@ -26,12 +26,14 @@ class Matrix {
 		friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
 		std::vector<Matrix> diagonalize();
 		std::vector<Matrix> svd();
+		void addElem(double* elem);
+		void randomize();
 		void orthoRand();
 		void set_zero();
 		void transpose();
 		double trace();
-		void save(const std::string fname);
-		void load(const std::string fname);
+		void save(const std::string& fname);
+		void load(const std::string& fname);
 		friend Matrix operator*(const Matrix& Ma, double a);
 		friend Matrix operator*(double a, const Matrix& Ma){return Ma * a;};
 		friend bool operator== (const Matrix& m1, const Matrix& m2);

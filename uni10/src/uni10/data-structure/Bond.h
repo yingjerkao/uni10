@@ -24,7 +24,6 @@ class Bond {
 		friend class UniTensor;
 		friend class Node;
 		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
-		friend std::ostream& operator<< (std::ostream& os, UniTensor& UniT);
 		friend bool operator== (const Bond& b1, const Bond& b2);
 		void change(bondType tp);
 		Bond& combine(const Bond bd);

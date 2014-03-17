@@ -184,16 +184,6 @@ int64_t Node::cal_elemNum(std::vector<Bond>& _bonds){
 	return _elemNum;
 }
 
-/*
-Network::Network(): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
-}
-*/
-/*
-Network::Network(std::vector<UniTensor*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
-	for(int i = 0; i < tens.size(); i++)
-		add(tens[i]);
-}
-*/
 
 Network::Network(const std::string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	fromfile(fname);
@@ -415,7 +405,7 @@ void Network::construct(){
 	load = true;
 }
 
-Node* Network::putTensor(int idx, const UniTensor* UniT, bool force){
+void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
 	if((!force) && load)
 		destruct();
@@ -438,7 +428,6 @@ Node* Network::putTensor(int idx, const UniTensor* UniT, bool force){
 		Node* ndp = new Node(ten);
 		leafs[idx] = ndp;
 	}
-	return leafs[idx];
 }
 
 void Network::branch(Node* sbj, Node* tar){

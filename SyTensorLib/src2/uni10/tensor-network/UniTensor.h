@@ -45,24 +45,25 @@ class UniTensor{
 		void addRawElem(double* rawElem);
 		double at(std::vector<int>idxs)const;
 		double& operator[](size_t idx);
-    	std::vector<Qnum> qnums();
+    	std::vector<Qnum> blockQnum()const;
+    	Qnum blockQnum(int idx)const;
+		size_t blockNum()const;
 		void save(const std::string& fname);
-		void permute(std::vector<int>& newLabels, int inBondNum);
-		void permute(int* newLabels, int inBondNum);
-		void transpose();
-		void randomize();
-
 		std::vector<int> label()const;
 		int label(int idx)const;
 		std::vector<Bond> bond()const;
 		Bond bond(int idx)const;
 		void setName(const std::string& _name);
 		std::string getName();
-		int64_t elemNum()const;
-		int bondNum()const;
+		size_t elemNum()const;
+		size_t bondNum()const;
 		int inBondNum()const;
 
 		void check();
+		UniTensor& permute(std::vector<int>& newLabels, int inBondNum);
+		UniTensor& permute(int* newLabels, int inBondNum);
+		UniTensor& transpose();
+		void randomize();
 		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
 		friend UniTensor operator* (UniTensor& Ta, UniTensor& Tb);
 		UniTensor& operator*= (UniTensor& Tb);
@@ -74,7 +75,8 @@ class UniTensor{
 		Matrix getBlock(Qnum qnum, bool diag = false)const;
 		void putBlock(const Qnum& qnum, Matrix& mat);
 		std::map<Qnum, Matrix> getBlocks()const;
-		Matrix printRawElem(bool flag = true)const;
+		Matrix rawElem()const;
+		void printRawElem()const;
 		friend class Node;
 		friend class Network;
 		void orthoRand();
@@ -88,7 +90,7 @@ class UniTensor{
 		void addGate(std::vector<_Swap> swaps);
 		bool elemCmp(const UniTensor& UniT)const;
 		double trace()const;
-		void combineBond(const std::vector<int>& combined_labels);
+		UniTensor& combineBond(const std::vector<int>& combined_labels);
 		UniTensor& partialTrace(int la, int lb);
 	private:
 		std::string name;
@@ -117,6 +119,7 @@ class UniTensor{
 		void initUniT();
 		static const int HAVEBOND = 1;		  /**< A flag for initialization */
 		static const int HAVEELEM = 2;		  /**< A flag for having element assigned */
+		Matrix printRaw(bool flag)const;
 };
 };	/* namespace uni10 */	
 #endif /* SYTENSOR_H */

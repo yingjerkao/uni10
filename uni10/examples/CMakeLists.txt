@@ -1,0 +1,19 @@
+#  Copyright Uni10  2014.
+cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+
+
+######################################################################
+### BUILD SHARED LIBRARY
+######################################################################
+include_directories(${CMAKE_SOURCE_DIR})
+set(EXAMPLES Ascend egQ1)
+foreach( EXAMPLE ${EXAMPLES} )
+    add_executable(${EXAMPLE} ${EXAMPLE}.cpp)
+    target_link_libraries(${EXAMPLE} ${LAPACK_LIBRARIES} uni10)
+endforeach()
+######################################################################
+### BUILD EXAMPLES
+######################################################################
+install(TARGETS ${EXAMPLES} DESTINATION examples COMPONENT executables)
+
+
