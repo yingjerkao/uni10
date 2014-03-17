@@ -18,8 +18,7 @@ Using system c++, blas and lapack
   > make
   > make install 
 
-The installation path defaults to /usr/local, and admin privileges 
-is required.
+The installation path defaults to /usr/local.
 
 To override the default path, use CMAKE_INSTALL_PREFIX :
   > cmake -DCMAKE_INSTALL_PREFIX=</path> </path/to/uni10/>
