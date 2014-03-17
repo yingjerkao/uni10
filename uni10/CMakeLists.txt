@@ -23,19 +23,12 @@ set(UNI10_VERSION
 ### CMAKE INSTALL OPTIONS 
 ######################################################################
 
-#if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-#  if (UNIX)
-#	set(CMAKE_INSTALL_PREFIX 
-#	  "/opt/uni10/uni10-${UNI10_VERSION}" 
-#		CACHE PATH "UNI10 install prefix" 
-#  	FORCE
-#	)
-#  endif (UNIX)
-#
-#  if (APPLE)
-#	set(CMAKE_PREFIX_PATH /opt/local ${CMAKE_PREFIX_PATH})
-#  endif (APPLE)
-#endif()
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	set(CMAKE_INSTALL_PREFIX "/usr/local/uni10" 
+		CACHE PATH "UNI10 install prefix" 
+   		FORCE
+	)
+endif()
 
  
 ######################################################################
@@ -194,16 +187,6 @@ install(DIRECTORY src/
 )
 
 ######################################################################
-### INSTALL DOCUMENTATION
-######################################################################
-
-<<<<<<< HEAD
-install(DIRECTORY doc/
-	DESTINATION doc )
-install(FILES INSTALL.txt README.txt DESTINATION .)
-include(CPACK)
-=======
-######################################################################
 ### INSTALL EXAMPLES
 ######################################################################
 
@@ -211,4 +194,11 @@ install(DIRECTORY examples/
 	DESTINATION examples/
 	PATTERN "CMakeLists*" EXCLUDE
 )
->>>>>>> a371d74a72016ec868814261f3cb683bef499350
+######################################################################
+### INSTALL DOCUMENTATION
+######################################################################
+
+install(DIRECTORY doc/
+	DESTINATION doc )
+install(FILES INSTALL.txt README.txt DESTINATION .)
+include(CPACK)
