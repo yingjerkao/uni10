@@ -58,10 +58,15 @@ void orthoRandomize(double* elem, int M, int N){
 	int ldA = M, ldu = M, ldvT = min;
 	double *S = (double*)malloc(min*sizeof(double));
 	double *u = (double*)malloc(ldu*M*sizeof(double));
-	int lwork = 16*N;
-	double *work = (double*)malloc(lwork*sizeof(double));
+	//int lwork = 16*N;
+	int lwork = -1;
+	double worktest;
 	int info;
+	dgesvd((char*)"N", (char*)"S", &M, &N, random, &ldA, S, u, &ldu, elem, &ldvT, &worktest, &lwork, &info);
+	assert(info == 0);
+	lwork = (int)worktest;
 	//tmpT = u*S*vT
+	double *work = (double*)malloc(lwork*sizeof(double));
 	dgesvd((char*)"N", (char*)"S", &M, &N, random, &ldA, S, u, &ldu, elem, &ldvT, work, &lwork, &info);
 	//reshape from Fortran format to C format
 	memcpy(random, elem, eleNum * sizeof(double));
@@ -74,9 +79,13 @@ void orthoRandomize(double* elem, int M, int N){
 void syDiag(double* Kij, int N, double* Eig, double* EigVec){
 	memcpy(EigVec, Kij, N * N * sizeof(double));
 	int ldA = N;
-	int lwork = 4*N;
-	double* work= (double*)malloc(sizeof(double)*lwork);
+	int lwork = -1;
+	double worktest;
 	int info;
+	dsyev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, &worktest, &lwork, &info);
+	assert(info == 0);
+	lwork = (int)worktest;
+	double* work= (double*)malloc(sizeof(double)*lwork);
 	dsyev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, work, &lwork, &info);
 	assert(info == 0);
 	free(work);
@@ -95,7 +104,6 @@ void myDgesvd(double* Mij_ori, int M, int N, double* U, double* S, double* vT){
 	dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, &worktest, &lwork, &info);
 	assert(info == 0);
 	lwork = (int)worktest;
-	printf("lwork = %d\n", lwork);
 	double *work = (double*)malloc(lwork*sizeof(double));
 	dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, work, &lwork, &info);
 	assert(info == 0);
