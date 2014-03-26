@@ -218,7 +218,7 @@ Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens):
 	construct();
 }
 
-void Network::fromfile(const std::string& fname){//names, label_arr, Rnums, order, brakets
+void Network::fromfile(const std::string& fname){//names, name2pos, label_arr, Rnums, order, brakets
 	std::string str;
 	std::ifstream infile;
 	infile.open (fname.c_str());
@@ -292,6 +292,7 @@ void Network::fromfile(const std::string& fname){//names, label_arr, Rnums, orde
 			}
 			break;
 		}
+		name2pos[name] = names.size();
 		names.push_back(name);
 		std::vector<int> labels;
 		int Rnum = -1;
@@ -324,37 +325,25 @@ void Network::fromfile(const std::string& fname){//names, label_arr, Rnums, orde
 		lnum ++;
 	}
 	int numT = names.size() - 1;
+	std::vector<bool> found(numT, false);
 	assert(names[numT] == "TOUT");
 	assert(names.size() > 0);
 	order.assign(numT, 0);
 	if(ord.size() > 0){
 		assert(ord.size() == numT);
-		bool found;
+		std::map<std::string, int>::iterator it;
 		for(int i = 0; i < numT; i++){
-			found = false;
-			for(int j = 0; j < numT; j++){
-				if(ord[i] == names[j]){
-					found = true;
-					order[i] = j;
-					break;
-				}
-			}
-			assert(found);
+			it = name2pos.find(ord[i]);
+			assert(it != name2pos.end());
+			order[i] = it->second;
+			assert(found[order[i]] == false);
+			found[order[i]] = true;
 		}
 	}
 	else{
 		for(int i = 0; i < numT; i++)
 			order[i] = i;
 	}
-	/*
-	std::cout<<"Brakets: ";
-	for(int i = 0; i < brakets.size(); i++)
-		std::cout<<brakets[i]<<", ";
-	std::cout<<"\norder: ";
-	for(int i = 0; i < numT; i++)
-		std::cout<<order[i]<<", ";
-	std::cout<<std::endl;
-	*/
 	infile.close();
 }
 
@@ -409,8 +398,8 @@ void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
 	if((!force) && load)
 		destruct();
-	if(UniT->name.length() > 0)
-		assert(UniT->name == names[idx]);
+	//if(UniT->name.length() > 0)
+	//	assert(UniT->name == names[idx]);
 	assert(UniT->RBondNum == Rnums[idx]);
 
 	if(leafs[idx] != NULL){
@@ -428,6 +417,10 @@ void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 		Node* ndp = new Node(ten);
 		leafs[idx] = ndp;
 	}
+}
+
+void Network::putTensor(std::string name, const UniTensor* UniT, bool force){
+	putTensor(name2pos[name], UniT, force);
 }
 
 void Network::branch(Node* sbj, Node* tar){

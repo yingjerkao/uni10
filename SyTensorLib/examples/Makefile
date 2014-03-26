@@ -5,10 +5,10 @@ OBJ := $(LIB)libtensorF.a
 LINK := -mkl=parallel
 
 all:
-	rm -f egQ1.e
-	make egQ1.e
+	rm -f egU1.e
+	make egU1.e
 
-egQ1.e: egQ1.cpp
+egU1.e: egU1.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 egB1.e: egB1.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)

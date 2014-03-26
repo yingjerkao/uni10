@@ -395,8 +395,10 @@ Matrix UniTensor::printRaw(bool flag)const{
 		Bond cBond = Bond::combine(outs);
 		std::vector<Qnum> rowQ = rBond.Qlist();
 		std::vector<Qnum> colQ = cBond.Qlist();
-		int colNum = rBond.dim();
-		int rowNum = cBond.dim();
+		int rowNum = rBond.dim();
+		int colNum = cBond.dim();
+		//std::cout<<"colNum: " << colNum<<std::endl;
+		//std::cout<<"rowNum: " << rowNum<<std::endl;
 		std::vector<int> idxs(bondNum, 0);
 		
 		if(flag){

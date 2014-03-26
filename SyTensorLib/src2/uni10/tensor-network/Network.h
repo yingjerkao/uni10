@@ -6,6 +6,7 @@
 #include <string>
 #include <assert.h>
 #include <vector>
+#include <map>
 //Bond property
 #include <uni10/data-structure/uni10_struct.h>
 #include <uni10/data-structure/Bond.h>
@@ -17,12 +18,14 @@ class Network {
 		~Network();
 		//Node* add(UniTensor*);
 		void putTensor(int idx, const UniTensor* UniT, bool force=false);	//if force is true, force replace without change the all network
+		void putTensor(std::string name, const UniTensor* UniT, bool force=false);	//if force is true, force replace without change the all network
 		UniTensor launch(const std::string& name="");
 		//void optimize(int num=1);
 		friend std::ostream& operator<< (std::ostream& os, Network& nd);
 	private:
 		void preprint(std::ostream& os, Node* nd, int layer);	//pre-order print
 		std::vector<std::string> names;
+		std::map<std::string, int> name2pos;
 		std::vector< std::vector<int> > label_arr;
 		std::vector< int > Rnums;
 		std::vector<Node*> leafs;
