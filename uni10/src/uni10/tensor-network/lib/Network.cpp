@@ -535,19 +535,19 @@ UniTensor Network::merge(Node* nd){
 		UniTensor lftT = merge(nd->left);
 		if(nd->right->T == NULL){
 			UniTensor rhtT = merge(nd->right);
-			return lftT * rhtT;
+			return contract(lftT, rhtT, true);
 		}
 		else{
-			return lftT * *(nd->right->T);
+			return contract(lftT, *(nd->right->T), true);
 		}
 	}
 	else{
 		if(nd->right->T == NULL){
 			UniTensor rhtT = merge(nd->right);
-			return *(nd->left->T) * rhtT;
+			return contract(*(nd->left->T), rhtT, true);
 		}
 		else{
-			return *(nd->left->T) * *(nd->right->T);
+			return contract(*(nd->left->T), *(nd->right->T), true);
 		}
 	}
 }

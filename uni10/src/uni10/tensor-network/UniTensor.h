@@ -58,14 +58,14 @@ class UniTensor{
 		size_t elemNum()const;
 		size_t bondNum()const;
 		int inBondNum()const;
-
-		void check();
+		static void check();
 		UniTensor& permute(std::vector<int>& newLabels, int inBondNum);
 		UniTensor& permute(int* newLabels, int inBondNum);
 		UniTensor& transpose();
 		void randomize();
 		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
-		friend UniTensor operator* (UniTensor& Ta, UniTensor& Tb);
+		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
+		friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
 		UniTensor& operator*= (UniTensor& Tb);
 		friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
 		UniTensor& operator+= (const UniTensor& Tb);

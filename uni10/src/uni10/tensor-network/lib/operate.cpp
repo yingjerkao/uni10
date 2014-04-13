@@ -17,15 +17,17 @@ UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
 	vecAdd(Tb.elem, Tc.elem, Ta.m_elemNum);
 	return Tc;
 }
-UniTensor& UniTensor::operator*= (UniTensor& Tb){
-	return *this = *this * Tb;
+UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
+	assert(Ta.status & Tb.status & Ta.HAVEELEM);
+	UniTensor cTa = Ta;
+	UniTensor cTb = Tb;
+	return contract(cTa, cTb);
 }
-
-UniTensor operator* (UniTensor& Ta, UniTensor& Tb){
+UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 	assert(Ta.status & Tb.status & Ta.HAVEELEM);
 	if(&Ta == &Tb){
 		UniTensor Ttmp = Tb;
-		return Ta * Ttmp;
+		return contract(Ta, Ttmp, fast);
 	}
 	if(Ta.status & Ta.HAVEBOND && Tb.status & Ta.HAVEBOND){
 		int AbondNum = Ta.bonds.size();
@@ -86,8 +88,10 @@ UniTensor operator* (UniTensor& Ta, UniTensor& Tb){
 			}
 		}
 		Tc.status |= Tc.HAVEELEM;
-		Ta.permute(oldLabelA, oldRnumA);
-		Tb.permute(oldLabelB, oldRnumB);
+		if(!fast){
+			Ta.permute(oldLabelA, oldRnumA);
+			Tb.permute(oldLabelB, oldRnumB);
+		}
 		return Tc;
 	}
 	else if(Ta.status & Ta.HAVEBOND)
@@ -97,6 +101,7 @@ UniTensor operator* (UniTensor& Ta, UniTensor& Tb){
 	else
 		return UniTensor(Ta[0] * Tb[0]);
 }
+
 
 UniTensor& UniTensor::operator*= (double a){
 	assert(status & HAVEELEM);

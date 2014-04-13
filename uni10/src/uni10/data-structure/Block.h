@@ -16,7 +16,7 @@ class Block{
 		friend class UniTensor;
 		friend std::ostream& operator<< (std::ostream& os, const Block& b);
 		friend std::ostream& operator<< (std::ostream& os, UniTensor& UniT);
-		friend UniTensor operator* (UniTensor& Ta, UniTensor& Tb);
+		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 		friend bool operator== (const Block& b1, const Block& b2);
 	private:
 		Qnum qnum;

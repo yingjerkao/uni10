@@ -5,12 +5,26 @@ OBJ := $(LIB)libtensorF.a
 LINK := -mkl=parallel
 
 all:
-	rm -f egU1.e
-	make egU1.e
+	rm -f egN1.e
+	make egN1.e
 
+egN1.e: egN1.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+egM2.e: egM2.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+egM1.e: egM1.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 egU1.e: egU1.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+egU2.e: egU2.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+egU3.e: egU3.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 egB1.e: egB1.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+egQ1.e: egQ1.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+egQ2.e: egQ2.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 scl.e: Scalar.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)

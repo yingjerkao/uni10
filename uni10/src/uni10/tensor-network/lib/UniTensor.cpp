@@ -1,7 +1,6 @@
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
-//using namespace uni10::datatype;
 
 namespace uni10{
 int64_t UniTensor::ELEMNUM = 0;
@@ -12,7 +11,6 @@ int64_t UniTensor::MAXELEMTEN = 0;
 UniTensor::UniTensor(double val): status(0){
 	initUniT();
 	elem[0] = val;
-	COUNTER++;
 }
 
 UniTensor::UniTensor(const UniTensor& UniT):
@@ -29,12 +27,12 @@ UniTensor::UniTensor(const UniTensor& UniT):
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
 	ELEMNUM += m_elemNum;
+	COUNTER++;
 	if(ELEMNUM > MAXELEMNUM)
 		MAXELEMNUM = ELEMNUM;
 	if(m_elemNum > MAXELEMTEN)
 		MAXELEMTEN = m_elemNum;
 	myMemcpy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, status, UniT.status);
-	COUNTER++;
 }
 
 UniTensor& UniTensor::operator=(const UniTensor& UniT){
@@ -77,18 +75,15 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	//cout<<"CONSTRUCTING " << this << std::endl;
 	initUniT();
-	COUNTER++;
 }
 
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	initUniT();
 	addLabel(_labels);
-	COUNTER++;
 }
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	initUniT();
 	addLabel(_labels);
-	COUNTER++;
 }
 
 UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from file
@@ -244,6 +239,7 @@ void UniTensor::initUniT(){
 		it->second.elem = &(elem[it->second.offset]);
 	membzero(elem, sizeof(DOUBLE) * m_elemNum, status);
 	ELEMNUM += m_elemNum;
+	COUNTER++;
 	if(ELEMNUM > MAXELEMNUM)
 		MAXELEMNUM = ELEMNUM;
 	if(m_elemNum > MAXELEMTEN)
