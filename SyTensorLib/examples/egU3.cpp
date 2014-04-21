@@ -43,6 +43,9 @@ int main(){
 	WT.addLabel(label_WT);
 	//std::cout<<W;
 	std::cout<<W * H_U1 * WT;
+	W *= H_U1;
+	W *= WT;
+	std::cout<<W;
 
 	// Write the tensors W and WT out to file
 	W.save("egU3_W");

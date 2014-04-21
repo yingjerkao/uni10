@@ -66,7 +66,7 @@ class UniTensor{
 		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
 		friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
-		UniTensor& operator*= (UniTensor& Tb);
+		UniTensor& operator*= (const UniTensor& Tb);
 		friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
 		UniTensor& operator+= (const UniTensor& Tb);
 		friend UniTensor operator* (const UniTensor& Ta, double a);

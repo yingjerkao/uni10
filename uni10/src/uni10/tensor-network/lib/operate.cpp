@@ -102,6 +102,9 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 		return UniTensor(Ta[0] * Tb[0]);
 }
 
+UniTensor& UniTensor::operator*=(const UniTensor& uT){
+	return *this = *this * uT;
+}
 
 UniTensor& UniTensor::operator*= (double a){
 	assert(status & HAVEELEM);
