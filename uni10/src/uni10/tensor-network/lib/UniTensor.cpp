@@ -571,6 +571,7 @@ void UniTensor::putBlock(const Qnum& qnum, Matrix& mat){
 	else{
 		memcpy(blk.elem, &(mat[0]), blk.Rnum * blk.Cnum * sizeof(DOUBLE));
 	}
+	status |= HAVEELEM;
 }
 
 UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
