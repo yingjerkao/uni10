@@ -16,9 +16,11 @@ enum bondType{
 class UniTensor;
 class Bond {
 	public:
-		Bond(bondType, std::vector<Qnum>& qnums);
+		Bond(bondType _type, int dim);
+		Bond(bondType, const std::vector<Qnum>& qnums);
 		Bond(const Bond& _b);
-		void assign(bondType, std::vector<Qnum>& qnums);
+		void assign(bondType, int dim);
+		void assign(bondType, const std::vector<Qnum>& qnums);
 		bondType type()const;
 		int dim()const;
 		friend class UniTensor;
@@ -33,7 +35,7 @@ class Bond {
 		std::vector<Qnum> Qlist()const;
 		~Bond();
 	private:
-		void setting(std::vector<Qnum>& qnums);
+		void setting(const std::vector<Qnum>& qnums);
 		bondType m_type;
 		int m_dim;
 		std::vector<Qnum>Qnums;	//Quantum numbers

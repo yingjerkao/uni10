@@ -59,12 +59,13 @@ class UniTensor{
 		size_t bondNum()const;
 		int inBondNum()const;
 		static void check();
-		UniTensor& permute(std::vector<int>& newLabels, int inBondNum);
+		UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
 		UniTensor& permute(int* newLabels, int inBondNum);
 		UniTensor& transpose();
 		void randomize();
 		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
-		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
+		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+		friend UniTensor outer(const UniTensor& Ta, const UniTensor& Tb);
 		friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
 		UniTensor& operator*= (const UniTensor& Tb);
 		friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
@@ -72,8 +73,8 @@ class UniTensor{
 		friend UniTensor operator* (const UniTensor& Ta, double a);
 		friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};
 		UniTensor& operator*= (double a);
-		Matrix getBlock(Qnum qnum, bool diag = false)const;
-		void putBlock(const Qnum& qnum, Matrix& mat);
+		Matrix getBlock(const Qnum& qnum, bool diag = false)const;
+		void putBlock(const Qnum& qnum, const Matrix& mat);
 		std::map<Qnum, Matrix> getBlocks()const;
 		Matrix rawElem()const;
 		void printRawElem()const;
@@ -121,5 +122,7 @@ class UniTensor{
 		static const int HAVEELEM = 2;		  /**< A flag for having element assigned */
 		Matrix printRaw(bool flag)const;
 };
+UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
+UniTensor outer(const UniTensor& Ta, const UniTensor& Tb);
 };	/* namespace uni10 */	
 #endif /* SYTENSOR_H */

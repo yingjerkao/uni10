@@ -35,6 +35,5 @@ trc.e: Trace.cpp
 
 
 
-
 clean:
 	rm -f *.o *.e asd

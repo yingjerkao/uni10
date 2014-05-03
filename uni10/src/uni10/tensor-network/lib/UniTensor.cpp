@@ -533,7 +533,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	return os;
 }
 
-Matrix UniTensor::getBlock(Qnum qnum, bool diag)const{
+Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
 	assert(blocks.find(qnum) != blocks.end());
 	std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
 	if(diag){
@@ -558,18 +558,19 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
 	return mats;
 }
 
-void UniTensor::putBlock(const Qnum& qnum, Matrix& mat){
+void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
 	assert(blocks.find(qnum) != blocks.end());
 	Block& blk = blocks[qnum];
 	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
+	double* elem = mat.elem();
 	if(mat.isDiag()){
 		memset(blk.elem, 0, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
 		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
 		for(int i = 0; i < elemNum; i++)
-			blk.elem[i * blk.Cnum + i] = mat[i];
+			blk.elem[i * blk.Cnum + i] = elem[i];
 	}
 	else{
-		memcpy(blk.elem, &(mat[0]), blk.Rnum * blk.Cnum * sizeof(DOUBLE));
+		memcpy(blk.elem, elem, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
 	}
 	status |= HAVEELEM;
 }
