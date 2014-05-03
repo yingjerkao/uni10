@@ -39,6 +39,7 @@ class UniTensor{
 		UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
 		UniTensor(const UniTensor& UniT);
 		UniTensor& operator=(const UniTensor& UniT);
+		UniTensor& assign(const std::vector<Bond>& _bond);
 		~UniTensor();
 		void addLabel(const std::vector<int>& newLabels);
 		void addLabel(int* newLabels);
