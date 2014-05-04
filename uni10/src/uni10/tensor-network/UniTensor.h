@@ -46,8 +46,8 @@ class UniTensor{
 		void addRawElem(double* rawElem);
 		double at(std::vector<int>idxs)const;
 		double& operator[](size_t idx);
-    	std::vector<Qnum> blockQnum()const;
-    	Qnum blockQnum(int idx)const;
+    	        std::vector<Qnum> blockQnum()const;
+    	        Qnum blockQnum(int idx)const;
 		size_t blockNum()const;
 		void save(const std::string& fname);
 		std::vector<int> label()const;
