@@ -191,8 +191,8 @@ Network::Network(const std::string& fname): root(NULL), load(false), times(0), t
 	swapflags.assign(Tnum, false);
 	std::vector<_Swap> swaps;
 	swaps_arr.assign(Tnum, swaps);
-	leafs.assign(Tnum, NULL);
-	tensors.assign(Tnum, NULL);
+	leafs.assign(Tnum, (Node*)NULL);
+	tensors.assign(Tnum, (UniTensor*)NULL);
 }
 
 Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
@@ -202,8 +202,8 @@ Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens):
 	swapflags.assign(Tnum, false);
 	std::vector<_Swap> swaps;
 	swaps_arr.assign(Tnum, swaps);
-	leafs.assign(Tnum, NULL);
-	tensors.assign(Tnum, NULL);
+	leafs.assign(Tnum, (Node*)NULL);
+	tensors.assign(Tnum, (UniTensor*)NULL);
 	for(int i = 0; i < Tnum; i++){
 		if(tens[i]->name.length() > 0)
 			assert(tens[i]->name == names[i]);

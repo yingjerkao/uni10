@@ -1,7 +1,13 @@
 #include <uni10/data-structure/Bond.h>
 namespace uni10{
 //namespace datatype{
-Bond::Bond(bondType _type, std::vector<Qnum>& qnums) : m_type(_type){
+
+Bond::Bond(bondType _type, int dim) : m_type(_type){
+	Qnum q0(0);
+	std::vector<Qnum> qnums(dim, q0);
+	setting(qnums);
+}
+Bond::Bond(bondType _type, const std::vector<Qnum>& qnums) : m_type(_type){
 	setting(qnums);
 }
 
@@ -13,7 +19,17 @@ bondType Bond::type()const{
 int Bond::dim()const{
 	return m_dim;
 }
-void Bond::assign(bondType _type, std::vector<Qnum>& qnums){
+void Bond::assign(bondType _type, int dim){
+	m_type = _type;
+	Qnums.clear();
+	Qdegs.clear();
+	offsets.clear();
+	Qnum q0(0);
+	std::vector<Qnum> qnums(dim, q0);
+	setting(qnums);
+}
+
+void Bond::assign(bondType _type, const std::vector<Qnum>& qnums){
 	m_type = _type;
 	Qnums.clear();
 	Qdegs.clear();
@@ -21,7 +37,7 @@ void Bond::assign(bondType _type, std::vector<Qnum>& qnums){
 	setting(qnums);
 }
 
-void Bond::setting(std::vector<Qnum>& qnums){
+void Bond::setting(const std::vector<Qnum>& qnums){
 	assert(qnums.size() > 0);
 	std::map<Qnum, bool> mark;
 	int cnt = 0;
@@ -36,20 +52,6 @@ void Bond::setting(std::vector<Qnum>& qnums){
 		else
 			Qdegs[cnt - 1]++;
 		m_dim++;
-		/*
-		if(mark.find(qnums[i]) == mark.end()){
-			mark[ qnums[i] ] = true;
-			Qnums.push_back(qnums[i]);
-			Qdegs.push_back(1);
-			offsets.push_back(dim);
-			cnt++;
-		}
-		else{
-			assert(qnums[i - 1] == qnums[i]);
-			Qdegs[cnt - 1]++;
-		}
-		dim++;
-		*/
 	}
 }
 

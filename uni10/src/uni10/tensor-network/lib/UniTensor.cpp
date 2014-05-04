@@ -72,6 +72,11 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){
 	return *this;
 }
 
+UniTensor& UniTensor::assign(const std::vector<Bond>& _bond){
+	UniTensor T(_bond);
+	return (*this = T);
+}
+
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	//cout<<"CONSTRUCTING " << this << std::endl;
 	initUniT();
@@ -133,6 +138,46 @@ UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from fi
 	}
 	fclose(fp);
 }
+
+void UniTensor::initUniT(){
+	if(bonds.size()){
+		grouping();
+		assert(blocks.size() > 0); //No block in Tensor, Error!
+		Block blk = blocks.rbegin()->second;
+		m_elemNum = blk.offset + (blk.Rnum * blk.Cnum);
+		labels.assign(bonds.size(), 0);
+		for(int b = 0; b < bonds.size(); b++)
+			labels[b] = b;
+		status |= HAVEBOND;
+	}
+	else{
+		Qnum q0(0);
+		Block blk;
+		blk.Rnum = 1;
+		blk.Cnum = 1;
+		blk.qnum = q0;
+		blk.offset = 0;
+		blocks[q0] = blk;
+		RBondNum = 0;
+		RQdim = 0;
+		CQdim = 0;
+		m_elemNum = 1;
+		status |= HAVEELEM;
+	}
+	elem = NULL;
+	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
+	std::map<Qnum,Block>::iterator it; 
+	for ( it = blocks.begin() ; it != blocks.end(); it++ )
+		it->second.elem = &(elem[it->second.offset]);
+	membzero(elem, sizeof(DOUBLE) * m_elemNum, status);
+	ELEMNUM += m_elemNum;
+	COUNTER++;
+	if(ELEMNUM > MAXELEMNUM)
+		MAXELEMNUM = ELEMNUM;
+	if(m_elemNum > MAXELEMTEN)
+		MAXELEMTEN = m_elemNum;
+}
+
 
 UniTensor::~UniTensor(){
 	//cout<<"DESTRUCTING " << this << std::endl;
@@ -205,45 +250,6 @@ UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
 	std::vector<int> _labels(newLabels, newLabels + bonds.size());
 	this->permute(_labels, rowBondNum);
 	return *this;
-}
-
-void UniTensor::initUniT(){
-	if(bonds.size()){
-		grouping();
-		assert(blocks.size() > 0); //No block in Tensor, Error!
-		Block blk = blocks.rbegin()->second;
-		m_elemNum = blk.offset + (blk.Rnum * blk.Cnum);
-		labels.assign(bonds.size(), 0);
-		for(int b = 0; b < bonds.size(); b++)
-			labels[b] = b;
-		status |= HAVEBOND;
-	}
-	else{
-		Qnum q0(0);
-		Block blk;
-		blk.Rnum = 1;
-		blk.Cnum = 1;
-		blk.qnum = q0;
-		blk.offset = 0;
-		blocks[q0] = blk;
-		RBondNum = 0;
-		RQdim = 0;
-		CQdim = 0;
-		m_elemNum = 1;
-		status |= HAVEELEM;
-	}
-	elem = NULL;
-	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
-	std::map<Qnum,Block>::iterator it; 
-	for ( it = blocks.begin() ; it != blocks.end(); it++ )
-		it->second.elem = &(elem[it->second.offset]);
-	membzero(elem, sizeof(DOUBLE) * m_elemNum, status);
-	ELEMNUM += m_elemNum;
-	COUNTER++;
-	if(ELEMNUM > MAXELEMNUM)
-		MAXELEMNUM = ELEMNUM;
-	if(m_elemNum > MAXELEMTEN)
-		MAXELEMTEN = m_elemNum;
 }
 
 void UniTensor::save(const std::string& fname){
@@ -533,7 +539,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	return os;
 }
 
-Matrix UniTensor::getBlock(Qnum qnum, bool diag)const{
+Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
 	assert(blocks.find(qnum) != blocks.end());
 	std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
 	if(diag){
@@ -558,18 +564,19 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
 	return mats;
 }
 
-void UniTensor::putBlock(const Qnum& qnum, Matrix& mat){
+void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
 	assert(blocks.find(qnum) != blocks.end());
 	Block& blk = blocks[qnum];
 	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
+	double* elem = mat.elem();
 	if(mat.isDiag()){
 		memset(blk.elem, 0, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
 		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
 		for(int i = 0; i < elemNum; i++)
-			blk.elem[i * blk.Cnum + i] = mat[i];
+			blk.elem[i * blk.Cnum + i] = elem[i];
 	}
 	else{
-		memcpy(blk.elem, &(mat[0]), blk.Rnum * blk.Cnum * sizeof(DOUBLE));
+		memcpy(blk.elem, elem, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
 	}
 	status |= HAVEELEM;
 }

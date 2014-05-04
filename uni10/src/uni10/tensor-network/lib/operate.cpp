@@ -21,9 +21,9 @@ UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
 	assert(Ta.status & Tb.status & Ta.HAVEELEM);
 	UniTensor cTa = Ta;
 	UniTensor cTb = Tb;
-	return contract(cTa, cTb,false);
+	return contract(cTa, cTb, true);
 }
-UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
+UniTensor uni10::contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 	assert(Ta.status & Tb.status & Ta.HAVEELEM);
 	if(&Ta == &Tb){
 		UniTensor Ttmp = Tb;
@@ -65,6 +65,8 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 				newLabelC.push_back(Tb.labels[b]);
 			}
 		int conBond = interLabel.size();
+		
+
 		Ta.permute(newLabelA, AbondNum - conBond);
 		Tb.permute(newLabelB, conBond);
 		std::vector<Bond> cBonds;
@@ -88,6 +90,28 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 			}
 		}
 		Tc.status |= Tc.HAVEELEM;
+
+		if(conBond == 0){	//Outer product
+			int idx = 0;
+			for(int i = 0; i < oldRnumA; i++){
+				newLabelC[idx] = oldLabelA[i];
+				idx++;
+			}
+			for(int i = 0; i < oldRnumB; i++){
+				newLabelC[idx] = oldLabelB[i];
+				idx++;
+			}
+			for(int i = oldRnumA; i < AbondNum; i++){
+				newLabelC[idx] = oldLabelA[i];
+				idx++;
+			}
+			for(int i = oldRnumB; i < BbondNum; i++){
+				newLabelC[idx] = oldLabelB[i];
+				idx++;
+			}
+			Tc.permute(newLabelC, oldRnumA + oldRnumB);
+		}
+
 		if(!fast){
 			Ta.permute(oldLabelA, oldRnumA);
 			Tb.permute(oldLabelB, oldRnumB);
@@ -117,5 +141,27 @@ UniTensor operator*(const UniTensor& Ta, double a){
 	UniTensor Tb(Ta);
 	vecScal(a, Tb.elem, Tb.m_elemNum);
 	return Tb;
+}
+UniTensor outer(const UniTensor & Ta, const UniTensor& Tb){
+	UniTensor T1 = Ta;
+	UniTensor T2 = Tb;
+	int label1[T1.bondNum()];
+	int label2[T2.bondNum()];
+	for(int i = 0; i < T1.bondNum(); i++){
+		if(i < T1.inBondNum())
+			label1[i] = i;
+		else
+			label1[i] = T2.inBondNum() + i;
+	}
+	for(int i = 0; i < T2.bondNum(); i++){
+		if(i < T2.inBondNum())
+			label2[i] = i + T1.inBondNum();
+		else
+			label2[i] = i + T1.bondNum();
+	}
+
+	T1.addLabel(label1);
+	T2.addLabel(label2);
+	return contract(T1, T2, true);
 }
 };	/* namespace uni10 */	

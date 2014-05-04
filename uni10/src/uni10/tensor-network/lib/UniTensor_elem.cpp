@@ -195,7 +195,7 @@ void UniTensor::addGate(std::vector<_Swap> swaps){
 	}
 }
 
-UniTensor& UniTensor::permute(std::vector<int>& newLabels, int rowBondNum){
+UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum){
 	assert(status & HAVEBOND);
 	//assert(status & HAVELABEL);
 	assert(labels.size() == newLabels.size());

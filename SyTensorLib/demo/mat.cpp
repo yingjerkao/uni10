@@ -47,7 +47,8 @@ int main(){
 	cout<< mat1;
 
 	vector<Matrix_t> outs = mat.diagonalize();
-	cout << mat;
+	cout << outs[0] << endl;
+	cout << outs[1] << endl;
 
 	//-------
 	Matrix_t Msvd(4, 5);
