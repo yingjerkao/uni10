@@ -29,8 +29,8 @@ class Bond {
 		friend bool operator== (const Bond& b1, const Bond& b2);
 		void change(bondType tp);
 		Bond& combine(const Bond bd);
-		static Bond combine(bondType tp, const std::vector<Bond>& bds);
-		static Bond combine(const std::vector<Bond>& bds);
+		friend Bond combine(bondType tp, const std::vector<Bond>& bds);
+		friend Bond combine(const std::vector<Bond>& bds);
 		std::map<Qnum, int> degeneracy()const;
 		std::vector<Qnum> Qlist()const;
 		~Bond();
@@ -42,5 +42,7 @@ class Bond {
 		std::vector<int>Qdegs;	//Degeneracy in each quantum sector
 		std::vector<int>offsets;	
 };
+Bond combine(bondType tp, const std::vector<Bond>& bds);
+Bond combine(const std::vector<Bond>& bds);
 };
 #endif /* BOND_H */

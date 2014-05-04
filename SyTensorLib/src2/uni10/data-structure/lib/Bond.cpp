@@ -128,7 +128,7 @@ Bond& Bond::combine(Bond bd){
 	return *this;
 }
 
-Bond Bond::combine(bondType tp, const std::vector<Bond>& bds){
+Bond combine(bondType tp, const std::vector<Bond>& bds){
 	assert(bds.size() > 0);
 	if(bds.size() > 1){
 	int bd_num = bds.size();
@@ -158,7 +158,7 @@ Bond Bond::combine(bondType tp, const std::vector<Bond>& bds){
 		return bds[0];
 	}
 }
-Bond Bond::combine(const std::vector<Bond>& bds){
+Bond combine(const std::vector<Bond>& bds){
 	return combine(bds[0].m_type, bds);
 }
 };	/* namespace uni10 */
