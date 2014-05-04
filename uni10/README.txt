@@ -1,7 +1,7 @@
 Welcome to Uni10, the Universal Tensor Network Library. 
 
-Uni10 is programmed in C++ and designed with the applications to the tensor 
-network algorithms, such TEBD, PEPS and MERA in mind. We hope the availability 
+Uni10 is programmed in C++ and geared toward applications to the tensor 
+network algorithms, such TEBD, PEPS and MERA. We hope the availability 
 of Uni10 will make future implementation of tensor network algorithms much 
 easier and less error prone.
 

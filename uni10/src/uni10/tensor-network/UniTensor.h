@@ -45,8 +45,8 @@ class UniTensor{
 		void addRawElem(double* rawElem);
 		double at(std::vector<int>idxs)const;
 		double& operator[](size_t idx);
-    	std::vector<Qnum> blockQnum()const;
-    	Qnum blockQnum(int idx)const;
+    	        std::vector<Qnum> blockQnum()const;
+    	        Qnum blockQnum(int idx)const;
 		size_t blockNum()const;
 		void save(const std::string& fname);
 		std::vector<int> label()const;
@@ -64,7 +64,7 @@ class UniTensor{
 		UniTensor& transpose();
 		void randomize();
 		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
-		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
+		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast );
 		friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
 		UniTensor& operator*= (const UniTensor& Tb);
 		friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);

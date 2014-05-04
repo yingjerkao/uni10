@@ -21,7 +21,7 @@ UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
 	assert(Ta.status & Tb.status & Ta.HAVEELEM);
 	UniTensor cTa = Ta;
 	UniTensor cTb = Tb;
-	return contract(cTa, cTb);
+	return contract(cTa, cTb,false);
 }
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 	assert(Ta.status & Tb.status & Ta.HAVEELEM);
