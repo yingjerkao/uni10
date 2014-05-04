@@ -393,8 +393,8 @@ Matrix UniTensor::printRaw(bool flag)const{
 			else
 				outs.push_back(*it);
 		}
-		Bond rBond = Bond::combine(ins);
-		Bond cBond = Bond::combine(outs);
+		Bond rBond = combine(ins);
+		Bond cBond = combine(outs);
 		std::vector<Qnum> rowQ = rBond.Qlist();
 		std::vector<Qnum> colQ = cBond.Qlist();
 		int rowNum = rBond.dim();
@@ -619,7 +619,7 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 				tmpBonds.push_back(bonds[picked[p]]);
 			if(bonds[picked[0]].type() == BD_IN)
 				RBnum += picked.size();
-			newBonds.push_back(Bond::combine(tmpBonds));
+			newBonds.push_back(combine(tmpBonds));
 			reduced_labels[enc_r] = labels[l];
 			enc_r++;
 		}
