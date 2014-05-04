@@ -1,0 +1,2 @@
+swig -c++ -python pyUni10.i
+gcc -fpic -I~/TensorNetwork/SyTensorLib/src2 -c pyUni10_wrap.cxx -I/usr/include/python2.4/
