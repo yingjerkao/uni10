@@ -4,12 +4,16 @@
   #include <sstream>
   #include <uni10/datatype/Qnum.h>
   #include <uni10/data-structure/Bond.h>
+  #include <uni10/tensor-network/Matrix.h>
 %}
 %include "std_vector.i"
+%include "std_map.i"
 namespace std{
-  %template(IntVector) vector<int>;
+  %template(int_arr) vector<int>;
+  %template(double_arr) vector<double>;
   %template(Qnum_arr) vector<uni10::Qnum>;
   %template(Bond_arr) vector<uni10::Bond>;
+  %template(Qnum2int) map<uni10::Qnum, int>;
 }
 
 %inline{
@@ -103,6 +107,22 @@ class Bond {
       friend std::ostream& operator<< (std::ostream& os, const Bond& b);
       friend bool operator== (const Bond& b1, const Bond& b2);
       */
+      %extend {
+          bool __eq__(const Bond& b2){
+              return (*self) == b2;
+          }
+          Bond __copy__(){
+              return (*self);
+          }
+          Bond cp(){
+              return (*self);
+          }
+          const char* __str__() {
+              std::ostringstream out;
+              out << *self;
+              return out.str().c_str();
+          }
+      }
       void change(bondType tp);
       Bond& combine(const Bond bd);
       /*
@@ -115,7 +135,64 @@ class Bond {
 };
 extern Bond combine(bondType tp, const std::vector<Bond>& bds);
 extern Bond combine(const std::vector<Bond>& bds);
+/* End of Bond */
 
-}
+/* Matrix */
+class Matrix {
+    public:
+        Matrix(int _Rnum, int _Cnum, bool _diag=false);
+        Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag=false);
+        Matrix(const Matrix& _m);
+        ~Matrix();
+        int row()const;
+        int col()const;
+        bool isDiag()const{return diag;};
+        size_t elemNum()const;
+        /*Matrix& operator=(const Matrix& _m);*/
+        /*Matrix& operator*= (const Matrix& Mb);*/
+        std::vector<Matrix> diagonalize();
+        std::vector<Matrix> svd();
+        void addElem(double* elem);
+        void randomize();
+        void orthoRand();
+        void set_zero();
+        void transpose();
+        double trace();
+        void save(const std::string& fname);
+        void load(const std::string& fname);
+        /*
+        friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
+        friend Matrix operator* (const Matrix& Ma, const Matrix& Mb);
+        friend Matrix operator*(const Matrix& Ma, double a);
+        friend Matrix operator*(double a, const Matrix& Ma){return Ma * a;};
+        friend bool operator== (const Matrix& m1, const Matrix& m2);
+        friend Matrix operator+(const Matrix& Ma, const Matrix& Mb);
+        */
+      %extend {
+          bool __eq__(const Matrix& m2){
+              return (*self) == m2;
+          }
+          Matrix __copy__(){
+              return (*self);
+          }
+          Matrix cp(){
+              return (*self);
+          }
+          const char* __str__() {
+              std::ostringstream out;
+              out << *self;
+              return out.str().c_str();
+          }
+      }
+        Matrix& operator*= (double a);
+        Matrix& operator+= (const Matrix& Mb);
+        /*double& operator[](size_t idx);*/
+        double* elem()const;
+        double& at(int i, int j);
+};
+
+/* End of Matrix */
+
+};
 
 

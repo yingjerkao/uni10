@@ -5,6 +5,7 @@ UNI10_ROOT := uni10
 SRC := .
 BIN := bin
 OPT := -std=c++0x -fPIC
+#OPT := -fPIC
 all: $(OBJ) libtensorF.a
 
 

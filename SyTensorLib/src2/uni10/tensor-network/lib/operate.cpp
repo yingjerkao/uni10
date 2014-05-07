@@ -23,7 +23,7 @@ UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
 	UniTensor cTb = Tb;
 	return contract(cTa, cTb, true);
 }
-UniTensor uni10::contract(UniTensor& Ta, UniTensor& Tb, bool fast){
+UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 	assert(Ta.status & Tb.status & Ta.HAVEELEM);
 	if(&Ta == &Tb){
 		UniTensor Ttmp = Tb;
