@@ -1,18 +1,29 @@
-/*****************************************************************************
+/****************************************************************************
+*  @file CMakeLists.txt
+*  @license
+*    Universal Tensor Network Library
+*    Copyright (c) 2013-2014
+*    Yun-Da Hsieh, Tama Ma, Pochung Chen,  and Ying-Jer Kao 
 *
-* Universal Tensor Network Library
+*    This file is part of Uni10, the Universal Tensor Network Library.
 *
-* Copyright (C) 2013-2014 
+*    Uni10 is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
 *
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT. IN NO EVENT 
-* SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE 
-* FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE, 
-* ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
-* DEALINGS IN THE SOFTWARE.
+*    Uni10 is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
 *
-* Please direct any enquiry to <development@uni10.org>
+*    You should have received a copy of the GNU General Public License
+*    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+*  @endlicense
+*  @brief Uni10 general header file
+*  @author Yun-Da Hsieh, Tama Ma
+*  @date 2014-05-06
+*  @since 0.1.0
 *
 *****************************************************************************/
 

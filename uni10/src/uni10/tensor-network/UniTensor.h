@@ -1,14 +1,33 @@
-/**
- * @file UniTensor.h
- * @author Yun-Da Hsieh
- * @date 28 Aug 2013
- * @brief This is the header file for the class of symmetry tensor "UniTensor".
- *
- * @see http://www.stack.nl/~dimitri/doxygen/docblocks.html
- * @see http://www.stack.nl/~dimitri/doxygen/commands.html
- */
-#ifndef SYTENSOR_H
-#define SYTENSOR_H
+/****************************************************************************
+*  @file CMakeLists.txt
+*  @license
+*    Universal Tensor Network Library
+*    Copyright (c) 2013-2014
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*
+*    This file is part of Uni10, the Universal Tensor Network Library.
+*
+*    Uni10 is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    Uni10 is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
+*
+*    You should have received a copy of the GNU General Public License
+*    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+*  @endlicense
+*  @brief Header file for UniTensor class
+*  @author Yun-Da Hsieh
+*  @date 2014-05-06
+*  @since 0.1.0
+*
+*****************************************************************************/
+#ifndef UNITENSOR_H
+#define UNITENSOR_H
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
@@ -126,4 +145,4 @@ class UniTensor{
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
 UniTensor outer(const UniTensor& Ta, const UniTensor& Tb);
 };	/* namespace uni10 */	
-#endif /* SYTENSOR_H */
+#endif /* UNITENSOR_H */
