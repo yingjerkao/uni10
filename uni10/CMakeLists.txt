@@ -1,12 +1,38 @@
-#  Copyright Uni10 2013 - 2014.
-#  Distributed under the Boost Software License, Version 1.0.
-#      (See accompanying file LICENSE_1_0.txt or copy at
-#          http://www.boost.org/LICENSE_1_0.txt)
+###
+#  @file CMakeLists.txt
+#  @license
+#    Copyright (c) 2013-2014
+#    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+#
+#    This file is part of Uni10.
+#
+#    Uni10 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Uni10 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+#  @endlicense
+#  @brief Main specification file for CMake
+#  @author Ying-Jer Kao
+#  @date 2014-05-06
+#  @since 0.1.0
+###
+
+
 ######################################################################
 ### CMAKE VERSION
 ######################################################################
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+
 
 ######################################################################
 # Version information

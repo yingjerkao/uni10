@@ -1,0 +1,8 @@
+Uni10 Release Notes
+2014-03-15 
+version 0.1.0a
+alpha release
+
+2014-05-20 
+version 0.1.0b
+beta release
