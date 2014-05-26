@@ -1,8 +1,9 @@
 Uni10 Release Notes
-2014-03-15 
+
+2014-03-15 Ying-Jer Kao <yjkao@phys.ntu.edu.tw>
 version 0.1.0a
 alpha release
 
-2014-05-20 
+2014-05-20 Ying-Jer Kao <yjkao@phys.ntu.edu.tw>
 version 0.1.0b
 beta release

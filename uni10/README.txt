@@ -15,6 +15,5 @@ Sukhbinder Singh (Macquarie University)
 
 Known issues:
 
-1. Builds on Mac OS X give wrong results.
-2. Failure to find MKL in some cases.
+1. Failure to find MKL in some cases.
 

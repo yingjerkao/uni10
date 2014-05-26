@@ -14,4 +14,4 @@ endforeach()
 ######################################################################
 ### BUILD EXAMPLES
 ######################################################################
-install(TARGETS ${EXAMPLES} DESTINATION examples COMPONENT executables)
+install(TARGETS ${EXAMPLES} DESTINATION examples/bin COMPONENT executables)
