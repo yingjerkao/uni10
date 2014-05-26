@@ -10,9 +10,13 @@ easier and less error prone.
 Developers:
 
 Yun-Da Hsieh (National Taiwan University)
+
 Ying-Jer Kao (National Taiwan University)
+
 Pochung Chen (National Tsing-Hua University)
+
 Tama Ma (Singapore National University)
+
 Sukhbinder Singh (Macquarie University)
 
 Known issues:
