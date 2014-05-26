@@ -1,5 +1,5 @@
 /****************************************************************************
-*  @file CMakeLists.txt
+*  @file uni10.hpp
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014

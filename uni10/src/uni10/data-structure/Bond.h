@@ -1,51 +1,5 @@
-#ifndef BOND_H
-#define BOND_H
-
-#include <iostream>
-#include <iomanip>
-#include <assert.h>
-#include <vector>
-#include <map>
-#include <uni10/datatype.hpp>
-
-namespace uni10{
-enum bondType{
-	BD_IN = 1,
-	BD_OUT = -1
-};
-class UniTensor;
-class Bond {
-	public:
-		Bond(bondType _type, int dim);
-		Bond(bondType, const std::vector<Qnum>& qnums);
-		Bond(const Bond& _b);
-		void assign(bondType, int dim);
-		void assign(bondType, const std::vector<Qnum>& qnums);
-		bondType type()const;
-		int dim()const;
-		friend class UniTensor;
-		friend class Node;
-		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
-		friend bool operator== (const Bond& b1, const Bond& b2);
-		void change(bondType tp);
-		Bond& combine(const Bond bd);
-		static Bond combine(bondType tp, const std::vector<Bond>& bds);
-		static Bond combine(const std::vector<Bond>& bds);
-		std::map<Qnum, int> degeneracy()const;
-		std::vector<Qnum> Qlist()const;
-		~Bond();
-	private:
-		void setting(const std::vector<Qnum>& qnums);
-		bondType m_type;
-		int m_dim;
-		std::vector<Qnum>Qnums;	//Quantum numbers
-		std::vector<int>Qdegs;	//Degeneracy in each quantum sector
-		std::vector<int>offsets;	
-};
-};
-#endif /* BOND_H */
 /****************************************************************************
-*  @file CMakeLists.txt
+*  @file Bond.h
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
@@ -66,8 +20,8 @@ class Bond {
 *    You should have received a copy of the GNU General Public License
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
-*  @brief Main specification file for CMake
-*  @author Ying-Jer Kao
+*  @brief Declaration file for Bond Class
+*  @author Yun-Da Hsieh
 *  @date 2014-05-06
 *  @since 0.1.0
 *

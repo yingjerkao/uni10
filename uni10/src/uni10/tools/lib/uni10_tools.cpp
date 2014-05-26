@@ -1,5 +1,5 @@
 /****************************************************************************
-*  @file CMakeLists.txt
+*  @file uni10_tools.cpp
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
@@ -20,7 +20,7 @@
 *    You should have received a copy of the GNU General Public License
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
-*  @brief Main specification file for CMake
+*  @brief Implementation file for useful functions
 *  @author Ying-Jer Kao
 *  @date 2014-05-06
 *  @since 0.1.0

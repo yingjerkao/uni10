@@ -1,5 +1,5 @@
 /****************************************************************************
-*  @file CMakeLists.txt
+*  @file Block.cpp
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
@@ -20,8 +20,8 @@
 *    You should have received a copy of the GNU General Public License
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
-*  @brief Main specification file for CMake
-*  @author Ying-Jer Kao
+*  @brief Implementation file of Block class
+*  @author Yun-Da Hsieh 
 *  @date 2014-05-06
 *  @since 0.1.0
 *
