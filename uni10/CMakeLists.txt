@@ -64,7 +64,8 @@ endif()
 ### CMAKE BUILD TYPE
 ######################################################################
 
-set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 
 
 
