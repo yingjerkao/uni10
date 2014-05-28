@@ -15,6 +15,7 @@ class Matrix {
 		Matrix(int _Rnum, int _Cnum, bool _diag=false);
 		Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag=false);
 		Matrix(const Matrix& _m);
+		Matrix();
 		~Matrix();
 		int row()const;
 		int col()const;
@@ -24,14 +25,17 @@ class Matrix {
 		friend Matrix operator* (const Matrix& Ma, const Matrix& Mb);
 		Matrix& operator*= (const Matrix& Mb);
 		friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
-		std::vector<Matrix> diagonalize();
-		std::vector<Matrix> svd();
+		std::vector<Matrix> diagonalize()const;
+		std::vector<Matrix> svd()const;
+		friend Matrix takeExp(double a, const Matrix& mat);
 		void addElem(double* elem);
 		void randomize();
 		void orthoRand();
 		void set_zero();
 		void transpose();
 		double trace();
+		double norm();
+		double sum();
 		void save(const std::string& fname);
 		void load(const std::string& fname);
 		friend Matrix operator*(const Matrix& Ma, double a);
@@ -50,6 +54,7 @@ class Matrix {
 		size_t m_elemNum;
 		bool diag;
 };
+Matrix takeExp(double a, const Matrix& mat);
 
 };	/* namespace uni10 */	
 #endif /* MATRIX_H */

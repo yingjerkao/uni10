@@ -143,6 +143,7 @@ endif (UNIX)
 
 add_subdirectory(src)
 add_subdirectory(examples)
+add_subdirectory(Swig)
 ######################################################################
 ### ADD LIBRARY
 ######################################################################

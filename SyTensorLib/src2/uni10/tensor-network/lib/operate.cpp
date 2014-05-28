@@ -142,7 +142,7 @@ UniTensor operator*(const UniTensor& Ta, double a){
 	vecScal(a, Tb.elem, Tb.m_elemNum);
 	return Tb;
 }
-UniTensor outer(const UniTensor & Ta, const UniTensor& Tb){
+UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
 	UniTensor T1 = Ta;
 	UniTensor T2 = Tb;
 	int label1[T1.bondNum()];
