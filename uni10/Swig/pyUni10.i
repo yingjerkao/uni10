@@ -14,6 +14,7 @@ namespace std{
   %template(Qnum_arr) vector<uni10::Qnum>;
   %template(Bond_arr) vector<uni10::Bond>;
   %template(Qnum2int) map<uni10::Qnum, int>;
+  %template(Matrix_arr) vector<uni10::Matrix>;
 }
 
 %inline{
@@ -138,6 +139,7 @@ extern Bond combine(const std::vector<Bond>& bds);
 /* End of Bond */
 
 /* Matrix */
+%nodefaultctor Matrix;
 class Matrix {
     public:
         Matrix(int _Rnum, int _Cnum, bool _diag=false);
