@@ -245,6 +245,10 @@ Bond UniTensor::bond(int idx)const{
 	return bonds[idx];
 }
 
+UniTensor& UniTensor::permute(int rowBondNum){
+	this->permute(labels, rowBondNum);
+	return *this;
+}
 UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
 	assert(status & HAVEBOND);
 	std::vector<int> _labels(newLabels, newLabels + bonds.size());
@@ -531,7 +535,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 		if((UniT.status & UniT.HAVEELEM) && printElem)
 			os<<it->second;
 		else
-			os<<std::endl<<std::endl;
+			os<<it->second.row() << " x "<<it->second.col()<<": "<<it->second.elemNum()<<std::endl<<std::endl;
 
 	}   
 	os << "Total elemNum: "<<UniT.m_elemNum<<std::endl;
@@ -540,8 +544,9 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 }
 
 Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
-	assert(blocks.find(qnum) != blocks.end());
 	std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
+	if(it == blocks.end())
+		return Matrix(0, 0);
 	if(diag){
 		Matrix mat(it->second.Rnum, it->second.Cnum, true);
 		int elemNum = it->second.Rnum < it->second.Cnum ? it->second.Rnum : it->second.Cnum;
