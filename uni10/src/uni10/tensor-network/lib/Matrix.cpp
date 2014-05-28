@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
@@ -24,6 +25,8 @@ std::ostream& operator<< (std::ostream& os, const Matrix& m){
 	return os;
 }
 
+Matrix::Matrix(): Rnum(0), Cnum(0), m_elemNum(0), diag(false), m_elem(NULL){
+}
 Matrix::Matrix(const Matrix& _m): Rnum(_m.Rnum), Cnum(_m.Cnum), m_elemNum(_m.m_elemNum), diag(_m.diag), m_elem(NULL){
 	if(m_elemNum){
 		m_elem = (double*)malloc(m_elemNum * sizeof(double));
@@ -126,7 +129,7 @@ void Matrix::addElem(double* elem){
 	memcpy(m_elem, elem, m_elemNum * sizeof(double));
 }
 
-std::vector<Matrix> Matrix::diagonalize(){
+std::vector<Matrix> Matrix::diagonalize()const{
 	assert(Rnum == Cnum);
 	assert(!diag);
 	std::vector<Matrix> outs;
@@ -138,7 +141,7 @@ std::vector<Matrix> Matrix::diagonalize(){
 	return outs;
 }
 
-std::vector<Matrix> Matrix::svd(){
+std::vector<Matrix> Matrix::svd() const{
 	assert(!diag);
 	std::vector<Matrix> outs;
 	int min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
@@ -206,6 +209,18 @@ void Matrix::transpose(){
 	Rnum = Cnum;
 	Cnum = tmp;
 }
+double Matrix::norm(){
+	double nm = 0;
+	for(int i = 0; i < m_elemNum; i++)
+		nm += m_elem[i] * m_elem[i];
+	return sqrt(nm);
+}
+double Matrix::sum(){
+	double sm = 0;
+	for(int i = 0; i < m_elemNum; i++)
+		sm += m_elem[i];
+	return sm;
+}
 double Matrix::trace(){
 	assert(Rnum == Cnum);
 	double sum = 0;
@@ -245,5 +260,14 @@ double& Matrix::at(int r, int c){
 	}
 	else
 		return m_elem[r * Cnum + c];
+}
+
+Matrix takeExp(double a, const Matrix& mat){
+	std::vector<Matrix> rets = mat.diagonalize();
+	Matrix UT = rets[1];
+	UT.transpose();
+	for(int i = 0; i < rets[0].row(); i++)
+		rets[0][i] = exp(a * rets[0][i]);
+	return UT * rets[0] * rets[1];
 }
 };	/* namespace uni10 */	
