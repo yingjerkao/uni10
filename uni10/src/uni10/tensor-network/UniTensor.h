@@ -44,10 +44,12 @@ class UniTensor{
 		void addLabel(const std::vector<int>& newLabels);
 		void addLabel(int* newLabels);
 		void addRawElem(double* rawElem);
+		void elemSet(const Qnum& qnum, double* _elem);
+		void elemSet(double* _elem);
 		double at(std::vector<int>idxs)const;
 		double& operator[](size_t idx);
-    	        std::vector<Qnum> blockQnum()const;
-    	        Qnum blockQnum(int idx)const;
+    	std::vector<Qnum> blockQnum()const;
+    	Qnum blockQnum(int idx)const;
 		size_t blockNum()const;
 		void save(const std::string& fname);
 		std::vector<int> label()const;
@@ -62,11 +64,12 @@ class UniTensor{
 		static void check();
 		UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
 		UniTensor& permute(int* newLabels, int inBondNum);
+		UniTensor& permute(int inBondNum);
 		UniTensor& transpose();
 		void randomize();
 		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
-		friend UniTensor outer(const UniTensor& Ta, const UniTensor& Tb);
+		friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 		friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
 		UniTensor& operator*= (const UniTensor& Tb);
 		friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);

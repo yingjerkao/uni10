@@ -210,13 +210,13 @@ void Matrix::transpose(){
 	Cnum = tmp;
 }
 double Matrix::norm(){
-	double nm;
+	double nm = 0;
 	for(int i = 0; i < m_elemNum; i++)
 		nm += m_elem[i] * m_elem[i];
 	return sqrt(nm);
 }
 double Matrix::sum(){
-	double sm;
+	double sm = 0;
 	for(int i = 0; i < m_elemNum; i++)
 		sm += m_elem[i];
 	return sm;
