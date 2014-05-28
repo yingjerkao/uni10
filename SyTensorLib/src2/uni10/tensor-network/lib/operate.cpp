@@ -23,7 +23,7 @@ UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
 	UniTensor cTb = Tb;
 	return contract(cTa, cTb, true);
 }
-UniTensor uni10::contract(UniTensor& Ta, UniTensor& Tb, bool fast){
+UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 	assert(Ta.status & Tb.status & Ta.HAVEELEM);
 	if(&Ta == &Tb){
 		UniTensor Ttmp = Tb;
@@ -142,7 +142,7 @@ UniTensor operator*(const UniTensor& Ta, double a){
 	vecScal(a, Tb.elem, Tb.m_elemNum);
 	return Tb;
 }
-UniTensor outer(const UniTensor & Ta, const UniTensor& Tb){
+UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
 	UniTensor T1 = Ta;
 	UniTensor T2 = Tb;
 	int label1[T1.bondNum()];
