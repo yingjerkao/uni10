@@ -121,18 +121,21 @@ endif()
 ######################################################################
 ### Find BLAS and LAPACK
 ######################################################################
-
-if(USE_MKL)
-  find_package( MKL REQUIRED)
-  ADD_DEFINITIONS("-DMKL")
-  #message( STATUS "MKL found: ${MKL_MINIMAL_LIBRARY}")
-else ()
-#  find_package( BLAS REQUIRED)
-#  message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
-  find_package( LAPACK REQUIRED)
-  message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
+if( NOT (DEFINED BLAS_LIBRARIES AND DEFINED LAPACK_LIBRARIES))
+  if(USE_MKL)
+    find_package( MKL REQUIRED)
+    ADD_DEFINITIONS("-DMKL")
+    #message( STATUS "MKL found: ${MKL_MINIMAL_LIBRARY}")
+  else ()
+  #  find_package( BLAS REQUIRED)
+  #  message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
+    find_package( LAPACK REQUIRED)
+    message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
+  endif()
+else()
+  set(LAPACK_LIBRARIES  ${BLAS_LIBRARIES}  ${LAPACK_LIBRARIES})
+  message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}")
 endif()
-
 
 ######################################################################
 ### FLAGS
