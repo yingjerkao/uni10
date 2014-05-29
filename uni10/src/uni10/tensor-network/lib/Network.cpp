@@ -431,7 +431,7 @@ void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 	assert(UniT->RBondNum == Rnums[idx]);
 
 	if(leafs[idx] != NULL){
-		assert(tensors[idx]->similar(*UniT));
+		//assert(tensors[idx]->similar(*UniT));
 		*(tensors[idx]) = *UniT;
 		tensors[idx]->addLabel(label_arr[idx]);
 		tensors[idx]->setName(names[idx]);
@@ -447,8 +447,18 @@ void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 	}
 }
 
-void Network::putTensor(std::string name, const UniTensor* UniT, bool force){
-	putTensor(name2pos[name], UniT, force);
+void Network::putTensor(const std::string& name, const UniTensor* UniT, bool force){
+	std::map<std::string, int>::const_iterator it = name2pos.find(name);
+	assert(it != name2pos.end());
+	putTensor(it->second, UniT, force);
+}
+
+void Network::putTensorT(const std::string& nameT, const UniTensor* UniT, bool force){
+	std::map<std::string, int>::const_iterator itT = name2pos.find(nameT);
+	assert(itT != name2pos.end());
+	UniTensor transT = *UniT;
+	transT.transpose();
+	putTensor(itT->second, &transT, force);
 }
 
 void Network::branch(Node* sbj, Node* tar){

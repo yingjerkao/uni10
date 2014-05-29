@@ -16,6 +16,7 @@ enum bondType{
 class UniTensor;
 class Bond {
 	public:
+		Bond(){};
 		Bond(bondType _type, int dim);
 		Bond(bondType, const std::vector<Qnum>& qnums);
 		Bond(const Bond& _b);
@@ -40,7 +41,7 @@ class Bond {
 		int m_dim;
 		std::vector<Qnum>Qnums;	//Quantum numbers
 		std::vector<int>Qdegs;	//Degeneracy in each quantum sector
-		std::vector<int>offsets;	
+		std::vector<int>offsets;
 };
 Bond combine(bondType tp, const std::vector<Bond>& bds);
 Bond combine(const std::vector<Bond>& bds);

@@ -398,7 +398,6 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 			R_off += rAcc[b] * bonds[b].offsets[Q_idxs[b]];
 			sB_sBdims[b] = bonds[b].Qdegs[Q_idxs[b]];
 		}
-
 		RQoff = Q_off / CQdim;
 		CQoff = Q_off % CQdim;
 		B_cDim = RQidx2Blk[RQoff]->Cnum;
@@ -426,6 +425,16 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 	status |= HAVEELEM;
 }
 
+void UniTensor::elemSet(const Qnum& qnum, double* _elem){
+	Block& block = blocks[qnum];
+	memcpy(block.elem, _elem, block.Rnum * block.Cnum * sizeof(DOUBLE));
+	status |= HAVEELEM;
+}
+
+void UniTensor::elemSet(double* _elem){
+	memcpy(elem, _elem, elemNum() * sizeof(DOUBLE));
+	status |= HAVEELEM;
+}
 
 double UniTensor::at(std::vector<int> idxs)const{
 	assert(status & HAVEBOND);
