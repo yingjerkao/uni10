@@ -29,4 +29,8 @@ To override the default path, use CMAKE_INSTALL_PREFIX :
 To use MKL and Intel compiler:
   > cmake -DUSE_MKL=on -DINTEL_CC=on </path/to/uni10/>
 
-To run the examples, make sure add </path/to/libuni10.so> to LD_LIBRARY_PATH
+If cmake failes to find blas and lapack, specify the libraries by
+  > cmake -DBLAS_LIBRARIES=</path/to/blas> -DLAPACK_LIBRARIES=</path/to/lapack> </path/to/uni10/>
+
+To run the examples, make sure add </path/to/libuni10.so>(Linux) or 
+</path/to/libuni10.dylb>(Mac OS X) to LD_LIBRARY_PATH
