@@ -230,5 +230,5 @@ install(DIRECTORY examples/
 
 install(DIRECTORY doc/
 	DESTINATION doc )
-install(FILES INSTALL.txt README.txt DESTINATION .)
+install(FILES INSTALL.txt README.txt GPL.txt LGPL.txt release_notes.txt DESTINATION .)
 #include(CPACK)
