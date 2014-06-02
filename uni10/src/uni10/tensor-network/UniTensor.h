@@ -48,8 +48,8 @@ class UniTensor{
 		void elemSet(double* _elem);
 		double at(std::vector<int>idxs)const;
 		double& operator[](size_t idx);
-    	std::vector<Qnum> blockQnum()const;
-    	Qnum blockQnum(int idx)const;
+    		std::vector<Qnum> blockQnum()const;
+    		Qnum blockQnum(int idx)const;
 		size_t blockNum()const;
 		void save(const std::string& fname);
 		std::vector<int> label()const;
@@ -127,6 +127,6 @@ class UniTensor{
 		Matrix printRaw(bool flag)const;
 };
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
-UniTensor outer(const UniTensor& Ta, const UniTensor& Tb);
+UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 };	/* namespace uni10 */	
 #endif /* SYTENSOR_H */
