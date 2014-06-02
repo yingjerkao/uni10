@@ -146,6 +146,6 @@ class UniTensor{
 		Matrix printRaw(bool flag)const;
 };
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
-UniTensor outer(const UniTensor& Ta, const UniTensor& Tb);
+UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 };	/* namespace uni10 */	
 #endif /* UNITENSOR_H */
