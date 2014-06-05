@@ -17,7 +17,7 @@ namespace std{
   %template(Qnum2int) map<uni10::Qnum, int>;
   %template(Matrix_arr) vector<uni10::Matrix>;
   %template(Qnum2Matrix) std::map<uni10::Qnum, uni10::Matrix>;
-  %template(Swap_arr)  std::vector<uni10::_Swap>;
+  /*%template(Swap_arr)  std::vector<uni10::_Swap>;*/
 }
 
 %inline{
@@ -189,6 +189,18 @@ class Matrix {
               out << *self;
               return out.str().c_str();
           }
+          Matrix __mul__(const Matrix& Ma){
+              return (*self) * Ma;
+          }
+          Matrix __add__(const Matrix& Ma){
+              return (*self) + Ma;
+          }
+          Matrix __mul__(double a){
+              return a * (*self);
+          }
+          Matrix __rmul__(double a){
+              return a * (*self);
+          }
       }
         Matrix& operator*= (double a);
         Matrix& operator+= (const Matrix& Mb);
@@ -209,7 +221,7 @@ class UniTensor{
                 UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
                 UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
                 UniTensor(const UniTensor& UniT);
-                UniTensor& operator=(const UniTensor& UniT);
+                /*UniTensor& operator=(const UniTensor& UniT);*/
                 UniTensor& assign(const std::vector<Bond>& _bond);
                 ~UniTensor();
                 void addLabel(const std::vector<int>& newLabels);
