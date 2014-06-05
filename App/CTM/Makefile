@@ -3,8 +3,11 @@ LIB := ../SyTensorLib/src2/
 OBJ := $(LIB)libtensorF.a
 LINK := -mkl=parallel
 
-itebd.e: iTEBD.cpp
+tising_2d4s.e: TransIsing_2D4S.cpp
+	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+main.e: main.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 
 clean:
 	rm -f *.o *.e asd
+
