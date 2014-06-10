@@ -38,8 +38,8 @@ int main(){
 
 	UniTensor HL = H0;
 	UniTensor HR = mirror(H0);
-	cout<<HL;
-	cout<<HR;
+	//cout<<HL;
+	//cout<<HR;
 
 	int N = 30;
 	int D = 2;
@@ -61,7 +61,7 @@ int main(){
 		UniTensor IDd(HL.bond());
 		IDd.eye();
 		UniTensor IdD(HR.bond());
-		IdD.eye();	
+		IdD.eye();
 		UniTensor SB = otimes(HL, IdD) + otimes(otimes(ID, H0), ID) + otimes(IDd, HR);
 		/*** END superblock ***/
 		UniTensor HL2 = otimes(HL, Id);
@@ -100,11 +100,14 @@ int main(){
 		cout<<rets[2];
 		*/
 
+    for(int i = 0; i < D; i++)
+      cout<<"sv: "<<setprecision(17)<<rets[1][i]<<endl;
 		UniTensor Al(bondA, "Al");
 		rets[0].transpose();
 		Al.addRawElem(rets[0].elem());
 		UniTensor Bl(bondB, "Bl");
 		Bl.addRawElem(rets[2].elem());
+    cout<<Al;
 
 		HLn.putTensor("Al", &Al);
 		HLn.putTensor("HL2", &HL2);
@@ -116,6 +119,7 @@ int main(){
 		HRn.putTensor("HR2", &HR2);
 		HRn.putTensorT("BlT", &Bl);
 
+    //cout<<Bl<<HR2;
 		HL = HLn.launch();
 		HR = HRn.launch();
 		//HL.printRawElem();

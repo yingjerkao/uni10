@@ -65,7 +65,7 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 				newLabelC.push_back(Tb.labels[b]);
 			}
 		int conBond = interLabel.size();
-		
+
 
 		Ta.permute(newLabelA, AbondNum - conBond);
 		Tb.permute(newLabelB, conBond);
@@ -78,13 +78,13 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 		if(cBonds.size())
 			Tc.addLabel(newLabelC);
 		Block blockA, blockB, blockC;
-		std::map<Qnum,Block>::iterator it; 
-		std::map<Qnum,Block>::iterator it2; 
+		std::map<Qnum,Block>::iterator it;
+		std::map<Qnum,Block>::iterator it2;
 		for(it = Ta.blocks.begin() ; it != Ta.blocks.end(); it++){
 			if((it2 = Tb.blocks.find(it->first)) != Tb.blocks.end()){
 				blockA = it->second;
 				blockB = it2->second;
-				blockC = Tc.blocks[it->first]; 
+				blockC = Tc.blocks[it->first];
 				assert(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum);
 				myDgemm(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
 			}
@@ -164,4 +164,4 @@ UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
 	T2.addLabel(label2);
 	return contract(T1, T2, true);
 }
-};	/* namespace uni10 */	
+};	/* namespace uni10 */
