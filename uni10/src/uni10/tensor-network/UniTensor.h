@@ -128,5 +128,5 @@ class UniTensor{
 };
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
-};	/* namespace uni10 */	
+};	/* namespace uni10 */
 #endif /* SYTENSOR_H */

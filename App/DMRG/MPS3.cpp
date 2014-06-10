@@ -57,7 +57,7 @@ int main(){
 	Network HLn("HL.net");
 	Network HRn("HR.net");
 
-	map<Qnum, int> Ms;	
+	map<Qnum, int> Ms;
 	Ms[q0] = 20;
 	Ms[qm1] = 20;
 	Ms[q1] = 20;
@@ -83,7 +83,7 @@ int main(){
 		UniTensor IDd(HL.bond());
 		IDd.eye();
 		UniTensor IdD(HR.bond());
-		IdD.eye();	
+		IdD.eye();
 		UniTensor SB = otimes(HL, IdD) + otimes(otimes(ID, H0), ID) + otimes(IDd, HR);
 		//cout<<SB;
 		/*** END superblock ***/
@@ -92,7 +92,7 @@ int main(){
 		UniTensor HR2 = otimes(Id, HR);
 		HR2 += otimes(H0, ID);
 
-		vector<Bond> stateBonds;	
+		vector<Bond> stateBonds;
 		stateBonds.push_back(bDi);
 		stateBonds.push_back(bdi);
 		stateBonds.push_back(bdi);
@@ -129,7 +129,7 @@ int main(){
 
 		//SB.printRawElem();
 		//GS.printRawElem();
-		
+
 		vector<Qnum> blockQ = Al.blockQnum();
 
 		/*
@@ -151,7 +151,7 @@ int main(){
 			Al.elemSet(blockQ[q], rets[0].elem());
 			Bl.elemSet(blockQ[q], rets[2].elem());
 		}
-		
+
 		//cout<<Al;
 		//cout<<Bl;
 		//cout<< L;

@@ -280,7 +280,7 @@ class UniTensor{
                 std::map<Qnum, Matrix> getBlocks()const;
                 Matrix rawElem()const;
                 void printRawElem()const;
-/*                friend class Node;
+/*              friend class Node;
                 friend class Network;*/
                 void orthoRand();
                 void orthoRand(const Qnum& qnum);
@@ -296,6 +296,6 @@ class UniTensor{
                 UniTensor& combineBond(const std::vector<int>& combined_labels);
                 UniTensor& partialTrace(int la, int lb);
 };
-UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast); 
+UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 };
