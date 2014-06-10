@@ -6,19 +6,26 @@ using namespace std;
 using namespace uni10;
 #include <time.h>
 
-const int CHI = 4;
+const int CHI = 20;
 
-void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& Op, Network& iTEBD, Network& updateA);
+void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& U, Network& iTEBD, Network& updateA);
 double measure(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& Op, Network& MPS, Network& meas);
 double expectation(UniTensor& L, UniTensor& R, UniTensor& Op, Network& MPS, Network& meas);
 
 int main(){
+  // Define the parameters of the model / simulation
+  const double J = 1.0;
+  const double g = 0.5;
+  int d = 2;
+  double delta = 0.01;
+  int N = 1000;
+
 	/*** Initialization ***/
 	Qnum q0(0);
 	Bond bdi_chi(BD_IN, CHI);
 	Bond bdo_chi(BD_OUT, CHI);
-	Bond bdi_d(BD_IN, 2);
-	Bond bdo_d(BD_OUT, 2);
+	Bond bdi_d(BD_IN, d);
+	Bond bdo_d(BD_OUT, d);
 
 	vector<Bond> bond2;
 	bond2.push_back(bdi_chi);
@@ -49,7 +56,6 @@ int main(){
 	srand(time(NULL));
 	I_chi.randomize();
 	cout<<I_chi;
-	exit(0);
 
 	ALa.set_zero();
 	BLb.set_zero();
@@ -58,27 +64,31 @@ int main(){
 		BLb[i] = i * 0.1;
 	}
 
-	double g = 0.7;
-	double H_elem[] = { -1,  g,  g,  0, 
-				  	     g,  1,  0,  g,
-					     g,  0,  1,  g,
-	 				     0,  g,  g, -1 };
+	double H_elem[] = {
+     J, -g/2, -g/2,    0,
+  -g/2,   -J,    0, -g/2,
+  -g/2,    0,   -J, -g/2,
+	 	 0, -g/2, -g/2,    J};
+
 	H.addRawElem(H_elem);
+	UniTensor U(H.bond(), "U");
+	U.putBlock(q0, takeExp(-delta, H.getBlock(q0)));
 
 	Network iTEBD("iTEBD.net");
 	Network updateA("updateA.net");
 	Network MPS("MPS.net");
 	Network meas("measure.net");
 
-	update(ALa, BLb, La, Lb, H, iTEBD, updateA);
-	update(BLb, ALa, Lb, La, H, iTEBD, updateA);
-	cout<<"E = "<<measure(ALa, BLb, La, Lb, H, MPS, meas)<<endl;
+  for(int step = 0; step < N; step++){
+	  update(ALa, BLb, La, Lb, U, iTEBD, updateA);
+	  update(BLb, ALa, Lb, La, U, iTEBD, updateA);
+  }
+	cout<<"E = "<<setprecision(12)<<measure(ALa, BLb, La, Lb, H, MPS, meas)<<endl;
+
 }
 
-void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& Op, Network& iTEBD, Network& updateA){
+void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& expH, Network& iTEBD, Network& updateA){
 	Qnum q0(0);
-	UniTensor expH(Op.bond(), "expH");
-	expH.putBlock(q0, takeExp(-1, Op.getBlock(q0)));
 	iTEBD.putTensor("ALa", &ALa);
 	iTEBD.putTensor("BLb", &BLb);
 	iTEBD.putTensor("expH", &expH);
@@ -86,7 +96,6 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 	UniTensor Theta(C.bond(), "Theta");
 	Theta.putBlock(q0, Lb[q0] * C.getBlock(q0));
 	Theta.permute(2);
-	//cout<<C;
 	vector<Matrix> rets = Theta.getBlock(q0).svd();
 	int dim = CHI < rets[1].row() ? CHI : rets[1].row();
 	Matrix lambda(dim, dim, true);
@@ -117,7 +126,7 @@ double measure(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, 
 	B1.permute(1);
 	B1.putBlock(q0, La[q0] * B1.getBlock(q0));
 	B1.permute(2);
-	
+
 	double val = expectation(A1, BLb, Op, MPS, meas);
 	val += expectation(B1, ALa, Op, MPS, meas);
 	return val / 2;

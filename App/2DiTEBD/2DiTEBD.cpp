@@ -65,7 +65,7 @@ int main(){
 
 
 	double g = 0.7;
-	double H_elem[] = { -1,  g,  g,  0, 
+	double H_elem[] = { -1,  g,  g,  0,
 				  	     g,  1,  0,  g,
 					     g,  0,  1,  g,
 	 				     0,  g,  g, -1 };
@@ -180,7 +180,7 @@ double measure(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, 
 	B1.permute(1);
 	B1.putBlock(q0, La[q0] * B1.getBlock(q0));
 	B1.permute(2);
-	
+
 	double val = expectation(A1, BLb, Op, MPS, meas);
 	val += expectation(B1, ALa, Op, MPS, meas);
 	return val / 2;
