@@ -167,7 +167,6 @@ void Matrix::orthoRand(){
 			orthoRandomize(M.elem(), Cnum, Rnum);
 			myTranspose(M.elem(), Cnum, Rnum, m_elem, 0);
 		}
-
 	}
 }
 

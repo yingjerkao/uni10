@@ -69,8 +69,8 @@ int main(){
   for(int step = 0; step < N; step++){
 	  update(ALa, BLb, La, Lb, U, iTEBD, updateA);
 	  update(BLb, ALa, Lb, La, U, iTEBD, updateA);
-    if(step == 2)
-      exit(0);
+	  if(step == 10)
+		  exit(0);
   }
 	cout<<"E = "<<setprecision(12)<<measure2(ALa, BLb, Lb, U, iTEBD, delta)<<endl;
 }
@@ -116,73 +116,55 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 	iTEBD.putTensor("expH", &expH);
 	UniTensor C = iTEBD.launch();
 	UniTensor Theta(C.bond(), "Theta");
-  map<Qnum, Matrix> blocks = C.getBlocks();
-
-  for(map<Qnum, Matrix>::iterator it = blocks.begin(); it != blocks.end(); ++it){
-	  Theta.putBlock(it->first, Lb[it->first] * it->second);
-  }
+	map<Qnum, Matrix> blocks = C.getBlocks();
+	for(map<Qnum, Matrix>::iterator it = blocks.begin(); it != blocks.end(); ++it){
+		Theta.putBlock(it->first, Lb[it->first] * it->second);
+	}
 	Theta.permute(2);
-  blocks = Theta.getBlocks();
-  double norm;
-  //cout<<Theta;
-  for(map<Qnum, Matrix>::iterator it = blocks.begin(); it != blocks.end(); ++it){
-    map<Qnum, Matrix>::iterator itL = La.find(it->first);
-    if(itL == La.end()){
-      continue;
-    }
-    vector<Matrix> rets = it->second.svd();
-    int dim = itL->second.col();
-    Matrix lambda(dim, dim, true);
-    for(int i = 0; i < dim; i++){
-      lambda[i] = rets[1][i];
-      norm += lambda[i] * lambda[i];
-    }
-    for(int i = 0; i < dim; i++)
-      cout<<setprecision(6)<<lambda[i]<<", ";
-    cout<<endl;
-    La[it->first] = lambda;
-    //cout<<it->first<<": "<<La[it->first];
-    BLb.permute(1);
-    BLb.elemSet(it->first, rets[2].elem());
-    //cout<<rets[2];
-    //cout<<BLb.getBlock(it->first);
-    BLb.permute(2);
-  }
-  cout<<"==================================\n";
-  norm = sqrt(norm);
+	blocks = Theta.getBlocks();
+	double norm = 0;
+	for(map<Qnum, Matrix>::iterator it = blocks.begin(); it != blocks.end(); ++it){
+		map<Qnum, Matrix>::iterator itL = La.find(it->first);
+		if(itL == La.end()){
+			continue;
+		}
+		vector<Matrix> rets = it->second.svd();
+		int dim = itL->second.col();
+		Matrix lambda(dim, dim, true);
+		for(int i = 0; i < dim; i++){
+			lambda[i] = rets[1][i];
+			norm += lambda[i] * lambda[i];
+		}
+		for(int i = 0; i < dim; i++)
+			cout<<setprecision(6)<<lambda[i]<<", ";
+		cout<<endl;
+		La[it->first] = lambda;
+		BLb.permute(1);
+		BLb.elemSet(it->first, rets[2].elem());
+		BLb.permute(2);
+	}
+	cout<<"==================================\n";
+	norm = sqrt(norm);
+	cout<<"NORM: "<<norm<<endl;
 
-  for(map<Qnum, Matrix>::iterator it = La.begin(); it != La.end(); ++it){
-    it->second *= 1.0 / norm;
-    //cout<<it->first<<": "<<La[it->first];
-  }
+	for(map<Qnum, Matrix>::iterator it = La.begin(); it != La.end(); ++it){
+		it->second *= 1.0 / norm;
+	}
 	updateA.putTensor("BLb", &BLb);
 	updateA.putTensor("C", &C);
 	ALa = updateA.launch();
 	ALa *= (1 / norm);
 
-  //UniTensor expH2 = expH;
-  /*
-  UniTensor ALa2 = ALa;
-  UniTensor BLb2 = BLb;
-  //cout<<expH;
-  UniTensor expH2 = expH;
-	Network iTEBD2("iTEBD.net");
-	iTEBD2.putTensor("ALa", &ALa2);
-	iTEBD2.putTensor("BLb", &BLb2);
-	iTEBD2.putTensor("expH", &expH2);
-	UniTensor C2 = iTEBD2.launch();
-  */
-
-	//UniTensor Theta2(C.bond(), "Theta");
-  //blocks = C.getBlocks();
-
-  for(map<Qnum, Matrix>::iterator it = Lb.begin(); it != Lb.end(); ++it){
-	  //Theta.putBlock(it->first, Lb[it->first] * it->second);
-    //cout<<it->first<<endl<<Lb[it->first];
-    cout<<Lb[it->first];
-  }
-
-
+	iTEBD.putTensor("ALa", &ALa);
+	iTEBD.putTensor("BLb", &BLb);
+	iTEBD.putTensor("expH", &expH);
+	C = iTEBD.launch();
+	Theta.assign(C.bond());
+	map<Qnum, Matrix> blocks = C.getBlocks();
+	for(map<Qnum, Matrix>::iterator it = blocks.begin(); it != blocks.end(); ++it){
+		Theta.putBlock(it->first, Lb[it->first] * it->second);
+	}
+	Theta.permute(2);
 }
 
 double measure2(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& Lb, UniTensor& expH, Network & iTEBD, double delta){
