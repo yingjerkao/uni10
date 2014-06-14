@@ -57,18 +57,14 @@ int main(){
 	Network HLn("HL.net");
 	Network HRn("HR.net");
 
-	map<Qnum, int> Ms;	
-	Ms[q0] = 20;
-	Ms[qm1] = 20;
-	Ms[q1] = 20;
-	Ms[qm2] = 10;
-	Ms[q2] = 10;
-	Ms[qm3] = 10;
-	Ms[q3] = 10;
-	Ms[qm4] = 10;
-	Ms[q4] = 10;
-	Ms[qm5] = 10;
-	Ms[q5] = 10;
+	map<Qnum, int> Ms;
+	Ms[q0] = 12;
+	Ms[qm1] = 9;
+	Ms[q1] = 9;
+	Ms[qm2] = 6;
+	Ms[q2] = 6;
+	Ms[qm3] = 3;
+	Ms[q3] = 3;
 
 	/*** END initilization ***/
 
@@ -83,7 +79,7 @@ int main(){
 		UniTensor IDd(HL.bond());
 		IDd.eye();
 		UniTensor IdD(HR.bond());
-		IdD.eye();	
+		IdD.eye();
 		UniTensor SB = otimes(HL, IdD) + otimes(otimes(ID, H0), ID) + otimes(IDd, HR);
 		//cout<<SB;
 		/*** END superblock ***/
@@ -92,7 +88,7 @@ int main(){
 		UniTensor HR2 = otimes(Id, HR);
 		HR2 += otimes(H0, ID);
 
-		vector<Bond> stateBonds;	
+		vector<Bond> stateBonds;
 		stateBonds.push_back(bDi);
 		stateBonds.push_back(bdi);
 		stateBonds.push_back(bdi);
@@ -125,7 +121,7 @@ int main(){
 		//GS.printRawElem();
 
 		vector<Qnum> blockQ = Al.blockQnum();
-			
+
 		/*
 		Matrix GSM = GS.rawElem();//(sqrt(rets[1].col()), sqrt(rets[1].col()), rets[1].elem());
 		rets = GSM.svd();
@@ -144,7 +140,7 @@ int main(){
 			Al.elemSet(blockQ[q], rets[0].elem());
 			Bl.elemSet(blockQ[q], rets[2].elem());
 		}
-		
+
 		//cout<<Al;
 		//cout<<Bl;
 		//cout<< L;

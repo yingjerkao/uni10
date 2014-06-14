@@ -38,10 +38,8 @@ int main(){
 
 	UniTensor HL = H0;
 	UniTensor HR = mirror(H0);
-	//cout<<HL;
-	//cout<<HR;
 
-	int N = 30;
+	int N = 20;
 	int D = 2;
 	Bond bDi = bdi;
 	Bond bDo = bdo;
@@ -88,38 +86,23 @@ int main(){
 		bDo.assign(BD_OUT, D);
 
 		rets = GS.svd();
-		/*
-		cout<<"svd: ";
-		for(int i = 0; i < rets[1].row(); i++)
-			cout<<rets[1][i]<<", ";
-		cout<<endl;
-		*/
-		/*
-		cout<<rets[0];
-		cout<<rets[1];
-		cout<<rets[2];
-		*/
 
-    for(int i = 0; i < D; i++)
-      cout<<"sv: "<<setprecision(17)<<rets[1][i]<<endl;
+    //for(int i = 0; i < D; i++)
+    //  cout<<"sv: "<<setprecision(17)<<rets[1][i]<<endl;
 		UniTensor Al(bondA, "Al");
 		rets[0].transpose();
 		Al.addRawElem(rets[0].elem());
 		UniTensor Bl(bondB, "Bl");
 		Bl.addRawElem(rets[2].elem());
-    cout<<Al;
 
 		HLn.putTensor("Al", &Al);
 		HLn.putTensor("HL2", &HL2);
 		HLn.putTensorT("AlT", &Al);
 
-		//cout<<Bl;
-		//cout<<HR2;
 		HRn.putTensor("Bl", &Bl);
 		HRn.putTensor("HR2", &HR2);
 		HRn.putTensorT("BlT", &Bl);
 
-    //cout<<Bl<<HR2;
 		HL = HLn.launch();
 		HR = HRn.launch();
 		//HL.printRawElem();

@@ -6,9 +6,9 @@ CC:=g++
 FLAGS:=-O3 -m64
 OBJ := $(LIB)/libuni10.a
 
-imps.e: iMPS.cpp
-	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 mps4.e: MPS4.cpp
+	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
+imps.e: iMPS.cpp
 	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 mps3.e: MPS3.cpp
 	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<

@@ -4,7 +4,7 @@
 using namespace std;
 #include "uni10.hpp"
 using namespace uni10;
-void setTruncate(const UniTensor& GS, UniTensor& Al, UniTensor& Bl, Bond& bdi, Bond& bdo, Bond& bDi, Bond& bDo);
+void truncateU1(const UniTensor& GS, UniTensor& Al, UniTensor& Bl, Bond& bdi, Bond& bdo, Bond& bDi, Bond& bDo);
 void mergeSort(vector<double>& svs, vector<Qnum>& qnums, Qnum& q, Matrix& sv_mat);
 const int M = 20;
 
@@ -45,7 +45,7 @@ int main(){
 	UniTensor HL = H0;
 	UniTensor HR = H0;
 
-	int N = 30;
+	int N = 20;
 	int D = 2;
   Bond bDi = bdi;
   Bond bDo = bdo;
@@ -104,10 +104,8 @@ int main(){
 		GS.elemSet(rets[1].elem());
 		GS.permute(2);
 		assert(GS.elemNum() == rets[1].col());
-    setTruncate(GS, Al, Bl, bdi, bdo, bDi, bDo);
-    Al.printRawElem();
-
-
+    truncateU1(GS, Al, Bl, bdi, bdo, bDi, bDo);
+    //Al.printRawElem();
 
 		HLn.putTensor("Al", &Al);
 		HLn.putTensor("HL2", &HL2);
@@ -122,7 +120,7 @@ int main(){
 	}
 }
 
-void setTruncate(const UniTensor& GS, UniTensor& Al, UniTensor& Bl, Bond& bdi, Bond& bdo, Bond& bDi, Bond& bDo){
+void truncateU1(const UniTensor& GS, UniTensor& Al, UniTensor& Bl, Bond& bdi, Bond& bdo, Bond& bDi, Bond& bDo){
   map<Qnum, Matrix> blocks = GS.getBlocks();
   map<int, Qnum> reorder;
   map<Qnum, vector<Matrix> > svds;
@@ -138,8 +136,33 @@ void setTruncate(const UniTensor& GS, UniTensor& Al, UniTensor& Bl, Bond& bdi, B
   for(map<int, Qnum>::iterator it = reorder.begin(); it != reorder.end(); ++it){
     mergeSort(svs, qnums, it->second, svds[it->second][1]);
   }
+
   for(int i = 0; i < qnums.size(); i++)
      cout<<qnums[i]<<", "<<setprecision(17)<<svs[i]<<endl;;
+  map<Qnum, int> degs;
+  std::map<Qnum,int>::iterator it;
+  for(int q = 0; q < qnums.size(); q++){
+    it = degs.find(qnums[q]);
+    if(it != degs.end())
+      it->second++;
+    else
+      degs[qnums[q]] = 1;
+  }
+  qnums.clear();
+  for(it = degs.begin(); it != degs.end(); it++){
+    std::map<Qnum,int>::iterator it_neg = degs.find(-it->first);
+    if(it_neg == degs.end()){
+      cout<<it->first<<": "<<it->second<<endl;
+      assert(false);
+    }
+    int num = it->second > it_neg->second ? it->second : it_neg->second;
+    for(int i = 0; i < num; i++)
+      qnums.push_back(it->first);
+  }
+
+  //for(int i = 0; i < qnums.size(); i++)
+  //   cout<<qnums[i]<<endl;
+
 
   bDi.assign(BD_IN, qnums);
 

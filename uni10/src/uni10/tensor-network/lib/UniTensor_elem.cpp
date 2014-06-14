@@ -130,7 +130,7 @@ void UniTensor::grouping(){
 		blocks[it->first] = blk;
 		Block* blkptr= &(blocks[it->first]);
 		std::vector<int>& tmpRQidx = row_Qnum2Qidx[it->first];
-		std::vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];	
+		std::vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];
 		for(int i = 0; i < tmpRQidx.size(); i++){
 			RQidx2Blk[tmpRQidx[i]] = blkptr;
 			for(int j = 0; j < tmpCQidx.size(); j++){
@@ -159,7 +159,7 @@ void UniTensor::addGate(std::vector<_Swap> swaps){
 	assert(status & HAVEELEM);
 	int sign = 1;
 	int bondNum = bonds.size();
-	std::vector<int> Q_idxs(bondNum, 0); 
+	std::vector<int> Q_idxs(bondNum, 0);
 	std::vector<int> Q_Bdims(bondNum, 0);
 	for(int b = 0; b < bondNum; b++)
 		Q_Bdims[b] = bonds[b].Qnums.size();
@@ -188,7 +188,7 @@ void UniTensor::addGate(std::vector<_Swap> swaps){
 		for(int i = 0; i < swaps.size(); i++)
 			sign01 ^= (bonds[swaps[i].b1].Qnums[Q_idxs[swaps[i].b1]].prtF() & bonds[swaps[i].b2].Qnums[Q_idxs[swaps[i].b2]].prtF());
 		sign = sign01 ? -1 : 1;
-		
+
 		for(sB_r = 0; sB_r < sB_rDim; sB_r++)
 			for(sB_c = 0; sB_c < sB_cDim; sB_c++)
 				elem[E_off + (sB_r * B_cDim) + sB_c] *= sign;
@@ -205,7 +205,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 	for(int i = 0; i < bondNum; i++)
 		for(int j = 0; j < bondNum; j++)
 			if(labels[i] == newLabels[j]){
-				rsp_outin[j] = i;	
+				rsp_outin[j] = i;
 				cnt++;
 			}
 
@@ -254,12 +254,12 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 				for(int i = 0; i < bondNum; i++)
 					for(int j = 0; j < bondNum; j++)
 						if(inLabelF[i] == outLabelF[j])
-							rspF_outin[j] = i;	
+							rspF_outin[j] = i;
 				swaps = recSwap(rspF_outin, bondNum, ordF);
 			}
 			//End Fermionic system
-			std::vector<int> Qin_idxs(bondNum, 0); 
-			std::vector<int> Qot_idxs(bondNum, 0); 
+			std::vector<int> Qin_idxs(bondNum, 0);
+			std::vector<int> Qot_idxs(bondNum, 0);
 			int Qin_off, Qot_off;
 			int tmp;
 			int Qin_RQoff, Qin_CQoff;
@@ -272,7 +272,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 			int64_t Ein_off, Eot_off;
 			std::vector<int> sBin_idxs(bondNum, 0);
 			std::vector<int> sBin_sBdims(bondNum, 0);
-			std::vector<int> Qot_acc(bondNum, 1); 
+			std::vector<int> Qot_acc(bondNum, 1);
 			std::vector<int> sBot_acc(bondNum, 1);
 			for(int b = bondNum	- 1; b > 0; b--)
 				Qot_acc[b - 1] = Qot_acc[b] * UniTout.bonds[b].Qnums.size();
@@ -292,7 +292,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					Qot_off += Qot_idxs[b] * Qot_acc[b];
 				}
 				for(int b = bondNum	- 1; b > 0; b--)
-					sBot_acc[rsp_outin[b-1]] = sBot_acc[rsp_outin[b]] * bonds[rsp_outin[b]].Qdegs[Qot_idxs[b]]; 
+					sBot_acc[rsp_outin[b-1]] = sBot_acc[rsp_outin[b]] * bonds[rsp_outin[b]].Qdegs[Qot_idxs[b]];
 				Qin_RQoff = Qin_off / CQdim;
 				Qin_CQoff = Qin_off % CQdim;
 				Qot_RQoff = Qot_off / UniTout.CQdim;
@@ -341,11 +341,11 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 void UniTensor::addRawElem(DOUBLE* rawElem){
 	assert((status & HAVEBOND));   //If not INIT, CANNOT add elements
 	int bondNum = bonds.size();
-	std::vector<int> Q_idxs(bondNum, 0); 
+	std::vector<int> Q_idxs(bondNum, 0);
 	std::vector<int> Q_Bdims(bondNum, 0);
 	std::vector<int> sB_idxs(bondNum, 0);
 	std::vector<int> sB_sBdims(bondNum, 0);
-	std::vector<int> rAcc(bondNum, 1); 
+	std::vector<int> rAcc(bondNum, 1);
 	for(int b = 0; b < bondNum; b++)
 		Q_Bdims[b] = bonds[b].Qnums.size();
 	for(int b = bondNum - 1; b > 0; b--)
@@ -420,7 +420,7 @@ double UniTensor::at(std::vector<int> idxs)const{
 			break;
 		}
 	}
-	std::vector<int> Q_acc(bondNum, 1); 
+	std::vector<int> Q_acc(bondNum, 1);
 	for(int b = bondNum	- 1; b > 0; b--)
 		Q_acc[b - 1] = Q_acc[b] * bonds[b].Qnums.size();
 	int Qoff = 0;
@@ -436,7 +436,7 @@ double UniTensor::at(std::vector<int> idxs)const{
 		int blkCoff = CQidx2Off.find(Q_CQoff)->second;
 		int boff = blk->offset + (blkRoff * B_cDim) + blkCoff;
 		int cnt = 0;
-		std::vector<int> D_acc(bondNum, 1); 
+		std::vector<int> D_acc(bondNum, 1);
 		for(int b = bondNum	- 1; b > 0; b--)
 			D_acc[b - 1] = D_acc[b] * bonds[b].Qdegs[Qidxs[b]];
 		for(int b = 0; b < bondNum; b++)
@@ -489,8 +489,8 @@ UniTensor& UniTensor::transpose(){
 	//if(status & HAVELABEL)
 	UniTout.addLabel(outLabels);
 	if(status & HAVEELEM){
-		std::map<Qnum,Block>::iterator it_in; 
-		std::map<Qnum,Block>::iterator it_out; 
+		std::map<Qnum,Block>::iterator it_in;
+		std::map<Qnum,Block>::iterator it_out;
 		double* elem_in;
 		double* elem_out;
 		int Rnum, Cnum;
@@ -503,7 +503,7 @@ UniTensor& UniTensor::transpose(){
 			for(int i = 0; i < Rnum; i++)
 				for(int j = 0; j < Cnum; j++)
 					elem_out[j * Rnum + i] = elem_in[i * Cnum + j];
-		}   
+		}
 		UniTout.status |= HAVEELEM;
 	}
 	return *this = UniTout;
@@ -523,7 +523,7 @@ bool UniTensor::elemCmp(const UniTensor& UniT)const{
 	return true;
 }
 double UniTensor::trace()const{
-	assert(status & HAVEELEM);		
+	assert(status & HAVEELEM);
 	if(status & HAVEBOND){
 		int Rnum;
 		DOUBLE trVal = 0;
@@ -533,15 +533,15 @@ double UniTensor::trace()const{
 			for(int r = 0; r < Rnum; r++)
 				trVal += it->second.elem[r * Rnum + r];
 		}
-		return trVal;	
+		return trVal;
 	}
 	else
 		return elem[0];
 }
 
 UniTensor& UniTensor::partialTrace(int la, int lb){
-	assert(status & HAVEELEM);		
-	assert(status & HAVEBOND);		
+	assert(status & HAVEELEM);
+	assert(status & HAVEBOND);
 	assert(bonds.size() > 2 && la != lb);
 	int bondNum = bonds.size();
 	std::vector<Bond> newBonds;
@@ -569,7 +569,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 	ia = bondNum - 2;
 	ib = bondNum - 1;
 	this->permute(rsp_labels, Tt.RBondNum);
-	std::vector<int> Q_acc(bondNum, 1); 
+	std::vector<int> Q_acc(bondNum, 1);
 	for(int b = bondNum - 1; b > 0; b--)
 		Q_acc[b - 1] = Q_acc[b] * bonds[b].Qnums.size();
 	int tQdim = bonds[ia].Qnums.size();
@@ -582,7 +582,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 	}
 	/*END*/
 	int tBnum = Tt.bonds.size();
-	//std::vector<int> Q_idxs(bondNum, 0); 
+	//std::vector<int> Q_idxs(bondNum, 0);
 	std::vector<int> Qt_Bdims(tBnum, 0);
 	for(int b = 0; b < tBnum; b++)
 		Qt_Bdims[b] = Tt.bonds[b].Qnums.size();
@@ -599,7 +599,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 	int64_t Et_off;
 	std::vector<int64_t> E_offs(tQdim);
 	std::vector<int> B_cDims(tQdim);
-	int tQdim2 = tQdim * tQdim; 
+	int tQdim2 = tQdim * tQdim;
 	int Qenc = Q_acc[ia] + Q_acc[ib];
 	for(std::map<int, int>::iterator it = Tt.QidxEnc.begin(); it != Tt.QidxEnc.end(); it++){
 		Qt_off = it->first;
