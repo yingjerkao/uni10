@@ -68,7 +68,7 @@ int main(){
      J, -g/2, -g/2,    0,
   -g/2,   -J,    0, -g/2,
   -g/2,    0,   -J, -g/2,
-	 	 0, -g/2, -g/2,    J};
+	 0, -g/2, -g/2,    J};
 
 	H.addRawElem(H_elem);
 	UniTensor U(H.bond(), "U");
@@ -83,7 +83,7 @@ int main(){
 	  update(ALa, BLb, La, Lb, U, iTEBD, updateA);
 	  update(BLb, ALa, Lb, La, U, iTEBD, updateA);
   }
-	cout<<"E = "<<setprecision(12)<<measure(ALa, BLb, La, Lb, H, MPS, meas)<<endl;
+  cout<<"E = "<<setprecision(12)<<measure(ALa, BLb, La, Lb, H, MPS, meas)<<endl;
 
 }
 
