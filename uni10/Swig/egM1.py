@@ -15,4 +15,3 @@ sub = uni10.Matrix(3, 5, m2.elem());
 print m
 print m2.trace()
 print sub * 10
-print "Hello"

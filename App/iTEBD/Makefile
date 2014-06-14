@@ -6,9 +6,11 @@ CC:=g++
 FLAGS:=-O3 -m64
 OBJ := $(LIB)/libuni10.a
 
-itebd.e: iTEBD.cpp
+itebd_u1f.e: iTEBD_U1_fixed.cpp
 	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
-itebd2.e: iTEBD2.cpp
+titebd_u1f.e: TiTEBD_U1_fixed.cpp
+	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
+itebd.e: iTEBD.cpp
 	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 
 clean:
