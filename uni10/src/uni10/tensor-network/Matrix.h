@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -56,7 +56,8 @@ class Matrix {
 		std::vector<Matrix> diagonalize()const;
 		std::vector<Matrix> svd()const;
 		friend Matrix takeExp(double a, const Matrix& mat);
-		void addElem(double* elem);
+		void setElem(double* elem);
+		double* getElem()const;
 		void randomize();
 		void orthoRand();
 		void set_zero();
@@ -73,7 +74,6 @@ class Matrix {
 		friend Matrix operator+(const Matrix& Ma, const Matrix& Mb);
 		Matrix& operator+= (const Matrix& Mb);
 		double& operator[](size_t idx);
-		double* elem()const;
 		double& at(int i, int j);
 	private:
 		int Rnum;		//number of rows of the block
@@ -84,5 +84,5 @@ class Matrix {
 };
 Matrix takeExp(double a, const Matrix& mat);
 
-};	/* namespace uni10 */	
+};	/* namespace uni10 */
 #endif /* MATRIX_H */

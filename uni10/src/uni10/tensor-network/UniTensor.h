@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -63,12 +63,12 @@ class UniTensor{
 		void addLabel(const std::vector<int>& newLabels);
 		void addLabel(int* newLabels);
 		void addRawElem(double* rawElem);
-		void elemSet(const Qnum& qnum, double* _elem);
-		void elemSet(double* _elem);
+		//void elemSet(const Qnum& qnum, double* _elem);
+		//void elemSet(double* _elem);
 		double at(std::vector<int>idxs)const;
-		double& operator[](size_t idx);
-    	std::vector<Qnum> blockQnum()const;
-    	Qnum blockQnum(int idx)const;
+		//double& operator[](size_t idx);
+    std::vector<Qnum> blockQnum()const;
+    Qnum blockQnum(int idx)const;
 		size_t blockNum()const;
 		void save(const std::string& fname);
 		std::vector<int> label()const;
@@ -147,5 +147,5 @@ class UniTensor{
 };
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
-};	/* namespace uni10 */	
+};	/* namespace uni10 */
 #endif /* UNITENSOR_H */

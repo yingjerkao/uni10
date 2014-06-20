@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -109,26 +109,26 @@ size_t Matrix::elemNum()const{
 Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 	assert(Ma.Cnum == Mb.Rnum);
 	if((!Ma.diag) && (!Mb.diag)){
-		Matrix Mc(Ma.Rnum, Mb.Cnum);	
+		Matrix Mc(Ma.Rnum, Mb.Cnum);
 		myDgemm(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem);
 		return Mc;
 	}
 	else if(Ma.diag && (!Mb.diag)){
-		Matrix Mc(Ma.Rnum, Mb.Cnum);	
+		Matrix Mc(Ma.Rnum, Mb.Cnum);
 		for(int i = 0; i < Ma.m_elemNum; i++)
 			for(int j = 0; j < Mb.Cnum; j++)
 				Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i] * Mb.m_elem[i * Mb.Cnum + j];
 		return Mc;
 	}
 	else if((!Ma.diag) && Mb.diag){
-		Matrix Mc(Ma.Rnum, Mb.Cnum);	
+		Matrix Mc(Ma.Rnum, Mb.Cnum);
 		for(int i = 0; i < Ma.Rnum; i++)
 			for(int j = 0; j < Mb.m_elemNum; j++)
 				Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i * Ma.Cnum + j] * Mb.m_elem[j];
 		return Mc;
 	}
 	else{
-		Matrix Mc(Ma.Rnum, Mb.Cnum, true);	
+		Matrix Mc(Ma.Rnum, Mb.Cnum, true);
 		for(int i = 0; i < Ma.Rnum; i++)
 			Mc.m_elem[i] = Ma.m_elem[i] * Mb.m_elem[i];
 		return Mc;
@@ -136,7 +136,7 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 }
 bool operator== (const Matrix& m1, const Matrix& m2){
 	double diff;
-	if(m1.m_elemNum == m2.m_elemNum){	
+	if(m1.m_elemNum == m2.m_elemNum){
 		for(int i = 0; i < m1.m_elemNum; i++){
 			diff = fabs(m1.m_elem[i] - m2.m_elem[i]);
 			if(diff > 1E-6)
@@ -153,7 +153,7 @@ Matrix& Matrix::operator*= (const Matrix& Mb){
 	return *this = *this * Mb;
 }
 
-void Matrix::addElem(double* elem){
+void Matrix::setElem(double* elem){
 	memcpy(m_elem, elem, m_elemNum * sizeof(double));
 }
 
@@ -165,7 +165,7 @@ std::vector<Matrix> Matrix::diagonalize()const{
 	Matrix EigV(Rnum, Cnum);
 	syDiag(m_elem, Rnum, Eig.m_elem, EigV.m_elem);
 	outs.push_back(Eig);
-	outs.push_back(EigV);	
+	outs.push_back(EigV);
 	return outs;
 }
 
@@ -184,7 +184,7 @@ std::vector<Matrix> Matrix::svd() const{
 }
 
 void Matrix::randomize(){
-	randomNums(m_elem, m_elemNum, 0);	
+	randomNums(m_elem, m_elemNum, 0);
 }
 void Matrix::orthoRand(){
 	if(!diag){
@@ -276,7 +276,7 @@ double& Matrix::operator[](size_t idx){
 	assert(idx < m_elemNum);
 	return m_elem[idx];
 }
-double* Matrix::elem()const{
+double* Matrix::getElem()const{
 	return m_elem;
 }
 double& Matrix::at(int r, int c){
@@ -298,4 +298,4 @@ Matrix takeExp(double a, const Matrix& mat){
 		rets[0][i] = exp(a * rets[0][i]);
 	return UT * rets[0] * rets[1];
 }
-};	/* namespace uni10 */	
+};	/* namespace uni10 */
