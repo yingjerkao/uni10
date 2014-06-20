@@ -31,13 +31,15 @@ int main(){
 
 	Bond bdi_A(BD_IN, qnumA());
 	Bond bdi_B(BD_IN, qnumB());
+	Bond bdo_A(BD_OUT, qnumA());
+	Bond bdo_B(BD_OUT, qnumB());
 	vector<Bond> bondA;
 	bondA.push_back(bdi_B);
-	bondA.push_back(bdi_A);
+	bondA.push_back(bdo_A);
 	bondA.push_back(bondH[2]);
 	vector<Bond> bondB;
 	bondB.push_back(bdi_A);
-	bondB.push_back(bdi_B);
+	bondB.push_back(bdo_B);
 	bondB.push_back(bondH[2]);
 
 	UniTensor ALa(bondA, "ALa");
@@ -61,16 +63,14 @@ int main(){
     Lb[it->first] = diag;
   }
 
-	Network iTEBD("iTEBD.net");
-	Network updateA("updateA.net");
+	Network iTEBD("iTEBD_U1.net");
+	Network updateA("updateA_U1.net");
 	Network MPS("MPS.net");
 	Network meas("measure.net");
 
   for(int step = 0; step < N; step++){
 	  update(ALa, BLb, La, Lb, U, iTEBD, updateA);
 	  update(BLb, ALa, Lb, La, U, iTEBD, updateA);
-	  if(step == 10)
-		  exit(0);
   }
 	cout<<"E = "<<setprecision(12)<<measure2(ALa, BLb, Lb, U, iTEBD, delta)<<endl;
 }
@@ -135,36 +135,23 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 			lambda[i] = rets[1][i];
 			norm += lambda[i] * lambda[i];
 		}
-		for(int i = 0; i < dim; i++)
-			cout<<setprecision(6)<<lambda[i]<<", ";
-		cout<<endl;
 		La[it->first] = lambda;
-		BLb.permute(1);
 		BLb.elemSet(it->first, rets[2].elem());
-		BLb.permute(2);
 	}
 	cout<<"==================================\n";
 	norm = sqrt(norm);
 	cout<<"NORM: "<<norm<<endl;
 
 	for(map<Qnum, Matrix>::iterator it = La.begin(); it != La.end(); ++it){
-		it->second *= 1.0 / norm;
+    it->second *= 1.0 / norm;
+    for(int i = 0; i < it->second.col(); i++)
+      cout<<it->second[i];
+    cout<<endl;
 	}
 	updateA.putTensor("BLb", &BLb);
 	updateA.putTensor("C", &C);
 	ALa = updateA.launch();
 	ALa *= (1 / norm);
-
-	iTEBD.putTensor("ALa", &ALa);
-	iTEBD.putTensor("BLb", &BLb);
-	iTEBD.putTensor("expH", &expH);
-	C = iTEBD.launch();
-	Theta.assign(C.bond());
-	map<Qnum, Matrix> blocks = C.getBlocks();
-	for(map<Qnum, Matrix>::iterator it = blocks.begin(); it != blocks.end(); ++it){
-		Theta.putBlock(it->first, Lb[it->first] * it->second);
-	}
-	Theta.permute(2);
 }
 
 double measure2(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& Lb, UniTensor& expH, Network & iTEBD, double delta){

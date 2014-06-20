@@ -33,13 +33,15 @@ int main(){
 
 	Bond bdi_A(BD_IN, qnumA());
 	Bond bdi_B(BD_IN, qnumB());
+	Bond bdo_A(BD_OUT, qnumA());
+	Bond bdo_B(BD_OUT, qnumB());
 	vector<Bond> bondA;
 	bondA.push_back(bdi_B);
-	bondA.push_back(bdi_A);
+	bondA.push_back(bdo_A);
 	bondA.push_back(bondH[2]);
 	vector<Bond> bondB;
 	bondB.push_back(bdi_A);
-	bondB.push_back(bdi_B);
+	bondB.push_back(bdo_B);
 	bondB.push_back(bondH[2]);
 
 	UniTensor ALa(bondA, "ALa");
@@ -63,8 +65,8 @@ int main(){
     Lb[it->first] = diag;
   }
 
-	Network iTEBD("iTEBD.net");
-	Network updateA("updateA.net");
+	Network iTEBD("iTEBD_U1.net");
+	Network updateA("updateA_U1.net");
 	Network MPS("MPS.net");
 	Network meas("measure.net");
 
@@ -134,11 +136,8 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
       lambda[i] = rets[1][i];
     norm[it->first] = lambda.norm();
     La[it->first] = lambda * (1.0 / norm[it->first]);
-    BLb.permute(1);
     BLb.elemSet(it->first, rets[2].elem());
-    BLb.permute(2);
   }
-
 	updateA.putTensor("BLb", &BLb);
 	updateA.putTensor("C", &C);
 	ALa = updateA.launch();
@@ -150,11 +149,8 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
   for(map<Qnum, double>::iterator it = norm.begin(); it != norm.end(); it++){
     cout<<it->first<<": "<<it->second<<endl;
   }
-  /*
-  cout<<ALa;
-  */
   int per_back[] = {-1, 3, -2};
-  ALa.permute(per_back, 2);
+  ALa.permute(per_back, 1);
 }
 
 double measure2(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& Lb, UniTensor& expH, Network & iTEBD, double delta){

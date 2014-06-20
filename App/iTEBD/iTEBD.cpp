@@ -6,7 +6,7 @@ using namespace std;
 using namespace uni10;
 #include <time.h>
 
-const int CHI = 5;
+const int CHI = 20;
 
 void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& U, Network& iTEBD, Network& updateA);
 double measure(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& Op, Network& MPS, Network& meas);
@@ -19,7 +19,7 @@ int main(){
   const double g = 0.5;
   int d = 2;
   double delta = 0.01;
-  int N = 1000;
+  int N = 2000;
 
 	/*** Initialization ***/
 	Qnum q0(0);
@@ -57,11 +57,11 @@ int main(){
   for(int step = 0; step < N; step++){
 	  update(ALa, BLb, La, Lb, U, iTEBD, updateA);
 	  update(BLb, ALa, Lb, La, U, iTEBD, updateA);
-    if(step == 2)
-      exit(0);
   }
 	cout<<"E = "<<setprecision(12)<<measure2(ALa, BLb, Lb, U, iTEBD, delta)<<endl;
+	cout<<"E = "<<setprecision(12)<<measure(ALa, BLb, La, Lb, H, MPS, meas)<<endl;
 }
+
 
 void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& expH, Network& iTEBD, Network& updateA){
 	Qnum q0(0);
@@ -75,11 +75,7 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 	vector<Matrix> rets = Theta.getBlock(q0).svd();
 	int dim = CHI < rets[1].row() ? CHI : rets[1].row();
 	Matrix lambda(dim, dim, true);
-	for(int i = 0; i < dim; i++){
-		lambda[i] = rets[1][i];
-    	cout<<lambda[i]<<", ";
-	  }
-  	cout<<endl<<endl;
+  memcpy(lambda.elem(), rets[1].elem(), dim * sizeof(double));
 	double norm = lambda.norm();
 	lambda *= (1 / norm);
 	La[q0] = lambda;
@@ -92,14 +88,6 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 	updateA.putTensor("C", &C);
 	ALa = updateA.launch();
 	ALa *= (1 / norm);
-
-	iTEBD.putTensor("ALa", &ALa);
-	iTEBD.putTensor("BLb", &BLb);
-	iTEBD.putTensor("expH", &expH);
-	C = iTEBD.launch();
-	Theta.assign(C.bond());
-	Theta.putBlock(q0, Lb[q0] * C.getBlock(q0));
-	Theta.permute(2);
 }
 
 double measure2(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& Lb, UniTensor& expH, Network & iTEBD, double delta){
@@ -111,10 +99,8 @@ double measure2(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& Lb, UniTensor
 	UniTensor Theta(C.bond(), "Theta");
 	Theta.putBlock(q0, Lb[q0] * C.getBlock(q0));
 	Theta.permute(2);
-  cout<<Theta;
   UniTensor Theta2 = Theta;
   UniTensor val = Theta * Theta2;
-  cout<<val;
   return -log(val[0]) / delta / 2;
 }
 
@@ -142,7 +128,7 @@ double expectation(UniTensor& L, UniTensor& R, UniTensor& Op, Network& MPS, Netw
 	double norm = psi.getBlock(q0).norm();
 	norm *= norm;
 	meas.putTensor("bra", &psi);
-	meas.putTensor("ket", &psi);
+	meas.putTensorT("ket", &psi);
 	meas.putTensor("Op", &Op);
 	return meas.launch()[0] / norm;
 }
