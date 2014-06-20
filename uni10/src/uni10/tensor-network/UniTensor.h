@@ -66,7 +66,7 @@ class UniTensor{
 		//void elemSet(const Qnum& qnum, double* _elem);
 		//void elemSet(double* _elem);
 		double at(std::vector<int>idxs)const;
-		//double& operator[](size_t idx);
+		double operator[](size_t idx);
     std::vector<Qnum> blockQnum()const;
     Qnum blockQnum(int idx)const;
 		size_t blockNum()const;

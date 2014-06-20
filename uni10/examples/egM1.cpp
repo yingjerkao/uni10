@@ -13,7 +13,7 @@ int main(){
 	std::vector<uni10::Matrix> results = H.diagonalize();
 	std::cout<<"The eigen values: \n\n"<<results[0];
 	std::cout<<"The eigen vectors: \n\n"<<results[1];
-	
+
 	// Access element in a diagonal matrix
 	uni10::Matrix D = results[0];
 	std::cout<<"D.at(1, 1) = "<<D.at(1, 1)<<std::endl;;
@@ -26,11 +26,11 @@ int main(){
 	// Access element
 	std::cout<<"H.at(1, 2) = "<<H.at(1, 2)<<std::endl;;
 	std::cout<<"H[5] = " << H[5]<<std::endl;
-	
+
 	// Make a pure density matrix from ground state
-	uni10::Matrix U = results[1];	
+	uni10::Matrix U = results[1];
 	// Generate ground state by taking the first H.rol() elements from U.
-	uni10::Matrix GS(1, H.col(), U.elem());
+	uni10::Matrix GS(1, H.col(), U.getElem());
 	// Transposed GS
 	uni10::Matrix GST = GS;
 	GST.transpose();
@@ -43,7 +43,7 @@ int main(){
 	uni10::Matrix Rho = GST * GS;
 	std::cout<<"\nPure density matrix of ground state: \n\n";
 	std::cout<< Rho;
-	
+
 	// Measure ground state energy
 	std::cout<<"\nThe ground state energy: " << (Rho * H).trace() << std::endl;
 }

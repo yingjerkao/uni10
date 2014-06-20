@@ -192,8 +192,8 @@ void Matrix::orthoRand(){
 			orthoRandomize(m_elem, Rnum, Cnum);
 		else{
 			Matrix M(Cnum, Rnum);
-			orthoRandomize(M.elem(), Cnum, Rnum);
-			myTranspose(M.elem(), Cnum, Rnum, m_elem, 0);
+			orthoRandomize(M.getElem(), Cnum, Rnum);
+			myTranspose(M.getElem(), Cnum, Rnum, m_elem, 0);
 		}
 
 	}

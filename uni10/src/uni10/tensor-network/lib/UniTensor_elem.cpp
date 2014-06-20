@@ -476,11 +476,10 @@ double UniTensor::at(std::vector<int> idxs)const{
 		return 0.0;;
 	}
 }
-/*
-double& UniTensor::operator[](size_t idx){
+double UniTensor::operator[](size_t idx){
 	assert(idx < m_elemNum);
 	return elem[idx];
-}*/
+}
 
 UniTensor& UniTensor::transpose(){
 	assert(status & HAVEBOND);

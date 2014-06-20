@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -51,7 +51,7 @@ UniTensor::UniTensor(const UniTensor& UniT):
 			RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
 	}
 	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
-	std::map<Qnum,Block>::iterator it; 
+	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
 	ELEMNUM += m_elemNum;
@@ -88,7 +88,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){
 	status = UniT.status;
 	m_elemNum = UniT.m_elemNum;
 	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
-	std::map<Qnum,Block>::iterator it; 
+	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin(); it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
 	ELEMNUM += m_elemNum;
@@ -194,7 +194,7 @@ void UniTensor::initUniT(){
 	}
 	elem = NULL;
 	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
-	std::map<Qnum,Block>::iterator it; 
+	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
 	membzero(elem, sizeof(DOUBLE) * m_elemNum, status);
@@ -238,7 +238,7 @@ size_t UniTensor::blockNum()const{
 }
 
 void UniTensor::check(){
-	std::cout<<"Existing Tensors: " << COUNTER << std::endl; 
+	std::cout<<"Existing Tensors: " << COUNTER << std::endl;
 	std::cout<<"Allocated Elem: " << ELEMNUM << std::endl;
 	std::cout<<"Max Allocated Elem: " << MAXELEMNUM << std::endl;
 	std::cout<<"Max Allocated Elem for a Tensor: " << MAXELEMTEN << std::endl;
@@ -322,21 +322,21 @@ void UniTensor::orthoRand(const Qnum& qnum){
 		orthoRandomize(block.elem, block.Rnum, block.Cnum);
 	else{
 		Matrix M(block.Cnum, block.Rnum);
-		orthoRandomize(M.elem(), block.Cnum, block.Rnum);
-		myTranspose(M.elem(), block.Cnum, block.Rnum, block.elem, 0);
+		orthoRandomize(M.getElem(), block.Cnum, block.Rnum);
+		myTranspose(M.getElem(), block.Cnum, block.Rnum, block.elem, 0);
 	}
 	status |= HAVEELEM;
 }
 
 void UniTensor::orthoRand(){
-	std::map<Qnum,Block>::iterator it; 
+	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		if(it->second.Rnum <= it->second.Cnum)
 			orthoRandomize(it->second.elem, it->second.Rnum, it->second.Cnum);
 		else{
 			Matrix M(it->second.Cnum, it->second.Rnum);
-			orthoRandomize(M.elem(), it->second.Cnum, it->second.Rnum);
-			myTranspose(M.elem(), it->second.Cnum, it->second.Rnum, it->second.elem, 0);
+			orthoRandomize(M.getElem(), it->second.Cnum, it->second.Rnum);
+			myTranspose(M.getElem(), it->second.Cnum, it->second.Rnum, it->second.elem, 0);
 		}
 	status |= HAVEELEM;
 }
@@ -348,7 +348,7 @@ void UniTensor::eye(const Qnum& qnum){
 }
 
 void UniTensor::eye(){
-	std::map<Qnum,Block>::iterator it; 
+	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		myEye(it->second.elem, it->second.Rnum, it->second.Cnum, status);
 	status |= HAVEELEM;
@@ -434,7 +434,7 @@ Matrix UniTensor::printRaw(bool flag)const{
 		//std::cout<<"colNum: " << colNum<<std::endl;
 		//std::cout<<"rowNum: " << rowNum<<std::endl;
 		std::vector<int> idxs(bondNum, 0);
-		
+
 		if(flag){
 			std::cout<< "     ";
 			for(int q = 0; q < colQ.size(); q++)
@@ -509,7 +509,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	if(UniT.name.length() > 0)
 		os << " " << UniT.name << " ";
 	for(int s = 0; s < star; s++)
-		os<<"*";	
+		os<<"*";
 	os << "\n             ____________\n";
 	os << "            |            |\n";
 	int llab = 0;
@@ -544,18 +544,18 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 			//	rlab = row + l;
 			sprintf(buf, "    %5s   |%4s    %4d|___%-5d\n", "", "", bonds[row + l].dim(), rlab);
 			os << buf;
-		}   
+		}
 		os << "            |            |   \n";
-	}   
+	}
 	os << "            |____________|\n";
 
 	os << "\n================BONDS===============\n";
 	for(int b = 0; b < bonds.size(); b++){
 		os << bonds[b];
-	}   
+	}
 	os<<"\n===============BLOCKS===============\n";
 	std::map<Qnum, Matrix> blocks = UniT.getBlocks();
-	std::map<Qnum, Matrix>::const_iterator it; 
+	std::map<Qnum, Matrix>::const_iterator it;
 	int Rnum, Cnum;
 	bool printElem = true;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ ){
@@ -565,7 +565,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 		else
 			os<<it->second.row() << " x "<<it->second.col()<<": "<<it->second.elemNum()<<std::endl<<std::endl;
 
-	}   
+	}
 	os << "Total elemNum: "<<UniT.m_elemNum<<std::endl;
 	os << "***************** END ****************\n\n";
 	return os;
@@ -601,7 +601,7 @@ void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
 	assert(blocks.find(qnum) != blocks.end());
 	Block& blk = blocks[qnum];
 	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
-	double* elem = mat.elem();
+	double* elem = mat.getElem();
 	if(mat.isDiag()){
 		memset(blk.elem, 0, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
 		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
@@ -636,7 +636,7 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 		if(marked[m])
 			mark++;
 	assert(mark == cmbLabels.size());
-		
+
 	int enc = 0;
 	int enc_r = 0;
 	std::vector<Bond> newBonds;
@@ -671,6 +671,6 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 	myMemcpy(Tout.elem, elem, sizeof(DOUBLE) * m_elemNum, Tout.status, Tout.status);
 	Tout.status |= HAVEELEM;
 	return (*this = Tout);
-	
+
 }
 }; /* namespace uni10 */
