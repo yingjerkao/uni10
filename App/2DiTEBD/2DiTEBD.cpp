@@ -50,22 +50,14 @@ int main(){
 	map<Qnum, Matrix> LL;
 
 	Matrix I_chi(CHI, CHI, true);
-	I_chi[0] = 0.3;
-	I_chi[1] = 0.7;
+  I_chi.randomize();
 	LU[q0] = I_chi;
 	LR[q0] = I_chi;
 	LD[q0] = I_chi;
 	LL[q0] = I_chi;
 
-	A.set_zero();
-	B.set_zero();
-	A[0] = 1;
-	B[0] = 1;
-
-	for(int i = 0; i < A.elemNum(); i++){
-		A[i] = log(i % 10 + 1);
-		B[i] = log(i % 10 + 1);
-	}
+	A.randomize();
+	B.randomize();
 
 	double g = 0.7;
 	double H_elem[] = { -1,  g,  g,  0,
@@ -163,7 +155,9 @@ void updateU(UniTensor& AL, UniTensor& BL, map<Qnum, Matrix>& LU, map<Qnum, Matr
 		per_bond5[i] = bond5[order[i]];
 	B.assign(per_bond5);
 	B.addLabel(order);
-	B.elemSet(q0, rets[2].elem());
+  Matrix blk = B.getBlock(q0);
+  blk.setElem(rets[2].getElem());
+	B.putBlock(q0, blk);
 	int back_order[] = {0, 1, 2, 3, 4};
 	B.permute(back_order, 1);
 
@@ -208,7 +202,9 @@ void updateR(UniTensor& AL, UniTensor& BL, map<Qnum, Matrix>& LU, map<Qnum, Matr
 		per_bond5[i] = bond5[order[i]];
 	B.assign(per_bond5);
 	B.addLabel(order);
-	B.elemSet(q0, rets[2].elem());
+  Matrix blk = B.getBlock(q0);
+  blk.setElem(rets[2].getElem());
+	B.putBlock(q0, blk);
 	int back_order[] = {0, 1, 2, 3, 4};
 	B.permute(back_order, 1);
 
