@@ -43,7 +43,7 @@ int main(){
 	U.orthoRand();
 	UniTensor UT = U;
 	UT.transpose();
-	
+
 	bonds.clear();
 	vector<Qnum> qnums1;
 	qnums1.push_back(q30); qnums1.push_back(q11); qnums1.push_back(q11); qnums1.push_back(q11);
@@ -74,15 +74,15 @@ int main(){
 	UniTensor Rho(bonds, "Rho");
 	Rho.orthoRand();
 	//cout<<Rho;
-	
+
 	H0.rawElem().save("H0_elem1");
 	W1.rawElem().save("W1_elem1");
 	U.rawElem().save("U_elem1");
 	Rho.rawElem().save("Rho_elem1");
-	
-	
+
+
 	// write out tensors before contraction.
-	
+
 	int label_H0[] = {1, 4, 2, 5};
 	H0.addLabel(label_H0);
 	H0.save("tenH0");
@@ -114,7 +114,7 @@ int main(){
 	UniTensor W2T_tmp("tenW2T");
 	UniTensor Rho_tmp("tenRho");
 	UniTensor H1_tmp("tenH1");
-	
+
 	assert(H0.elemCmp(H0_tmp));
 	assert(U.elemCmp(U_tmp));
 	assert(UT.elemCmp(UT_tmp));
