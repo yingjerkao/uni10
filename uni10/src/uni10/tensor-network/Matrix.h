@@ -61,7 +61,8 @@ class Matrix {
 		void randomize();
 		void orthoRand();
 		void set_zero();
-		void transpose();
+		Matrix& transpose();
+		Matrix& resize(int row, int col);
 		double trace();
 		double norm();
 		double sum();

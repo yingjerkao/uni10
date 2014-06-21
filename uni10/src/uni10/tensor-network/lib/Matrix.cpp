@@ -226,7 +226,7 @@ Matrix& Matrix::operator+= (const Matrix& Mb){
 	return *this;
 }
 
-void Matrix::transpose(){
+Matrix& Matrix::transpose(){
 	if(!diag){
 		double* oldElem = (double*)malloc(m_elemNum * sizeof(double));
 		memcpy(oldElem, m_elem, m_elemNum * sizeof(double));
@@ -236,7 +236,52 @@ void Matrix::transpose(){
 	int tmp = Rnum;
 	Rnum = Cnum;
 	Cnum = tmp;
+  return *this;
 }
+
+Matrix& Matrix::resize(int row, int col){
+  if(diag){
+	  size_t elemNum = row < col ? row : col;
+    if(elemNum > m_elemNum){
+      double* elem = (double*)calloc(elemNum, sizeof(double));
+      memcpy(elem, m_elem, m_elemNum * sizeof(double));
+      free(m_elem);
+      m_elem = elem;
+    }
+    Rnum = row;
+    Cnum = col;
+    m_elemNum = elemNum;
+    return *this;
+  }
+  else{
+    if(col == Cnum){
+      if(row > Rnum){
+        double* elem = (double*)calloc(row * col, sizeof(double));
+        memcpy(elem, m_elem, m_elemNum * sizeof(double));
+        free(m_elem);
+        m_elem = elem;
+      }
+      Rnum = row;
+      m_elemNum = row * col;
+      return *this;
+    }
+    else{
+      size_t data_row = row < Rnum ? row : Rnum;
+      size_t data_col = col < Cnum ? col : Cnum;
+      double* elem = (double*)calloc(row * col, sizeof(double));
+      for(int r = 0; r < data_row; r++)
+        memcpy(&(elem[r * col]), &(m_elem[r * Cnum]), data_col * sizeof(double));
+      free(m_elem);
+      m_elem = elem;
+      Rnum = row;
+      Cnum = col;
+      m_elemNum = row * col;
+      return *this;
+    }
+  }
+}
+
+
 double Matrix::norm(){
 	double nm = 0;
 	for(int i = 0; i < m_elemNum; i++)
