@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -32,9 +32,9 @@
 #include <limits.h>
 #include <assert.h>
 namespace uni10{
-void myDgemm(double* A, double* B, int M, int N, int K, double* C);
-void vecAdd(double* X, double* Y, int64_t N);	// Y = X + Y
-void vecScal(double a, double* X, int64_t N);	// X = a * X
+void matrixMul(double* A, double* B, int M, int N, int K, double* C);
+void vectorAdd(double* X, double* Y, size_t N);	// Y = X + Y
+void vectorScal(double a, double* X, size_t N);	// X = a * X
 
 /*Generate a set of row vectors which form a othonormal basis
  *For the incoming matrix "elem", the number of row <= the number of column, M <= N
@@ -42,9 +42,9 @@ void vecScal(double a, double* X, int64_t N);	// X = a * X
 void orthoRandomize(double* elem, int M, int N);
 
 void syDiag(double* Kij, int N, double* Eig, double* EigVec);
-void myDgesvd(double* Mij_ori, int M, int N, double* U, double* S, double* vT);
-void myTranspose(double* A, int M, int N, double* AT, int status);
-void myEye(double* elem, int M, int N, int status);
+void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT);
+void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu);
+void setIdentity(double* elem, size_t M, size_t N, bool ongpu);
 
-};	/* namespace uni10 */	
+};	/* namespace uni10 */
 #endif /* UNI10_LAPACK_H */

@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -34,9 +34,9 @@ extern "C" {
 void dgemm_(const char *transa, const char *transb, const int32_t *m, const int32_t *n, const int32_t *k,
            const double *alpha, const double *a, const int32_t *lda, const double *b, const int32_t *ldb,
            const double *beta, double *c, const int32_t *ldc);
-void    daxpy_(const int32_t *n, const double *alpha, const double *x, const int32_t *incx, double *y, const int32_t *incy);
+void daxpy_(const int32_t *n, const double *alpha, const double *x, const int32_t *incx, double *y, const int32_t *incy);
 
-void    dscal_(const int32_t *n, const double *a, double *x, const int32_t *incx);
+void dscal_(const int32_t *n, const double *a, double *x, const int32_t *incx);
 // LAPACK functions
 void dgesvd_( const char* jobu, const char* jobvt, const int32_t* m,
               const int32_t* n, double* a, const int32_t* lda, double* s,
@@ -55,10 +55,10 @@ inline void dgemm(const char *transa, const char *transb, const int32_t *m, cons
   dgemm_(transa, transb, m, n, k,alpha, a, lda, b, ldb, beta, c, ldc);
 }
 
-inline void    daxpy(const int32_t *n, const double *alpha, const double *x, const int32_t *incx, double *y, const int32_t *incy)
+inline void daxpy(const int32_t *n, const double *alpha, const double *x, const int32_t *incx, double *y, const int32_t *incy)
 { daxpy_(n, alpha, x, incx, y, incy); }
 
-inline void    dscal(const int32_t *n, const double *a, double *x, const int32_t *incx)
+inline void dscal(const int32_t *n, const double *a, double *x, const int32_t *incx)
 {   dscal_(n, a, x, incx);}
 
 inline void dsyev( const char* jobz, const char* uplo, const int32_t* n, double* a,

@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -34,7 +34,7 @@ UniTensor& UniTensor::operator+= (const UniTensor& Tb){
 	assert(status & Tb.status & HAVEELEM);
 	assert(bonds == Tb.bonds);
 	assert(blocks == Tb.blocks);
-	vecAdd(Tb.elem, elem, m_elemNum);
+	vectorAdd(Tb.elem, elem, m_elemNum);
 	return *this;
 }
 UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
@@ -42,7 +42,7 @@ UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
 	assert(Ta.bonds == Tb.bonds);
 	assert(Ta.blocks == Tb.blocks);
 	UniTensor Tc(Ta);
-	vecAdd(Tb.elem, Tc.elem, Ta.m_elemNum);
+	vectorAdd(Tb.elem, Tc.elem, Ta.m_elemNum);
 	return Tc;
 }
 UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
@@ -93,7 +93,7 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 				newLabelC.push_back(Tb.labels[b]);
 			}
 		int conBond = interLabel.size();
-		
+
 
 		Ta.permute(newLabelA, AbondNum - conBond);
 		Tb.permute(newLabelB, conBond);
@@ -106,15 +106,15 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 		if(cBonds.size())
 			Tc.addLabel(newLabelC);
 		Block blockA, blockB, blockC;
-		std::map<Qnum,Block>::iterator it; 
-		std::map<Qnum,Block>::iterator it2; 
+		std::map<Qnum,Block>::iterator it;
+		std::map<Qnum,Block>::iterator it2;
 		for(it = Ta.blocks.begin() ; it != Ta.blocks.end(); it++){
 			if((it2 = Tb.blocks.find(it->first)) != Tb.blocks.end()){
 				blockA = it->second;
 				blockB = it2->second;
-				blockC = Tc.blocks[it->first]; 
+				blockC = Tc.blocks[it->first];
 				assert(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum);
-				myDgemm(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
+				matrixMul(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
 			}
 		}
 		Tc.status |= Tc.HAVEELEM;
@@ -160,14 +160,14 @@ UniTensor& UniTensor::operator*=(const UniTensor& uT){
 
 UniTensor& UniTensor::operator*= (double a){
 	assert(status & HAVEELEM);
-	vecScal(a, elem, m_elemNum);
+	vectorScal(a, elem, m_elemNum);
 	return *this;
 }
 
 UniTensor operator*(const UniTensor& Ta, double a){
 	assert(Ta.status & Ta.HAVEELEM);
 	UniTensor Tb(Ta);
-	vecScal(a, Tb.elem, Tb.m_elemNum);
+	vectorScal(a, Tb.elem, Tb.m_elemNum);
 	return Tb;
 }
 UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
@@ -192,4 +192,4 @@ UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
 	T2.addLabel(label2);
 	return contract(T1, T2, true);
 }
-};	/* namespace uni10 */	
+};	/* namespace uni10 */

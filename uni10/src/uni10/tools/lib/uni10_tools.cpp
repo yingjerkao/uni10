@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -36,47 +36,47 @@ namespace uni10{
 
 size_t MEM_USAGE = 0;
 
-void* myMalloc(void* ptr, size_t memsize, int& status){
+void* elemAlloc(void* ptr, size_t memsize, bool& ongpu){
 	ptr = malloc(memsize);
 	assert(ptr != NULL);
 	MEM_USAGE += memsize;
 	return ptr;
 }
 
-void* myMemcpy(void* des, const void* src, size_t memsize, int des_st, int src_st){
+void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool src_ongpu){
 	return memcpy(des, src, memsize);
 }
 
-void myFree(void* ptr, size_t memsize, int status){
+void elemFree(void* ptr, size_t memsize, bool ongpu){
 	free(ptr);
 	MEM_USAGE -= memsize;
 	ptr = NULL;
 }
-void membzero(void* ptr, size_t memsize, int status){
+void elemBzero(void* ptr, size_t memsize, bool ongpu){
 	memset(ptr, 0, memsize);
 }
 
-void randomNums(double* elem, int N, int status){
-	for(int i = 0; i < N; i++)
+void elemRand(double* elem, size_t N, bool ongpu){
+	for(size_t i = 0; i < N; i++)
 		elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
 }
 
-std::vector<_Swap> recSwap(int* _ord, int n){	//Given the reshape order out to in. 
+std::vector<_Swap> recSwap(int* _ord, int n){	//Given the reshape order out to in.
 	int ordF[n];
 	for(int i = 0; i < n; i++)
 		ordF[i] = i;
 	return recSwap(_ord, n, ordF);
 }
-std::vector<_Swap> recSwap(int* _ord, int n, int* ordF){	//Given the reshape order out to in. 
+std::vector<_Swap> recSwap(int* _ord, int n, int* ordF){	//Given the reshape order out to in.
 	int* ord = (int*)malloc(sizeof(int) * n);
 	memcpy(ord, _ord, sizeof(int) * n);
 	std::vector<_Swap> swaps;
-	_Swap sg; 
+	_Swap sg;
 	int tmp;
 	for(int i = 0; i < n - 1; i++)
 		for(int j = 0; j < n - i - 1; j++)
 			if(ord[j] > ord[j + 1]){
-				sg.b1 = ordF[ord[j + 1]]; 
+				sg.b1 = ordF[ord[j + 1]];
 				sg.b2 = ordF[ord[j]];
 				tmp = ord[j];
 				ord[j] = ord[j + 1];
@@ -87,4 +87,4 @@ std::vector<_Swap> recSwap(int* _ord, int n, int* ordF){	//Given the reshape ord
 	return swaps;
 }
 
-};	/* namespace uni10 */	
+};	/* namespace uni10 */

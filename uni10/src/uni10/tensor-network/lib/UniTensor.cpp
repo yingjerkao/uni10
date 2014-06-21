@@ -50,7 +50,8 @@ UniTensor::UniTensor(const UniTensor& UniT):
 		for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
 			RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
 	}
-	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
+  bool ongpu = false;
+	elem = (DOUBLE*)elemAlloc(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
 	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
@@ -60,7 +61,7 @@ UniTensor::UniTensor(const UniTensor& UniT):
 		MAXELEMNUM = ELEMNUM;
 	if(m_elemNum > MAXELEMTEN)
 		MAXELEMTEN = m_elemNum;
-	myMemcpy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, status, UniT.status);
+	elemCopy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, false, false);
 }
 
 UniTensor& UniTensor::operator=(const UniTensor& UniT){
@@ -84,10 +85,11 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){
 	}
 	ELEMNUM -= m_elemNum;	//free original memory
 	if(elem != NULL)
-		myFree(elem, sizeof(DOUBLE) * m_elemNum, status);
+		elemFree(elem, sizeof(DOUBLE) * m_elemNum, false);
 	status = UniT.status;
 	m_elemNum = UniT.m_elemNum;
-	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
+  bool ongpu = false;
+	elem = (DOUBLE*)elemAlloc(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
 	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin(); it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
@@ -96,7 +98,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){
 		MAXELEMNUM = ELEMNUM;
 	if(m_elemNum > MAXELEMTEN)
 		MAXELEMTEN = m_elemNum;
-	myMemcpy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, status, UniT.status);
+	elemCopy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, false, false);
 	return *this;
 }
 
@@ -193,11 +195,12 @@ void UniTensor::initUniT(){
 		status |= HAVEELEM;
 	}
 	elem = NULL;
-	elem = (DOUBLE*)myMalloc(elem, sizeof(DOUBLE) * m_elemNum, status);
+  bool ongpu = false;
+	elem = (DOUBLE*)elemAlloc(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
 	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		it->second.elem = &(elem[it->second.offset]);
-	membzero(elem, sizeof(DOUBLE) * m_elemNum, status);
+	elemBzero(elem, sizeof(DOUBLE) * m_elemNum, status);
 	ELEMNUM += m_elemNum;
 	COUNTER++;
 	if(ELEMNUM > MAXELEMNUM)
@@ -209,7 +212,7 @@ void UniTensor::initUniT(){
 
 UniTensor::~UniTensor(){
 	//cout<<"DESTRUCTING " << this << std::endl;
-	myFree(elem, sizeof(DOUBLE) * m_elemNum, status);
+	elemFree(elem, sizeof(DOUBLE) * m_elemNum, false);
 	ELEMNUM -= m_elemNum;
 	COUNTER--;
 }
@@ -312,7 +315,7 @@ void UniTensor::save(const std::string& fname){
 /*------------------- SET ELEMENTS -----------------*/
 
 void UniTensor::randomize(){
-	randomNums(elem, m_elemNum, status);
+	elemRand(elem, m_elemNum, false);
 	status |= HAVEELEM;
 }
 
@@ -323,7 +326,7 @@ void UniTensor::orthoRand(const Qnum& qnum){
 	else{
 		Matrix M(block.Cnum, block.Rnum);
 		orthoRandomize(M.getElem(), block.Cnum, block.Rnum);
-		myTranspose(M.getElem(), block.Cnum, block.Rnum, block.elem, 0);
+		setTranspose(M.getElem(), block.Cnum, block.Rnum, block.elem, 0);
 	}
 	status |= HAVEELEM;
 }
@@ -336,34 +339,32 @@ void UniTensor::orthoRand(){
 		else{
 			Matrix M(it->second.Cnum, it->second.Rnum);
 			orthoRandomize(M.getElem(), it->second.Cnum, it->second.Rnum);
-			myTranspose(M.getElem(), it->second.Cnum, it->second.Rnum, it->second.elem, 0);
+			setTranspose(M.getElem(), it->second.Cnum, it->second.Rnum, it->second.elem, 0);
 		}
 	status |= HAVEELEM;
 }
 
-void UniTensor::eye(const Qnum& qnum){
+void UniTensor::identity(const Qnum& qnum){
 	Block& block = blocks[qnum];
-	myEye(block.elem, block.Rnum, block.Cnum, status);
+	setIdentity(block.elem, block.Rnum, block.Cnum, status);
 	status |= HAVEELEM;
 }
 
-void UniTensor::eye(){
+void UniTensor::identity(){
 	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
-		myEye(it->second.elem, it->second.Rnum, it->second.Cnum, status);
+		setIdentity(it->second.elem, it->second.Rnum, it->second.Cnum, status);
 	status |= HAVEELEM;
 }
 
 void UniTensor::set_zero(const Qnum& qnum){
 	Block& block = blocks[qnum];
-	membzero(block.elem, block.Rnum * block.Cnum * sizeof(DOUBLE), status);
-	//memset(block.elem, 0, block.Rnum * block.Cnum * sizeof(DOUBLE));
+	elemBzero(block.elem, block.Rnum * block.Cnum * sizeof(DOUBLE), false);
 	status |= HAVEELEM;
 }
 
 void UniTensor::set_zero(){
-	membzero(elem, m_elemNum * sizeof(DOUBLE), status);
-	//memset(elem, 0, elemNum * sizeof(DOUBLE));
+	elemBzero(elem, m_elemNum * sizeof(DOUBLE), false);
 	status |= HAVEELEM;
 }
 
@@ -668,7 +669,7 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 	}
 	this->permute(rsp_labels, RBnum);
 	UniTensor Tout(newBonds, reduced_labels);
-	myMemcpy(Tout.elem, elem, sizeof(DOUBLE) * m_elemNum, Tout.status, Tout.status);
+	elemCopy(Tout.elem, elem, sizeof(DOUBLE) * m_elemNum, false, false);
 	Tout.status |= HAVEELEM;
 	return (*this = Tout);
 

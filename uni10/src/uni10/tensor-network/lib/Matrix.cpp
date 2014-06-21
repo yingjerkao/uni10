@@ -110,7 +110,7 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 	assert(Ma.Cnum == Mb.Rnum);
 	if((!Ma.diag) && (!Mb.diag)){
 		Matrix Mc(Ma.Rnum, Mb.Cnum);
-		myDgemm(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem);
+	  matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem);
 		return Mc;
 	}
 	else if(Ma.diag && (!Mb.diag)){
@@ -176,7 +176,7 @@ std::vector<Matrix> Matrix::svd() const{
 	Matrix U(Rnum, min);
 	Matrix S(min, min, true);
 	Matrix VT(min, Cnum);
-	myDgesvd(m_elem, Rnum, Cnum, U.m_elem, S.m_elem, VT.m_elem);
+	matrixSVD(m_elem, Rnum, Cnum, U.m_elem, S.m_elem, VT.m_elem);
 	outs.push_back(U);
 	outs.push_back(S);
 	outs.push_back(VT);
@@ -184,7 +184,7 @@ std::vector<Matrix> Matrix::svd() const{
 }
 
 void Matrix::randomize(){
-	randomNums(m_elem, m_elemNum, 0);
+	elemRand(m_elem, m_elemNum, false);
 }
 void Matrix::orthoRand(){
 	if(!diag){
@@ -193,7 +193,7 @@ void Matrix::orthoRand(){
 		else{
 			Matrix M(Cnum, Rnum);
 			orthoRandomize(M.getElem(), Cnum, Rnum);
-			myTranspose(M.getElem(), Cnum, Rnum, m_elem, 0);
+			setTranspose(M.getElem(), Cnum, Rnum, m_elem, 0);
 		}
 
 	}
@@ -206,23 +206,23 @@ void Matrix::set_zero(){
 
 Matrix operator*(const Matrix& Ma, double a){
 	Matrix Mb(Ma);
-	vecScal(a, Mb.m_elem, Mb.m_elemNum);
+	vectorScal(a, Mb.m_elem, Mb.m_elemNum);
 	return Mb;
 }
 
 Matrix& Matrix::operator*= (double a){
-	vecScal(a, m_elem, m_elemNum);
+	vectorScal(a, m_elem, m_elemNum);
 	return *this;
 }
 
 Matrix operator+(const Matrix& Ma, const Matrix& Mb){
 	Matrix Mc(Ma);
-	vecAdd(Mb.m_elem, Mc.m_elem, Ma.m_elemNum);
+	vectorAdd(Mb.m_elem, Mc.m_elem, Ma.m_elemNum);
 	return Mc;
 }
 
 Matrix& Matrix::operator+= (const Matrix& Mb){
-	vecAdd(Mb.m_elem, m_elem, m_elemNum);
+	vectorAdd(Mb.m_elem, m_elem, m_elemNum);
 	return *this;
 }
 
@@ -230,7 +230,7 @@ Matrix& Matrix::transpose(){
 	if(!diag){
 		double* oldElem = (double*)malloc(m_elemNum * sizeof(double));
 		memcpy(oldElem, m_elem, m_elemNum * sizeof(double));
-		myTranspose(oldElem, Rnum, Cnum, m_elem, 0);
+	  setTranspose(oldElem, Rnum, Cnum, m_elem, 0);
 		free(oldElem);
 	}
 	int tmp = Rnum;

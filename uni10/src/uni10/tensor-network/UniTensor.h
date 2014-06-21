@@ -105,8 +105,8 @@ class UniTensor{
 		friend class Network;
 		void orthoRand();
 		void orthoRand(const Qnum& qnum);
-		void eye();
-		void eye(const Qnum& qnum);
+		void identity();
+		void identity(const Qnum& qnum);
 		void set_zero(const Qnum& qnum);
 		void set_zero();
 		std::vector<_Swap> exSwap(const UniTensor& Tb)const;
