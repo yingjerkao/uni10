@@ -40,13 +40,13 @@ namespace uni10{
 
 class Matrix {
 	public:
-		Matrix(int _Rnum, int _Cnum, bool _diag=false);
-		Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag=false);
+		Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false);
+		Matrix(size_t _Rnum, size_t _Cnum, double* _elem, bool _diag=false);
 		Matrix(const Matrix& _m);
 		Matrix();
 		~Matrix();
-		int row()const;
-		int col()const;
+		size_t row()const;
+		size_t col()const;
 		bool isDiag()const{return diag;};
 		size_t elemNum()const;
 		Matrix& operator=(const Matrix& _m);
@@ -62,7 +62,7 @@ class Matrix {
 		void orthoRand();
 		void set_zero();
 		Matrix& transpose();
-		Matrix& resize(int row, int col);
+		Matrix& resize(size_t row, size_t col);
 		double trace();
 		double norm();
 		double sum();
@@ -75,10 +75,10 @@ class Matrix {
 		friend Matrix operator+(const Matrix& Ma, const Matrix& Mb);
 		Matrix& operator+= (const Matrix& Mb);
 		double& operator[](size_t idx);
-		double& at(int i, int j);
+		double& at(size_t i, size_t j);
 	private:
-		int Rnum;		//number of rows of the block
-		int Cnum;		//number of columns of the block
+		size_t Rnum;		//number of rows of the block
+		size_t Cnum;		//number of columns of the block
 		double* m_elem;
 		size_t m_elemNum;
 		bool diag;

@@ -38,8 +38,8 @@ std::ostream& operator<< (std::ostream& os, const Matrix& m){
 	if(m.diag)
 		os << ", Diagonal";
 	os <<std::endl << std::endl;
-	for(int i = 0; i < m.Rnum; i++){
-		for(int j = 0; j < m.Cnum; j++)
+	for(size_t i = 0; i < m.Rnum; i++){
+		for(size_t j = 0; j < m.Cnum; j++)
 			if(m.diag){
 				if(i == j)
 					os << std::setw(7) << std::fixed << std::setprecision(3) << m.m_elem[i];
@@ -62,7 +62,7 @@ Matrix::Matrix(const Matrix& _m): Rnum(_m.Rnum), Cnum(_m.Cnum), m_elemNum(_m.m_e
 	}
 }
 
-Matrix::Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, double* _elem, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
 	if(_diag)
 		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
 	if(m_elemNum){
@@ -71,7 +71,7 @@ Matrix::Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag): Rnum(_Rnum), Cn
 	}
 }
 
-Matrix::Matrix(int _Rnum, int _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
 	if(_diag)
 		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
 	if(m_elemNum){
@@ -95,11 +95,11 @@ Matrix::~Matrix(){
 		free(m_elem);
 }
 
-int Matrix::row()const{
+size_t Matrix::row()const{
 	return Rnum;
 }
 
-int Matrix::col()const{
+size_t Matrix::col()const{
 	return Cnum;
 }
 size_t Matrix::elemNum()const{
@@ -115,21 +115,21 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 	}
 	else if(Ma.diag && (!Mb.diag)){
 		Matrix Mc(Ma.Rnum, Mb.Cnum);
-		for(int i = 0; i < Ma.m_elemNum; i++)
-			for(int j = 0; j < Mb.Cnum; j++)
+		for(size_t i = 0; i < Ma.m_elemNum; i++)
+			for(size_t j = 0; j < Mb.Cnum; j++)
 				Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i] * Mb.m_elem[i * Mb.Cnum + j];
 		return Mc;
 	}
 	else if((!Ma.diag) && Mb.diag){
 		Matrix Mc(Ma.Rnum, Mb.Cnum);
-		for(int i = 0; i < Ma.Rnum; i++)
-			for(int j = 0; j < Mb.m_elemNum; j++)
+		for(size_t i = 0; i < Ma.Rnum; i++)
+			for(size_t j = 0; j < Mb.m_elemNum; j++)
 				Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i * Ma.Cnum + j] * Mb.m_elem[j];
 		return Mc;
 	}
 	else{
 		Matrix Mc(Ma.Rnum, Mb.Cnum, true);
-		for(int i = 0; i < Ma.Rnum; i++)
+		for(size_t i = 0; i < Ma.Rnum; i++)
 			Mc.m_elem[i] = Ma.m_elem[i] * Mb.m_elem[i];
 		return Mc;
 	}
@@ -137,7 +137,7 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 bool operator== (const Matrix& m1, const Matrix& m2){
 	double diff;
 	if(m1.m_elemNum == m2.m_elemNum){
-		for(int i = 0; i < m1.m_elemNum; i++){
+		for(size_t i = 0; i < m1.m_elemNum; i++){
 			diff = fabs(m1.m_elem[i] - m2.m_elem[i]);
 			if(diff > 1E-6)
 				return false;
@@ -172,7 +172,7 @@ std::vector<Matrix> Matrix::diagonalize()const{
 std::vector<Matrix> Matrix::svd() const{
 	assert(!diag);
 	std::vector<Matrix> outs;
-	int min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
+	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
 	Matrix U(Rnum, min);
 	Matrix S(min, min, true);
 	Matrix VT(min, Cnum);
@@ -233,13 +233,13 @@ Matrix& Matrix::transpose(){
 	  setTranspose(oldElem, Rnum, Cnum, m_elem, 0);
 		free(oldElem);
 	}
-	int tmp = Rnum;
+	size_t tmp = Rnum;
 	Rnum = Cnum;
 	Cnum = tmp;
   return *this;
 }
 
-Matrix& Matrix::resize(int row, int col){
+Matrix& Matrix::resize(size_t row, size_t col){
   if(diag){
 	  size_t elemNum = row < col ? row : col;
     if(elemNum > m_elemNum){
@@ -269,7 +269,7 @@ Matrix& Matrix::resize(int row, int col){
       size_t data_row = row < Rnum ? row : Rnum;
       size_t data_col = col < Cnum ? col : Cnum;
       double* elem = (double*)calloc(row * col, sizeof(double));
-      for(int r = 0; r < data_row; r++)
+      for(size_t r = 0; r < data_row; r++)
         memcpy(&(elem[r * col]), &(m_elem[r * Cnum]), data_col * sizeof(double));
       free(m_elem);
       m_elem = elem;
@@ -284,13 +284,13 @@ Matrix& Matrix::resize(int row, int col){
 
 double Matrix::norm(){
 	double nm = 0;
-	for(int i = 0; i < m_elemNum; i++)
+	for(size_t i = 0; i < m_elemNum; i++)
 		nm += m_elem[i] * m_elem[i];
 	return sqrt(nm);
 }
 double Matrix::sum(){
 	double sm = 0;
-	for(int i = 0; i < m_elemNum; i++)
+	for(size_t i = 0; i < m_elemNum; i++)
 		sm += m_elem[i];
 	return sm;
 }
@@ -298,10 +298,10 @@ double Matrix::trace(){
 	assert(Rnum == Cnum);
 	double sum = 0;
 	if(diag)
-		for(int i = 0; i < m_elemNum; i++)
+		for(size_t i = 0; i < m_elemNum; i++)
 			sum += m_elem[i];
 	else
-		for(int i = 0; i < Rnum; i++)
+		for(size_t i = 0; i < Rnum; i++)
 			sum += m_elem[i * Cnum + i];
 	return sum;
 }
@@ -324,7 +324,7 @@ double& Matrix::operator[](size_t idx){
 double* Matrix::getElem()const{
 	return m_elem;
 }
-double& Matrix::at(int r, int c){
+double& Matrix::at(size_t r, size_t c){
 	assert(r < Rnum);
 	assert(c < Cnum);
 	if(diag){
@@ -339,7 +339,7 @@ Matrix takeExp(double a, const Matrix& mat){
 	std::vector<Matrix> rets = mat.diagonalize();
 	Matrix UT = rets[1];
 	UT.transpose();
-	for(int i = 0; i < rets[0].row(); i++)
+	for(size_t i = 0; i < rets[0].row(); i++)
 		rets[0][i] = exp(a * rets[0][i]);
 	return UT * rets[0] * rets[1];
 }
