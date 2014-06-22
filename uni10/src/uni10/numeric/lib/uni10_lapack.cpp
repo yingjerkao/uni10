@@ -45,7 +45,7 @@ void matrixMul(double* A, double* B, int M, int N, int K, double* C){
 void vectorAdd(double* X, double* Y, size_t N){
 	double a = 1.0;
 	int inc = 1;
-	size_t left = N;
+	int64_t left = N;
 	size_t offset = 0;
 	int chunk;
 	while(left > 0){
@@ -60,7 +60,7 @@ void vectorAdd(double* X, double* Y, size_t N){
 }
 void vectorScal(double a, double* X, size_t N){
 	int inc = 1;
-	size_t left = N;
+	int64_t left = N;
 	size_t offset = 0;
 	int chunk;
 	while(left > 0){
