@@ -206,6 +206,7 @@ void Matrix::set_zero(){
 
 Matrix operator*(const Matrix& Ma, double a){
 	Matrix Mb(Ma);
+  std::cout<<"HERE\n";
 	vectorScal(a, Mb.m_elem, Mb.m_elemNum);
 	return Mb;
 }
