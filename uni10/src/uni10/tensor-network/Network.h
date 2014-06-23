@@ -51,6 +51,10 @@ class Network {
 		UniTensor launch(const std::string& name="");
 		//void optimize(int num=1);
 		friend std::ostream& operator<< (std::ostream& os, Network& nd);
+    int rollcall();
+    size_t max_tensor_elemNum();
+    size_t sum_of_memory_usage();
+    size_t memory_requirement();
 	private:
 		void preprint(std::ostream& os, Node* nd, int layer);	//pre-order print
 		std::vector<std::string> names;
@@ -78,6 +82,9 @@ class Network {
 		void fromfile(const std::string& fname);
 		void findConOrd(Node* nd);
 		void addSwap();
+    void _max_tensor_elemNum(Node* nd, size_t& max_num, Node* max_nd) const;
+    size_t _sum_of_tensor_elem(Node* nd) const;
+    size_t _elem_usage(Node* nd, size_t& usage, size_t& max_usage)const;
 };
 };	/* namespace uni10 */
 #endif /* NETWORK_H */

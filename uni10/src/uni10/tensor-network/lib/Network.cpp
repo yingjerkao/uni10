@@ -599,6 +599,71 @@ Network::~Network(){
 		delete tensors[i];
 }
 
+int Network::rollcall(){
+  if(!load){
+    for(int i = 0; i < leafs.size(); i++)
+      if(leafs[i] == NULL){
+        std::cout<<"\nTensor '"<<names[i]<<"' has not yet been given!\n\n";
+        return i;
+      }
+    construct();
+  }
+  return -1;
+}
+
+size_t Network::sum_of_memory_usage(){
+  if(rollcall() >= 0)
+    return 0;
+  return _sum_of_tensor_elem(root) * sizeof(double);
+}
+
+size_t Network::_sum_of_tensor_elem(Node* nd) const{
+  if(nd == NULL)
+    return 0;
+  return nd->elemNum + _sum_of_tensor_elem(nd->left) + _sum_of_tensor_elem(nd->right);
+}
+
+size_t Network::memory_requirement(){
+  if(rollcall() >= 0)
+    return 0;
+  size_t usage = 0;
+  size_t max_usage = 0;
+  _elem_usage(root, usage, max_usage);
+  std::cout<<"USAGE: "<<usage<<std::endl;
+  return max_usage;
+}
+
+size_t Network::_elem_usage(Node* nd, size_t& usage, size_t& max_usage)const{
+  if(nd == NULL)
+    return 0;
+  size_t child_usage = _elem_usage(nd->left, usage, max_usage) + _elem_usage(nd->right, usage, max_usage);
+  usage += nd->elemNum;
+  max_usage = usage > max_usage ? usage : max_usage;
+  usage -= child_usage;
+  return nd->elemNum;
+}
+
+size_t Network::max_tensor_elemNum(){
+  if(rollcall() >= 0)
+    return 0;
+  size_t max_num = 0;
+  Node* max_nd = NULL;
+  _max_tensor_elemNum(root, max_num, max_nd);
+  return max_num;
+}
+
+void Network::_max_tensor_elemNum(Node* nd, size_t& max_num, Node* max_nd) const{
+  if(nd == NULL)
+    return;
+  _max_tensor_elemNum(nd->left, max_num, max_nd);
+  _max_tensor_elemNum(nd->right, max_num, max_nd);
+  if(nd->elemNum > max_num){
+    max_num = nd->elemNum;
+    max_nd = nd;
+  }
+}
+
+
 void Network::preprint(std::ostream& os, Node* nd, int layer){
 	if(nd == NULL)
 		return;
@@ -640,21 +705,9 @@ std::ostream& operator<< (std::ostream& os, Network& net){
 		os<<std::endl;
 	}
 	os<<std::endl;
-	if(net.load)
-		net.preprint(os, net.root, 0);
-  else{
-    bool ready = true;
-    for(int i = 0; i < net.leafs.size(); i++)
-      if(net.leafs[i] == NULL){
-        ready = false;
-        break;
-      }
-    if(ready){
-      net.construct();
-		  net.preprint(os, net.root, 0);
-    }
-  }
 
+  if(net.rollcall() < 0)
+		net.preprint(os, net.root, 0);
 	return os;
 }
 std::ostream& operator<< (std::ostream& os, const Node& nd){
