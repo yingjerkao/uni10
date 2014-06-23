@@ -424,8 +424,10 @@ void Network::construct(){
 
 void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
-	if((!force) && load)
+	if((!force) && load){
 		destruct();
+    std::cout<<"Destruct!!!\n";
+  }
 	//if(UniT->name.length() > 0)
 	//	assert(UniT->name == names[idx]);
 	assert(UniT->RBondNum == Rnums[idx]);
