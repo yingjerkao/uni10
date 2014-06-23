@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -79,5 +79,5 @@ class Network {
 		void findConOrd(Node* nd);
 		void addSwap();
 };
-};	/* namespace uni10 */	
+};	/* namespace uni10 */
 #endif /* NETWORK_H */

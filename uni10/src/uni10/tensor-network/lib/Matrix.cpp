@@ -186,6 +186,7 @@ std::vector<Matrix> Matrix::svd() const{
 void Matrix::randomize(){
 	elemRand(m_elem, m_elemNum, false);
 }
+
 void Matrix::orthoRand(){
 	if(!diag){
 		if(Rnum <= Cnum)
@@ -280,7 +281,6 @@ Matrix& Matrix::resize(size_t row, size_t col){
     }
   }
 }
-
 
 double Matrix::norm(){
 	double nm = 0;

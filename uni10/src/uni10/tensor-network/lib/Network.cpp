@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -34,15 +34,15 @@ namespace uni10{
 Node::Node(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }
 
-Node::Node(UniTensor* Tp): T(Tp), elemNum(Tp->m_elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){	
+Node::Node(UniTensor* Tp): T(Tp), elemNum(Tp->m_elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){
 	assert(Tp->status & Tp->HAVEBOND);
 	//assert(Tp->status & Tp->HAVELABEL);
 }
 
-Node::Node(const Node& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){	
+Node::Node(const Node& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){
 }
 
-Node::Node(std::vector<Bond>& _bonds, std::vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL), point(0){	
+Node::Node(std::vector<Bond>& _bonds, std::vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL), point(0){
 	elemNum = cal_elemNum(bonds);
 }
 
@@ -137,8 +137,8 @@ int64_t Node::cal_elemNum(std::vector<Bond>& _bonds){
 		else if(_bonds[b].type() == BD_OUT)
 			cBondNum++;
 	Qnum qnum(0, PRT_EVEN);
-	int dim;
-	std::map<Qnum,int> row_QnumMdim;
+	size_t dim;
+	std::map<Qnum,size_t> row_QnumMdim;
 	std::vector<int> row_offs(rBondNum, 0);
 	if(rBondNum){
 		while(1){
@@ -169,7 +169,7 @@ int64_t Node::cal_elemNum(std::vector<Bond>& _bonds){
 		row_QnumMdim[qnum] = 1;
 	}
 
-	std::map<Qnum,int> col_QnumMdim;
+	std::map<Qnum,size_t> col_QnumMdim;
 	std::vector<int> col_offs(cBondNum, 0);
 	if(cBondNum){
 		while(1){
@@ -202,9 +202,9 @@ int64_t Node::cal_elemNum(std::vector<Bond>& _bonds){
 		if(row_QnumMdim.find(qnum) != row_QnumMdim.end())
 			col_QnumMdim[qnum] = 1;
 	}
-	int64_t _elemNum = 0;
-	std::map<Qnum,int>::iterator it;
-	std::map<Qnum,int>::iterator it2;
+	size_t _elemNum = 0;
+	std::map<Qnum,size_t>::iterator it;
+	std::map<Qnum,size_t>::iterator it2;
 	for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
 		it = row_QnumMdim.find(it2->first);
 		_elemNum += it->second * it2->second;
