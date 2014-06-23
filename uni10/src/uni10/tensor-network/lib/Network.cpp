@@ -36,7 +36,6 @@ Node::Node(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(
 
 Node::Node(UniTensor* Tp): T(Tp), elemNum(Tp->m_elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){
 	assert(Tp->status & Tp->HAVEBOND);
-	//assert(Tp->status & Tp->HAVELABEL);
 }
 
 Node::Node(const Node& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){
@@ -426,7 +425,6 @@ void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
 	if((!force) && load){
 		destruct();
-    std::cout<<"Destruct!!!\n";
   }
 	//if(UniT->name.length() > 0)
 	//	assert(UniT->name == names[idx]);
@@ -644,6 +642,18 @@ std::ostream& operator<< (std::ostream& os, Network& net){
 	os<<std::endl;
 	if(net.load)
 		net.preprint(os, net.root, 0);
+  else{
+    bool ready = true;
+    for(int i = 0; i < net.leafs.size(); i++)
+      if(net.leafs[i] == NULL){
+        ready = false;
+        break;
+      }
+    if(ready){
+      net.construct();
+		  net.preprint(os, net.root, 0);
+    }
+  }
 
 	return os;
 }
