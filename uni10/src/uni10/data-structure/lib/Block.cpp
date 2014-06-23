@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -21,7 +21,7 @@
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
 *  @brief Implementation file of Block class
-*  @author Yun-Da Hsieh 
+*  @author Yun-Da Hsieh
 *  @date 2014-05-06
 *  @since 0.1.0
 *
@@ -34,8 +34,8 @@ Block::Block(const Block& _b): qnum(_b.qnum), Rnum(_b.Rnum), Cnum(_b.Cnum), offs
 Block::~Block(){}
 std::ostream& operator<< (std::ostream& os, const Block& b){
 	os << "--- " << b.qnum<< ": " << b.Rnum << " x " << b.Cnum << " = " << b.Rnum * b.Cnum << " ---\n\n";
-	for(int r = 0; r < b.Rnum; r++){
-		for(int c = 0; c < b.Cnum; c++)
+	for(size_t r = 0; r < b.Rnum; r++){
+		for(size_t c = 0; c < b.Cnum; c++)
 			os<< std::setw(7) << std::setprecision(3) << b.elem[r * b.Cnum + c];
 		os << "\n\n";
 	}

@@ -127,17 +127,18 @@ class UniTensor{
 		int RBondNum;	//Row bond number
 		int RQdim;
 		int CQdim;
-		int64_t m_elemNum;
+		size_t m_elemNum;
 		std::map<int, Block*> RQidx2Blk;	//Qidx to the Block
-		std::map<int, int> QidxEnc;
-		std::map<int, int> RQidx2Off;	//the row offset starts from the block origin of a qnum
-		std::map<int, int> CQidx2Off;	//the col offset starts from the block origin of a qnum
-		std::map<int, int> RQidx2Dim;
-		std::map<int, int> CQidx2Dim;
+		std::map<int, size_t> QidxEnc;
+		std::map<int, size_t> RQidx2Off;	//the row offset starts from the block origin of a qnum
+		std::map<int, size_t> CQidx2Off;	//the col offset starts from the block origin of a qnum
+		std::map<int, size_t> RQidx2Dim;
+		std::map<int, size_t> CQidx2Dim;
+    bool ongpu;
 		static int COUNTER;
 		static int64_t ELEMNUM;
-		static int64_t MAXELEMNUM;
-		static int64_t MAXELEMTEN;	//Max number of element of a tensor
+		static size_t MAXELEMNUM;
+		static size_t MAXELEMTEN;	//Max number of element of a tensor
 		//Private Functions
 		void grouping();
 		void initUniT();

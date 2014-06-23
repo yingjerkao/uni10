@@ -33,8 +33,8 @@
 namespace uni10{
 int64_t UniTensor::ELEMNUM = 0;
 int UniTensor::COUNTER = 0;
-int64_t UniTensor::MAXELEMNUM = 0;
-int64_t UniTensor::MAXELEMTEN = 0;
+size_t UniTensor::MAXELEMNUM = 0;
+size_t UniTensor::MAXELEMTEN = 0;
 
 UniTensor::UniTensor(double val): status(0){
 	initUniT();
@@ -160,7 +160,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from fi
 	labels.assign(num_l, 0);
 	fread(&(labels[0]), num_l, sizeof(int), fp);
 	if(st & HAVEELEM){
-		int num_el;
+	  size_t num_el;
 		fread(&num_el, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
 		assert(num_el == m_elemNum);
 		fread(elem, m_elemNum, sizeof(DOUBLE), fp);
@@ -430,8 +430,8 @@ Matrix UniTensor::printRaw(bool flag)const{
 		Bond cBond = combine(outs);
 		std::vector<Qnum> rowQ = rBond.Qlist();
 		std::vector<Qnum> colQ = cBond.Qlist();
-		int rowNum = rBond.dim();
-		int colNum = cBond.dim();
+		size_t rowNum = rBond.dim();
+		size_t colNum = cBond.dim();
 		//std::cout<<"colNum: " << colNum<<std::endl;
 		//std::cout<<"rowNum: " << rowNum<<std::endl;
 		std::vector<int> idxs(bondNum, 0);
@@ -557,7 +557,6 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	os<<"\n===============BLOCKS===============\n";
 	std::map<Qnum, Matrix> blocks = UniT.getBlocks();
 	std::map<Qnum, Matrix>::const_iterator it;
-	int Rnum, Cnum;
 	bool printElem = true;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ ){
 		os << "--- " << it->first << ": ";// << Rnum << " x " << Cnum << " = " << Rnum * Cnum << " ---\n\n";
@@ -578,8 +577,8 @@ Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
 		return Matrix(0, 0);
 	if(diag){
 		Matrix mat(it->second.Rnum, it->second.Cnum, true);
-		int elemNum = it->second.Rnum < it->second.Cnum ? it->second.Rnum : it->second.Cnum;
-		for(int i = 0; i < elemNum; i++)
+		size_t elemNum = it->second.Rnum < it->second.Cnum ? it->second.Rnum : it->second.Cnum;
+		for(size_t i = 0; i < elemNum; i++)
 			mat[i] = it->second.elem[i * it->second.Cnum + i];
 		return mat;
 	}
@@ -605,8 +604,8 @@ void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
 	double* elem = mat.getElem();
 	if(mat.isDiag()){
 		memset(blk.elem, 0, blk.Rnum * blk.Cnum * sizeof(DOUBLE));
-		int elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
-		for(int i = 0; i < elemNum; i++)
+		size_t elemNum = blk.Rnum < blk.Cnum ? blk.Rnum : blk.Cnum;
+		for(size_t i = 0; i < elemNum; i++)
 			blk.elem[i * blk.Cnum + i] = elem[i];
 	}
 	else{

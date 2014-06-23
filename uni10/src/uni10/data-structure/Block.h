@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -49,9 +49,9 @@ class Block{
 	private:
 		Qnum qnum;
 		double* elem;
-		int Rnum;		//number of rows of the block
-		int Cnum;		//number of columns of the block
-		int64_t offset;	//index of the first element of a block element in Tensor
+		size_t Rnum;		//number of rows of the block
+		size_t Cnum;		//number of columns of the block
+		size_t offset;	//index of the first element of a block element in Tensor
 };
 };
 #endif /* BLOCK_H */
