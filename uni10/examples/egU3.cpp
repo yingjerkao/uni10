@@ -33,7 +33,7 @@ int main(){
 	W.orthoRand();
 	uni10::UniTensor WT = W;
 	WT.transpose();
-	
+
 	// Operate W and WT on H_U1, see the contraction labels in the documentation.
 	int label_H[] = {1, 2, 3, 4};
 	int label_W[] = {-1, 1, 2};
@@ -49,8 +49,8 @@ int main(){
 	WT.save("egU3_WT");
 
 	// Check the memory usage.
-	uni10::UniTensor::check();
-	
+	uni10::UniTensor::profile();
+
 	return 0;
 }
 

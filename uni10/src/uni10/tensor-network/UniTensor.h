@@ -80,7 +80,7 @@ class UniTensor{
 		size_t elemNum()const;
 		size_t bondNum()const;
 		int inBondNum()const;
-		static void check();
+		static void profile();
 		UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
 		UniTensor& permute(int* newLabels, int inBondNum);
 		UniTensor& permute(int inBondNum);

@@ -627,10 +627,12 @@ size_t Network::memory_requirement(){
   if(rollcall() >= 0)
     return 0;
   size_t usage = 0;
+  for(int i = 0; i < leafs.size(); i++)
+    usage += leafs[i]->elemNum;
+  usage *= 2;
   size_t max_usage = 0;
   _elem_usage(root, usage, max_usage);
-  std::cout<<"USAGE: "<<usage<<std::endl;
-  return max_usage;
+  return max_usage * sizeof(double);
 }
 
 size_t Network::_elem_usage(Node* nd, size_t& usage, size_t& max_usage)const{
@@ -647,22 +649,38 @@ size_t Network::max_tensor_elemNum(){
   if(rollcall() >= 0)
     return 0;
   size_t max_num = 0;
-  Node* max_nd = NULL;
+  Node max_nd;
   _max_tensor_elemNum(root, max_num, max_nd);
   return max_num;
 }
 
-void Network::_max_tensor_elemNum(Node* nd, size_t& max_num, Node* max_nd) const{
+void Network::_max_tensor_elemNum(Node* nd, size_t& max_num, Node& max_nd) const{
   if(nd == NULL)
     return;
   _max_tensor_elemNum(nd->left, max_num, max_nd);
   _max_tensor_elemNum(nd->right, max_num, max_nd);
   if(nd->elemNum > max_num){
     max_num = nd->elemNum;
-    max_nd = nd;
+    max_nd = *nd;
   }
 }
 
+void Network::profile(){
+  if(rollcall() >= 0)
+    return;
+  std::cout<<"\n===== Network profile =====\n";
+  std::cout<<"Memory Requirement: "<<memory_requirement()<<std::endl;
+  std::cout<<"Sum of memory usage: "<<sum_of_memory_usage()<<std::endl;
+  size_t max_num = 0;
+  Node max_nd;
+  _max_tensor_elemNum(root, max_num, max_nd);
+  std::cout<<"Maximun tensor: \n";
+  std::cout<<"  elemNum: "<<max_num<<"\n  "<<max_nd.labels.size()<<" bonds and labels: ";
+	for(int i = 0; i < max_nd.labels.size(); i++)
+		std::cout<< max_nd.labels[i] << ", ";
+  std::cout<<std::endl;
+  std::cout<<"===========================\n\n";
+}
 
 void Network::preprint(std::ostream& os, Node* nd, int layer){
 	if(nd == NULL)
