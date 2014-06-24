@@ -365,6 +365,9 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 	}
 }
 
+void UniTensor::addRawElem(std::vector<DOUBLE> rawElem){
+  addRawElem(&rawElem[0]);
+}
 void UniTensor::addRawElem(DOUBLE* rawElem){
 	assert((status & HAVEBOND));   //If not INIT, CANNOT add elements
 	int bondNum = bonds.size();

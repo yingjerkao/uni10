@@ -42,6 +42,7 @@ class Matrix {
 	public:
 		Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false);
 		Matrix(size_t _Rnum, size_t _Cnum, double* _elem, bool _diag=false);
+		Matrix(size_t _Rnum, size_t _Cnum, std::vector<double> _elem, bool _diag=false);
 		Matrix(const Matrix& _m);
 		Matrix();
 		~Matrix();
@@ -57,6 +58,7 @@ class Matrix {
 		std::vector<Matrix> svd()const;
 		friend Matrix takeExp(double a, const Matrix& mat);
 		void setElem(double* elem);
+		void setElem(std::vector<double> elem);
 		double* getElem()const;
 		void randomize();
 		void orthoRand();

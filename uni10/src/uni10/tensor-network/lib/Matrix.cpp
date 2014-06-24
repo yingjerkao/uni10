@@ -71,6 +71,15 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, double* _elem, bool _diag): Rnum(_Rnu
 	}
 }
 
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, std::vector<double> _elem, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
+	if(_diag)
+		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
+	if(m_elemNum){
+		m_elem = (double*)malloc(m_elemNum * sizeof(double));
+		memcpy(m_elem, &_elem[0], m_elemNum * sizeof(double));
+	}
+}
+
 Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
 	if(_diag)
 		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
@@ -153,6 +162,9 @@ Matrix& Matrix::operator*= (const Matrix& Mb){
 	return *this = *this * Mb;
 }
 
+void Matrix::setElem(std::vector<double> elem){
+  setElem(&elem[0]);
+}
 void Matrix::setElem(double* elem){
 	memcpy(m_elem, elem, m_elemNum * sizeof(double));
 }
