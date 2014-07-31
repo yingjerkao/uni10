@@ -1,49 +1,52 @@
-OBJ := qnum.o bond.o block.o myLapack.o operate.o syTensor.o network.o matrix.o
-OBJF := qnumF.o bond.o block.o myLapack.o operate.o syTensor.o network.o matrix.o
+OBJ := qnum.o bond.o block.o uni10_tools.o uni10_lapack.o matrix.o operate.o UniTensor_elem.o UniTensor.o network.o
 LINK := -mkl=parallel
-CC := icpc
+CC := g++
+UNI10_ROOT := uni10
+SRC := .
+BIN := bin
+#OPT := -std=c++0x -O3
+OPT := -O3
+NVCC := nvcc
+NVCCOPT := -arch=sm_13
+all: $(OBJ) libuni10_old.a
 
-all: $(OBJF) libtensorF.a
-
-#all: $(OBJ) libtensor.a
 
 doc:
 	doxygen Doxyfile
 	cd ../docs/latex/; make pdf
 
-qnum.o: Qnum.cpp Qnum.h
-	$(CC) -c $< -o $@
+qnum.o: $(UNI10_ROOT)/datatype/lib/Qnum.cpp $(UNI10_ROOT)/datatype/Qnum.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-qnumF.o: QnumF.cpp QnumF.h
-	$(CC) -c $< -o $@
+bond.o: $(UNI10_ROOT)/data-structure/lib/Bond.cpp $(UNI10_ROOT)/data-structure/Bond.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-bond.o: Bond.cpp Bond.h
-	$(CC) -c $< -o $@
+block.o: $(UNI10_ROOT)/data-structure/lib/Block.cpp $(UNI10_ROOT)/data-structure/Block.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-block.o: Block.cpp Block.h
-	$(CC) -c $< -o $@
+uni10_tools.o: $(UNI10_ROOT)/tools/lib/uni10_tools.cpp $(UNI10_ROOT)/tools/uni10_tools.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-myLapack.o: myLapack.cpp myLapack.h
-	$(CC) -c $< -mkl=parallel -o $@
+uni10_lapack.o: $(UNI10_ROOT)/numeric/lib/uni10_lapack.cpp $(UNI10_ROOT)/numeric/uni10_lapack.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-operate.o: operate.cpp
-	$(CC) -c $< -o $@
+matrix.o: $(UNI10_ROOT)/tensor-network/lib/Matrix.cpp $(UNI10_ROOT)/tensor-network/Matrix.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-syTensor.o: SyTensor.cpp SyTensor.h
-	$(CC) -c $< -o $@
+operate.o: $(UNI10_ROOT)/tensor-network/lib/operate.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-matrix.o: Matrix.cpp Matrix.h
-	$(CC) -c $< -o $@
+UniTensor_elem.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor_elem.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-network.o: Network.cpp Network.h
-	$(CC) -c $< -o $@
+UniTensor.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor.cpp $(UNI10_ROOT)/tensor-network/UniTensor.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-libtensorF.a: $(OBJF)
-	ar q ../lib/$@ $^
+network.o: $(UNI10_ROOT)/tensor-network/lib/Network.cpp $(UNI10_ROOT)/tensor-network/Network.h
+	$(CC) -c $(OPT) -I $(SRC) $< -o $@
 
-libtensor.a: $(OBJ)
-	[ -d ../lib ] || mkdir -p ../lib
-	ar q ../lib/$@ $^
+libuni10_old.a: $(OBJ)
+	ar rcs ./$@ $^
 
 clean:
-	rm -f *.o *.e
+	rm -f *.o *.o *.e ./*.a
