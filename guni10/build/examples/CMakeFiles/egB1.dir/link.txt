@@ -1,0 +1,1 @@
+/usr/lib64/ccache/c++    -fPIC -g    CMakeFiles/egB1.dir/egB1.cpp.o  -o ../bin/egB1 -rdynamic -llapack -lblas ../lib/libuni10.so -llapack -lblas -Wl,-rpath,/home/yundasie/TensorNetwork/guni10/build/lib: 

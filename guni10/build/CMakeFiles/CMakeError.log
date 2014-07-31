@@ -1,0 +1,742 @@
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2067107536/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2067107536.dir/build.make CMakeFiles/cmTryCompileExec2067107536.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2067107536.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec2067107536.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec2067107536
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2067107536.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec2067107536.dir/CheckSymbolExists.c.o  -o cmTryCompileExec2067107536 -rdynamic 
+CMakeFiles/cmTryCompileExec2067107536.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec2067107536] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec2067107536/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3894044985/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3894044985.dir/build.make CMakeFiles/cmTryCompileExec3894044985.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3894044985.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec3894044985.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec3894044985
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3894044985.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec3894044985.dir/CheckFunctionExists.c.o  -o cmTryCompileExec3894044985 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec3894044985] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec3894044985/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1845025818/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1845025818.dir/build.make CMakeFiles/cmTryCompileExec1845025818.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1845025818.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec1845025818.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec1845025818
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1845025818.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec1845025818.dir/CheckSymbolExists.c.o  -o cmTryCompileExec1845025818 -rdynamic 
+CMakeFiles/cmTryCompileExec1845025818.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1845025818] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1845025818/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3998663133/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3998663133.dir/build.make CMakeFiles/cmTryCompileExec3998663133.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3998663133.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec3998663133.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec3998663133
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3998663133.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec3998663133.dir/CheckFunctionExists.c.o  -o cmTryCompileExec3998663133 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec3998663133] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec3998663133/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1359070608/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1359070608.dir/build.make CMakeFiles/cmTryCompileExec1359070608.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1359070608.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec1359070608.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec1359070608
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1359070608.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec1359070608.dir/CheckSymbolExists.c.o  -o cmTryCompileExec1359070608 -rdynamic 
+CMakeFiles/cmTryCompileExec1359070608.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1359070608] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1359070608/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec4215307619/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec4215307619.dir/build.make CMakeFiles/cmTryCompileExec4215307619.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec4215307619.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec4215307619.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec4215307619
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec4215307619.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec4215307619.dir/CheckFunctionExists.c.o  -o cmTryCompileExec4215307619 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec4215307619] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec4215307619/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2757385688/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2757385688.dir/build.make CMakeFiles/cmTryCompileExec2757385688.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2757385688.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec2757385688.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec2757385688
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2757385688.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec2757385688.dir/CheckSymbolExists.c.o  -o cmTryCompileExec2757385688 -rdynamic 
+CMakeFiles/cmTryCompileExec2757385688.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec2757385688] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec2757385688/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2179554475/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2179554475.dir/build.make CMakeFiles/cmTryCompileExec2179554475.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2179554475.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec2179554475.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec2179554475
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2179554475.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec2179554475.dir/CheckFunctionExists.c.o  -o cmTryCompileExec2179554475 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec2179554475] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec2179554475/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3758826840/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3758826840.dir/build.make CMakeFiles/cmTryCompileExec3758826840.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3758826840.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec3758826840.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec3758826840
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3758826840.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec3758826840.dir/CheckSymbolExists.c.o  -o cmTryCompileExec3758826840 -rdynamic 
+CMakeFiles/cmTryCompileExec3758826840.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec3758826840] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec3758826840/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1917593000/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1917593000.dir/build.make CMakeFiles/cmTryCompileExec1917593000.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1917593000.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec1917593000.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec1917593000
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1917593000.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec1917593000.dir/CheckFunctionExists.c.o  -o cmTryCompileExec1917593000 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1917593000] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1917593000/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3738992338/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3738992338.dir/build.make CMakeFiles/cmTryCompileExec3738992338.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3738992338.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec3738992338.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec3738992338
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3738992338.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec3738992338.dir/CheckSymbolExists.c.o  -o cmTryCompileExec3738992338 -rdynamic 
+CMakeFiles/cmTryCompileExec3738992338.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec3738992338] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec3738992338/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1126296376/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1126296376.dir/build.make CMakeFiles/cmTryCompileExec1126296376.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1126296376.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec1126296376.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec1126296376
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1126296376.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec1126296376.dir/CheckFunctionExists.c.o  -o cmTryCompileExec1126296376 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1126296376] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1126296376/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2279195052/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2279195052.dir/build.make CMakeFiles/cmTryCompileExec2279195052.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2279195052.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec2279195052.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec2279195052
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2279195052.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec2279195052.dir/CheckSymbolExists.c.o  -o cmTryCompileExec2279195052 -rdynamic 
+CMakeFiles/cmTryCompileExec2279195052.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec2279195052] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec2279195052/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2030374841/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2030374841.dir/build.make CMakeFiles/cmTryCompileExec2030374841.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2030374841.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec2030374841.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec2030374841
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2030374841.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec2030374841.dir/CheckFunctionExists.c.o  -o cmTryCompileExec2030374841 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec2030374841] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec2030374841/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2961084241/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2961084241.dir/build.make CMakeFiles/cmTryCompileExec2961084241.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2961084241.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec2961084241.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec2961084241
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2961084241.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec2961084241.dir/CheckSymbolExists.c.o  -o cmTryCompileExec2961084241 -rdynamic 
+CMakeFiles/cmTryCompileExec2961084241.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec2961084241] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec2961084241/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1340877056/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1340877056.dir/build.make CMakeFiles/cmTryCompileExec1340877056.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1340877056.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec1340877056.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec1340877056
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1340877056.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec1340877056.dir/CheckFunctionExists.c.o  -o cmTryCompileExec1340877056 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1340877056] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1340877056/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1079381578/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1079381578.dir/build.make CMakeFiles/cmTryCompileExec1079381578.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1079381578.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec1079381578.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec1079381578
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1079381578.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec1079381578.dir/CheckSymbolExists.c.o  -o cmTryCompileExec1079381578 -rdynamic 
+CMakeFiles/cmTryCompileExec1079381578.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1079381578] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1079381578/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3308724488/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3308724488.dir/build.make CMakeFiles/cmTryCompileExec3308724488.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3308724488.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec3308724488.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec3308724488
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3308724488.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec3308724488.dir/CheckFunctionExists.c.o  -o cmTryCompileExec3308724488 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec3308724488] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec3308724488/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1671177601/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1671177601.dir/build.make CMakeFiles/cmTryCompileExec1671177601.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1671177601.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec1671177601.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec1671177601
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1671177601.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec1671177601.dir/CheckSymbolExists.c.o  -o cmTryCompileExec1671177601 -rdynamic 
+CMakeFiles/cmTryCompileExec1671177601.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1671177601] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1671177601/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1106762962/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1106762962.dir/build.make CMakeFiles/cmTryCompileExec1106762962.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1106762962.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec1106762962.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec1106762962
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1106762962.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec1106762962.dir/CheckFunctionExists.c.o  -o cmTryCompileExec1106762962 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1106762962] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1106762962/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec3529593012/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec3529593012.dir/build.make CMakeFiles/cmTryCompileExec3529593012.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec3529593012.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec3529593012.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec3529593012
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec3529593012.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec3529593012.dir/CheckSymbolExists.c.o  -o cmTryCompileExec3529593012 -rdynamic 
+CMakeFiles/cmTryCompileExec3529593012.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec3529593012] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec3529593012/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2542786565/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2542786565.dir/build.make CMakeFiles/cmTryCompileExec2542786565.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2542786565.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec2542786565.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec2542786565
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2542786565.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec2542786565.dir/CheckFunctionExists.c.o  -o cmTryCompileExec2542786565 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec2542786565] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec2542786565/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec2841717257/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec2841717257.dir/build.make CMakeFiles/cmTryCompileExec2841717257.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2841717257.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec2841717257.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec2841717257
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2841717257.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec2841717257.dir/CheckSymbolExists.c.o  -o cmTryCompileExec2841717257 -rdynamic 
+CMakeFiles/cmTryCompileExec2841717257.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec2841717257] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec2841717257/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec1832363865/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec1832363865.dir/build.make CMakeFiles/cmTryCompileExec1832363865.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1832363865.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec1832363865.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec1832363865
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1832363865.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec1832363865.dir/CheckFunctionExists.c.o  -o cmTryCompileExec1832363865 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec1832363865] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec1832363865/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec810123255/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec810123255.dir/build.make CMakeFiles/cmTryCompileExec810123255.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec810123255.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec810123255.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec810123255
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec810123255.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec810123255.dir/CheckSymbolExists.c.o  -o cmTryCompileExec810123255 -rdynamic 
+CMakeFiles/cmTryCompileExec810123255.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec810123255] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec810123255/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec54069805/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec54069805.dir/build.make CMakeFiles/cmTryCompileExec54069805.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec54069805.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec54069805.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec54069805
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec54069805.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec54069805.dir/CheckFunctionExists.c.o  -o cmTryCompileExec54069805 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec54069805] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec54069805/fast] Error 2
+
+
+Determining if the pthread_create exist failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec726130762/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec726130762.dir/build.make CMakeFiles/cmTryCompileExec726130762.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec726130762.dir/CheckSymbolExists.c.o
+/usr/lib64/ccache/gcc    -o CMakeFiles/cmTryCompileExec726130762.dir/CheckSymbolExists.c.o   -c /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c
+Linking C executable cmTryCompileExec726130762
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec726130762.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc         CMakeFiles/cmTryCompileExec726130762.dir/CheckSymbolExists.c.o  -o cmTryCompileExec726130762 -rdynamic 
+CMakeFiles/cmTryCompileExec726130762.dir/CheckSymbolExists.c.o: In function `main':
+CheckSymbolExists.c:(.text+0x16): undefined reference to `pthread_create'
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec726130762] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec726130762/fast] Error 2
+
+File /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <pthread.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef pthread_create
+  return ((int*)(&pthread_create))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
+Determining if the function pthread_create exists in the pthreads failed with the following output:
+Change Dir: /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/gmake "cmTryCompileExec30792490/fast"
+/usr/bin/gmake -f CMakeFiles/cmTryCompileExec30792490.dir/build.make CMakeFiles/cmTryCompileExec30792490.dir/build
+gmake[1]: Entering directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec30792490.dir/CheckFunctionExists.c.o
+/usr/lib64/ccache/gcc   -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTryCompileExec30792490.dir/CheckFunctionExists.c.o   -c /usr/share/cmake/Modules/CheckFunctionExists.c
+Linking C executable cmTryCompileExec30792490
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec30792490.dir/link.txt --verbose=1
+/usr/lib64/ccache/gcc     -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTryCompileExec30792490.dir/CheckFunctionExists.c.o  -o cmTryCompileExec30792490 -rdynamic -lpthreads 
+/usr/bin/ld: cannot find -lpthreads
+collect2: ld 回傳 1
+gmake[1]: *** [cmTryCompileExec30792490] Error 1
+gmake[1]: Leaving directory `/home/yundasie/TensorNetwork/guni10/build/CMakeFiles/CMakeTmp'
+gmake: *** [cmTryCompileExec30792490/fast] Error 2
+
+
