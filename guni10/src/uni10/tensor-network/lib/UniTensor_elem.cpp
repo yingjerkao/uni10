@@ -260,14 +260,13 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 		if(status & HAVEELEM){
 			if(blocks.size() == 1){
 				if(ongpu){
-					printf("YOHA!!\n");
 					size_t perInfo[bondNum * 2];
 					size_t newAcc[bondNum];
 					newAcc[bondNum - 1] = 1;
 					perInfo[bondNum - 1] = 1;
-					for(int b = bondNum - 2; b >= 0; b--){
-						newAcc[b] = newAcc[b + 1] * UniTout.bonds[b].Qdegs[0];
-						perInfo[b] = perInfo[b + 1] * bonds[b].Qdegs[0];
+					for(int b = bondNum - 1; b > 0; b--){
+						newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
+						perInfo[b - 1] = perInfo[b] * bonds[b].Qdegs[0];
 					}
 					for(int b = 0; b < bondNum; b++)
 						perInfo[bondNum + rsp_outin[b]] = newAcc[b];
@@ -279,8 +278,8 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					size_t newAcc[bondNum];
 					transAcc[bondNum - 1] = 1;
 					newAcc[bondNum - 1] = 1;
-					for(int b = bondNum - 2; b >= 0; b--)
-						newAcc[b] = newAcc[b + 1] * UniTout.bonds[b].Qdegs[0];
+					for(int b = bondNum - 1; b > 0; b--)
+						newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
 					int bondDims[bondNum];
 					int idxs[bondNum];
 					for(int b = 0; b < bondNum; b++){
@@ -291,6 +290,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					size_t cnt_ot = 0;
 					for(int i = 0; i < m_elemNum; i++){
 						UniTout.elem[cnt_ot] = elem[i];
+						//std::cout<<cnt_ot<<std::endl;
 						for(int bend = bondNum - 1; bend >= 0; bend--){
 							idxs[bend]++;
 							if(idxs[bend] < bondDims[bend]){
@@ -433,11 +433,15 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 	int Q_off;
 	int tmp;
 	int RQoff, CQoff;
-  size_t sB_r, sB_c;	//sub-block of a Qidx
+	size_t sB_r, sB_c;	//sub-block of a Qidx
 	size_t sB_rDim, sB_cDim;	//sub-block of a Qidx
 	size_t B_cDim;
 	size_t E_off;
-  int R_off;
+	int R_off;
+	double* work = elem;
+	if(ongpu){
+		work = (double*)malloc(m_elemNum * sizeof(double));
+	}
 	for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 		Q_off = it->first;
 		tmp = Q_off;
@@ -456,11 +460,10 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 		E_off = RQidx2Blk[RQoff]->offset + (RQidx2Off[RQoff] * B_cDim) + CQidx2Off[CQoff];
 		sB_rDim = RQidx2Dim[RQoff];
 		sB_cDim = CQidx2Dim[CQoff];
-
 		sB_idxs.assign(bondNum, 0);
 		for(sB_r = 0; sB_r < sB_rDim; sB_r++)
 			for(sB_c = 0; sB_c < sB_cDim; sB_c++){
-				elem[E_off + (sB_r * B_cDim) + sB_c] = rawElem[R_off];
+				work[E_off + (sB_r * B_cDim) + sB_c] = rawElem[R_off];
 				for(int bend = bondNum - 1; bend >= 0; bend--){
 					sB_idxs[bend]++;
 					if(sB_idxs[bend] < sB_sBdims[bend]){
@@ -473,6 +476,10 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 					}
 				}
 			}
+	}
+	if(ongpu){
+		elemCopy(elem, work, m_elemNum * sizeof(double), ongpu, false);
+		free(work);
 	}
 	status |= HAVEELEM;
 }

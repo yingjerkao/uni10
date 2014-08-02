@@ -146,8 +146,6 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 			Ma_elem = (double*)malloc(Ma.m_elemNum * sizeof(double));
 			elemCopy(Ma_elem, Ma.m_elem, Ma.m_elemNum * sizeof(double), false, Ma.ongpu);
 		}
-		std::cout<<Ma<<std::endl;
-		std::cout<<Mc<<std::endl;
 		for(size_t i = 0; i < Ma.m_elemNum; i++)
 			vectorScal(Ma_elem[i], &(Mc.m_elem[i * Mc.Cnum]), Mc.Cnum, Mc.ongpu);          
 		if(Ma.ongpu){

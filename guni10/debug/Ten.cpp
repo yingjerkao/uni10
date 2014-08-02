@@ -18,6 +18,7 @@ int main(){
 	int per_label[] = {1, 3, 2, 0};
 	UniTensor T("Telem");
 	cout<<T;
+	
 	//T.save("Telem");
 	T.permute(per_label, 1);
 	cout<<T;

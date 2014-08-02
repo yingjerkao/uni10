@@ -1,5 +1,5 @@
-CPU_OBJ := qnum.o bond.o block.o uni10_tools.o uni10_tools_cpu.o uni10_lapack_cpu.o matrix.o operate.o UniTensor_elem.o UniTensor.o network.o vecadd.o
-GPU_OBJ := qnum.o bond.o block.o uni10_tools.o uni10_tools_gpu.o uni10_dgemm.o uni10_lapack_gpu.o matrix.o operate.o UniTensor_elem.o UniTensor.o network.o vecadd.o
+CPU_OBJ := qnum.o bond.o block.o uni10_tools.o uni10_tools_cpu.o uni10_lapack_cpu.o matrix.o operate.o UniTensor_elem.o UniTensor.o network.o
+GPU_OBJ := qnum.o bond.o block.o uni10_tools.o uni10_tools_gpu.o uni10_dgemm.o uni10_lapack_gpu.o matrix.o operate.o UniTensor_elem.o UniTensor.o network.o
 LINK := -mkl=parallel
 CC := g++
 UNI10_ROOT := uni10
