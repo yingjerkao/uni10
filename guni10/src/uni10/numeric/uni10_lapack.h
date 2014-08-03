@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include <limits.h>
 #include <assert.h>
+#include <math.h>
 namespace uni10{
 enum mmtype{
 	MM_DDD = 0,

@@ -80,6 +80,7 @@ class Matrix {
 		Matrix& operator+= (const Matrix& Mb);
 		double& operator[](size_t idx);
 		double& at(size_t i, size_t j);
+		bool toGPU();
 	private:
 		void init(bool togpu);
 		void init(double* elem, bool _ongpu);

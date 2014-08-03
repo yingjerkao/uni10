@@ -68,11 +68,10 @@ int main(){
   bondH.push_back(bdo_d);
   UniTensor H(bondH);
   H.addRawElem(H_elem);
-  //cout<<H;
-  //exit(0);
   UniTensor U(bondH);
   U.putBlock(q0, takeExp(-delta, H.getBlock(q0)));
-  UniTensor theta;
+  UniTensor theta(9);
+  cout<<theta;
 
   // Perform the imaginary time evolution alternating on A and B bonds
   for(int step = 0; step < N; step++){
@@ -107,6 +106,9 @@ int main(){
     cout<<"NORM: "<<norm<<endl;
     sv *= (1.0 / norm);
     Ls[A][q0] = sv;
+	//cout<<sv;
+	//cout<<Ls[A][q0];
+  	//exit(0);
     Gs[A].putBlock(q0, svd[0].resize(svd[0].row(), chi));
     Gs[B].putBlock(q0, svd[2].resize(chi, svd[2].col()));
     Gs[A].permute(ordA, 2);

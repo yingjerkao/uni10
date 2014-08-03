@@ -36,9 +36,16 @@ int UniTensor::COUNTER = 0;
 size_t UniTensor::MAXELEMNUM = 0;
 size_t UniTensor::MAXELEMTEN = 0;
 
+UniTensor::UniTensor(): status(0){
+	initUniT();
+}
+
 UniTensor::UniTensor(double val): status(0){
 	initUniT();
-	elem[0] = val;
+	if(ongpu)
+		setElemAt(0, val, elem, ongpu);
+	else
+		elem[0] = val;
 }
 
 UniTensor::UniTensor(const UniTensor& UniT):
@@ -493,9 +500,12 @@ Matrix UniTensor::rawElem()const{
 
 std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	if(!(UniT.status & UniT.HAVEBOND)){
-		os<<"\nScalar: " << UniT.elem[0];
-		if(UniT.ongpu)
+		if(UniT.ongpu){
+			os<<"\nScalar: " << getElemAt(0, UniT.elem, UniT.ongpu);
 			os<<", onGPU";
+		}
+		else
+			os<<"\nScalar: " << UniT.elem[0];
 		os<<"\n\n";
 		return os;
 	}

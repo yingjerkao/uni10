@@ -58,6 +58,8 @@ void* mvCPU(void* elem, size_t memsize, bool& ongpu);
 void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool& ongpuA, bool& ongpuB);
 void shrinkWithoutFree(size_t memsize, bool ongpu);
 void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, double* newElem);
+double getElemAt(size_t idx, double* elem, bool ongpu);
+void setElemAt(size_t idx, double val, double* elem, bool ongpu);
 
 
 // trim from start

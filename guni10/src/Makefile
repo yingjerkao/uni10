@@ -5,7 +5,7 @@ CC := g++
 UNI10_ROOT := uni10
 SRC := .
 BIN := bin
-OPT := -std=c++0x -O3
+OPT := -O3
 NVCC := nvcc
 NVCCOPT := -arch=sm_13
 CULA_INC := /usr/local/cula/include

@@ -24,10 +24,12 @@ NEW_LIB := $(NEW_UNI10_ROOT)
 CPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_cpu.a
 GPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_gpu.a
 
-fitebd_cpu.e: FiTEBD.cpp
-	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
 fitebd_gpu.e: FiTEBD.cpp
 	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
+	rm -f out_gpu
+	qsub gpu_qsub.sh
+fitebd_cpu.e: FiTEBD.cpp
+	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
 fitebd_old.e: FiTEBD.cpp
 	$(CC) -I$(OLD_INC) -L$(OLD_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(OLD_OBJ)
 fitebd.e: FiTEBD.cpp

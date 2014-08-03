@@ -537,7 +537,10 @@ double UniTensor::at(std::vector<int> idxs)const{
 }
 double UniTensor::operator[](size_t idx){
 	assert(idx < m_elemNum);
-	return elem[idx];
+	if(ongpu)
+		return getElemAt(idx, elem, ongpu);
+	else
+		return elem[idx];
 }
 
 UniTensor& UniTensor::transpose(){

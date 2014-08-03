@@ -51,7 +51,8 @@
 namespace uni10{
 class UniTensor{
 	public:
-		UniTensor(double val = 1.0);
+		UniTensor();
+		UniTensor(double val);
 		UniTensor(const std::string& fname);
 		UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
 		UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");

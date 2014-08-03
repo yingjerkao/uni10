@@ -260,4 +260,25 @@ void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, d
 	_reshapeElem<<<gridSize, THREADMAX>>>(oldElem, bondNum, elemNum, D_offset, newElem);
 }
 
+
+double getElemAt(size_t idx, double* elem, bool ongpu){
+	if(ongpu){
+		printf("YOHA get!!\n");
+		double val;
+		assert(cudaMemcpy(&val, &(elem[idx]), sizeof(double), cudaMemcpyDeviceToHost) == cudaSuccess);
+		return val;
+	}	
+	else
+		return elem[idx];
+}
+
+void setElemAt(size_t idx, double val, double* elem, bool ongpu){
+	if(ongpu){
+		printf("YOHA set!!\n");
+		assert(cudaMemcpy(&(elem[idx]), &val, sizeof(double), cudaMemcpyHostToDevice) == cudaSuccess);
+	}
+	else
+		elem[idx] = val;
+}
+
 };	/* namespace uni10 */

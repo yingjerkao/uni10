@@ -62,10 +62,21 @@ void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool&
 	ongpuA = false;
 	ongpuB = false;
 }
+
 void shrinkWithoutFree(size_t memsize, bool ongpu){
 	MEM_USAGE -= memsize;
 }
+
 void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, double* newElem){
 	assert(false);
 }
+
+double getElemAt(size_t idx, double* elem, bool ongpu){
+	return elem[idx];
+}
+
+void setElemAt(size_t idx, double val, double* elem, bool ongpu){
+	elem[idx] = val;
+}
+
 };	/* namespace uni10 */

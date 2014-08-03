@@ -184,6 +184,8 @@ bool operator== (const Matrix& m1, const Matrix& m2){
 
 
 Matrix& Matrix::operator*= (const Matrix& Mb){
+	if(!ongpu)
+		m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	return *this = *this * Mb;
 }
 
@@ -206,7 +208,7 @@ std::vector<Matrix> Matrix::diagonalize()const{
 	return outs;
 }
 
-std::vector<Matrix> Matrix::svd() const{
+std::vector<Matrix> Matrix::svd()const{
 	assert(!diag);
 	std::vector<Matrix> outs;
 	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
@@ -222,11 +224,15 @@ std::vector<Matrix> Matrix::svd() const{
 }
 
 void Matrix::randomize(){
+	if(!ongpu)
+		m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	elemRand(m_elem, m_elemNum, ongpu);
 }
 
 
 void Matrix::orthoRand(){
+	if(!ongpu)
+		m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	if(!diag){
 		orthoRandomize(m_elem, Rnum, Cnum, ongpu);
 	}
@@ -244,6 +250,8 @@ Matrix operator*(const Matrix& Ma, double a){
 }
 
 Matrix& Matrix::operator*= (double a){
+	if(!ongpu)
+		m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	vectorScal(a, m_elem, m_elemNum, ongpu);
 	return *this;
 }
@@ -255,11 +263,15 @@ Matrix operator+(const Matrix& Ma, const Matrix& Mb){
 }
 
 Matrix& Matrix::operator+= (const Matrix& Mb){
+	if(!ongpu)
+		m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	vectorAdd(m_elem, Mb.m_elem, m_elemNum, ongpu, Mb.ongpu);
 	return *this;
 }
 
 Matrix& Matrix::transpose(){
+	if(!ongpu)
+		m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	if(!diag){
 		double* transElem;
 		size_t memsize = m_elemNum * sizeof(double);
@@ -337,18 +349,10 @@ Matrix& Matrix::resize(size_t row, size_t col){
 }
 
 double Matrix::norm(){
-	double nm = 0;
 	return vectorNorm(m_elem, m_elemNum, 1, ongpu);
-	//for(size_t i = 0; i < m_elemNum; i++)
-	//	nm += m_elem[i] * m_elem[i];
-	//return sqrt(nm);
 }
 double Matrix::sum(){
-	double sm = 0;
 	return vectorSum(m_elem, m_elemNum, 1, ongpu);
-	//for(size_t i = 0; i < m_elemNum; i++)
-	//	sm += m_elem[i];
-	//return sm;
 }
 double Matrix::trace(){
 	assert(Rnum == Cnum);
@@ -387,6 +391,7 @@ void Matrix::load(const std::string& fname){
 
 double& Matrix::operator[](size_t idx){
 	assert(idx < m_elemNum);
+	m_elem = (double*)mvCPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	return m_elem[idx];
 }
 
@@ -404,6 +409,7 @@ double* Matrix::getHostElem(){
 double& Matrix::at(size_t r, size_t c){
 	assert(r < Rnum);
 	assert(c < Cnum);
+	m_elem = (double*)mvCPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	if(diag){
 		assert(r == c && r < m_elemNum);
 		return m_elem[r];
@@ -412,6 +418,11 @@ double& Matrix::at(size_t r, size_t c){
 		return m_elem[r * Cnum + c];
 }
 
+bool Matrix::toGPU(){
+	if(!ongpu)
+		m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
+	return ongpu;
+}
 Matrix takeExp(double a, const Matrix& mat){
 	std::vector<Matrix> rets = mat.diagonalize();
 	Matrix UT(rets[1]);
