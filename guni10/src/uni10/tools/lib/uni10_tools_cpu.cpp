@@ -1,5 +1,6 @@
 #include <uni10/tools/uni10_tools.h>
 #include <string.h>
+#include <stdio.h>
 
 namespace uni10{
 
@@ -54,9 +55,11 @@ void getDiag(double* elem, double* diag_elem, size_t m, size_t n, size_t diag_n,
 }
 void* mvGPU(void* elem, size_t memsize, bool& ongpu){
 	ongpu = false;
+	return elem;
 }
 void* mvCPU(void* elem, size_t memsize, bool& ongpu){
 	ongpu = false;
+	return elem;
 }
 void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool& ongpuA, bool& ongpuB){	
 	ongpuA = false;

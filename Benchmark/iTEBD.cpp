@@ -110,7 +110,6 @@ int main(){
 
     bondrm(Gs[A], Ls[B], 0);
     bondrm(Gs[B], Ls[B], 1);
-	exit(0);
   }
   UniTensor theta2 = theta;
   UniTensor val = theta * theta2;
@@ -129,8 +128,10 @@ void bondcat(UniTensor& T, map<Qnum, Matrix>& L, int bidx){
     else
       per_label[i] = label[i];
   T.permute(per_label, 1);
-  for(map<Qnum,Matrix>::const_iterator it=L.begin(); it!=L.end(); ++it)
+
+  for(map<Qnum,Matrix>::const_iterator it=L.begin(); it!=L.end(); ++it){
     T.putBlock(it->first, it->second * T.getBlock(it->first));
+  }
   T.permute(label, inBondNum);
 }
 

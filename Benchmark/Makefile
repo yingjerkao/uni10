@@ -25,25 +25,19 @@ NEW_LIB := $(NEW_UNI10_ROOT)
 CPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_cpu.a
 GPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_gpu.a
 
-itebd_gpu.e: iTEBD.cpp
-	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) $(NVCCOPT) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
-	rm -f out_gpu
-	qsub gpu_qsub.sh
-
 itebd_cpu.e: iTEBD.cpp
 	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
 
+itebd_gpu.e: iTEBD.cpp
+	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) $(NVCCOPT) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
+
 asd_gpu.e: Ascend.cpp
 	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) $(NVCCOPT) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
-	rm -f out_gpu
-	qsub gpu_qsub.sh
 asd_cpu.e: Ascend.cpp
 	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
 
 fitebd_gpu.e: FiTEBD.cpp
 	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) $(NVCCOPT) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
-	rm -f out_gpu
-	qsub gpu_qsub.sh
 fitebd_cpu.e: FiTEBD.cpp
 	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
 

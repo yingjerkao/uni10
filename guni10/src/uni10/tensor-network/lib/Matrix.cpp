@@ -293,7 +293,6 @@ Matrix& Matrix::resize(size_t row, size_t col){
 			bool des_ongpu;
 			double* elem = (double*)elemAlloc(elemNum * sizeof(double), des_ongpu);
 			elemBzero(elem, elemNum * sizeof(double), des_ongpu);
-			printf("RESIZE: %d\n", des_ongpu);
 			elemCopy(elem, m_elem, m_elemNum * sizeof(double), des_ongpu, ongpu);
 			elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
 			/*
