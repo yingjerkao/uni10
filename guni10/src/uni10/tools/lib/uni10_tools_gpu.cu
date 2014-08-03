@@ -11,11 +11,9 @@ void* elemAlloc(size_t memsize, bool& ongpu){
 	if(GPU_MEM_USAGE + memsize <= GPU_MEM_MAX){
 		cudaError_t cuflag = cudaMalloc(&ptr, memsize);
 		assert(cuflag == cudaSuccess);
-		//printf("GPU: %d used, allocate %d bytes, %x\n", GPU_MEM_USAGE, memsize, ptr);
 		GPU_MEM_USAGE += memsize;
 		ongpu = true;
 	}else{
-		//printf("CPU: %d used, allocate %d bytes, %x\n", MEM_USAGE, memsize, ptr);
 		ptr = malloc(memsize);
 		assert(ptr != NULL);
 		MEM_USAGE += memsize;
@@ -44,22 +42,20 @@ void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool 
 	if((des_ongpu)){
 		if(src_ongpu){
 			cuflag = cudaMemcpy(des, src, memsize, cudaMemcpyDeviceToDevice);
-			//printf("memcpy %x to %x D2D\n", src, des);
 		}
 		else{
+			printf("mvGPU\n");
 			cuflag = cudaMemcpy(des, src, memsize, cudaMemcpyHostToDevice);
-			//printf("memcpy %x to %x H2D\n", src, des);
 		}
 		assert(cuflag == cudaSuccess);
 	}else{
 		if(src_ongpu){
+			printf("mvCPU\n");
 			cuflag = cudaMemcpy(des, src, memsize, cudaMemcpyDeviceToHost);
-			//printf("memcpy %x to %x D2H\n", src, des);
 			assert(cuflag == cudaSuccess);
 		}
 		else{
 			memcpy(des, src, memsize);
-			//printf("memcpy H2H\n");
 		}
 	}
 	return des;
@@ -131,6 +127,7 @@ void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			cudaError_t cuflag = cudaMalloc(&src_elem, memsize);
 			assert(cuflag == cudaSuccess);
 			cuflag = cudaMemcpy(src_elem, diag_elem, memsize, cudaMemcpyHostToDevice);
+			printf("mvGPU");
 			assert(cuflag == cudaSuccess);
 			_setDiag<<<gridSize, THREADMAX>>>(elem, src_elem, M, N, diag_N);
 			cudaFree(src_elem);
@@ -141,6 +138,7 @@ void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			size_t memsize = diag_N * sizeof(double);
 			src_elem = (double*) malloc(memsize);
 			cudaError_t cuflag = cudaMemcpy(src_elem, diag_elem, memsize, cudaMemcpyDeviceToHost);
+			printf("mvCPU");
 			assert(cuflag == cudaSuccess);
 		}
 		else
@@ -166,6 +164,7 @@ void getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			assert(cuflag == cudaSuccess);
 			_getDiag<<<gridSize, THREADMAX>>>(elem, tmp_elem, M, N, diag_N);
 			cuflag = cudaMemcpy(diag_elem, tmp_elem, memsize, cudaMemcpyHostToDevice);
+			printf("mvGPU");
 			assert(cuflag == cudaSuccess);
 			cudaFree(tmp_elem);
 		}
@@ -182,6 +181,7 @@ void getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			tmp_elem[i] = elem[i * N + i];
 		if(diag_ongpu){
 			cudaError_t cuflag = cudaMemcpy(diag_elem, tmp_elem, memsize, cudaMemcpyDeviceToHost);
+			printf("mvCPU");
 			assert(cuflag == cudaSuccess);
 		}
 	}
@@ -232,7 +232,6 @@ void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool&
 	}
 }
 void shrinkWithoutFree(size_t memsize, bool ongpu){
-	printf("SHRINKING!!\n");
 	if(ongpu)
 		GPU_MEM_USAGE -= memsize;
 	else
@@ -263,9 +262,9 @@ void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, d
 
 double getElemAt(size_t idx, double* elem, bool ongpu){
 	if(ongpu){
-		printf("YOHA get!!\n");
 		double val;
 		assert(cudaMemcpy(&val, &(elem[idx]), sizeof(double), cudaMemcpyDeviceToHost) == cudaSuccess);
+		printf("mvCPU");
 		return val;
 	}	
 	else
@@ -274,8 +273,8 @@ double getElemAt(size_t idx, double* elem, bool ongpu){
 
 void setElemAt(size_t idx, double val, double* elem, bool ongpu){
 	if(ongpu){
-		printf("YOHA set!!\n");
 		assert(cudaMemcpy(&(elem[idx]), &val, sizeof(double), cudaMemcpyHostToDevice) == cudaSuccess);
+		printf("mvGPU");
 	}
 	else
 		elem[idx] = val;

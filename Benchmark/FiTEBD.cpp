@@ -97,25 +97,19 @@ int main(){
     // SVD
     vector<Matrix> svd = theta.getBlock(q0).svd();
 
-
     // Truncate
-    Matrix sv(chi, chi, true);
-    for(int i = 0; i < chi; i++)
-      sv[i] = svd[1][i];
-    double norm = sv.norm();
+	svd[1].resize(chi, chi);
+    double norm = svd[1].norm();
     cout<<"NORM: "<<norm<<endl;
-    sv *= (1.0 / norm);
-    Ls[A][q0] = sv;
-	//cout<<sv;
-	//cout<<Ls[A][q0];
-  	//exit(0);
+    svd[1] *= (1.0 / norm);
+    Ls[A][q0] = svd[1];
+
     Gs[A].putBlock(q0, svd[0].resize(svd[0].row(), chi));
     Gs[B].putBlock(q0, svd[2].resize(chi, svd[2].col()));
     Gs[A].permute(ordA, 2);
 
     bondrm(Gs[A], Ls[B], 0);
     bondrm(Gs[B], Ls[B], 1);
-
   }
   UniTensor theta2 = theta;
   UniTensor val = theta * theta2;
