@@ -1,3 +1,31 @@
+/****************************************************************************
+*  @file uni10_tools.h
+*  @license
+*    Universal Tensor Network Library
+*    Copyright (c) 2013-2014
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
+*
+*    This file is part of Uni10, the Universal Tensor Network Library.
+*
+*    Uni10 is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU Lesser General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    Uni10 is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU Lesser General Public License for more details.
+*
+*    You should have received a copy of the GNU Lesser General Public License
+*    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+*  @endlicense
+*  @brief Header file for useful string functions and wrapper functions
+*  @author Yun-Da Hsieh
+*  @date 2014-05-06
+*  @since 0.1.0
+*
+*****************************************************************************/
 #ifndef UNI10_TOOLS_H
 #define UNI10_TOOLS_H
 #include <stdint.h>
@@ -5,19 +33,19 @@
 #include <string>
 #include <assert.h>
 #include <vector>
-#include <algorithm> 
-#include <functional> 
+#include <algorithm>
+#include <functional>
 #include <cctype>
 #include <locale>
 #include <uni10/data-structure/uni10_struct.h>
 namespace uni10{
-void* myMalloc(void* ptr, size_t memsize, int& status);
-void* myMemcpy(void* des, const void* src, size_t memsize, int des_st, int src_st);
-void myFree(void* ptr, size_t memsize, int status);
-void membzero(void* ptr, size_t memsize, int status);
-void randomNums(double* elem, int N, int status);
+void* elemAlloc(void* ptr, size_t memsize, bool& ongpu);
+void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool src_ongpu);
+void elemFree(void* ptr, size_t memsize, bool ongpu);
+void elemBzero(void* ptr, size_t memsize, bool ongpu);
+void elemRand(double* elem, size_t N, bool ongpu);
 std::vector<_Swap> recSwap(int* ord, int n, int* ordF);
-std::vector<_Swap> recSwap(int* _ord, int n);	//Given the reshape order out to in. 
+std::vector<_Swap> recSwap(int* _ord, int n);	//Given the reshape order out to in.
 
 // trim from start
 static inline std::string &ltrim(std::string &s) {
@@ -35,6 +63,6 @@ static inline std::string &rtrim(std::string &s) {
 static inline std::string &trim(std::string &s) {
 	return ltrim(rtrim(s));
 }
-};	/* namespace uni10 */	
+};	/* namespace uni10 */
 
 #endif /* UNI10_TOOLS_H */

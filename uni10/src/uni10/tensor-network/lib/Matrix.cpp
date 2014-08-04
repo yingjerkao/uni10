@@ -1,3 +1,31 @@
+/****************************************************************************
+*  @file CMakeLists.txt
+*  @license
+*    Universal Tensor Network Library
+*    Copyright (c) 2013-2014
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
+*
+*    This file is part of Uni10, the Universal Tensor Network Library.
+*
+*    Uni10 is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU Lesser General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    Uni10 is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU Lesser General Public License for more details.
+*
+*    You should have received a copy of the GNU Lesser General Public License
+*    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+*  @endlicense
+*  @brief Main specification file for CMake
+*  @author Ying-Jer Kao
+*  @date 2014-05-06
+*  @since 0.1.0
+*
+*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -10,8 +38,8 @@ std::ostream& operator<< (std::ostream& os, const Matrix& m){
 	if(m.diag)
 		os << ", Diagonal";
 	os <<std::endl << std::endl;
-	for(int i = 0; i < m.Rnum; i++){
-		for(int j = 0; j < m.Cnum; j++)
+	for(size_t i = 0; i < m.Rnum; i++){
+		for(size_t j = 0; j < m.Cnum; j++)
 			if(m.diag){
 				if(i == j)
 					os << std::setw(7) << std::fixed << std::setprecision(3) << m.m_elem[i];
@@ -34,7 +62,7 @@ Matrix::Matrix(const Matrix& _m): Rnum(_m.Rnum), Cnum(_m.Cnum), m_elemNum(_m.m_e
 	}
 }
 
-Matrix::Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, double* _elem, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
 	if(_diag)
 		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
 	if(m_elemNum){
@@ -43,7 +71,16 @@ Matrix::Matrix(int _Rnum, int _Cnum, double* _elem, bool _diag): Rnum(_Rnum), Cn
 	}
 }
 
-Matrix::Matrix(int _Rnum, int _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, std::vector<double> _elem, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
+	if(_diag)
+		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
+	if(m_elemNum){
+		m_elem = (double*)malloc(m_elemNum * sizeof(double));
+		memcpy(m_elem, &_elem[0], m_elemNum * sizeof(double));
+	}
+}
+
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL){
 	if(_diag)
 		m_elemNum = _Rnum < _Cnum ? _Rnum : _Cnum;
 	if(m_elemNum){
@@ -67,11 +104,11 @@ Matrix::~Matrix(){
 		free(m_elem);
 }
 
-int Matrix::row()const{
+size_t Matrix::row()const{
 	return Rnum;
 }
 
-int Matrix::col()const{
+size_t Matrix::col()const{
 	return Cnum;
 }
 size_t Matrix::elemNum()const{
@@ -81,35 +118,35 @@ size_t Matrix::elemNum()const{
 Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 	assert(Ma.Cnum == Mb.Rnum);
 	if((!Ma.diag) && (!Mb.diag)){
-		Matrix Mc(Ma.Rnum, Mb.Cnum);	
-		myDgemm(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem);
+		Matrix Mc(Ma.Rnum, Mb.Cnum);
+	  matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem);
 		return Mc;
 	}
 	else if(Ma.diag && (!Mb.diag)){
-		Matrix Mc(Ma.Rnum, Mb.Cnum);	
-		for(int i = 0; i < Ma.m_elemNum; i++)
-			for(int j = 0; j < Mb.Cnum; j++)
+		Matrix Mc(Ma.Rnum, Mb.Cnum);
+		for(size_t i = 0; i < Ma.m_elemNum; i++)
+			for(size_t j = 0; j < Mb.Cnum; j++)
 				Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i] * Mb.m_elem[i * Mb.Cnum + j];
 		return Mc;
 	}
 	else if((!Ma.diag) && Mb.diag){
-		Matrix Mc(Ma.Rnum, Mb.Cnum);	
-		for(int i = 0; i < Ma.Rnum; i++)
-			for(int j = 0; j < Mb.m_elemNum; j++)
+		Matrix Mc(Ma.Rnum, Mb.Cnum);
+		for(size_t i = 0; i < Ma.Rnum; i++)
+			for(size_t j = 0; j < Mb.m_elemNum; j++)
 				Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i * Ma.Cnum + j] * Mb.m_elem[j];
 		return Mc;
 	}
 	else{
-		Matrix Mc(Ma.Rnum, Mb.Cnum, true);	
-		for(int i = 0; i < Ma.Rnum; i++)
+		Matrix Mc(Ma.Rnum, Mb.Cnum, true);
+		for(size_t i = 0; i < Ma.Rnum; i++)
 			Mc.m_elem[i] = Ma.m_elem[i] * Mb.m_elem[i];
 		return Mc;
 	}
 }
 bool operator== (const Matrix& m1, const Matrix& m2){
 	double diff;
-	if(m1.m_elemNum == m2.m_elemNum){	
-		for(int i = 0; i < m1.m_elemNum; i++){
+	if(m1.m_elemNum == m2.m_elemNum){
+		for(size_t i = 0; i < m1.m_elemNum; i++){
 			diff = fabs(m1.m_elem[i] - m2.m_elem[i]);
 			if(diff > 1E-6)
 				return false;
@@ -125,7 +162,10 @@ Matrix& Matrix::operator*= (const Matrix& Mb){
 	return *this = *this * Mb;
 }
 
-void Matrix::addElem(double* elem){
+void Matrix::setElem(std::vector<double> elem){
+  setElem(&elem[0]);
+}
+void Matrix::setElem(double* elem){
 	memcpy(m_elem, elem, m_elemNum * sizeof(double));
 }
 
@@ -137,18 +177,18 @@ std::vector<Matrix> Matrix::diagonalize()const{
 	Matrix EigV(Rnum, Cnum);
 	syDiag(m_elem, Rnum, Eig.m_elem, EigV.m_elem);
 	outs.push_back(Eig);
-	outs.push_back(EigV);	
+	outs.push_back(EigV);
 	return outs;
 }
 
 std::vector<Matrix> Matrix::svd() const{
 	assert(!diag);
 	std::vector<Matrix> outs;
-	int min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
+	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
 	Matrix U(Rnum, min);
 	Matrix S(min, min, true);
 	Matrix VT(min, Cnum);
-	myDgesvd(m_elem, Rnum, Cnum, U.m_elem, S.m_elem, VT.m_elem);
+	matrixSVD(m_elem, Rnum, Cnum, U.m_elem, S.m_elem, VT.m_elem);
 	outs.push_back(U);
 	outs.push_back(S);
 	outs.push_back(VT);
@@ -156,16 +196,17 @@ std::vector<Matrix> Matrix::svd() const{
 }
 
 void Matrix::randomize(){
-	randomNums(m_elem, m_elemNum, 0);	
+	elemRand(m_elem, m_elemNum, false);
 }
+
 void Matrix::orthoRand(){
 	if(!diag){
 		if(Rnum <= Cnum)
 			orthoRandomize(m_elem, Rnum, Cnum);
 		else{
 			Matrix M(Cnum, Rnum);
-			orthoRandomize(M.elem(), Cnum, Rnum);
-			myTranspose(M.elem(), Cnum, Rnum, m_elem, 0);
+			orthoRandomize(M.getElem(), Cnum, Rnum);
+			setTranspose(M.getElem(), Cnum, Rnum, m_elem, 0);
 		}
 
 	}
@@ -178,36 +219,92 @@ void Matrix::set_zero(){
 
 Matrix operator*(const Matrix& Ma, double a){
 	Matrix Mb(Ma);
-	vecScal(a, Mb.m_elem, Mb.m_elemNum);
+	vectorScal(a, Mb.m_elem, Mb.m_elemNum);
 	return Mb;
 }
 
 Matrix& Matrix::operator*= (double a){
-	vecScal(a, m_elem, m_elemNum);
+	vectorScal(a, m_elem, m_elemNum);
 	return *this;
 }
 
 Matrix operator+(const Matrix& Ma, const Matrix& Mb){
 	Matrix Mc(Ma);
-	vecAdd(Mb.m_elem, Mc.m_elem, Ma.m_elemNum);
+	vectorAdd(Mb.m_elem, Mc.m_elem, Ma.m_elemNum);
 	return Mc;
 }
 
 Matrix& Matrix::operator+= (const Matrix& Mb){
-	vecAdd(Mb.m_elem, m_elem, m_elemNum);
+	vectorAdd(Mb.m_elem, m_elem, m_elemNum);
 	return *this;
 }
 
-void Matrix::transpose(){
+Matrix& Matrix::transpose(){
 	if(!diag){
 		double* oldElem = (double*)malloc(m_elemNum * sizeof(double));
 		memcpy(oldElem, m_elem, m_elemNum * sizeof(double));
-		myTranspose(oldElem, Rnum, Cnum, m_elem, 0);
+	  setTranspose(oldElem, Rnum, Cnum, m_elem, 0);
 		free(oldElem);
 	}
-	int tmp = Rnum;
+	size_t tmp = Rnum;
 	Rnum = Cnum;
 	Cnum = tmp;
+  return *this;
+}
+
+Matrix& Matrix::resize(size_t row, size_t col){
+  if(diag){
+	  size_t elemNum = row < col ? row : col;
+    if(elemNum > m_elemNum){
+      double* elem = (double*)calloc(elemNum, sizeof(double));
+      memcpy(elem, m_elem, m_elemNum * sizeof(double));
+      free(m_elem);
+      m_elem = elem;
+    }
+    Rnum = row;
+    Cnum = col;
+    m_elemNum = elemNum;
+    return *this;
+  }
+  else{
+    if(col == Cnum){
+      if(row > Rnum){
+        double* elem = (double*)calloc(row * col, sizeof(double));
+        memcpy(elem, m_elem, m_elemNum * sizeof(double));
+        free(m_elem);
+        m_elem = elem;
+      }
+      Rnum = row;
+      m_elemNum = row * col;
+      return *this;
+    }
+    else{
+      size_t data_row = row < Rnum ? row : Rnum;
+      size_t data_col = col < Cnum ? col : Cnum;
+      double* elem = (double*)calloc(row * col, sizeof(double));
+      for(size_t r = 0; r < data_row; r++)
+        memcpy(&(elem[r * col]), &(m_elem[r * Cnum]), data_col * sizeof(double));
+      free(m_elem);
+      m_elem = elem;
+      Rnum = row;
+      Cnum = col;
+      m_elemNum = row * col;
+      return *this;
+    }
+  }
+}
+
+double Matrix::norm(){
+	double nm = 0;
+	for(size_t i = 0; i < m_elemNum; i++)
+		nm += m_elem[i] * m_elem[i];
+	return sqrt(nm);
+}
+double Matrix::sum(){
+	double sm = 0;
+	for(size_t i = 0; i < m_elemNum; i++)
+		sm += m_elem[i];
+	return sm;
 }
 double Matrix::norm(){
 	double nm = 0;
@@ -225,10 +322,10 @@ double Matrix::trace(){
 	assert(Rnum == Cnum);
 	double sum = 0;
 	if(diag)
-		for(int i = 0; i < m_elemNum; i++)
+		for(size_t i = 0; i < m_elemNum; i++)
 			sum += m_elem[i];
 	else
-		for(int i = 0; i < Rnum; i++)
+		for(size_t i = 0; i < Rnum; i++)
 			sum += m_elem[i * Cnum + i];
 	return sum;
 }
@@ -248,10 +345,10 @@ double& Matrix::operator[](size_t idx){
 	assert(idx < m_elemNum);
 	return m_elem[idx];
 }
-double* Matrix::elem()const{
+double* Matrix::getElem()const{
 	return m_elem;
 }
-double& Matrix::at(int r, int c){
+double& Matrix::at(size_t r, size_t c){
 	assert(r < Rnum);
 	assert(c < Cnum);
 	if(diag){
@@ -266,8 +363,16 @@ Matrix takeExp(double a, const Matrix& mat){
 	std::vector<Matrix> rets = mat.diagonalize();
 	Matrix UT = rets[1];
 	UT.transpose();
+<<<<<<< HEAD
 	for(int i = 0; i < rets[0].row(); i++)
 		rets[0][i] = exp(a * rets[0][i]);
 	return UT * rets[0] * rets[1];
 }
 };	/* namespace uni10 */	
+=======
+	for(size_t i = 0; i < rets[0].row(); i++)
+		rets[0][i] = exp(a * rets[0][i]);
+	return UT * rets[0] * rets[1];
+}
+};	/* namespace uni10 */
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77

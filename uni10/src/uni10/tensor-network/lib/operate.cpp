@@ -1,3 +1,31 @@
+/****************************************************************************
+*  @file CMakeLists.txt
+*  @license
+*    Universal Tensor Network Library
+*    Copyright (c) 2013-2014
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
+*
+*    This file is part of Uni10, the Universal Tensor Network Library.
+*
+*    Uni10 is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU Lesser General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    Uni10 is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU Lesser General Public License for more details.
+*
+*    You should have received a copy of the GNU Lesser General Public License
+*    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+*  @endlicense
+*  @brief Main specification file for CMake
+*  @author Ying-Jer Kao
+*  @date 2014-05-06
+*  @since 0.1.0
+*
+*****************************************************************************/
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/numeric/uni10_lapack.h>
 //using namespace uni10::datatype;
@@ -6,7 +34,7 @@ UniTensor& UniTensor::operator+= (const UniTensor& Tb){
 	assert(status & Tb.status & HAVEELEM);
 	assert(bonds == Tb.bonds);
 	assert(blocks == Tb.blocks);
-	vecAdd(Tb.elem, elem, m_elemNum);
+	vectorAdd(Tb.elem, elem, m_elemNum);
 	return *this;
 }
 UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
@@ -14,7 +42,7 @@ UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
 	assert(Ta.bonds == Tb.bonds);
 	assert(Ta.blocks == Tb.blocks);
 	UniTensor Tc(Ta);
-	vecAdd(Tb.elem, Tc.elem, Ta.m_elemNum);
+	vectorAdd(Tb.elem, Tc.elem, Ta.m_elemNum);
 	return Tc;
 }
 UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
@@ -86,7 +114,7 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 				blockB = it2->second;
 				blockC = Tc.blocks[it->first];
 				assert(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum);
-				myDgemm(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
+				matrixMul(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem);
 			}
 		}
 		Tc.status |= Tc.HAVEELEM;
@@ -132,14 +160,14 @@ UniTensor& UniTensor::operator*=(const UniTensor& uT){
 
 UniTensor& UniTensor::operator*= (double a){
 	assert(status & HAVEELEM);
-	vecScal(a, elem, m_elemNum);
+	vectorScal(a, elem, m_elemNum);
 	return *this;
 }
 
 UniTensor operator*(const UniTensor& Ta, double a){
 	assert(Ta.status & Ta.HAVEELEM);
 	UniTensor Tb(Ta);
-	vecScal(a, Tb.elem, Tb.m_elemNum);
+	vectorScal(a, Tb.elem, Tb.m_elemNum);
 	return Tb;
 }
 UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){

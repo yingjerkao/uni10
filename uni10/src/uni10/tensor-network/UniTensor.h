@@ -1,14 +1,33 @@
-/**
- * @file UniTensor.h
- * @author Yun-Da Hsieh
- * @date 28 Aug 2013
- * @brief This is the header file for the class of symmetry tensor "UniTensor".
- *
- * @see http://www.stack.nl/~dimitri/doxygen/docblocks.html
- * @see http://www.stack.nl/~dimitri/doxygen/commands.html
- */
-#ifndef SYTENSOR_H
-#define SYTENSOR_H
+/****************************************************************************
+*  @file CMakeLists.txt
+*  @license
+*    Universal Tensor Network Library
+*    Copyright (c) 2013-2014
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
+*
+*    This file is part of Uni10, the Universal Tensor Network Library.
+*
+*    Uni10 is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU Lesser General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    Uni10 is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU Lesser General Public License for more details.
+*
+*    You should have received a copy of the GNU Lesser General Public License
+*    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+*  @endlicense
+*  @brief Header file for UniTensor class
+*  @author Yun-Da Hsieh
+*  @date 2014-05-06
+*  @since 0.1.0
+*
+*****************************************************************************/
+#ifndef UNITENSOR_H
+#define UNITENSOR_H
 #include <iostream>
 #include <iomanip>
 #include <stdio.h>
@@ -43,13 +62,20 @@ class UniTensor{
 		~UniTensor();
 		void addLabel(const std::vector<int>& newLabels);
 		void addLabel(int* newLabels);
+		void addRawElem(std::vector<double> rawElem);
 		void addRawElem(double* rawElem);
 		void elemSet(const Qnum& qnum, double* _elem);
 		void elemSet(double* _elem);
 		double at(std::vector<int>idxs)const;
+<<<<<<< HEAD
 		double& operator[](size_t idx);
     		std::vector<Qnum> blockQnum()const;
     		Qnum blockQnum(int idx)const;
+=======
+		double operator[](size_t idx);
+    std::vector<Qnum> blockQnum()const;
+    Qnum blockQnum(int idx)const;
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 		size_t blockNum()const;
 		void save(const std::string& fname);
 		std::vector<int> label()const;
@@ -61,7 +87,7 @@ class UniTensor{
 		size_t elemNum()const;
 		size_t bondNum()const;
 		int inBondNum()const;
-		static void check();
+		static void profile();
 		UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
 		UniTensor& permute(int* newLabels, int inBondNum);
 		UniTensor& permute(int inBondNum);
@@ -86,8 +112,8 @@ class UniTensor{
 		friend class Network;
 		void orthoRand();
 		void orthoRand(const Qnum& qnum);
-		void eye();
-		void eye(const Qnum& qnum);
+		void identity();
+		void identity(const Qnum& qnum);
 		void set_zero(const Qnum& qnum);
 		void set_zero();
 		std::vector<_Swap> exSwap(const UniTensor& Tb)const;
@@ -108,17 +134,18 @@ class UniTensor{
 		int RBondNum;	//Row bond number
 		int RQdim;
 		int CQdim;
-		int64_t m_elemNum;
+		size_t m_elemNum;
 		std::map<int, Block*> RQidx2Blk;	//Qidx to the Block
-		std::map<int, int> QidxEnc;
-		std::map<int, int> RQidx2Off;	//the row offset starts from the block origin of a qnum
-		std::map<int, int> CQidx2Off;	//the col offset starts from the block origin of a qnum
-		std::map<int, int> RQidx2Dim;
-		std::map<int, int> CQidx2Dim;
+		std::map<int, size_t> QidxEnc;
+		std::map<int, size_t> RQidx2Off;	//the row offset starts from the block origin of a qnum
+		std::map<int, size_t> CQidx2Off;	//the col offset starts from the block origin of a qnum
+		std::map<int, size_t> RQidx2Dim;
+		std::map<int, size_t> CQidx2Dim;
+    bool ongpu;
 		static int COUNTER;
 		static int64_t ELEMNUM;
-		static int64_t MAXELEMNUM;
-		static int64_t MAXELEMTEN;	//Max number of element of a tensor
+		static size_t MAXELEMNUM;
+		static size_t MAXELEMTEN;	//Max number of element of a tensor
 		//Private Functions
 		void grouping();
 		void initUniT();
@@ -129,4 +156,8 @@ class UniTensor{
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 };	/* namespace uni10 */
+<<<<<<< HEAD
 #endif /* SYTENSOR_H */
+=======
+#endif /* UNITENSOR_H */
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77

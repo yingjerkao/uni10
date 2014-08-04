@@ -1,3 +1,31 @@
+/****************************************************************************
+*  @file CMakeLists.txt
+*  @license
+*    Universal Tensor Network Library
+*    Copyright (c) 2013-2014
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
+*
+*    This file is part of Uni10, the Universal Tensor Network Library.
+*
+*    Uni10 is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU Lesser General Public License as published by
+*    the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    Uni10 is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU Lesser General Public License for more details.
+*
+*    You should have received a copy of the GNU Lesser General Public License
+*    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+*  @endlicense
+*  @brief Main specification file for CMake
+*  @author Ying-Jer Kao
+*  @date 2014-05-06
+*  @since 0.1.0
+*
+*****************************************************************************/
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/tools/uni10_tools.h>
 //using namespace uni10::datatype;
@@ -20,16 +48,16 @@ void UniTensor::grouping(){
 		}
 	}
 	RBondNum = row_bondNum;
-	std::map<Qnum,int> row_QnumMdim;
+	std::map<Qnum,size_t> row_QnumMdim;
 	std::vector<int> row_offs(row_bondNum, 0);
 	std::map<Qnum,std::vector<int> > row_Qnum2Qidx;
 	Qnum qnum;
-	int dim;
+  size_t dim;
 	int boff = 0;
-	std::vector<int>tmpRQidx2Dim(RQdim, 1);
-	std::vector<int>tmpCQidx2Dim(CQdim, 1);
-	std::vector<int>tmpRQidx2Off(RQdim, 0);
-	std::vector<int>tmpCQidx2Off(CQdim, 0);
+	std::vector<size_t>tmpRQidx2Dim(RQdim, 1);
+	std::vector<size_t>tmpCQidx2Dim(CQdim, 1);
+	std::vector<size_t>tmpRQidx2Off(RQdim, 0);
+	std::vector<size_t>tmpCQidx2Off(CQdim, 0);
 	if(row_bondNum){
 		while(1){
 			qnum.assign();
@@ -67,8 +95,7 @@ void UniTensor::grouping(){
 		row_QnumMdim[qnum] = 1;
 		row_Qnum2Qidx[qnum].push_back(0);
 	}
-	std::map<Qnum,int>::iterator itt;
-	std::map<Qnum,int> col_QnumMdim;
+	std::map<Qnum,size_t> col_QnumMdim;
 	std::vector<int> col_offs(col_bondNum, 0);
 	std::map<Qnum,std::vector<int> > col_Qnum2Qidx;
 	boff = 0;
@@ -114,8 +141,8 @@ void UniTensor::grouping(){
 		}
 	}
 
-	std::map<Qnum,int>::iterator it;
-	std::map<Qnum,int>::iterator it2;
+	std::map<Qnum,size_t>::iterator it;
+	std::map<Qnum,size_t>::iterator it2;
 	std::set<int> Qidx;
 	Block blk;
 	int qidx;
@@ -143,9 +170,9 @@ void UniTensor::grouping(){
 			}
 		}
 	}
-	int elemEnc = 0;
-	for(std::map<int, int>::iterator itr = RQidx2Dim.begin(); itr != RQidx2Dim.end(); itr++)
-		for(std::map<int, int>::iterator itc = CQidx2Dim.begin(); itc != CQidx2Dim.end(); itc++){
+	size_t elemEnc = 0;
+	for(std::map<int, size_t>::iterator itr = RQidx2Dim.begin(); itr != RQidx2Dim.end(); itr++)
+		for(std::map<int, size_t>::iterator itc = CQidx2Dim.begin(); itc != CQidx2Dim.end(); itc++){
 			qidx = itr->first * CQdim + itc->first;
 			if(Qidx.find(qidx) != Qidx.end()){
 				QidxEnc[qidx] = elemEnc;
@@ -166,11 +193,11 @@ void UniTensor::addGate(std::vector<_Swap> swaps){
 	int Q_off;
 	int tmp;
 	int RQoff, CQoff;
-	int sB_r, sB_c;	//sub-block of a Qidx
-	int sB_rDim, sB_cDim;	//sub-block of a Qidx
-	int B_cDim;
-	int64_t E_off;
-	for(std::map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
+	size_t sB_r, sB_c;	//sub-block of a Qidx
+	size_t sB_rDim, sB_cDim;	//sub-block of a Qidx
+	size_t B_cDim;
+	size_t E_off;
+	for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 		Q_off = it->first;
 		tmp = Q_off;
 		for(int b = bondNum - 1; b >= 0; b--){
@@ -264,19 +291,19 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 			int tmp;
 			int Qin_RQoff, Qin_CQoff;
 			int Qot_CQoff, Qot_RQoff;
-			int sBin_r, sBin_c;	//sub-block of a Qidx
-			int sBin_rDim, sBin_cDim;	//sub-block of a Qidx
-			int sBot_cDim;	//sub-block of a Qidx
-			int sBot_r, sBot_c;
-			int Bin_cDim, Bot_cDim;
-			int64_t Ein_off, Eot_off;
+			size_t sBin_r, sBin_c;	//sub-block of a Qidx
+			size_t sBin_rDim, sBin_cDim;	//sub-block of a Qidx
+			size_t sBot_cDim;	//sub-block of a Qidx
+			size_t sBot_r, sBot_c;
+			size_t Bin_cDim, Bot_cDim;
+			size_t Ein_off, Eot_off;
 			std::vector<int> sBin_idxs(bondNum, 0);
 			std::vector<int> sBin_sBdims(bondNum, 0);
 			std::vector<int> Qot_acc(bondNum, 1);
 			std::vector<int> sBot_acc(bondNum, 1);
 			for(int b = bondNum	- 1; b > 0; b--)
 				Qot_acc[b - 1] = Qot_acc[b] * UniTout.bonds[b].Qnums.size();
-			for(std::map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
+			for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 				Qin_off = it->first;
 				tmp = Qin_off;
 				int qdim;
@@ -338,6 +365,9 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 	}
 }
 
+void UniTensor::addRawElem(std::vector<DOUBLE> rawElem){
+  addRawElem(&rawElem[0]);
+}
 void UniTensor::addRawElem(DOUBLE* rawElem){
 	assert((status & HAVEBOND));   //If not INIT, CANNOT add elements
 	int bondNum = bonds.size();
@@ -353,12 +383,12 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 	int Q_off;
 	int tmp;
 	int RQoff, CQoff;
-	int sB_r, sB_c;	//sub-block of a Qidx
-	int sB_rDim, sB_cDim;	//sub-block of a Qidx
-	int B_cDim;
-	int64_t E_off;
-	int64_t R_off;
-	for(std::map<int, int>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
+  size_t sB_r, sB_c;	//sub-block of a Qidx
+	size_t sB_rDim, sB_cDim;	//sub-block of a Qidx
+	size_t B_cDim;
+	size_t E_off;
+  int R_off;
+	for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 		Q_off = it->first;
 		tmp = Q_off;
 		for(int b = bondNum - 1; b >= 0; b--){
@@ -397,6 +427,10 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 	status |= HAVEELEM;
 }
 
+<<<<<<< HEAD
+=======
+/*
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 void UniTensor::elemSet(const Qnum& qnum, double* _elem){
 	Block& block = blocks[qnum];
 	memcpy(block.elem, _elem, block.Rnum * block.Cnum * sizeof(DOUBLE));
@@ -406,7 +440,11 @@ void UniTensor::elemSet(const Qnum& qnum, double* _elem){
 void UniTensor::elemSet(double* _elem){
 	memcpy(elem, _elem, elemNum() * sizeof(DOUBLE));
 	status |= HAVEELEM;
+<<<<<<< HEAD
 }
+=======
+}*/
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 
 double UniTensor::at(std::vector<int> idxs)const{
 	assert(status & HAVEBOND);
@@ -430,10 +468,10 @@ double UniTensor::at(std::vector<int> idxs)const{
 		int Q_RQoff = Qoff / CQdim;
 		int Q_CQoff = Qoff % CQdim;
 		Block* blk = RQidx2Blk.find(Q_RQoff)->second;
-		int B_cDim = blk->Cnum;
-		int sB_cDim = CQidx2Dim.find(Q_CQoff)->second;
-		int blkRoff = RQidx2Off.find(Q_RQoff)->second;
-		int blkCoff = CQidx2Off.find(Q_CQoff)->second;
+		size_t B_cDim = blk->Cnum;
+		size_t sB_cDim = CQidx2Dim.find(Q_CQoff)->second;
+		size_t blkRoff = RQidx2Off.find(Q_RQoff)->second;
+		size_t blkCoff = CQidx2Off.find(Q_CQoff)->second;
 		int boff = blk->offset + (blkRoff * B_cDim) + blkCoff;
 		int cnt = 0;
 		std::vector<int> D_acc(bondNum, 1);
@@ -447,7 +485,7 @@ double UniTensor::at(std::vector<int> idxs)const{
 		return 0.0;;
 	}
 }
-double& UniTensor::operator[](size_t idx){
+double UniTensor::operator[](size_t idx){
 	assert(idx < m_elemNum);
 	return elem[idx];
 }
@@ -493,15 +531,15 @@ UniTensor& UniTensor::transpose(){
 		std::map<Qnum,Block>::iterator it_out;
 		double* elem_in;
 		double* elem_out;
-		int Rnum, Cnum;
+		size_t Rnum, Cnum;
 		for ( it_in = blocks.begin() ; it_in != blocks.end(); it_in++ ){
 			it_out = UniTout.blocks.find((it_in->first));
 			Rnum = it_in->second.Rnum;
 			Cnum = it_in->second.Cnum;
 			elem_in = it_in->second.elem;
 			elem_out = it_out->second.elem;
-			for(int i = 0; i < Rnum; i++)
-				for(int j = 0; j < Cnum; j++)
+			for(size_t i = 0; i < Rnum; i++)
+				for(size_t j = 0; j < Cnum; j++)
 					elem_out[j * Rnum + i] = elem_in[i * Cnum + j];
 		}
 		UniTout.status |= HAVEELEM;
@@ -512,7 +550,7 @@ UniTensor& UniTensor::transpose(){
 bool UniTensor::elemCmp(const UniTensor& UniT)const{
 	double diff;
 	if(m_elemNum == UniT.m_elemNum){
-		for(int i = 0; i < m_elemNum; i++){
+		for(size_t i = 0; i < m_elemNum; i++){
 			diff = fabs(elem[i] - UniT.elem[i]);
 			if(diff > 1E-6)
 				return false;
@@ -525,12 +563,12 @@ bool UniTensor::elemCmp(const UniTensor& UniT)const{
 double UniTensor::trace()const{
 	assert(status & HAVEELEM);
 	if(status & HAVEBOND){
-		int Rnum;
+		size_t Rnum;
 		DOUBLE trVal = 0;
 		for(std::map<Qnum, Block>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
 			assert(it->second.Rnum == it->second.Cnum);
 			Rnum = it->second.Rnum;
-			for(int r = 0; r < Rnum; r++)
+			for(size_t r = 0; r < Rnum; r++)
 				trVal += it->second.elem[r * Rnum + r];
 		}
 		return trVal;
@@ -592,16 +630,22 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 	//int tmp;
 	int Qt_RQoff, Qt_CQoff;
 	int Q_RQoff, Q_CQoff;
-	int sBt_rDim, sBt_cDim;	//sub-block of a Qidx of Tt
-	int sB_rDim, sB_cDim;	//sub-block of a Qidx
-	int Bt_cDim;
+	size_t sBt_rDim, sBt_cDim;	//sub-block of a Qidx of Tt
+	size_t sB_rDim, sB_cDim;	//sub-block of a Qidx
+	size_t Bt_cDim;
 	//int B_cDim;
+<<<<<<< HEAD
 	int64_t Et_off;
 	std::vector<int64_t> E_offs(tQdim);
 	std::vector<int> B_cDims(tQdim);
+=======
+	size_t Et_off;
+	std::vector<size_t> E_offs(tQdim);
+	std::vector<size_t> B_cDims(tQdim);
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 	int tQdim2 = tQdim * tQdim;
 	int Qenc = Q_acc[ia] + Q_acc[ib];
-	for(std::map<int, int>::iterator it = Tt.QidxEnc.begin(); it != Tt.QidxEnc.end(); it++){
+	for(std::map<int, size_t>::iterator it = Tt.QidxEnc.begin(); it != Tt.QidxEnc.end(); it++){
 		Qt_off = it->first;
 
 		Qt_RQoff = Qt_off / Tt.CQdim;
@@ -620,8 +664,8 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 		}
 		int tQdeg, sB_c_off;
 		DOUBLE trVal;
-		for(int sB_r = 0; sB_r < sBt_rDim; sB_r++)
-			for(int sB_c = 0; sB_c < sBt_cDim; sB_c++){
+		for(size_t sB_r = 0; sB_r < sBt_rDim; sB_r++)
+			for(size_t sB_c = 0; sB_c < sBt_cDim; sB_c++){
 				trVal = 0;
 				for(int q = 0; q < tQdim; q++){
 					tQdeg = bonds[ia].Qdegs[q];

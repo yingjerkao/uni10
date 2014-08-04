@@ -1,19 +1,46 @@
-#  Copyright Uni10 2013 - 2014.
-#  Distributed under the Boost Software License, Version 1.0.
-#      (See accompanying file LICENSE_1_0.txt or copy at
-#          http://www.boost.org/LICENSE_1_0.txt)
+###
+#  @file CMakeLists.txt
+#  @license
+#    Copyright (c) 2013-2014
+#    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+#
+#    This file is part of Uni10.
+#
+#    Uni10 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Uni10 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+#  @endlicense
+#  @brief Main specification file for CMake
+#  @author Ying-Jer Kao
+#  @date 2014-05-06
+#  @since 0.1.0
+###
+
+
 ######################################################################
 ### CMAKE VERSION
 ######################################################################
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+
+
 
 ######################################################################
 # Version information
 ######################################################################
 set(UNI10_VERSION_MAJOR 0)
-set(UNI10_VERSION_MINOR 1)
-set(UNI10_VERSION_PATCH 0)
+set(UNI10_VERSION_MINOR 0)
+set(UNI10_VERSION_PATCH 1)
+set(UNI10_VERSION COUNT 2)
 set(UNI10_VERSION
   ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
 )
@@ -64,6 +91,10 @@ endif()
 ### CMAKE BUILD TYPE
 ######################################################################
 
+<<<<<<< HEAD
+=======
+#set(CMAKE_BUILD_TYPE Release)
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 set(CMAKE_BUILD_TYPE Debug)
 
 
@@ -94,18 +125,21 @@ endif()
 ######################################################################
 ### Find BLAS and LAPACK
 ######################################################################
-
-if(USE_MKL)
-  find_package( MKL REQUIRED)
-  ADD_DEFINITIONS("-DMKL")
-  #message( STATUS "MKL found: ${MKL_MINIMAL_LIBRARY}")
-else ()
-#  find_package( BLAS REQUIRED)
-#  message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
-  find_package( LAPACK REQUIRED)
-  message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
+if( NOT (DEFINED BLAS_LIBRARIES AND DEFINED LAPACK_LIBRARIES))
+  if(USE_MKL)
+    find_package( MKL REQUIRED)
+    ADD_DEFINITIONS("-DMKL")
+    #message( STATUS "MKL found: ${MKL_MINIMAL_LIBRARY}")
+  else ()
+  #  find_package( BLAS REQUIRED)
+  #  message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
+    find_package( LAPACK REQUIRED)
+    message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
+  endif()
+else()
+  set(LAPACK_LIBRARIES  ${BLAS_LIBRARIES}  ${LAPACK_LIBRARIES})
+  message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}")
 endif()
-
 
 ######################################################################
 ### FLAGS
@@ -200,5 +234,5 @@ install(DIRECTORY examples/
 
 install(DIRECTORY doc/
 	DESTINATION doc )
-install(FILES INSTALL.txt README.txt DESTINATION .)
+install(FILES INSTALL.txt README.txt GPL.txt LGPL.txt release_notes.txt DESTINATION .)
 #include(CPACK)
