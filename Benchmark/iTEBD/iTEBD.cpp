@@ -5,26 +5,36 @@ using namespace std;
 #include "uni10.hpp"
 using namespace uni10;
 #include <time.h>
+#include <stdlib.h>
 
-const int CHI = 20;
+int CHI = 20;
 
 void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& U, Network& iTEBD, Network& updateA);
 double measure(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Matrix>& Lb, UniTensor& Op, Network& MPS, Network& meas);
 double expectation(UniTensor& L, UniTensor& R, UniTensor& Op, Network& MPS, Network& meas);
 double measure2(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& Lb, UniTensor& expH, Network & iTEBD, double delta);
 
-int main(){
-  // Define the parameters of the model / simulation
-  const double J = 1.0;
-  const double g = 0.5;
-  int d = 2;
-  double delta = 0.01;
-  int N = 2000;
+int main(int argc, char* argv[]){
+	// Define the parameters of the model / simulation
+	const double J = 1.0;
+	const double g = 0.5;
+	double delta = 0.01;
+	int N = 10;
+	if(argc > 1){
+		sscanf(argv[1], "%d",&CHI);
+	}
+	if(argc > 2){
+		sscanf(argv[2], "%d",&N);
+	}
+	if(CHI < 20 || CHI > 2000){
+		cout<<"Fatal Errod\n";
+		exit(0);
+	}
 
 	/*** Initialization ***/
 	Qnum q0(0);
-  UniTensor H("../Hamiltonian/heisenberg.ham");
-  vector<Bond> bondH = H.bond();
+	UniTensor H("heisenberg.ham");
+	vector<Bond> bondH = H.bond();
 	UniTensor U(bondH, "U");
 	U.putBlock(q0, takeExp(-delta, H.getBlock(q0)));
 
@@ -40,7 +50,6 @@ int main(){
 	map<Qnum, Matrix> Lb;
 
 	Matrix I_chi(CHI, CHI, true);
-	srand(time(NULL));
 	I_chi.randomize();
 	La[q0] = I_chi;
 	I_chi.randomize();
@@ -54,12 +63,17 @@ int main(){
 	Network MPS("MPS.net");
 	Network meas("measure.net");
 
-  for(int step = 0; step < N; step++){
-	  update(ALa, BLb, La, Lb, U, iTEBD, updateA);
-	  update(BLb, ALa, Lb, La, U, iTEBD, updateA);
-  }
-	cout<<"E = "<<setprecision(12)<<measure2(ALa, BLb, Lb, U, iTEBD, delta)<<endl;
-	cout<<"E = "<<setprecision(12)<<measure(ALa, BLb, La, Lb, H, MPS, meas)<<endl;
+	cout<<"chi = "<<CHI<<endl;
+	for(int step = 0; step < N; step++){
+		cout<<"step = "<<step<<endl;
+		update(ALa, BLb, La, Lb, U, iTEBD, updateA);
+		update(BLb, ALa, Lb, La, U, iTEBD, updateA);
+	}
+	iTEBD.profile();
+	updateA.profile();
+	H.profile();
+	//cout<<"E = "<<setprecision(12)<<measure2(ALa, BLb, Lb, U, iTEBD, delta)<<endl;
+	//cout<<"E = "<<setprecision(12)<<measure(ALa, BLb, La, Lb, H, MPS, meas)<<endl;
 }
 
 
@@ -75,7 +89,7 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 	vector<Matrix> rets = Theta.getBlock(q0).svd();
 	int dim = CHI < rets[1].row() ? CHI : rets[1].row();
 	//Matrix lambda(dim, dim, true);
-  //memcpy(lambda.elem(), rets[1].elem(), dim * sizeof(double));
+	//memcpy(lambda.elem(), rets[1].elem(), dim * sizeof(double));
 	double norm = rets[1].resize(dim, dim).norm();
 	rets[1] *= (1 / norm);
 	La[q0] = rets[1];
@@ -83,8 +97,8 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 	vector<Bond> bond3 = ALa.bond();
 	bond3[0] = bdi;
 	BLb.assign(bond3);
-  Matrix blk = BLb.getBlock(q0);
-  blk.setElem(rets[2].getElem());
+	Matrix blk = BLb.getBlock(q0);
+	blk.setElem(rets[2].getElem());
 	BLb.putBlock(q0, blk);
 	updateA.putTensor("BLb", &BLb);
 	updateA.putTensor("C", &C);

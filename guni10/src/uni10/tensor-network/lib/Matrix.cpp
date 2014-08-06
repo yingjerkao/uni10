@@ -141,6 +141,7 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 	}
 	else if(Ma.diag && (!Mb.diag)){
 		Matrix Mc(Mb);
+		/*
 		double* Ma_elem = Ma.m_elem;
 		if(Ma.ongpu){
 			Ma_elem = (double*)malloc(Ma.m_elemNum * sizeof(double));
@@ -151,6 +152,8 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 		if(Ma.ongpu){
 			free(Ma_elem);
 		}
+		*/
+		diagMM(Ma.m_elem, Mc.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
 		return Mc;
 	}
 	else if((!Ma.diag) && Mb.diag){

@@ -40,7 +40,7 @@
 #include <cublas.h>
 namespace uni10{
 bool CULAINIT = false;
-const size_t GPU_OPERATE_MEM = GPU_GLOBAL_MEM / 2;
+const size_t GPU_OPERATE_MEM = GPU_GLOBAL_MEM / 3;
 void culaInit(){
 	if(!CULAINIT)
 		culaInitialize();
@@ -62,6 +62,8 @@ void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA
 			mm_idx |= 2;
 		if(!ongpuC)
 			mm_idx |= 1;
+		printf("mm_idx = %d\n", mm_idx);
+		printf("M = %u, K = %u, N = %u\n", M, K, N);
 		mmtype mm_t = types[mm_idx];
 		size_t elemPool = GPU_OPERATE_MEM / sizeof(double);
 		size_t min_chunk_size = 8;
@@ -147,6 +149,40 @@ void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA
 		printf("p = %d, q = %d, mm_t = %d\n", p, q, mm_idx);
 		uni10Dgemm(p, q, M, N, K, A, B, C, mm_t);
 	}	
+}
+
+__global__ void _diagMM(double* diag, double* mat, size_t M, size_t N){
+	size_t idx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	double scalar = diag[idx / N];
+	if(idx < M * N)
+		mat[idx] *= scalar;
+}
+
+void diagMM(double* diag, double* mat, size_t M, size_t N, bool diag_ongpu, bool mat_ongpu){
+	double* d_elem = diag;
+	size_t d_memsize = M * sizeof(double);
+	if(mat_ongpu){
+		if(!diag_ongpu){
+			d_elem = (double*)elemAllocForce(d_memsize, true);
+			elemCopy(d_elem, diag, d_memsize, true, diag_ongpu);
+		}
+		size_t blockNum = (M * N + THREADMAX - 1) / THREADMAX;
+		dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
+		_diagMM<<<gridSize, THREADMAX>>>(d_elem, mat, M, N);
+		if(!diag_ongpu)
+			elemFree(d_elem, d_memsize, true);
+	}
+	else{
+		if(diag_ongpu){
+			d_elem = (double*)malloc(d_memsize);
+			elemCopy(d_elem, diag, d_memsize, false, diag_ongpu);
+		}
+		for(size_t i = 0; i < M; i++)
+			vectorScal(d_elem[i], &(mat[i * N]), N, mat_ongpu);
+		if(diag_ongpu)
+			free(d_elem);
+	}
+
 }
 
 void vectorAdd(double* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu){	// Y = X + Y
@@ -274,13 +310,14 @@ void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, 
 	int min = M < N ? M : N;	//min = min(M,N)
 	int ldA = N, ldu = N, ldvT = min;
 	if(ongpu){
-		double* Mij;
 		size_t memsize = M * N * sizeof(double);
-		assert(cudaMalloc((void**)&Mij, memsize) == cudaSuccess);
+		//assert(cudaMalloc((void**)&Mij, memsize) == cudaSuccess);
+		double* Mij = (double*)elemAllocForce(memsize, ongpu);
 		assert(cudaMemcpy(Mij, Mij_ori, memsize, cudaMemcpyDeviceToDevice) == cudaSuccess);
 		culaInit();
 		culaDeviceDgesvd('S', 'S', N, M, Mij, ldA, S, vT, ldu, U, ldvT);
-		cudaFree(Mij);
+		//cudaFree(Mij);
+		elemFree(Mij, memsize, ongpu);
 	}
 	else{
 		double* Mij = (double*)malloc(M * N * sizeof(double));
