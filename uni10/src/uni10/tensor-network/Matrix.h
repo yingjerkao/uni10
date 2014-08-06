@@ -57,13 +57,9 @@ class Matrix {
 		std::vector<Matrix> diagonalize()const;
 		std::vector<Matrix> svd()const;
 		friend Matrix takeExp(double a, const Matrix& mat);
-<<<<<<< HEAD
-		void addElem(double* elem);
-=======
 		void setElem(double* elem);
 		void setElem(std::vector<double> elem);
 		double* getElem()const;
->>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 		void randomize();
 		void orthoRand();
 		void set_zero();

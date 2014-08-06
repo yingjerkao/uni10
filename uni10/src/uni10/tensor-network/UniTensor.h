@@ -67,15 +67,9 @@ class UniTensor{
 		void elemSet(const Qnum& qnum, double* _elem);
 		void elemSet(double* _elem);
 		double at(std::vector<int>idxs)const;
-<<<<<<< HEAD
 		double& operator[](size_t idx);
     		std::vector<Qnum> blockQnum()const;
     		Qnum blockQnum(int idx)const;
-=======
-		double operator[](size_t idx);
-    std::vector<Qnum> blockQnum()const;
-    Qnum blockQnum(int idx)const;
->>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 		size_t blockNum()const;
 		void save(const std::string& fname);
 		std::vector<int> label()const;
@@ -141,7 +135,7 @@ class UniTensor{
 		std::map<int, size_t> CQidx2Off;	//the col offset starts from the block origin of a qnum
 		std::map<int, size_t> RQidx2Dim;
 		std::map<int, size_t> CQidx2Dim;
-    bool ongpu;
+                bool ongpu;
 		static int COUNTER;
 		static int64_t ELEMNUM;
 		static size_t MAXELEMNUM;
@@ -156,8 +150,4 @@ class UniTensor{
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 };	/* namespace uni10 */
-<<<<<<< HEAD
-#endif /* SYTENSOR_H */
-=======
 #endif /* UNITENSOR_H */
->>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
