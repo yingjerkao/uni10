@@ -74,6 +74,13 @@ void vectorScal(double a, double* X, size_t N){
 	}
 }
 
+void matvecMul(double* A, double* X, int M, int N, double* Y){
+    double alpha = 1, beta = 0;
+    int incx=1,incy=1;
+    
+    dgemv((char*)"T", &N, &M, &alpha, A, &N, X, &incx, &beta, Y, &incy);
+    
+}
 /*Generate a set of row vectors which form a othonormal basis
  *For the incoming matrix "elem", the number of row <= the number of column, M <= N
  */
