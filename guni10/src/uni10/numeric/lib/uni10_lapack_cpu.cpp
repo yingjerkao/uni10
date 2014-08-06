@@ -42,6 +42,12 @@ void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA
 	dgemm((char*)"N", (char*)"N", &N, &M, &K, &alpha, B, &N, A, &K, &beta, C, &N);
 }
 
+void diagMM(double* diag, double* mat, size_t M, size_t N, bool diag_ongpu, bool mat_ongpu){
+	for(size_t i = 0; i < M; i++)
+		vectorScal(diag[i], &(mat[i * N]), N, false);
+
+}
+
 void vectorAdd(double* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu){	// Y = Y + X
 	double a = 1.0;
 	int inc = 1;

@@ -14,12 +14,12 @@ CULA_LINK := -lcula_core -lcula_lapack -lcudart -lcublas
 
 
 
-OLD_UNI10_ROOT := ../uni10/src
+OLD_UNI10_ROOT := ../../uni10/src
 OLD_INC := $(OLD_UNI10_ROOT)
 OLD_LIB := $(OLD_UNI10_ROOT)
 OLD_OBJ := $(OLD_UNI10_ROOT)/libuni10_old.a
 
-NEW_UNI10_ROOT := ../guni10/src
+NEW_UNI10_ROOT := ../../guni10/src
 NEW_INC := $(NEW_UNI10_ROOT)
 NEW_LIB := $(NEW_UNI10_ROOT)
 CPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_cpu.a
@@ -30,15 +30,7 @@ asd_gpu.e: Ascend.cpp
 asd_cpu.e: Ascend.cpp
 	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
 
-fitebd_gpu.e: FiTEBD.cpp
-	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) $(NVCCOPT) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
-fitebd_cpu.e: FiTEBD.cpp
-	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
 
-fitebd_old.e: FiTEBD.cpp
-	$(CC) -I$(OLD_INC) -L$(OLD_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(OLD_OBJ)
-fitebd.e: FiTEBD.cpp
-	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 
 clean:
 	rm -f *.o *.e asd

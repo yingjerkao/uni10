@@ -40,7 +40,7 @@
 #include <uni10/data-structure/uni10_struct.h>
 namespace uni10{
 
-const size_t GPU_GLOBAL_MEM = 1<<30;
+const size_t GPU_GLOBAL_MEM = ((size_t)5) * 1<<30;
 const int THREADMAX = 1024;
 const int BLOCKMAX = 65535;
 void* elemAlloc(size_t memsize, bool& ongpu);

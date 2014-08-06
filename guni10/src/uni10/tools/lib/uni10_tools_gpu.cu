@@ -5,7 +5,7 @@
 namespace uni10{
 size_t MEM_USAGE = 0;
 size_t GPU_MEM_USAGE = 0;
-const size_t GPU_MEM_MAX = GPU_GLOBAL_MEM / 2;
+const size_t GPU_MEM_MAX = GPU_GLOBAL_MEM * 2 / 3;
 void* elemAlloc(size_t memsize, bool& ongpu){
 	void* ptr = NULL;
 	if(GPU_MEM_USAGE + memsize <= GPU_MEM_MAX){
@@ -19,6 +19,7 @@ void* elemAlloc(size_t memsize, bool& ongpu){
 		MEM_USAGE += memsize;
 		ongpu = false;
 	}
+	//printf("ongpu = %d, GPU_MEM_USAGE = %u, allocate %u\n", ongpu, GPU_MEM_USAGE, memsize);
 	return ptr;
 }
 
@@ -44,13 +45,13 @@ void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool 
 			cuflag = cudaMemcpy(des, src, memsize, cudaMemcpyDeviceToDevice);
 		}
 		else{
-			printf("mvGPU\n");
+			//printf("mvGPU\n");
 			cuflag = cudaMemcpy(des, src, memsize, cudaMemcpyHostToDevice);
 		}
 		assert(cuflag == cudaSuccess);
 	}else{
 		if(src_ongpu){
-			printf("mvCPU\n");
+			//printf("mvCPU\n");
 			cuflag = cudaMemcpy(des, src, memsize, cudaMemcpyDeviceToHost);
 			assert(cuflag == cudaSuccess);
 		}
@@ -127,7 +128,7 @@ void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			cudaError_t cuflag = cudaMalloc(&src_elem, memsize);
 			assert(cuflag == cudaSuccess);
 			cuflag = cudaMemcpy(src_elem, diag_elem, memsize, cudaMemcpyHostToDevice);
-			printf("mvGPU");
+			//printf("mvGPU");
 			assert(cuflag == cudaSuccess);
 			_setDiag<<<gridSize, THREADMAX>>>(elem, src_elem, M, N, diag_N);
 			cudaFree(src_elem);
@@ -138,7 +139,7 @@ void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			size_t memsize = diag_N * sizeof(double);
 			src_elem = (double*) malloc(memsize);
 			cudaError_t cuflag = cudaMemcpy(src_elem, diag_elem, memsize, cudaMemcpyDeviceToHost);
-			printf("mvCPU");
+			//printf("mvCPU");
 			assert(cuflag == cudaSuccess);
 		}
 		else
@@ -164,7 +165,7 @@ void getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			assert(cuflag == cudaSuccess);
 			_getDiag<<<gridSize, THREADMAX>>>(elem, tmp_elem, M, N, diag_N);
 			cuflag = cudaMemcpy(diag_elem, tmp_elem, memsize, cudaMemcpyHostToDevice);
-			printf("mvGPU");
+			//printf("mvGPU");
 			assert(cuflag == cudaSuccess);
 			cudaFree(tmp_elem);
 		}
@@ -181,7 +182,7 @@ void getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			tmp_elem[i] = elem[i * N + i];
 		if(diag_ongpu){
 			cudaError_t cuflag = cudaMemcpy(diag_elem, tmp_elem, memsize, cudaMemcpyDeviceToHost);
-			printf("mvCPU");
+			//printf("mvCPU");
 			assert(cuflag == cudaSuccess);
 		}
 	}
@@ -264,7 +265,7 @@ double getElemAt(size_t idx, double* elem, bool ongpu){
 	if(ongpu){
 		double val;
 		assert(cudaMemcpy(&val, &(elem[idx]), sizeof(double), cudaMemcpyDeviceToHost) == cudaSuccess);
-		printf("mvCPU");
+		//printf("mvCPU");
 		return val;
 	}	
 	else
@@ -274,7 +275,7 @@ double getElemAt(size_t idx, double* elem, bool ongpu){
 void setElemAt(size_t idx, double val, double* elem, bool ongpu){
 	if(ongpu){
 		assert(cudaMemcpy(&(elem[idx]), &val, sizeof(double), cudaMemcpyHostToDevice) == cudaSuccess);
-		printf("mvGPU");
+		//printf("mvGPU");
 	}
 	else
 		elem[idx] = val;

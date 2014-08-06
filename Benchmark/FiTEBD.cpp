@@ -94,6 +94,7 @@ int main(){
     int ordTheta[] = {-1, -2, -3, -4};
     theta.permute(ordTheta, 2);
 
+
     // SVD
     vector<Matrix> svd = theta.getBlock(q0).svd();
 

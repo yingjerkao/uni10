@@ -259,7 +259,9 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 		UniTensor UniTout(outBonds, name);
 		if(status & HAVEELEM){
 			if(blocks.size() == 1){
-				if(ongpu){
+				if(ongpu && UniTout.ongpu){
+					//printf("before reshape\n");
+					//printf("elemNum = %u, out_ongpu = %d, ongpu = %d\n", m_elemNum, UniTout.ongpu, ongpu);
 					size_t perInfo[bondNum * 2];
 					size_t newAcc[bondNum];
 					newAcc[bondNum - 1] = 1;
@@ -270,10 +272,39 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					}
 					for(int b = 0; b < bondNum; b++)
 						perInfo[bondNum + rsp_outin[b]] = newAcc[b];
-					reshapeElem(elem, bondNum, m_elemNum, perInfo, UniTout.elem);
-
+					double* des_elem = UniTout.elem;
+					double* src_elem = elem;
+					/*
+					size_t memsize = m_elemNum * sizeof(DOUBLE);
+					if(!ongpu){
+						src_elem = (double*)elemAllocForce(memsize, true);
+						elemCopy(src_elem, elem, memsize, true, ongpu);
+					}
+					if(!UniTout.ongpu)
+						des_elem = (double*)elemAllocForce(memsize, true);
+						*/
+					reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
+					/*
+					if(!ongpu)
+						elemFree(src_elem, memsize, true);
+					if(!UniTout.ongpu){
+						elemCopy(UniTout.elem, des_elem, memsize, UniTout.ongpu, true);
+						elemFree(des_elem, memsize, true);
+					}
+					*/
+					//printf("after reshape\n");
 				}
 				else{
+					double* des_elem = UniTout.elem;
+					double* src_elem = elem;
+					size_t memsize = m_elemNum * sizeof(DOUBLE);
+					if(ongpu){
+						src_elem = (double*)elemAllocForce(memsize, false);
+						elemCopy(src_elem, elem, memsize, false, ongpu);
+					}
+					if(UniTout.ongpu)
+						des_elem = (double*)elemAllocForce(memsize, false);
+
 					size_t transAcc[bondNum];
 					size_t newAcc[bondNum];
 					transAcc[bondNum - 1] = 1;
@@ -289,7 +320,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					}
 					size_t cnt_ot = 0;
 					for(int i = 0; i < m_elemNum; i++){
-						UniTout.elem[cnt_ot] = elem[i];
+						des_elem[cnt_ot] = src_elem[i];
 						//std::cout<<cnt_ot<<std::endl;
 						for(int bend = bondNum - 1; bend >= 0; bend--){
 							idxs[bend]++;
@@ -302,6 +333,12 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 								idxs[bend] = 0;
 							}
 						}
+					}
+					if(ongpu)
+						elemFree(src_elem, memsize, false);
+					if(UniTout.ongpu){
+						elemCopy(UniTout.elem, des_elem, memsize, UniTout.ongpu, false);
+						elemFree(des_elem, memsize, false);
 					}
 				}
 			}

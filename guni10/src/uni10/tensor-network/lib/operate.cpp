@@ -93,8 +93,6 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 				newLabelC.push_back(Tb.labels[b]);
 			}
 		int conBond = interLabel.size();
-
-
 		Ta.permute(newLabelA, AbondNum - conBond);
 		Tb.permute(newLabelB, conBond);
 		std::vector<Bond> cBonds;

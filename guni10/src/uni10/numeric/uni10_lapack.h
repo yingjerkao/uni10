@@ -50,6 +50,7 @@ void vectorScal(double a, double* X, size_t N, bool ongpu);	// X = a * X
 double vectorSum(double* X, size_t N, int inc, bool ongpu);
 double vectorNorm(double* X, size_t N, int inc, bool ongpu);
 void vectorExp(double a, double* X, size_t N, bool ongpu);
+void diagMM(double* diag, double* mat, size_t M, size_t N, bool diag_ongpu, bool mat_ongpu);
 
 /*Generate a set of row vectors which form a othonormal basis
  *For the incoming matrix "elem", the number of row <= the number of column, M <= N
