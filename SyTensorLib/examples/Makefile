@@ -11,7 +11,8 @@ all:
 egN1.e: egN1.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 egM2.e: egM2.cpp
-	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+	#icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
+	g++ $< -o $@ $(OBJ) -I$(INC) -DMKL_ILP64 -m64 -I$(MKLROOT)/include  -L$(MKLROOT)/lib/intel64 -lmkl_intel_ilp64 -lmkl_core -lmkl_intel_thread -liomp5 -ldl -lpthread -lm
 egM1.e: egM1.cpp
 	icpc -I$(INC) $(LINK) -o $@ $< $(OBJ)
 egM3.e: egM3.cpp

@@ -64,10 +64,18 @@ class UniTensor{
 		void addLabel(int* newLabels);
 		void addRawElem(std::vector<double> rawElem);
 		void addRawElem(double* rawElem);
+		void elemSet(const Qnum& qnum, double* _elem);
+		void elemSet(double* _elem);
 		double at(std::vector<int>idxs)const;
+<<<<<<< HEAD
+		double& operator[](size_t idx);
+    		std::vector<Qnum> blockQnum()const;
+    		Qnum blockQnum(int idx)const;
+=======
 		double operator[](size_t idx);
     std::vector<Qnum> blockQnum()const;
     Qnum blockQnum(int idx)const;
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 		size_t blockNum()const;
 		void save(const std::string& fname);
 		std::vector<int> label()const;
@@ -148,4 +156,8 @@ class UniTensor{
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 };	/* namespace uni10 */
+<<<<<<< HEAD
+#endif /* SYTENSOR_H */
+=======
 #endif /* UNITENSOR_H */
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77

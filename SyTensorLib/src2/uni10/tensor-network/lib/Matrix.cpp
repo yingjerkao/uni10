@@ -167,7 +167,6 @@ void Matrix::orthoRand(){
 			orthoRandomize(M.elem(), Cnum, Rnum);
 			myTranspose(M.elem(), Cnum, Rnum, m_elem, 0);
 		}
-
 	}
 }
 
@@ -210,13 +209,13 @@ void Matrix::transpose(){
 	Cnum = tmp;
 }
 double Matrix::norm(){
-	double nm = 0;
+	double nm;
 	for(int i = 0; i < m_elemNum; i++)
 		nm += m_elem[i] * m_elem[i];
 	return sqrt(nm);
 }
 double Matrix::sum(){
-	double sm = 0;
+	double sm;
 	for(int i = 0; i < m_elemNum; i++)
 		sm += m_elem[i];
 	return sm;

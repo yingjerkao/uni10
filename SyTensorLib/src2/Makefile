@@ -4,7 +4,8 @@ CC := icpc
 UNI10_ROOT := uni10
 SRC := .
 BIN := bin
-OPT := -std=c++0x 
+OPT := -std=c++0x -fPIC
+#OPT := -fPIC
 all: $(OBJ) libtensorF.a
 
 
@@ -44,6 +45,7 @@ network.o: $(UNI10_ROOT)/tensor-network/lib/Network.cpp $(UNI10_ROOT)/tensor-net
 
 libtensorF.a: $(OBJ)
 	ar rcs ./$@ $^
+
 
 clean:
 	rm -f *.o *.o *.e ./*.a

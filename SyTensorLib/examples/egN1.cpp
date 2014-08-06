@@ -10,6 +10,7 @@ int main(){
 	// Create network by reading in network file "egN1_network"
 	uni10::Network net("egN1_network");
 	// Put tensors to the Network net
+	
 	net.putTensor("H", &H_U1);
 	net.putTensor("W", &W);
 	net.putTensor("WT", &WT);

@@ -306,6 +306,18 @@ double Matrix::sum(){
 		sm += m_elem[i];
 	return sm;
 }
+double Matrix::norm(){
+	double nm = 0;
+	for(int i = 0; i < m_elemNum; i++)
+		nm += m_elem[i] * m_elem[i];
+	return sqrt(nm);
+}
+double Matrix::sum(){
+	double sm = 0;
+	for(int i = 0; i < m_elemNum; i++)
+		sm += m_elem[i];
+	return sm;
+}
 double Matrix::trace(){
 	assert(Rnum == Cnum);
 	double sum = 0;
@@ -351,8 +363,16 @@ Matrix takeExp(double a, const Matrix& mat){
 	std::vector<Matrix> rets = mat.diagonalize();
 	Matrix UT = rets[1];
 	UT.transpose();
+<<<<<<< HEAD
+	for(int i = 0; i < rets[0].row(); i++)
+		rets[0][i] = exp(a * rets[0][i]);
+	return UT * rets[0] * rets[1];
+}
+};	/* namespace uni10 */	
+=======
 	for(size_t i = 0; i < rets[0].row(); i++)
 		rets[0][i] = exp(a * rets[0][i]);
 	return UT * rets[0] * rets[1];
 }
 };	/* namespace uni10 */
+>>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
