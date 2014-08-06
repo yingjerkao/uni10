@@ -427,10 +427,7 @@ void UniTensor::addRawElem(DOUBLE* rawElem){
 	status |= HAVEELEM;
 }
 
-<<<<<<< HEAD
-=======
 /*
->>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 void UniTensor::elemSet(const Qnum& qnum, double* _elem){
 	Block& block = blocks[qnum];
 	memcpy(block.elem, _elem, block.Rnum * block.Cnum * sizeof(DOUBLE));
@@ -440,11 +437,7 @@ void UniTensor::elemSet(const Qnum& qnum, double* _elem){
 void UniTensor::elemSet(double* _elem){
 	memcpy(elem, _elem, elemNum() * sizeof(DOUBLE));
 	status |= HAVEELEM;
-<<<<<<< HEAD
-}
-=======
 }*/
->>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 
 double UniTensor::at(std::vector<int> idxs)const{
 	assert(status & HAVEBOND);
@@ -485,7 +478,7 @@ double UniTensor::at(std::vector<int> idxs)const{
 		return 0.0;;
 	}
 }
-double UniTensor::operator[](size_t idx){
+double& UniTensor::operator[](size_t idx){
 	assert(idx < m_elemNum);
 	return elem[idx];
 }
@@ -634,15 +627,9 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 	size_t sB_rDim, sB_cDim;	//sub-block of a Qidx
 	size_t Bt_cDim;
 	//int B_cDim;
-<<<<<<< HEAD
-	int64_t Et_off;
-	std::vector<int64_t> E_offs(tQdim);
-	std::vector<int> B_cDims(tQdim);
-=======
 	size_t Et_off;
 	std::vector<size_t> E_offs(tQdim);
 	std::vector<size_t> B_cDims(tQdim);
->>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 	int tQdim2 = tQdim * tQdim;
 	int Qenc = Q_acc[ia] + Q_acc[ib];
 	for(std::map<int, size_t>::iterator it = Tt.QidxEnc.begin(); it != Tt.QidxEnc.end(); it++){

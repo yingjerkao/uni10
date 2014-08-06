@@ -91,10 +91,7 @@ endif()
 ### CMAKE BUILD TYPE
 ######################################################################
 
-<<<<<<< HEAD
-=======
 #set(CMAKE_BUILD_TYPE Release)
->>>>>>> eb8ff2a4ac324948ab953f0306a14dc5c5d03a77
 set(CMAKE_BUILD_TYPE Debug)
 
 
@@ -177,7 +174,7 @@ endif (UNIX)
 
 add_subdirectory(src)
 add_subdirectory(examples)
-add_subdirectory(Swig)
+#add_subdirectory(Swig)
 ######################################################################
 ### ADD LIBRARY
 ######################################################################
