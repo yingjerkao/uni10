@@ -64,16 +64,14 @@ int main(int argc, char* argv[]){
 	Network MPS("MPS.net");
 	Network meas("measure.net");
 
-	cout<<"chi = "<<CHI<<endl;
 	clock_t t;
 	t = clock();
 	for(int step = 0; step < N; step++){
-		cout<<"step = "<<step<<endl;
+		printf("step = %d\n", step);
 		update(ALa, BLb, La, Lb, U, iTEBD, updateA);
 		update(BLb, ALa, Lb, La, U, iTEBD, updateA);
 	}
 	t = clock() - t;
-	cout<<"CHI = "<<CHI<<endl;
 	printf ("It took %d clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
 	iTEBD.profile();
 	updateA.profile();
@@ -94,8 +92,6 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 	Theta.permute(2);
 	vector<Matrix> rets = Theta.getBlock(q0).svd();
 	int dim = CHI < rets[1].row() ? CHI : rets[1].row();
-	//Matrix lambda(dim, dim, true);
-	//memcpy(lambda.elem(), rets[1].elem(), dim * sizeof(double));
 	double norm = rets[1].resize(dim, dim).norm();
 	rets[1] *= (1 / norm);
 	La[q0] = rets[1];
@@ -104,7 +100,7 @@ void update(UniTensor& ALa, UniTensor& BLb, map<Qnum, Matrix>& La, map<Qnum, Mat
 	bond3[0] = bdi;
 	BLb.assign(bond3);
 	Matrix blk = BLb.getBlock(q0);
-	blk.setElem(rets[2].getElem());
+	blk.setElem(rets[2].getElem(), rets[2].isOngpu());
 	BLb.putBlock(q0, blk);
 	updateA.putTensor("BLb", &BLb);
 	updateA.putTensor("C", &C);

@@ -3,6 +3,7 @@
 #include <map>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 using namespace std;
 #include "uni10.hpp"
 using namespace uni10;
@@ -91,6 +92,8 @@ int main(int argc, char* argv[]){
 	Network measure_net("measure.net");
 	Network norm_net("norm.net");
 
+	clock_t t;
+	t = clock();
 	for(int step = 0; step < N; step++){
 		cout<<"step = "<<step<<endl;
 		updateU(AL, BL, LU, LR, LD, LL, expH, iTEBD_V, updateA_V);
@@ -98,10 +101,11 @@ int main(int argc, char* argv[]){
 		updateD(AL, BL, LU, LR, LD, LL, expH, iTEBD_V, updateA_V);
 		updateL(AL, BL, LU, LR, LD, LL, expH, iTEBD_H, updateA_H);
 	}
+	t = clock() - t;
+	printf ("It took %d clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
+	H.profile();
 	//cout<<"E = "<<setprecision(9)<<measure2(AL, BL, LU, LR, LD, LL, expH, iTEBD_V)<<endl;
-	H.profile();
-	cout<<"E = "<<setprecision(9)<<measure(AL, BL, LU, LR, LD, LL, H, measure_net, norm_net)<<endl;
-	H.profile();
+	//cout<<"E = "<<setprecision(9)<<measure(AL, BL, LU, LR, LD, LL, H, measure_net, norm_net)<<endl;
 
 }
 
@@ -168,8 +172,8 @@ void updateU(UniTensor& AL, UniTensor& BL, map<Qnum, Matrix>& LU, map<Qnum, Matr
 		per_bond5[i] = bond5[order[i]];
 	B.assign(per_bond5);
 	B.addLabel(order);
-  Matrix blk = B.getBlock(q0);
-  blk.setElem(rets[2].getElem());
+	Matrix blk = B.getBlock(q0);
+	blk.setElem(rets[2].getElem(), rets[2].isOngpu());
 	B.putBlock(q0, blk);
 	int back_order[] = {0, 1, 2, 3, 4};
 	B.permute(back_order, 1);
@@ -178,7 +182,7 @@ void updateU(UniTensor& AL, UniTensor& BL, map<Qnum, Matrix>& LU, map<Qnum, Matr
 	updateA.putTensor("C", &C);
 	AL = updateA.launch();
 	AL *= (1 / norm);
-  AL.addLabel(back_order);
+	AL.addLabel(back_order);
 	BL = B;
 	bondrm(4, LR, BL);
 
@@ -215,8 +219,8 @@ void updateR(UniTensor& AL, UniTensor& BL, map<Qnum, Matrix>& LU, map<Qnum, Matr
 		per_bond5[i] = bond5[order[i]];
 	B.assign(per_bond5);
 	B.addLabel(order);
-  Matrix blk = B.getBlock(q0);
-  blk.setElem(rets[2].getElem());
+	Matrix blk = B.getBlock(q0);
+	blk.setElem(rets[2].getElem(), rets[2].isOngpu());
 	B.putBlock(q0, blk);
 	int back_order[] = {0, 1, 2, 3, 4};
 	B.permute(back_order, 1);
@@ -225,7 +229,7 @@ void updateR(UniTensor& AL, UniTensor& BL, map<Qnum, Matrix>& LU, map<Qnum, Matr
 	updateA.putTensor("C", &C);
 	AL = updateA.launch();
 	AL *= (1 / norm);
-  AL.addLabel(back_order);
+	AL.addLabel(back_order);
 	BL = B;
 	bondrm(3, LU, BL);
 }
@@ -250,52 +254,52 @@ double measure2(UniTensor& AL, UniTensor& BL, map<Qnum, Matrix>& LU, map<Qnum, M
 	bondcat(2, LD, Theta);
 	bondcat(3, LL, Theta);
 
-  UniTensor Theta2 = Theta;
-  UniTensor val = Theta * Theta2;
-  double delta = 0.1;
-  return -log(val[0])/delta/2;
+	UniTensor Theta2 = Theta;
+	UniTensor val = Theta * Theta2;
+	double delta = 0.1;
+	return -log(val[0])/delta/2;
 
 }
 
 double measure(UniTensor& AL, UniTensor& BL, map<Qnum, Matrix>& LU, map<Qnum, Matrix>& LR, map<Qnum, Matrix>& LD, map<Qnum, Matrix>& LL, UniTensor& Ob, Network& measure_net, Network& norm_net){
-  UniTensor ALL = AL;
-  UniTensor BLL = BL;
+	UniTensor ALL = AL;
+	UniTensor BLL = BL;
 	bondcat(3, LD, ALL);
 	bondcat(4, LL, ALL);
 	bondcat(3, LU, BLL);
 	bondcat(4, LR, BLL);
 
-  double val = 0;
+	double val = 0;
 
-  // measure up bond
-  UniTensor BLL1 = BLL;
-  bondrm(3, LU, BLL1);
-  val += bond_expectation(ALL, BLL1, Ob, measure_net, norm_net);
+	// measure up bond
+	UniTensor BLL1 = BLL;
+	bondrm(3, LU, BLL1);
+	val += bond_expectation(ALL, BLL1, Ob, measure_net, norm_net);
 
-  // measure right bond
-  BLL1 = BLL;
-  int rotateR_label[] = {0, 2, 3, 4, 1};
-  ALL.permute(rotateR_label, 1);
-  BLL1.permute(rotateR_label, 1);
-  bondrm(3, LR, BLL1);
-  val += bond_expectation(ALL, BLL1, Ob, measure_net, norm_net);
+	// measure right bond
+	BLL1 = BLL;
+	int rotateR_label[] = {0, 2, 3, 4, 1};
+	ALL.permute(rotateR_label, 1);
+	BLL1.permute(rotateR_label, 1);
+	bondrm(3, LR, BLL1);
+	val += bond_expectation(ALL, BLL1, Ob, measure_net, norm_net);
 
-  // measure down bond
-  BLL1 = BLL;
-  int rotateD_label[] = {0, 3, 4, 1, 2};
-  ALL.permute(rotateD_label, 1);
-  BLL1.permute(rotateD_label, 1);
-  bondrm(3, LD, BLL1);
-  val += bond_expectation(ALL, BLL1, Ob, measure_net, norm_net);
+	// measure down bond
+	BLL1 = BLL;
+	int rotateD_label[] = {0, 3, 4, 1, 2};
+	ALL.permute(rotateD_label, 1);
+	BLL1.permute(rotateD_label, 1);
+	bondrm(3, LD, BLL1);
+	val += bond_expectation(ALL, BLL1, Ob, measure_net, norm_net);
 
-  // measure down bond
-  BLL1 = BLL;
-  int rotateL_label[] = {0, 4, 1, 2, 3};
-  ALL.permute(rotateL_label, 1);
-  BLL1.permute(rotateL_label, 1);
-  bondrm(3, LL, BLL1);
-  val += bond_expectation(ALL, BLL1, Ob, measure_net, norm_net);
-  return val / 4;
+	// measure down bond
+	BLL1 = BLL;
+	int rotateL_label[] = {0, 4, 1, 2, 3};
+	ALL.permute(rotateL_label, 1);
+	BLL1.permute(rotateL_label, 1);
+	bondrm(3, LL, BLL1);
+	val += bond_expectation(ALL, BLL1, Ob, measure_net, norm_net);
+	return val / 4;
 }
 
 double bond_expectation(UniTensor& ALL, UniTensor& BLL, UniTensor& Ob, Network& measure_net, Network& norm_net){
@@ -311,5 +315,5 @@ double bond_expectation(UniTensor& ALL, UniTensor& BLL, UniTensor& Ob, Network& 
 	norm_net.putTensorT("ALLT", &ALL);
 	norm_net.putTensorT("BLLT", &BLL);
 	UniTensor norm = norm_net.launch();
-  return val[0] / norm[0];
+	return val[0] / norm[0];
 }
