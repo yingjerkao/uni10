@@ -6,6 +6,7 @@ using namespace std;
 using namespace uni10;
 #include <time.h>
 #include <stdlib.h>
+#include <time.h>
 
 int CHI = 20;
 
@@ -64,11 +65,16 @@ int main(int argc, char* argv[]){
 	Network meas("measure.net");
 
 	cout<<"chi = "<<CHI<<endl;
+	clock_t t;
+	t = clock();
 	for(int step = 0; step < N; step++){
 		cout<<"step = "<<step<<endl;
 		update(ALa, BLb, La, Lb, U, iTEBD, updateA);
 		update(BLb, ALa, Lb, La, U, iTEBD, updateA);
 	}
+	t = clock() - t;
+	cout<<"CHI = "<<CHI<<endl;
+	printf ("It took %d clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
 	iTEBD.profile();
 	updateA.profile();
 	H.profile();

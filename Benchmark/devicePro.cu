@@ -10,7 +10,7 @@ void printDevProp(FILE *fp)
     fprintf(fp, "Major revision number:         %d\n",  devProp.major);
     fprintf(fp, "Minor revision number:         %d\n",  devProp.minor);
     fprintf(fp, "Name:                          %s\n",  devProp.name);
-    fprintf(fp, "Total global memory:           %u\n",  devProp.totalGlobalMem);
+    fprintf(fp, "Total global memory:           %lu\n",  devProp.totalGlobalMem);
     fprintf(fp, "Total shared memory per block: %u\n",  devProp.sharedMemPerBlock);
     fprintf(fp, "Total registers per block:     %d\n",  devProp.regsPerBlock);
     fprintf(fp, "Warp size:                     %d\n",  devProp.warpSize);

@@ -3,6 +3,7 @@
 #include <map>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 using namespace std;
 #include "uni10.hpp"
 using namespace uni10;
@@ -10,14 +11,14 @@ int CHI = 16;
 
 int main(int argc, char* argv[]){
 
-	int N = 3;
+	int N = 10;
 	if(argc > 1){
 		sscanf(argv[1], "%d",&CHI);
 	}
 	if(argc > 2){
 		sscanf(argv[2], "%d",&N);
 	}
-	if(CHI < 12 || CHI > 30){
+	if(CHI < 12 || CHI > 32){
 		cout<<"Fatal Errod\n";
 		exit(0);
 	}
@@ -72,10 +73,15 @@ int main(int argc, char* argv[]){
 	asdL.putTensorT("W2T", &W2);
 	asdL.putTensor("Rho", &Rho);
 	UniTensor H1;
+	clock_t t;
+	t = clock();
 	for(int i = 0; i < N; i++){
 		cout<<"step = "<<i<<endl;
 		H1 = asdL.launch();
 	}
+	t = clock() - t;
+	cout<<"CHI = "<<CHI<<endl;
+	printf ("It took %d clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
 	//cout<<asdL;
 	//cout<<H1;
 	H1.profile();
