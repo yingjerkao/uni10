@@ -9,8 +9,10 @@ CPU_OBJ := ../src/libuni10_cpu.a
 GPU_OBJ := ../src/libuni10_gpu.a
 CULA_INC := /usr/local/cula/include
 CULA_LIB := /usr/local/cula/lib64
-CULA_LINK := -lcula_core -lcula_lapack -lcudart -lcublas  
+CULA_LINK := -lcula_core -lcula_lapack -lcudart -lcublas
 
+lan.e: Lanczos.cpp
+	$(CC) -I$(INC) $(FLAGS) -o $@ -lblas -llapack -lm  $< $(CPU_OBJ)
 gten.e: Ten.cpp
 	$(CC) -I$(INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
 ten.e: Ten.cpp

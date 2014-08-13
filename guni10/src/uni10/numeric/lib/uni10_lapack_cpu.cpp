@@ -194,4 +194,8 @@ double vectorNorm(double* X, size_t N, int inc, bool ongpu){
 	return sqrt(norm2);
 }
 
+void lanczosEV(double* A, double* v, double eigVal, double* eigVec, bool ongpu){
+
+}
+
 };	/* namespace uni10 */
