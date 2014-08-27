@@ -194,8 +194,97 @@ double vectorNorm(double* X, size_t N, int inc, bool ongpu){
 	return sqrt(norm2);
 }
 
-void lanczosEV(double* A, double* v, double eigVal, double* eigVec, bool ongpu){
+void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu){
+  int N = dim;
+  const int min_iter = 2;
+  const double beta_err = 1E-15;
+  if(max_iter > N)
+    max_iter = N;
+  assert(max_iter > min_iter);
+  double a = 1;
+  double alpha;
+  double beta = 1;
+  int inc = 1;
+  size_t M = max_iter;
+  double *Vm = (double*)malloc((M + 1) * N * sizeof(double));
+  double *As = (double*)malloc(M * sizeof(double));
+  double *Bs = (double*)malloc(M * sizeof(double));
+  double *d = (double*)malloc(M * sizeof(double));
+  double *e = (double*)malloc(M * sizeof(double));
+  int it = 0;
+  memcpy(Vm, psi, N * sizeof(double));
+  vectorScal(1 / vectorNorm(psi, N, 1, false), Vm, N, false);
+  memset(&Vm[(it+1) * N], 0, N * sizeof(double));
+  memset(As, 0, M * sizeof(double));
+  memset(Bs, 0, M * sizeof(double));
+  double e_diff = 1;
+  double e0_old = 0;
+  while(((e_diff > err_tol && it < max_iter) || it < min_iter) && beta > beta_err){
+    // q1 = Vm[it*N], v = Vm[(it+1) * N], q0 = v
+    double minus_beta = -beta;
+    //v = A * q1 - beta * q0 = A * q1 - beta * v
+	  dgemv((char*)"T", &N, &N, &a, A, &N, &Vm[it * N], &inc, &minus_beta, &Vm[(it+1) * N], &inc);
+    alpha = ddot(&N, &Vm[it*N], &inc, &Vm[(it+1) * N], &inc);
+    double minus_alpha = -alpha;
+    daxpy(&N, &minus_alpha, &Vm[it * N], &inc, &Vm[(it+1) * N], &inc);
 
+      for(int i = 0; i < N; i++)
+        printf("%f, ", Vm[(it*N) + i]);
+      printf("\n");
+
+    beta = vectorNorm(&Vm[(it+1) * N], N, 1, false);
+		if(it < max_iter - 1)
+			memcpy(&Vm[(it + 2) * N], &Vm[it * N], N * sizeof(double));
+    As[it] = alpha;
+    if(beta > beta_err){
+      vectorScal(1/beta, &Vm[(it+1) * N], N, false);
+      if(it < max_iter - 1)
+        Bs[it] = beta;
+    }
+    it++;
+    if(it > 1){
+      double *work;
+      double *z;
+      int info;
+      printf("it = %d\n", it);
+      for(int i = 0; i < it; i++)
+        printf("%f, ", As[i]);
+      printf("\n");
+      for(int i = 0; i < it; i++)
+        printf("%f, ", Bs[i]);
+      printf("\n\n");
+
+      memcpy(d, As, it * sizeof(double));
+      memcpy(e, Bs, it * sizeof(double));
+      dstev((char*)"N", &it, d, e, z, &it, work, &info);
+      assert(info == 0);
+      double base = fabs(d[0]) > 1 ? fabs(d[0]) : 1;
+      e_diff = fabs(d[0] - e0_old) / base;
+      e0_old = d[0];
+    }
+    printf("e0_old = %f\n\n", e0_old);
+  }
+  if(it > 1){
+    memcpy(d, As, it * sizeof(double));
+    memcpy(e, Bs, it * sizeof(double));
+    double* z = (double*)malloc(it * it * sizeof(double));
+    double* work = (double*)malloc(4 * it * sizeof(double));
+    int info;
+    dstev((char*)"V", &it, d, e, z, &it, work, &info);
+    assert(info == 0);
+    memset(eigVec, 0, N * sizeof(double));
+
+    for(int k = 0; k < it; k++){
+      daxpy(&N, &z[k], &Vm[k * N], &inc, eigVec, &inc);
+    }
+    max_iter = it;
+    eigVal = d[0];
+    free(z), free(work);
+  }
+  else{
+    max_iter = 1;
+    eigVal = 0;
+  }
+  free(Vm), free(As), free(Bs), free(d), free(e);
 }
-
 };	/* namespace uni10 */

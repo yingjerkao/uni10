@@ -148,7 +148,7 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 			elemCopy(Ma_elem, Ma.m_elem, Ma.m_elemNum * sizeof(double), false, Ma.ongpu);
 		}
 		for(size_t i = 0; i < Ma.m_elemNum; i++)
-			vectorScal(Ma_elem[i], &(Mc.m_elem[i * Mc.Cnum]), Mc.Cnum, Mc.ongpu);          
+			vectorScal(Ma_elem[i], &(Mc.m_elem[i * Mc.Cnum]), Mc.Cnum, Mc.ongpu);
 		if(Ma.ongpu){
 			free(Ma_elem);
 		}
@@ -224,6 +224,13 @@ std::vector<Matrix> Matrix::svd()const{
 	outs.push_back(S);
 	outs.push_back(VT);
 	return outs;
+}
+
+double Matrix::lanczosEig(Matrix& psi, int& max_iter, double err_tol){
+  assert(Rnum == Cnum);
+  double eigVal;
+  lanczosEV(m_elem, psi.m_elem, Rnum, max_iter, err_tol, eigVal, psi.m_elem, ongpu);
+  return eigVal;
 }
 
 void Matrix::randomize(){
