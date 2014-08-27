@@ -34,6 +34,10 @@ extern "C" {
 void dgemm_(const char *transa, const char *transb, const int32_t *m, const int32_t *n, const int32_t *k,
            const double *alpha, const double *a, const int32_t *lda, const double *b, const int32_t *ldb,
            const double *beta, double *c, const int32_t *ldc);
+void dgemv_(const char *trans, const int32_t *m, const int32_t *n, const double *alpha, 
+           const double *a, int32_t *lda, const double *x, const int32_t *incx,
+           const double *beta, double *y, const int32_t *incy);
+
 void daxpy_(const int32_t *n, const double *alpha, const double *x, const int32_t *incx, double *y, const int32_t *incy);
 
 void dscal_(const int32_t *n, const double *a, double *x, const int32_t *incx);
@@ -55,6 +59,12 @@ inline void dgemm(const char *transa, const char *transb, const int32_t *m, cons
   dgemm_(transa, transb, m, n, k,alpha, a, lda, b, ldb, beta, c, ldc);
 }
 
+inline void dgemv(const char *trans, const int32_t *m, const int32_t *n, const double *alpha, 
+           const double *a, int32_t *lda, const double *x, const int32_t *incx,
+           const double *beta, double *y, const int32_t *incy)
+{
+ dgemv_(trans, m, n, alpha, a, lda, x, incx, beta, y, incy);
+}
 inline void daxpy(const int32_t *n, const double *alpha, const double *x, const int32_t *incx, double *y, const int32_t *incy)
 { daxpy_(n, alpha, x, incx, y, incy); }
 
