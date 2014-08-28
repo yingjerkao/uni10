@@ -228,10 +228,6 @@ void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol
     double minus_alpha = -alpha;
     daxpy(&N, &minus_alpha, &Vm[it * N], &inc, &Vm[(it+1) * N], &inc);
 
-      for(int i = 0; i < N; i++)
-        printf("%f, ", Vm[(it*N) + i]);
-      printf("\n");
-
     beta = vectorNorm(&Vm[(it+1) * N], N, 1, false);
 		if(it < max_iter - 1)
 			memcpy(&Vm[(it + 2) * N], &Vm[it * N], N * sizeof(double));
@@ -246,14 +242,6 @@ void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol
       double *work;
       double *z;
       int info;
-      printf("it = %d\n", it);
-      for(int i = 0; i < it; i++)
-        printf("%f, ", As[i]);
-      printf("\n");
-      for(int i = 0; i < it; i++)
-        printf("%f, ", Bs[i]);
-      printf("\n\n");
-
       memcpy(d, As, it * sizeof(double));
       memcpy(e, Bs, it * sizeof(double));
       dstev((char*)"N", &it, d, e, z, &it, work, &info);
@@ -262,7 +250,6 @@ void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol
       e_diff = fabs(d[0] - e0_old) / base;
       e0_old = d[0];
     }
-    printf("e0_old = %f\n\n", e0_old);
   }
   if(it > 1){
     memcpy(d, As, it * sizeof(double));
