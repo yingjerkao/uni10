@@ -25,10 +25,14 @@ NEW_LIB := $(NEW_UNI10_ROOT)
 CPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_cpu.a
 GPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_gpu.a
 
+
+dmrg4.e: MPS4.cpp
+	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
+dmrg_gpu.e: DMRG_MPS.cpp
+	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) $(NVCCOPT) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
+
 dmrg_cpu.e: DMRG_MPS.cpp
 	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
-itebd_gpu.e: iTEBD.cpp
-	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) $(NVCCOPT) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
 
 
 

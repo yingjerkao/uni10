@@ -289,7 +289,7 @@ void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu){
 	int ldA = N;
 	if(ongpu){
 		culaInit();
-		culaDeviceDsyev('V', 'U', N, EigVec, ldA, Eig);	
+		assert(culaDeviceDsyev('V', 'U', N, EigVec, ldA, Eig) == culaNoError);	
 	}
 	else{
 		int lwork = -1;
@@ -315,7 +315,7 @@ void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, 
 		double* Mij = (double*)elemAllocForce(memsize, ongpu);
 		assert(cudaMemcpy(Mij, Mij_ori, memsize, cudaMemcpyDeviceToDevice) == cudaSuccess);
 		culaInit();
-		culaDeviceDgesvd('S', 'S', N, M, Mij, ldA, S, vT, ldu, U, ldvT);
+		assert(culaDeviceDgesvd('S', 'S', N, M, Mij, ldA, S, vT, ldu, U, ldvT) == culaNoError);
 		//cudaFree(Mij);
 		elemFree(Mij, memsize, ongpu);
 	}
@@ -358,15 +358,21 @@ void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu){
 				AT[j * M + i] = A[i * N + j];
 	}
 }
+__global__ void _identity(double* mat, size_t elemNum, size_t col){
+	size_t idx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	if(idx < elemNum)
+		mat[idx * col + idx] = 1;
+}
 
 void setIdentity(double* elem, size_t M, size_t N, bool ongpu){
 	size_t min;
 	if(M < N)	min = M;
 	else		min = N;
-	memset(elem, 0, M * N * sizeof(double));
-	for(size_t i = 0; i < min; i++)
-		elem[i * N + i] = 1;
+	size_t blockNum = (min + THREADMAX - 1) / THREADMAX;
+	dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
+	_identity<<<gridSize, THREADMAX>>>(elem, min, N);
 }
+
 double vectorSum(double* X, size_t N, int inc, bool ongpu){
 	if(ongpu){
 		return cublasDasum(N, X, inc);
@@ -411,6 +417,120 @@ double vectorNorm(double* X, size_t N, int inc, bool ongpu){
 		}
 		return sqrt(norm2);
 	}
+}
+
+void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu){
+	int N = dim;
+	const int min_iter = 2;
+	const double beta_err = 1E-15;
+	if(max_iter > N)
+		max_iter = N;
+	assert(max_iter > min_iter);
+	double a = 1;
+	double alpha;
+	double beta = 1;
+	int inc = 1;
+	size_t M = max_iter;
+	double *Vm = (double*)elemAllocForce((M + 1) * N * sizeof(double), ongpu);
+	double *As = (double*)elemAllocForce(M * sizeof(double), ongpu);
+	double *Bs = (double*)elemAllocForce(M * sizeof(double), ongpu);
+	double *d = (double*)elemAllocForce(M * sizeof(double), ongpu);
+	double *e = (double*)elemAllocForce(M * sizeof(double), ongpu);
+	int it = 0;
+	elemCopy(Vm, psi, N * sizeof(double), ongpu, ongpu);
+	//memcpy(Vm, psi, N * sizeof(double));
+	vectorScal(1 / vectorNorm(psi, N, 1, ongpu), Vm, N, ongpu);
+	elemBzero(&Vm[(it+1) * N], N * sizeof(double), ongpu);
+	elemBzero(As, M * sizeof(double), ongpu);
+	elemBzero(Bs, M * sizeof(double), ongpu);
+	double e_diff = 1;
+	double e0_old = 0;
+	while(((e_diff > err_tol && it < max_iter) || it < min_iter) && beta > beta_err){
+		// q1 = Vm[it*N], v = Vm[(it+1) * N], q0 = v
+		double minus_beta = -beta;
+		//v = A * q1 - beta * q0 = A * q1 - beta * v
+		if(ongpu){
+			cublasDgemv('T', N, N, a, A, N, &Vm[it * N], inc, minus_beta, &Vm[(it+1) * N], inc);
+			alpha = cublasDdot(N, &Vm[it*N], inc, &Vm[(it+1) * N], inc);
+			double minus_alpha = -alpha;
+			cublasDaxpy(N, minus_alpha, &Vm[it*N], inc, &Vm[(it+1) * N], inc);
+		}
+		else{
+			dgemv((char*)"T", &N, &N, &a, A, &N, &Vm[it * N], &inc, &minus_beta, &Vm[(it+1) * N], &inc);
+			alpha = ddot(&N, &Vm[it*N], &inc, &Vm[(it+1) * N], &inc);
+			double minus_alpha = -alpha;
+			daxpy(&N, &minus_alpha, &Vm[it * N], &inc, &Vm[(it+1) * N], &inc);
+		}
+		beta = vectorNorm(&Vm[(it+1) * N], N, 1, ongpu);
+		if(it < max_iter - 1)
+			elemCopy(&Vm[(it + 2) * N], &Vm[it * N], N * sizeof(double), ongpu, ongpu);
+		setElemAt(it, alpha, As, ongpu);
+		if(beta > beta_err){
+			vectorScal(1/beta, &Vm[(it+1) * N], N, ongpu);
+			if(it < max_iter - 1)
+				setElemAt(it, beta, Bs, ongpu);
+		}
+		it++;
+		if(it > 1){
+			double *work = NULL;
+			double *z = NULL;
+			elemCopy(d, As, it * sizeof(double), ongpu, ongpu);
+			elemCopy(e, Bs, it * sizeof(double), ongpu, ongpu);
+			if(ongpu){
+				culaInit();
+				assert(culaDeviceDsteqr('N', it, d, e, z, it) == culaNoError);
+			}
+			else{
+				int info;
+				dstev((char*)"N", &it, d, e, z, &it, work, &info);
+				assert(info == 0);
+			}
+			double ev = getElemAt(0, d, ongpu);
+			double base = fabs(ev) > 1 ? fabs(ev) : 1;
+			e_diff = fabs(ev - e0_old) / base;
+			e0_old = ev;
+		}
+	}
+	if(it > 1){
+		elemCopy(d, As, it * sizeof(double), ongpu, ongpu);
+		elemCopy(e, Bs, it * sizeof(double), ongpu, ongpu);
+		double* z = (double*)elemAllocForce(it * it * sizeof(double), ongpu);
+		size_t lwork = 4 * it * sizeof(double);
+		double* work = (double*)elemAllocForce(lwork, ongpu);
+		if(ongpu){
+			assert(culaDeviceDsteqr('I', it, d, e, z, it) == culaNoError);
+		}
+		else{
+			int info;
+			dstev((char*)"V", &it, d, e, z, &it, work, &info);
+			assert(info == 0);
+		}
+		elemBzero(eigVec, N * sizeof(double), ongpu);
+
+		if(ongpu){
+			double *z_H = (double*)malloc(it * sizeof(double));
+			elemCopy(z_H, z, it * sizeof(double), false, ongpu);
+			for(int k = 0; k < it; k++)
+				cublasDaxpy(N, z_H[k], &Vm[k * N], inc, eigVec, inc);
+		}
+		else{
+			for(int k = 0; k < it; k++)
+				daxpy(&N, &z[k], &Vm[k * N], &inc, eigVec, &inc);
+		}
+		max_iter = it;
+		eigVal = getElemAt(0, d, ongpu);
+		elemFree(z, it * it * sizeof(double), ongpu);
+		elemFree(work, lwork, ongpu);
+	}
+	else{
+		max_iter = 1;
+		eigVal = 0;
+	}
+	elemFree(Vm, (M + 1) * N * sizeof(double), ongpu);
+	elemFree(As, M * sizeof(double), ongpu);
+	elemFree(Bs, M * sizeof(double), ongpu);
+	elemFree(d, M * sizeof(double), ongpu);
+	elemFree(e, M * sizeof(double), ongpu);
 }
 
 };	/* namespace uni10 */

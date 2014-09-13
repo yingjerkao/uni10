@@ -229,6 +229,8 @@ std::vector<Matrix> Matrix::svd()const{
 double Matrix::lanczosEig(Matrix& psi, int& max_iter, double err_tol){
   assert(Rnum == Cnum);
   double eigVal;
+  if(ongpu && !psi.ongpu)
+	  psi.m_elem = (double*)mvGPU(psi.m_elem, psi.m_elemNum * sizeof(double), psi.ongpu);
   lanczosEV(m_elem, psi.m_elem, Rnum, max_iter, err_tol, eigVal, psi.m_elem, ongpu);
   return eigVal;
 }
@@ -287,7 +289,8 @@ Matrix& Matrix::transpose(){
 		size_t memsize = m_elemNum * sizeof(double);
 		transElem = (double*)elemAllocForce(memsize, ongpu);
 	  	setTranspose(m_elem, Rnum, Cnum, transElem, ongpu);
-		elemFree(m_elem, memsize, ongpu);
+		if(m_elem != NULL)
+			elemFree(m_elem, memsize, ongpu);
 		m_elem = transElem;
 	}
 	size_t tmp = Rnum;
@@ -304,7 +307,8 @@ Matrix& Matrix::resize(size_t row, size_t col){
 			double* elem = (double*)elemAlloc(elemNum * sizeof(double), des_ongpu);
 			elemBzero(elem, elemNum * sizeof(double), des_ongpu);
 			elemCopy(elem, m_elem, m_elemNum * sizeof(double), des_ongpu, ongpu);
-			elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
+			if(m_elem != NULL)
+				elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
 			/*
 			double* elem = (double*)calloc(elemNum, sizeof(double));
 			memcpy(elem, m_elem, elemNum * sizeof(double));
@@ -328,7 +332,8 @@ Matrix& Matrix::resize(size_t row, size_t col){
 				double* elem = (double*)elemAlloc(elemNum * sizeof(double), des_ongpu);
 				elemBzero(elem, elemNum * sizeof(double), des_ongpu);
 				elemCopy(elem, m_elem, m_elemNum * sizeof(double), des_ongpu, ongpu);
-				elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
+				if(m_elem != NULL)
+					elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
 				m_elem = elem;
 				ongpu = des_ongpu;
 			}
@@ -346,7 +351,8 @@ Matrix& Matrix::resize(size_t row, size_t col){
 			elemBzero(elem, row * col * sizeof(double), des_ongpu);
 			for(size_t r = 0; r < data_row; r++)
 				elemCopy(&(elem[r * col]), &(m_elem[r * Cnum]), data_col * sizeof(double), des_ongpu, ongpu);
-			elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
+			if(m_elem != NULL)
+				elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
 			m_elem = elem;
 			ongpu = des_ongpu;
 			Rnum = row;

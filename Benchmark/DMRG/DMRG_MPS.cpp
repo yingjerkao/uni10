@@ -6,14 +6,15 @@ using namespace std;
 #include <time.h>
 using namespace uni10;
 
-const int M = 20;
+const int M = 30;
 UniTensor mirror(const UniTensor& T);
 
 int main(){
 	/*** Initialization ***/
 	Qnum q0(0);
-	Bond bdi(BD_IN, 2);
-	Bond bdo(BD_OUT, 2);
+	const int d = 2;
+	Bond bdi(BD_IN, d);
+	Bond bdo(BD_OUT, d);
 	vector<Bond> bond4;
 	bond4.push_back(bdi);
 	bond4.push_back(bdi);
@@ -24,9 +25,9 @@ int main(){
 	bond2.push_back(bdo);
 
 	double H_elem[] = {1.0/4,      0,      0,     0,
-	          					   0, -1.0/4,  1.0/2,     0,
-						             0,  1.0/2, -1.0/4,     0,
-						             0,      0,      0, 1.0/4};
+		0, -1.0/4,  1.0/2,     0,
+		0,  1.0/2, -1.0/4,     0,
+		0,      0,      0, 1.0/4};
 
 	UniTensor H0(bond4, "H0");
 	H0.addRawElem(H_elem);
@@ -40,16 +41,17 @@ int main(){
 	UniTensor HR = mirror(H0);
 
 	int N = 20;
-	int D = 2;
+	int D = d;
 	Bond bDi = bdi;
 	Bond bDo = bdo;
 	Network HLn("HL.net");
 	Network HRn("HR.net");
 
-  Matrix psi;
-  /*** END initilization ***/
+	Matrix psi;
+	/*** END initilization ***/
 
 	clock_t total_t = 0;
+	clock_t start_t = 0;
 	for(int l = 2; l < N; l++){
 		/*** Make a superblock ***/
 		bond2.clear();
@@ -62,34 +64,40 @@ int main(){
 		IDd.identity();
 		UniTensor IdD(HR.bond());
 		IdD.identity();
-		UniTensor SB = otimes(HL, IdD) + otimes(otimes(ID, H0), ID) + otimes(IDd, HR);
+		UniTensor SB = otimes(HL, IdD);
+		SB +=  otimes(otimes(ID, H0), ID);
+	   	SB += otimes(IDd, HR);
 		/*** END superblock ***/
+
 		UniTensor HL2 = otimes(HL, Id);
 		HL2 += otimes(ID, H0);
 		UniTensor HR2 = otimes(Id, HR);
 		HR2 += otimes(H0, ID);
 
-    /*
-		vector<Matrix> rets = SB.getBlock(q0).diagonalize();
-		cout<<"N = "<< 2 * l << ", D = " << D << setprecision(10) << ", E = " << rets[0][0]  << ", e = " << rets[0][0] / (2 * l) <<endl;
-		Matrix GS(sqrt(rets[1].col()), sqrt(rets[1].col()), rets[1].getElem());
-    */
 
-    vector<Matrix> rets;
-    Matrix blk = SB.getBlock(q0);
-    psi.randomize();
-    int iter = 200;
-	  clock_t t;
-  	t = clock();
-    if(psi.col() != blk.col()){
-      psi.resize(1, blk.col());
-      psi.randomize();
-    }
+		/*
+		   vector<Matrix> rets = SB.getBlock(q0).diagonalize();
+		   cout<<"N = "<< 2 * l << ", D = " << D << setprecision(10) << ", E = " << rets[0][0]  << ", e = " << rets[0][0] / (2 * l) <<endl;
+		   Matrix GS(sqrt(rets[1].col()), sqrt(rets[1].col()), rets[1].getElem());
+		   */
 
-    double E0 = blk.lanczosEig(psi, iter);
-	  total_t += clock() - t;
+
+		vector<Matrix> rets;
+		Matrix blk = SB.getBlock(q0);
+		if(l == 7)
+			ID.profile();
+		int iter = 200;
+		clock_t t;
+		t = clock();
+		if(psi.col() != blk.col()){
+			psi.resize(1, blk.col());
+			psi.randomize();
+		}
+		double E0 = blk.lanczosEig(psi, iter);
+		total_t += clock() - t;
 		cout<<"N = "<< 2 * l<<", D = " << D << setprecision(10) << ", E = " << E0  << ", e = " << E0 / (2 * l) <<", iter = "<<iter<<endl;
 		Matrix GS(sqrt(psi.col()), sqrt(psi.col()), psi.getElem());
+
 
 		D = GS.row();
 		D = D < M ? D : M;
@@ -103,15 +111,20 @@ int main(){
 		bondB.push_back(bDi);
 		bondB.push_back(bdo);
 		bondB.push_back(bDo);
-		bDo.assign(BD_OUT, D);
 
 		rets = GS.svd();
 
 		UniTensor Al(bondA, "Al");
 		rets[0].transpose();
-		Al.addRawElem(rets[0].getElem());
+		//cout<<Al;
+		//cout<<rets[0].resize(bDi.dim(), bDo.dim() * bdo.dim());
+		Al.putBlock(q0, rets[0].resize(bDi.dim(), bDo.dim() * bdo.dim()));
+		//Al.addRawElem(rets[0].getElem());
 		UniTensor Bl(bondB, "Bl");
-		Bl.addRawElem(rets[2].getElem());
+		Bl.putBlock(q0, rets[2].resize(bDi.dim(), bDo.dim() * bdo.dim()));
+		//Bl.addRawElem(rets[2].getElem());
+		//
+		bDo.assign(BD_OUT, D);
 
 		HLn.putTensor("Al", &Al);
 		HLn.putTensor("HL2", &HL2);
@@ -124,7 +137,10 @@ int main(){
 		HL = HLn.launch();
 		HR = HRn.launch();
 	}
+	
+	clock_t all_t = clock() - start_t;
 	printf ("It took %lu clicks (%f seconds).\n",total_t,((float)total_t)/CLOCKS_PER_SEC);
+	printf ("It took %lu clicks (%f seconds).\n",all_t,((float)all_t)/CLOCKS_PER_SEC);
 }
 
 UniTensor mirror(const UniTensor& T){
