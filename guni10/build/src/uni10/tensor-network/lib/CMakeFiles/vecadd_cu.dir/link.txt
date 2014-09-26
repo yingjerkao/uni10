@@ -1,2 +1,0 @@
-/usr/bin/ar cr ../../../../lib/libvecadd_cu.a  
-/usr/bin/ranlib ../../../../lib/libvecadd_cu.a
