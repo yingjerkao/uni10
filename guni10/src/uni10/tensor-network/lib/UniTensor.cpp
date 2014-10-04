@@ -442,44 +442,42 @@ Matrix UniTensor::printRaw(bool flag)const{
 		std::vector<Qnum> colQ = cBond.Qlist();
 		size_t rowNum = rBond.dim();
 		size_t colNum = cBond.dim();
-		//std::cout<<"colNum: " << colNum<<std::endl;
-		//std::cout<<"rowNum: " << rowNum<<std::endl;
 		std::vector<int> idxs(bondNum, 0);
 
-		if(flag){
-			std::cout<< "     ";
-			for(int q = 0; q < colQ.size(); q++)
-				std::cout<< "   " << std::setw(2) << colQ[q].U1() << "," << colQ[q].prt();
-			std::cout<< std::endl << std::setw(5) << "" << std::setw(colQ.size() * 7 + 2) <<std::setfill('-')<<"";
-			std::cout<<std::setfill(' ');
-		}
-		int cnt = 0;
-		int r = 0;
-		int bend;
-		std::vector<double> rawElem;
-		while(1){
-			if(flag){
-				if(cnt % colNum == 0){
-					std::cout<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
-					r++;
-				}
-				std::cout<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
-			}
-			rawElem.push_back(at(idxs));
-			for(bend = bondNum - 1; bend >= 0; bend--){
-				idxs[bend]++;
-				if(idxs[bend] < bonds[bend].dim())
-					break;
-				else
-					idxs[bend] = 0;
-			}
-			cnt++;
-			if(bend < 0)
-				break;
-		}
-		if(flag)
-			std::cout <<"\n    |\n";
-		return Matrix(rowNum, colNum, &rawElem[0]);
+    if(flag){
+      std::cout<< "     ";
+      for(int q = 0; q < colQ.size(); q++)
+        std::cout<< "   " << std::setw(2) << colQ[q].U1() << "," << colQ[q].prt();
+      std::cout<< std::endl << std::setw(5) << "" << std::setw(colQ.size() * 7 + 2) <<std::setfill('-')<<"";
+      std::cout<<std::setfill(' ');
+    }
+    int cnt = 0;
+    int r = 0;
+    int bend;
+    std::vector<double> rawElem;
+    while(1){
+      if(flag){
+        if(cnt % colNum == 0){
+          std::cout<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
+          r++;
+        }
+        std::cout<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
+      }
+      rawElem.push_back(at(idxs));
+      for(bend = bondNum - 1; bend >= 0; bend--){
+        idxs[bend]++;
+        if(idxs[bend] < bonds[bend].dim())
+          break;
+        else
+          idxs[bend] = 0;
+      }
+      cnt++;
+      if(bend < 0)
+        break;
+    }
+    if(flag)
+      std::cout <<"\n    |\n";
+    return Matrix(rowNum, colNum, &rawElem[0]);
 	}
 	else if(status & HAVEELEM){
 		std::cout<<"\nScalar: " << elem[0]<<"\n\n";
@@ -635,7 +633,6 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 		if(marked[m])
 			mark++;
 	assert(mark == cmbLabels.size());
-
 	int enc = 0;
 	int enc_r = 0;
 	std::vector<Bond> newBonds;
@@ -671,4 +668,5 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 	Tout.status |= HAVEELEM;
 	return (*this = Tout);
 }
+
 }; /* namespace uni10 */

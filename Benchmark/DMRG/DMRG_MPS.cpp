@@ -75,11 +75,11 @@ int main(){
 		HR2 += otimes(H0, ID);
 
 
-		/*
-		   vector<Matrix> rets = SB.getBlock(q0).diagonalize();
-		   cout<<"N = "<< 2 * l << ", D = " << D << setprecision(10) << ", E = " << rets[0][0]  << ", e = " << rets[0][0] / (2 * l) <<endl;
-		   Matrix GS(sqrt(rets[1].col()), sqrt(rets[1].col()), rets[1].getElem());
-		   */
+    /*
+       vector<Matrix> rets = SB.getBlock(q0).diagonalize();
+       cout<<"N = "<< 2 * l << ", D = " << D << setprecision(10) << ", E = " << rets[0][0]  << ", e = " << rets[0][0] / (2 * l) <<endl;
+       Matrix GS(sqrt(rets[1].col()), sqrt(rets[1].col()), rets[1].getElem());
+       */
 
 
 		vector<Matrix> rets;
@@ -137,7 +137,7 @@ int main(){
 		HL = HLn.launch();
 		HR = HRn.launch();
 	}
-	
+
 	clock_t all_t = clock() - start_t;
 	printf ("It took %lu clicks (%f seconds).\n",total_t,((float)total_t)/CLOCKS_PER_SEC);
 	printf ("It took %lu clicks (%f seconds).\n",all_t,((float)all_t)/CLOCKS_PER_SEC);

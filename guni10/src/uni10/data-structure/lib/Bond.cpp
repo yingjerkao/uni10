@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -180,13 +180,16 @@ Bond combine(bondType tp, const std::vector<Bond>& bds){
 	if(b % 2 == 0)
 		return outBond2;
 	else
-		return outBond1;	
+		return outBond1;
 	}
 	else{
 		return bds[0];
 	}
 }
 Bond combine(const std::vector<Bond>& bds){
-	return combine(bds[0].m_type, bds);
+  if(bds.size())
+    return combine(bds[0].m_type, bds);
+  else
+    return Bond(BD_IN, 1);
 }
 };	/* namespace uni10 */

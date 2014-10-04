@@ -20,27 +20,27 @@ int main(){
 	D.load("gpu_elem");
 	vector<Matrix>rets = D.svd();
 	cout<<D;
-	
+
 	Matrix S(12, 12, false, true);
 	S.load("square_elem");
 	cout<<S;
 
 	cout<<"TRACE = "<<S.trace()<<endl;
-	
-	Matrix D1(12, 12, false, true);	
-	Matrix D2(12, 12, false, false);	
+
+	Matrix D1(12, 12, false, true);
+	Matrix D2(12, 12, false, false);
 	//DD.randomize();
 	D1.load("square_elem");
 	D2.load("square_elem");
 	//cout<<D1;
 	cout<<"TRACE = "<<D1.trace()<<endl;
-	Matrix D3 = D1 + D2;	
+	Matrix D3 = D1 + D2;
 	//cout<<D3;
 
 	//D3.getHostElem();
 	//cout<<"D3.ongpu = "<<D3.isOngpu()<<", D3[0] = "<<D3[0]<<endl;
 
-	
+
 	cout<<"ongpu = "<<D1.isOngpu()<<endl;
 	rets = D1.diagonalize();
 	cout<<"------------------------\n";

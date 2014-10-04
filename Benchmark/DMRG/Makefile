@@ -1,5 +1,5 @@
-UNI10_ROOT := /home/yundasie/uni10
-#UNI10_ROOT := /Users/yunda/myLibrary/uni10
+#UNI10_ROOT := /home/yundasie/uni10
+UNI10_ROOT := /Users/yunda/myLibrary/guni10
 INC := $(UNI10_ROOT)/include
 LIB := $(UNI10_ROOT)/lib
 CC := g++
@@ -25,9 +25,9 @@ NEW_LIB := $(NEW_UNI10_ROOT)
 CPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_cpu.a
 GPU_OBJ := $(NEW_UNI10_ROOT)/libuni10_gpu.a
 
+dmrg_lib.e: DMRG_MPS.cpp
+	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 
-dmrg4.e: MPS4.cpp
-	$(CC) -I$(NEW_INC) -L$(NEW_LIB) $(FLAGS) -o $@ -lblas -llapack -lm $< $(CPU_OBJ)
 dmrg_gpu.e: DMRG_MPS.cpp
 	$(NVCC) -I$(NEW_INC) -I$(CULA_INC) -L$(CULA_LIB) $(FLAGS) $(NVCCOPT) -o $@ -lblas -llapack -lm $(CULA_LINK) $< $(GPU_OBJ)
 

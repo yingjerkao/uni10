@@ -7,8 +7,8 @@ using namespace uni10;
 #include <time.h>
 
 int main(){
-	Matrix M1(12, 12, false, false);	
-	Matrix M2(12, 16, false, false);	
+	Matrix M1(12, 12, false, false);
+	Matrix M2(12, 16, false, false);
 	M1.randomize();
 	M2.randomize();
 	cout<<M1 * M2;

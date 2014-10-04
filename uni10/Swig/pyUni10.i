@@ -214,87 +214,87 @@ class Matrix {
 
 /*class UniTensor;*/
 class UniTensor{
-        public:
-                UniTensor(double val = 1.0);
-                UniTensor(const std::string& fname);
-                UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
-                UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
-                UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
-                UniTensor(const UniTensor& UniT);
-                /*UniTensor& operator=(const UniTensor& UniT);*/
-                UniTensor& assign(const std::vector<Bond>& _bond);
-                ~UniTensor();
-                void addLabel(const std::vector<int>& newLabels);
-                void addLabel(int* newLabels);
-                void addRawElem(double* rawElem);
-                void elemSet(const Qnum& qnum, double* _elem);
-                void elemSet(double* _elem);
-                double at(std::vector<int>idxs)const;
-                /*double& operator[](size_t idx);*/
-                std::vector<Qnum> blockQnum()const;
-                Qnum blockQnum(int idx)const;
-                size_t blockNum()const;
-                void save(const std::string& fname);
-                std::vector<int> label()const;
-                int label(int idx)const;
-                std::vector<Bond> bond()const;
-                Bond bond(int idx)const;
-                void setName(const std::string& _name);
-                std::string getName();
-                size_t elemNum()const;
-                size_t bondNum()const;
-                int inBondNum()const;
-                static void check();
-                UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
-                UniTensor& permute(int* newLabels, int inBondNum);
-                UniTensor& permute(int inBondNum);
-                UniTensor& transpose();
-                void randomize();
-                /*friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);*/
+  public:
+    UniTensor(double val = 1.0);
+    UniTensor(const std::string& fname);
+    UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
+    UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+    UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
+    UniTensor(const UniTensor& UniT);
+    /*UniTensor& operator=(const UniTensor& UniT);*/
+    UniTensor& assign(const std::vector<Bond>& _bond);
+    ~UniTensor();
+    void addLabel(const std::vector<int>& newLabels);
+    void addLabel(int* newLabels);
+    void addRawElem(double* rawElem);
+    void elemSet(const Qnum& qnum, double* _elem);
+    void elemSet(double* _elem);
+    double at(std::vector<int>idxs)const;
+    /*double& operator[](size_t idx);*/
+    std::vector<Qnum> blockQnum()const;
+    Qnum blockQnum(int idx)const;
+    size_t blockNum()const;
+    void save(const std::string& fname);
+    std::vector<int> label()const;
+    int label(int idx)const;
+    std::vector<Bond> bond()const;
+    Bond bond(int idx)const;
+    void setName(const std::string& _name);
+    std::string getName();
+    size_t elemNum()const;
+    size_t bondNum()const;
+    int inBondNum()const;
+    static void check();
+    UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
+    UniTensor& permute(int* newLabels, int inBondNum);
+    UniTensor& permute(int inBondNum);
+    UniTensor& transpose();
+    void randomize();
+    /*friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);*/
 
-      %extend {
-          UniTensor copy__(){
-              return (*self);
-          }
-          UniTensor cp(){
-              return (*self);
-          }
-          const char* __str__() {
-              std::ostringstream out;
-              out << *self;
-              return out.str().c_str();
-          }
-          }
-                UniTensor& operator*= (const UniTensor& Tb);
-                /*friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
-                friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
-                */
-                UniTensor& operator+= (const UniTensor& Tb);
-                /*friend UniTensor operator* (const UniTensor& Ta, double a);
-                friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};*/
-          %rename(__add__) UniTensor::operator+;
-          %rename(__mul__) UniTensor::operator*;
-                UniTensor& operator*= (double a);
-                Matrix getBlock(const Qnum& qnum, bool diag = false)const;
-                void putBlock(const Qnum& qnum, const Matrix& mat);
-                std::map<Qnum, Matrix> getBlocks()const;
-                Matrix rawElem()const;
-                void printRawElem()const;
-/*              friend class Node;
-                friend class Network;*/
-                void orthoRand();
-                void orthoRand(const Qnum& qnum);
-                void eye();
-                void eye(const Qnum& qnum);
-                void set_zero(const Qnum& qnum);
-                void set_zero();
-                std::vector<_Swap> exSwap(const UniTensor& Tb)const;
-                bool similar(const UniTensor& Tb)const;
-                void addGate(std::vector<_Swap> swaps);
-                bool elemCmp(const UniTensor& UniT)const;
-                double trace()const;
-                UniTensor& combineBond(const std::vector<int>& combined_labels);
-                UniTensor& partialTrace(int la, int lb);
+    %extend {
+      UniTensor copy__(){
+        return (*self);
+      }
+      UniTensor cp(){
+        return (*self);
+      }
+      const char* __str__() {
+        std::ostringstream out;
+        out << *self;
+        return out.str().c_str();
+      }
+    }
+    UniTensor& operator*= (const UniTensor& Tb);
+    /*friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
+      friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
+     */
+    UniTensor& operator+= (const UniTensor& Tb);
+    /*friend UniTensor operator* (const UniTensor& Ta, double a);
+      friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};*/
+    %rename(__add__) UniTensor::operator+;
+    %rename(__mul__) UniTensor::operator*;
+    UniTensor& operator*= (double a);
+    Matrix getBlock(const Qnum& qnum, bool diag = false)const;
+    void putBlock(const Qnum& qnum, const Matrix& mat);
+    std::map<Qnum, Matrix> getBlocks()const;
+    Matrix rawElem()const;
+    void printRawElem()const;
+    /*              friend class Node;
+                    friend class Network;*/
+    void orthoRand();
+    void orthoRand(const Qnum& qnum);
+    void eye();
+    void eye(const Qnum& qnum);
+    void set_zero(const Qnum& qnum);
+    void set_zero();
+    std::vector<_Swap> exSwap(const UniTensor& Tb)const;
+    bool similar(const UniTensor& Tb)const;
+    void addGate(std::vector<_Swap> swaps);
+    bool elemCmp(const UniTensor& UniT)const;
+    double trace()const;
+    UniTensor& combineBond(const std::vector<int>& combined_labels);
+    UniTensor& partialTrace(int la, int lb);
 };
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);

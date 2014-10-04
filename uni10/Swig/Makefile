@@ -1,4 +1,5 @@
-UNI10_ROOT := /Users/yunda/Research/TensorNetwork/uni10
+#UNI10_ROOT := /Users/yunda/Research/TensorNetwork/uni10
+UNI10_ROOT := /Users/yunda/myLibrary/uni10
 INC := $(UNI10_ROOT)/include/
 LIB := $(UNI10_ROOT)/lib/
 CC:=g++
