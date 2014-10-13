@@ -461,6 +461,15 @@ void Network::putTensorT(const std::string& nameT, const UniTensor* UniT, bool f
 	putTensor(itT->second, &transT, force);
 }
 
+void Network::putTensor(int idx, const UniTensor& UniT, bool force){
+  putTensor(idx, &UniT, force);
+}
+void Network::putTensor(const std::string& name, const UniTensor& UniT, bool force){
+  putTensor(name, &UniT, force);
+}
+void Network::putTensorT(const std::string& nameT, const UniTensor& UniT, bool force){
+  putTensorT(nameT, &UniT, force);
+}
 void Network::branch(Node* sbj, Node* tar){
 	Node* par = new Node(tar->contract(sbj));
 	if(sbj->parent == NULL){	//create a parent node

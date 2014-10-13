@@ -48,6 +48,9 @@ class Network {
 		void putTensor(int idx, const UniTensor* UniT, bool force=true);	//if force is true, force replace without change the all network
 		void putTensor(const std::string& name, const UniTensor* UniT, bool force=true);	//if force is true, force replace without change the all network
 		void putTensorT(const std::string& nameT, const UniTensor* UniT, bool force=true);
+    void putTensor(int idx, const UniTensor& UniT, bool force=true);
+    void putTensor(const std::string& name, const UniTensor& UniT, bool force=true);
+    void putTensorT(const std::string& nameT, const UniTensor& UniT, bool force=true);
 		UniTensor launch(const std::string& name="");
 		//void optimize(int num=1);
 		friend std::ostream& operator<< (std::ostream& os, Network& nd);
