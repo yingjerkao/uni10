@@ -188,8 +188,19 @@ $<TARGET_OBJECTS:uni10-tools>
 $<TARGET_OBJECTS:uni10-tensor-network>
 $<TARGET_OBJECTS:uni10-numeric>
 )
+#message("Generator: ${CMAKE_GENERATOR}")
+if ("${CMAKE_GENERATOR}" STREQUAL "Xcode")
+add_custom_command(
+PRE_BUILD
+OUTPUT ${CMAKE_BINARY_DIR}/src/dummy.cpp
+COMMAND touch ${CMAKE_BINARY_DIR}/src/dummy.cpp
+)
+add_library(uni10 SHARED ${uni10-objects} ${CMAKE_BINARY_DIR}/src/dummy.cpp)
+add_library(uni10-static STATIC ${uni10-objects} ${CMAKE_BINARY_DIR}/src/dummy.cpp)
+else()
 add_library(uni10 SHARED ${uni10-objects} )
 add_library(uni10-static STATIC ${uni10-objects})
+endif()
 SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
 if(USE_MKL)
 set(LAPACK_LIBRARIES ${MKL_MINIMAL_LIBRARY})
@@ -227,6 +238,10 @@ install(DIRECTORY src/
 install(DIRECTORY examples/
 	DESTINATION examples/
 	PATTERN "CMakeLists*" EXCLUDE
+)
+
+install(DIRECTORY Swig/examples/
+	DESTINATION examples/python/
 )
 ######################################################################
 ### INSTALL DOCUMENTATION
