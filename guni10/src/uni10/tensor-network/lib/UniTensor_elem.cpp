@@ -38,14 +38,17 @@ void UniTensor::grouping(){
 	int col_bondNum = 0;
 	RQdim = 1;
 	CQdim = 1;
+  bool IN_BONDS_BEFORE_OUT_BONDS = true;
 	for(int i = 0; i < bonds.size(); i++){
 		if(bonds[i].type() == BD_IN){
+      assert(IN_BONDS_BEFORE_OUT_BONDS == true);
 			RQdim *= bonds[i].Qnums.size();
 			row_bondNum++;
 		}
 		else{
 			CQdim *= bonds[i].Qnums.size();
 			col_bondNum++;
+      IN_BONDS_BEFORE_OUT_BONDS = false;
 		}
 	}
 	RBondNum = row_bondNum;
@@ -628,7 +631,7 @@ UniTensor& UniTensor::transpose(){
 			Cnum = it_in->second.Cnum;
 			elem_in = it_in->second.elem;
 			elem_out = it_out->second.elem;
-			
+
 	  		setTranspose(elem_in, Rnum, Cnum, elem_out, ongpu);
 			/*
 			for(size_t i = 0; i < Rnum; i++)

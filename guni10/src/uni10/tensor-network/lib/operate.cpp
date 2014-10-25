@@ -77,6 +77,8 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 					markB[b] = 1;
 					interLabel.push_back(Ta.labels[a]);
 					newLabelB.push_back(Tb.labels[b]);
+          bool BOND_DIMENSION_MATCHED = Ta.bonds[a].dim() == Tb.bonds[b].dim();
+          assert(BOND_DIMENSION_MATCHED);
 					match = true;
 					break;
 				}
