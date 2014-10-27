@@ -380,6 +380,7 @@ void UniTensor::set_zero(){
 
 void UniTensor::setElem(double* _elem, bool _ongpu){
 	elemCopy(elem, _elem, m_elemNum * sizeof(double), ongpu, _ongpu);
+	status |= HAVEELEM;
 }
 
 void UniTensor::setElem(std::vector<double>& _elem, bool _ongpu){
