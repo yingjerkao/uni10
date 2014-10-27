@@ -1,11 +1,13 @@
 #UNI10_ROOT := /home/yundasie/uni10
-UNI10_ROOT := /Users/yunda/Research/TensorNetwork/uni10
+UNI10_ROOT := /Users/yunda/myLibrary/guni10
 INC := $(UNI10_ROOT)/include
 LIB := $(UNI10_ROOT)/lib
 CC:=g++
 FLAGS:=-O3 -m64
-OBJ := $(LIB)/libuni10.a
+OBJ_TMP := ../../guni10/src/libuni10_cpu.a
 
+fdmrg_u1.e: fDMRG_U1.cpp
+	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm $(OBJ_TMP) $<
 mps4.e: MPS4.cpp
 	$(CC) -I$(INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 imps.e: iMPS.cpp

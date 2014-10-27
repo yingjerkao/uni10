@@ -251,8 +251,12 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 		return *this;
 	else{
 		std::vector<Bond> outBonds;
-		for(int b = 0; b < bonds.size(); b++)
+    bool withoutSymmetry = true;
+		for(int b = 0; b < bonds.size(); b++){
 			outBonds.push_back(bonds[rsp_outin[b]]);
+      if(bonds[b].Qnums.size() != 1)
+        withoutSymmetry = false;
+    }
 		for(int b = 0; b < bonds.size(); b++){
 			if(b < rowBondNum)
 				outBonds[b].change(BD_IN);
@@ -261,7 +265,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 		}
 		UniTensor UniTout(outBonds, name);
 		if(status & HAVEELEM){
-			if(blocks.size() == 1){
+			if(withoutSymmetry){
 				if(ongpu && UniTout.ongpu){
 					//printf("before reshape\n");
 					//printf("elemNum = %u, out_ongpu = %d, ongpu = %d\n", m_elemNum, UniTout.ongpu, ongpu);
@@ -392,6 +396,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 				std::vector<int> sBot_acc(bondNum, 1);
 				for(int b = bondNum	- 1; b > 0; b--)
 					Qot_acc[b - 1] = Qot_acc[b] * UniTout.bonds[b].Qnums.size();
+
 				for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 					Qin_off = it->first;
 					tmp = Qin_off;
