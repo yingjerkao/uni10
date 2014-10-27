@@ -109,6 +109,8 @@ class UniTensor{
 		void identity(const Qnum& qnum);
 		void set_zero(const Qnum& qnum);
 		void set_zero();
+    void setElem(double* elem, bool _ongpu);
+    void setElem(std::vector<double>& elem, bool _ongpu);
 		std::vector<_Swap> exSwap(const UniTensor& Tb)const;
 		bool similar(const UniTensor& Tb)const;
 		void addGate(std::vector<_Swap> swaps);
