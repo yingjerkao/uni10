@@ -218,8 +218,20 @@ class Matrix {
           Matrix __rmul__(double a){
               return a * (*self);
           }
-          double __getitem__(int i){
-              return (*self)[i];
+          //double __getitem__(int i){
+          //    return (*self)[i];
+         // }
+          double __getitem__(PyObject *parm){
+              if (PyTuple_Check(parm)){
+                 long i,j;
+                 i=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                 j=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                 return (*self).at(i,j);
+               } else  if (PyInt_Check(parm)) 
+                           return (*self)[PyInt_AsLong(parm)];
+                 else
+                       return 0.0; 
+               
           }
           void __setitem__(int i, double val){
               (*self)[i] = val;
