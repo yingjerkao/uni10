@@ -238,8 +238,8 @@ void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol
     }
     it++;
     if(it > 1){
-      double *work;
-      double *z;
+      double* z = (double*)malloc(it * it * sizeof(double));
+      double* work = (double*)malloc(4 * it * sizeof(double));
       int info;
       memcpy(d, As, it * sizeof(double));
       memcpy(e, Bs, it * sizeof(double));

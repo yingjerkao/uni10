@@ -33,69 +33,6 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 
-
-######################################################################
-# Version information
-######################################################################
-set(UNI10_VERSION_MAJOR 0)
-set(UNI10_VERSION_MINOR 0)
-set(UNI10_VERSION_PATCH 1)
-set(UNI10_VERSION COUNT 2)
-set(UNI10_VERSION
-  ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
-)
-
-
-
- 
-######################################################################
-### COMMAND LINE OPTIONS
-######################################################################
-#option(BUILD_STATIC_LIBS "Build the static library" ON)
-#option(BUILD_SHARED_LIBS "Build the shared library" ON)
-#option(BUILD_TESTS "Build test programs" OFF)
-option(USE_MKL "Use the Intel Math Kernal Library." OFF)
-option(INTEL_CC "Use the Intel compiler." OFF)
-
-if (INTEL_CC)
-  find_program(CMAKE_C_COMPILER NAMES icc)
-  find_program(CMAKE_CXX_COMPILER NAMES icpc)
-  find_program(CMAKE_AR NAMES xiar)
-  find_program(CMAKE_LINKER NAMES xild)
- 
-  if (CMAKE_C_COMPILER MATCHES CMAKE_C_COMPILER-NOTFOUND OR
-    CMAKE_CXX_COMPILER MATCHES CMAKE_CXX_COMPILER-NOTFOUND OR
-    CMAKE_AR MATCHES CMAKE_AR-NOTFOUND OR
-    CMAKE_LINKER MATCHES CMAKE_LINKER-NOTFOUND)
-    message(FATAL_ERROR "Cannot find Intel compiler.  You may need to run `. /opt/intel/bin/compilervars.sh intel64'")
-  endif ()
-endif (INTEL_CC)
-
-######################################################################
-### PROJECT
-######################################################################
-
-project(uni10)
-
-
-######################################################################
-### CMAKE INSTALL OPTIONS 
-######################################################################
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	set(CMAKE_INSTALL_PREFIX "/usr/local/uni10" 
-		CACHE PATH "UNI10 install prefix" 
-   		FORCE
-	)
-endif()
-######################################################################
-### CMAKE BUILD TYPE
-######################################################################
-
-#set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_BUILD_TYPE Debug)
-
-
-
 ######################################################################
 ### DISABLING IN-SOURCE BUILD
 ### (DO NOT MODIFY)
@@ -118,18 +55,92 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   )
 endif()
 
+######################################################################
+# Version information
+######################################################################
+set(UNI10_VERSION_MAJOR 0)
+set(UNI10_VERSION_MINOR 0)
+set(UNI10_VERSION_PATCH 1)
+set(UNI10_VERSION COUNT 2)
+set(UNI10_VERSION
+  ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
+)
+
+
+
+ 
+######################################################################
+### COMMAND LINE OPTIONS
+######################################################################
+#option(BUILD_STATIC_LIBS "Build the static library" ON)
+#option(BUILD_SHARED_LIBS "Build the shared library" ON)
+#option(BUILD_TESTS "Build test programs" OFF)
+#option(USE_MKL "Use the Intel Math Kernal Library." OFF)
+#option(INTEL_CC "Use the Intel compiler." OFF)
+option(CUDA "Use Nvidia CUDA" OFF)
+if (DEFINED ENV{MKLROOT})
+  option(MKL_STA "Link to MKL static library. " OFF)
+  option(MKL_SDL "Link to a single MKL dynamic libary." ON)
+  option(MKL_MLT "Use multi-hreading libary. [Default]" ON)
+  mark_as_advanced(MKL_STA MKL_SDL MKL_MLT)
+  message("Environment variable $MKLROOT set, finding Intel compilers and MKL libraries.")
+  if ($MKL_STA)
+    message("WARNING: Linking to MKL static libary by default.") 
+    message("WARNING: Set MKL_STA to OFF to link to MKL dynamic libraries.")
+  endif()
+  message("Finding Intel Compilers.")
+  find_program(CMAKE_C_COMPILER NAMES icc)
+  find_program(CMAKE_CXX_COMPILER NAMES icpc)
+  find_program(CMAKE_AR NAMES xiar)
+  find_program(CMAKE_LINKER NAMES xild)
+ 
+  if (CMAKE_C_COMPILER MATCHES CMAKE_C_COMPILER-NOTFOUND OR
+    CMAKE_CXX_COMPILER MATCHES CMAKE_CXX_COMPILER-NOTFOUND OR
+    CMAKE_AR MATCHES CMAKE_AR-NOTFOUND OR
+    CMAKE_LINKER MATCHES CMAKE_LINKER-NOTFOUND)
+    message(FATAL_ERROR "Cannot find Intel compiler.  You may need to run `. /opt/intel/bin/compilervars.sh intel64'")
+  endif ()
+  message("CXX Compiler=${CMAKE_CXX_COMPILER}")  
+endif ()
+
+
+######################################################################
+### PROJECT
+######################################################################
+
+project(uni10)
+
+######################################################################
+### CMAKE INSTALL OPTIONS 
+######################################################################
+if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	set(CMAKE_INSTALL_PREFIX "/usr/local/uni10" 
+		CACHE PATH "UNI10 install prefix" 
+   		FORCE
+	)
+endif()
+######################################################################
+### CMAKE BUILD TYPE
+######################################################################
+
+#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
+
+
+
+
 
 ######################################################################
 ### Find BLAS and LAPACK
 ######################################################################
 if( NOT (DEFINED BLAS_LIBRARIES AND DEFINED LAPACK_LIBRARIES))
-  if(USE_MKL)
-    find_package( MKL REQUIRED)
-    ADD_DEFINITIONS("-DMKL")
-    #message( STATUS "MKL found: ${MKL_MINIMAL_LIBRARY}")
-  else ()
-  #  find_package( BLAS REQUIRED)
-  #  message( STATUS "BLAS found: ${BLAS_LIBRARIES}" )
+  if (DEFINED ENV{MKLROOT})
+     find_package( MKL REQUIRED)
+     ADD_DEFINITIONS("-DMKL")
+     
+     set(LAPACK_LIBRARIES ${MKL_MINIMAL_LIBRARY})
+     message("MKL: ${MKL_MINIMAL_LIBRARY}")
+  else()
     find_package( LAPACK REQUIRED)
     message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
   endif()
@@ -138,7 +149,11 @@ else()
   message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}")
 endif()
 
-find_package(CUDA)
+if($CUDA) 
+  find_package(CUDA)
+  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
+  cuda_compile(VECADD_O vecadd.cu)
+endif()
 ######################################################################
 ### FLAGS
 ######################################################################
@@ -148,9 +163,7 @@ endif(UNIX)
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 endif()
-set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
-cuda_compile(VECADD_O vecadd.cu)
-
+message("CMAKE_CXX_FLAGS" ${CMAKE_CXX_FLAGS})
 ######################################################################
 ### PATHS
 ######################################################################
@@ -202,10 +215,6 @@ add_library(uni10 SHARED ${uni10-objects} )
 add_library(uni10-static STATIC ${uni10-objects})
 endif()
 SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
-if(USE_MKL)
-set(LAPACK_LIBRARIES ${MKL_MINIMAL_LIBRARY})
-message("MKL: ${MKL_MINIMAL_LIBRARY}")
-endif()
 target_link_libraries(uni10 ${LAPACK_LIBRARIES})
 target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
 
