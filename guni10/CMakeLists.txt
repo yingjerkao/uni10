@@ -58,9 +58,9 @@ endif()
 ######################################################################
 # Version information
 ######################################################################
-set(UNI10_VERSION_MAJOR 0)
+set(UNI10_VERSION_MAJOR 1)
 set(UNI10_VERSION_MINOR 0)
-set(UNI10_VERSION_PATCH 1)
+set(UNI10_VERSION_PATCH 0)
 set(UNI10_VERSION COUNT 2)
 set(UNI10_VERSION
   ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
@@ -77,17 +77,18 @@ set(UNI10_VERSION
 #option(BUILD_TESTS "Build test programs" OFF)
 #option(USE_MKL "Use the Intel Math Kernal Library." OFF)
 #option(INTEL_CC "Use the Intel compiler." OFF)
-option(CUDA "Use Nvidia CUDA" OFF)
+option(CUDA "Build Nvidia CUDA library" OFF)
+option(BUILD_PYTHON_WRAPPER "Build Python wrapper" ON)
 if (DEFINED ENV{MKLROOT})
-  option(MKL_STA "Link to MKL static library. " OFF)
+  #option(MKL_STA "Link to MKL static library. " OFF)
   option(MKL_SDL "Link to a single MKL dynamic libary." ON)
   option(MKL_MLT "Use multi-hreading libary. [Default]" ON)
   mark_as_advanced(MKL_STA MKL_SDL MKL_MLT)
   message("Environment variable $MKLROOT set, finding Intel compilers and MKL libraries.")
-  if ($MKL_STA)
-    message("WARNING: Linking to MKL static libary by default.") 
-    message("WARNING: Set MKL_STA to OFF to link to MKL dynamic libraries.")
-  endif()
+  #if (MKL_STA)
+  #  set(MKL_SDL OFF)
+  #  message("WARNING: Linking to MKL static libary.") 
+  #endif()
   message("Finding Intel Compilers.")
   find_program(CMAKE_C_COMPILER NAMES icc)
   find_program(CMAKE_CXX_COMPILER NAMES icpc)
@@ -98,9 +99,15 @@ if (DEFINED ENV{MKLROOT})
     CMAKE_CXX_COMPILER MATCHES CMAKE_CXX_COMPILER-NOTFOUND OR
     CMAKE_AR MATCHES CMAKE_AR-NOTFOUND OR
     CMAKE_LINKER MATCHES CMAKE_LINKER-NOTFOUND)
-    message(FATAL_ERROR "Cannot find Intel compiler.  You may need to run `. /opt/intel/bin/compilervars.sh intel64'")
+    message("Cannot find Intel compiler.  You may need to run `. /opt/intel/bin/compilervars.sh intel64/ia32'")
+    message("Falling back to system compiler.")
+    find_program(CMAKE_C_COMPILER NAMES cc)
+    find_program(CMAKE_CXX_COMPILER NAMES cpp)
+    find_program(CMAKE_AR NAMES ar)
+    find_program(CMAKE_LINKER NAMES ld)
+    
   endif ()
-  message("CXX Compiler=${CMAKE_CXX_COMPILER}")  
+  #message("CXX Compiler=${CMAKE_CXX_COMPILER}")  
 endif ()
 
 
@@ -157,31 +164,43 @@ endif()
 ######################################################################
 ### FLAGS
 ######################################################################
-if(UNIX) 
+if(UNIX OR MINGW OR CYGWIN) 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-endif(UNIX)
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 endif()
-message("CMAKE_CXX_FLAGS" ${CMAKE_CXX_FLAGS})
+if(MKL_MLT)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+endif()
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+    message("CMAKE_CXX_COMPILER_VERISON: " ${CMAKE_CXX_COMPILER_VERSION})
+    if( UNIX OR MINGW OR CYGWIN) 
+       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
+    elseif (WINDOWS) 
+       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Qstd=c++0x")
+    endif()
+endif()
+message("CMAKE_CXX_FLAGS: " ${CMAKE_CXX_FLAGS})
+
+if (MKL_MLT) 
+  set(CMAKE_EXE_LINKER_FLAGS "-pthread")
+endif()
 ######################################################################
 ### PATHS
 ######################################################################
 
 #set the default path for built executables to the "bin" directory
-if (UNIX)
+if (UNIX OR MINGW OR CYGWIN)
 	set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-endif (UNIX)
+endif ()
 
 #set the default path for built libraries to the "lib" directory
-if (UNIX)
+if (UNIX OR MINGW OR CYGWIN)
   set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-endif (UNIX)
+endif ()
 
 # path to include directory
-if (UNIX)
+if (UNIX OR MINGW OR CYGWIN)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-endif (UNIX)
+endif ()
 
 
 ######################################################################
@@ -190,7 +209,9 @@ endif (UNIX)
 
 add_subdirectory(src)
 add_subdirectory(examples)
+if (${BUILD_PYTHON_WRAPPER})
 add_subdirectory(Swig)
+endif()
 ######################################################################
 ### ADD LIBRARY
 ######################################################################
@@ -248,10 +269,11 @@ install(DIRECTORY examples/
 	DESTINATION examples/
 	PATTERN "CMakeLists*" EXCLUDE
 )
-
+if (${BUILD_PYTHON_WRAPPER})
 install(DIRECTORY Swig/examples/
 	DESTINATION examples/python/
 )
+endif()
 ######################################################################
 ### INSTALL DOCUMENTATION
 ######################################################################

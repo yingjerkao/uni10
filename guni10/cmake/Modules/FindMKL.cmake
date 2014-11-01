@@ -118,6 +118,7 @@ else()
     else()
         set(MKL_RTL_LIBNAME iomp5)
     endif()
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .so) # Link openmp runtime dynamically
     if( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
       find_library(MKL_RTL_LIBRARY ${MKL_RTL_LIBNAME}
           PATHS ${INTEL_ROOT}/lib/intel64)
