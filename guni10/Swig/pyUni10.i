@@ -226,21 +226,19 @@ class Matrix {
                 if (PyTuple_Size(parm)<=2){
                    long r,c;
                    r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                   if(r>(*self).row()-1) {
+                   //if(r>(*self).row()-1) {
                       //PyErr_SetString(PyExc_IndexError,"Row index too large.");
                       //SWIG_fail;
                       //SWIG_exception(SWIG_IndexError,"Row index too large.");
-                   }
+                   //}
                    c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                   if(c>(*self).col()-1){
+                   //if(c>(*self).col()-1){
                       //PyErr_SetString(PyExc_IndexError,"Column index too large.");
                       //SWIG_fail;
                       //SWIG_exception(SWIG_IndexError,"Column index too large.");
-                   }
+                  // }
                    if( (*self).isDiag() && r!=c) {
-                      //PyErr_SetString(PyExc_IndexError,"Diagonal Matix: column and row  indices must be the same.");
-                      //SWIG_fail;
-                      //SWIG_exception(SWIG_IndexError,"Diagonal Matix: column and row  indices must be the same.");
+                      return 0.0;
                    } else
                      return (*self).at(r,c);
                  } else {
@@ -262,21 +260,22 @@ class Matrix {
                 if (PyTuple_Size(parm)<=2){
                    long r,c;
                    r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                   if(r>(*self).row()-1) {
+                   /*if(r>(*self).row()-1) {
                       //PyErr_SetString(PyExc_IndexError,"Row index too large.");
                       //SWIG_fail;
                       //SWIG_exception(SWIG_IndexError,"Row index too large.");
-                   }
+                   }*/
                    c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                   if(c>(*self).col()-1) {
+                   /*if(c>(*self).col()-1) {
                       //PyErr_SetString(PyExc_IndexError,"Column index too large.");
                       //SWIG_fail;
                       //SWIG_exception(SWIG_IndexError,"Column index too large.");
-                   }
-                   if((*self).isDiag()) 
-                     (*self)[r]=val;
-                   else
+                   }*/
+                   if((*self).isDiag()) {
+                     if (r==c) (*self)[r]=val;
+                   } else {
                      (*self)[r*(*self).col()+c]=val;
+                   }
                  } else { 
                    //PyErr_SetString(PyExc_IndexError,"Too many indices.");
                    //SWIG_fail;
