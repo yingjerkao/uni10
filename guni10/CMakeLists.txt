@@ -58,12 +58,12 @@ endif()
 ######################################################################
 # Version information
 ######################################################################
-set(UNI10_VERSION_MAJOR 1)
-set(UNI10_VERSION_MINOR 0)
+set(UNI10_VERSION_MAJOR 0)
+set(UNI10_VERSION_MINOR 9)
 set(UNI10_VERSION_PATCH 0)
-set(UNI10_VERSION COUNT 2)
+set(UNI10_VERSION COUNT 3)
 set(UNI10_VERSION
-  ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
+  ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}-${UNI10_VERSION_PATCH}
 )
 
 
@@ -75,21 +75,18 @@ set(UNI10_VERSION
 #option(BUILD_STATIC_LIBS "Build the static library" ON)
 #option(BUILD_SHARED_LIBS "Build the shared library" ON)
 #option(BUILD_TESTS "Build test programs" OFF)
-#option(USE_MKL "Use the Intel Math Kernal Library." OFF)
-#option(INTEL_CC "Use the Intel compiler." OFF)
 option(CUDA "Build Nvidia CUDA library" OFF)
+option(BUILD_EXAMPLES "Build Example Codes" ON)
 option(BUILD_PYTHON_WRAPPER "Build Python wrapper" ON)
-message("$ENV{MKLROOT}" )
-if (NOT $ENV{MKLROOT} STREQUAL "")
-  #option(MKL_STA "Link to MKL static library. " OFF)
+option(BUILD_WITH_MKL "Build Uni10 with MKL" OFF)
+option(BUILD_WITH_INTEL_COMPILERS "Build Uni10 with Intel Compilers" OFF)
+if (BUILD_WITH_MKL)
   option(MKL_SDL "Link to a single MKL dynamic libary." ON)
   option(MKL_MLT "Use multi-hreading libary. [Default]" ON)
   mark_as_advanced(MKL_SDL MKL_MLT)
-  message("Environment variable $MKLROOT non-empty. Use Intel compilers and MKL libraries.")
-  #if (MKL_STA)
-  #  set(MKL_SDL OFF)
-  #  message("WARNING: Linking to MKL static libary.") 
-  #endif()
+endif()
+if (BUILD_WITH_INTEL_COMPILERS)
+  message("Build with Intel Compilers")
   message("Finding Intel Compilers....")
   find_program(CMAKE_C_COMPILER NAMES icc)
   find_program(CMAKE_CXX_COMPILER NAMES icpc)
@@ -108,7 +105,6 @@ if (NOT $ENV{MKLROOT} STREQUAL "")
     find_program(CMAKE_AR NAMES ar)
     find_program(CMAKE_LINKER NAMES ld)
   endif ()
-  #message("CXX Compiler=${CMAKE_CXX_COMPILER}")  
 endif ()
 
 
@@ -121,11 +117,13 @@ project(uni10)
 ######################################################################
 ### CMAKE INSTALL OPTIONS 
 ######################################################################
-if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+if(UNIX) 
+  if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 	set(CMAKE_INSTALL_PREFIX "/usr/local/uni10" 
 		CACHE PATH "UNI10 install prefix" 
    		FORCE
 	)
+  endif()
 endif()
 ######################################################################
 ### CMAKE BUILD TYPE
@@ -142,7 +140,7 @@ set(CMAKE_BUILD_TYPE Debug)
 ### Find BLAS and LAPACK
 ######################################################################
 if( NOT (DEFINED BLAS_LIBRARIES AND DEFINED LAPACK_LIBRARIES))
-  if (DEFINED MKL_SDL)
+  if (BUILD_WITH_MKL)
      find_package( MKL REQUIRED)
      ADD_DEFINITIONS("-DMKL")
      
@@ -203,15 +201,16 @@ if (UNIX OR MINGW OR CYGWIN)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 endif ()
 
-
 ######################################################################
 ### ADD SUBDIRECTORIES
 ######################################################################
 
 add_subdirectory(src)
-add_subdirectory(examples)
-if (${BUILD_PYTHON_WRAPPER})
-add_subdirectory(Swig)
+if (BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
+if (BUILD_PYTHON_WRAPPER)
+  add_subdirectory(Swig)
 endif()
 ######################################################################
 ### ADD LIBRARY
@@ -223,8 +222,11 @@ $<TARGET_OBJECTS:uni10-tools>
 $<TARGET_OBJECTS:uni10-tensor-network>
 $<TARGET_OBJECTS:uni10-numeric>
 )
-#message("Generator: ${CMAKE_GENERATOR}")
+
+
+
 if ("${CMAKE_GENERATOR}" STREQUAL "Xcode")
+# Add Dummy file to Xcode Project to build the library
 add_custom_command(
 PRE_BUILD
 OUTPUT ${CMAKE_BINARY_DIR}/src/dummy.cpp
@@ -237,6 +239,7 @@ add_library(uni10 SHARED ${uni10-objects} )
 add_library(uni10-static STATIC ${uni10-objects})
 endif()
 SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
+SET_TARGET_PROPERTIES(uni10 PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR})
 target_link_libraries(uni10 ${LAPACK_LIBRARIES})
 target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
 
@@ -265,15 +268,16 @@ install(DIRECTORY src/
 ######################################################################
 ### INSTALL EXAMPLES
 ######################################################################
-
-install(DIRECTORY examples/
+if(BUILD_EXAMPLES)
+  install(DIRECTORY examples/
 	DESTINATION examples/
 	PATTERN "CMakeLists*" EXCLUDE
-)
-if (${BUILD_PYTHON_WRAPPER})
-install(DIRECTORY Swig/examples/
+  )
+endif()
+if (BUILD_PYTHON_WRAPPER)
+  install(DIRECTORY Swig/examples/
 	DESTINATION examples/python/
-)
+  )
 endif()
 ######################################################################
 ### INSTALL DOCUMENTATION
@@ -282,4 +286,30 @@ endif()
 install(DIRECTORY doc/
 	DESTINATION doc )
 install(FILES INSTALL.txt README.txt GPL.txt LGPL.txt release_notes.txt DESTINATION .)
+
+#message("${uni10}")
+set(libname "libuni10${CMAKE_SHARED_LIBRARY_SUFFIX}")
+install(CODE " EXECUTE_PROCESS(
+     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib )")
+
+######################################################################
+# Information Messages
+######################################################################
+message("------------------------------------------------")
+message("Uni10: The Universal Tensor Network Library")
+message("------------------------------------------------")
+message("Version: ${UNI10_VERSION}")
+message("Generator: ${CMAKE_GENERATOR}")
+message("Build Target: ${CMAKE_SYSTEM_NAME}")
+message("Installation Prefix: ${CMAKE_INSTALL_PREFIX}")
+message("CXX Compiler: ${CMAKE_CXX_COMPILER}")
+message("CXX Flags: ${CMAKE_CXX_FLAGS}")
+if(BUILD_PYTHON_WRAPPER)
+  message("Build Python Wrapper")
+  message("Python Excutable: ${PYTHON_EXECUTABLE}")
+  message("Python Headers  : ${PYTHON_INCLUDE_DIR}")
+  message("Python Library  : ${PYTHON_LIBRARY}")
+  message("Swig Version    : ${SWIG_VERSION}")
+  message("Swig Directory  : ${SWIG_DIR}")
+endif()
 #include(CPACK)

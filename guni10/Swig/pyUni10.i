@@ -86,8 +86,6 @@ class Qnum {
               std::ostringstream oss(std::ostringstream::out);
               oss << (*self);
               return oss.str();
-              //std::cout<< *self;
-              //return "";
           }
           Qnum& assignF(parityFType _prtF, int _U1 = 0, parityType _prt = PRT_EVEN){
               self->assign(_prtF, _U1, _prt);
@@ -134,8 +132,6 @@ class Bond {
               std::ostringstream oss(std::ostringstream::out);
               oss << (*self);
               return oss.str();
-              //std::cout<< *self;
-              //return "";
           }
       }
       void change(bondType tp);
@@ -206,8 +202,6 @@ class Matrix {
              oss << (*self);
              return oss.str();
 
-          //    std::cout<< *self;
-          //    return "";
           }
           Matrix __mul__(const Matrix& Ma){
               return (*self) * Ma;
@@ -352,8 +346,6 @@ class UniTensor{
         std::ostringstream oss(std::ostringstream::out);
         oss << (*self);
         return oss.str();
-        //std::cout<< *self;
-        //return "";
       }
       UniTensor __mul__(const UniTensor& Ta){
         return (*self) * Ta;
@@ -435,8 +427,6 @@ class Network {
         std::ostringstream oss(std::ostringstream::out);
         oss << (*self);
         return oss.str();
-        //std::cout<< *self;
-        //return "";
       }
     }
   /*
