@@ -287,8 +287,8 @@ install(DIRECTORY doc/
 	DESTINATION doc )
 install(FILES INSTALL.txt README.txt GPL.txt LGPL.txt release_notes.txt DESTINATION .)
 
-#message("${uni10}")
 set(libname "libuni10${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
 install(CODE " EXECUTE_PROCESS(
      COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib )")
 

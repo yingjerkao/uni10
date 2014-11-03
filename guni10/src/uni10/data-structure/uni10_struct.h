@@ -28,6 +28,7 @@
 *****************************************************************************/
 #ifndef UNI10_STRUCT_H
 #define UNI10_STRUCT_H
+#include "stdint.h"
 #include <string>
 namespace uni10{
 typedef struct{

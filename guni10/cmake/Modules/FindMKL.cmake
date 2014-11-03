@@ -30,10 +30,10 @@ else()
 #message("INTEL_ROOT:" ${INTEL_ROOT})
 #message("MKLROOT:" $ENV{MKLROOT})
 # Find include dir
-message("MKL_STA:" ${MKL_STA})
-message("MKL_MLT:" ${MKL_MLT})
-message("MKL_SDL:" ${MKL_SDL})
-message("CMAKE_SYSTEM_PROCESSOR:" ${CMAKE_SYSTEM_PROCESSOR})
+#message("MKL_STA:" ${MKL_STA})
+#message("MKL_MLT:" ${MKL_MLT})
+#message("MKL_SDL:" ${MKL_SDL})
+#message("CMAKE_SYSTEM_PROCESSOR:" ${CMAKE_SYSTEM_PROCESSOR})
 find_path(MKL_INCLUDE_DIR mkl.h
     PATHS ${MKL_ROOT}/include)
 
