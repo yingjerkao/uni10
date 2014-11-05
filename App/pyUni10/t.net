@@ -1,0 +1,8 @@
+Lambda_L: -1; 1
+Gamma_L: 1 5; 2
+Lambda_C: 2; 3
+Gamma_R: 3 6; 4
+Lambda_R: 4; -2
+Ham_Exp_dt: -3 -4; 5 6
+TOUT: -1 -3 ; -2 -4
+ORDER:
