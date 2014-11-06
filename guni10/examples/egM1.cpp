@@ -10,7 +10,7 @@ int main(){
 	uni10::Matrix H(4, 4, elem);
 	std::cout<<H;
 	// Diagonlize H
-	std::vector<uni10::Matrix> results = H.diagonalize();
+	std::vector<uni10::Matrix> results = H.eigh();
 	std::cout<<"The eigen values: \n\n"<<results[0];
 	std::cout<<"The eigen vectors: \n\n"<<results[1];
 

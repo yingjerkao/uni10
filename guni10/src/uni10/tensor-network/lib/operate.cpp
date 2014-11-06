@@ -104,7 +104,7 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 			cBonds.push_back(Tb.bonds[i]);
 		UniTensor Tc(cBonds);
 		if(cBonds.size())
-			Tc.addLabel(newLabelC);
+			Tc.setLabel(newLabelC);
 		Block blockA, blockB, blockC;
 		std::map<Qnum,Block>::iterator it;
 		std::map<Qnum,Block>::iterator it2;
@@ -173,8 +173,10 @@ UniTensor operator*(const UniTensor& Ta, double a){
 UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
 	UniTensor T1 = Ta;
 	UniTensor T2 = Tb;
-	int label1[T1.bondNum()];
-	int label2[T2.bondNum()];
+	//int label1[T1.bondNum()];
+	//int label2[T2.bondNum()];
+  std::vector<int> label1(T1.bondNum());
+  std::vector<int> label2(T2.bondNum());
 	for(int i = 0; i < T1.bondNum(); i++){
 		if(i < T1.inBondNum())
 			label1[i] = i;
@@ -188,8 +190,8 @@ UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
 			label2[i] = i + T1.bondNum();
 	}
 
-	T1.addLabel(label1);
-	T2.addLabel(label2);
+	T1.setLabel(label1);
+	T2.setLabel(label2);
 	return contract(T1, T2, true);
 }
 };	/* namespace uni10 */

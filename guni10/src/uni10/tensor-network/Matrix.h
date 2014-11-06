@@ -55,7 +55,7 @@ class Matrix {
 		friend Matrix operator* (const Matrix& Ma, const Matrix& Mb);
 		Matrix& operator*= (const Matrix& Mb);
 		friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
-		std::vector<Matrix> diagonalize()const;
+		std::vector<Matrix> eigh()const;
 		std::vector<Matrix> svd()const;
     double lanczosEig(Matrix& psi, int& max_iter, double err_tol = 5E-15);
 		friend Matrix takeExp(double a, const Matrix& mat);
@@ -65,6 +65,7 @@ class Matrix {
 		double* getHostElem();
 		void randomize();
 		void orthoRand();
+		void identity();
 		void set_zero();
 		Matrix& transpose();
 		Matrix& resize(size_t row, size_t col);
@@ -93,7 +94,5 @@ class Matrix {
 		bool ongpu;
 };
 Matrix takeExp(double a, const Matrix& mat);
-
-void vecAdd(double* h_A, double* h_B, int N, double* h_C);
 };	/* namespace uni10 */
 #endif /* MATRIX_H */

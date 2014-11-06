@@ -1,5 +1,5 @@
 #UNI10_ROOT := /home/yundasie/guni10
-#UNI10_ROOT := /Users/yunda/myLibrary/uni10
+UNI10_ROOT := /Users/yunda/myLibrary/uni10
 INC := ../src/
 LIB := $(UNI10_ROOT)/lib
 CC:=g++

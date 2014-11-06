@@ -38,9 +38,9 @@ int main(){
 	int label_H[] = {1, 2, 3, 4};
 	int label_W[] = {-1, 1, 2};
 	int label_WT[] = {3, 4, -2};
-	H_U1.addLabel(label_H);
-	W.addLabel(label_W);
-	WT.addLabel(label_WT);
+	H_U1.setLabel(label_H);
+	W.setLabel(label_W);
+	WT.setLabel(label_WT);
 	//std::cout<<W;
 	std::cout<<W * H_U1 * WT;
 

@@ -231,7 +231,8 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 	//assert(status & HAVELABEL);
 	assert(labels.size() == newLabels.size());
 	int bondNum = bonds.size();
-	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
+	//int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
+  std::vector<int> rsp_outin(bondNum);
 	int cnt = 0;
 	for(int i = 0; i < bondNum; i++)
 		for(int j = 0; j < bondNum; j++)
@@ -318,8 +319,10 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					newAcc[bondNum - 1] = 1;
 					for(int b = bondNum - 1; b > 0; b--)
 						newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
-					int bondDims[bondNum];
-					int idxs[bondNum];
+					//int bondDims[bondNum];
+					//int idxs[bondNum];
+          std::vector<int> bondDims(bondNum);
+          std::vector<int> idxs(bondNum);
 					for(int b = 0; b < bondNum; b++){
 						transAcc[rsp_outin[b]] = newAcc[b];
 						bondDims[b] = bonds[b].Qdegs[0];
@@ -354,9 +357,13 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 				//For Fermionic system
 				std::vector<_Swap> swaps;
 				if(Qnum::isFermionic()){
-					int inLabelF[bondNum];
-					int outLabelF[bondNum];
-					int ordF[bondNum];
+					//int inLabelF[bondNum];
+					//int outLabelF[bondNum];
+					//int ordF[bondNum];
+          std::vector<int> inLabelF(bondNum);
+          std::vector<int> outLabelF(bondNum);
+          std::vector<int> ordF(bondNum);
+
 					for(int b = 0; b < RBondNum; b++){
 						inLabelF[b] = labels[b];
 						ordF[b] = b;
@@ -370,7 +377,8 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					for(int b = bondNum - 1; b >= UniTout.RBondNum; b--)
 						outLabelF[bondNum - b + UniTout.RBondNum - 1] = newLabels[b];
 
-					int rspF_outin[bondNum];
+					//int rspF_outin[bondNum];
+          std::vector<int> rspF_outin(bondNum);
 					for(int i = 0; i < bondNum; i++)
 						for(int j = 0; j < bondNum; j++)
 							if(inLabelF[i] == outLabelF[j])
@@ -455,15 +463,15 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 			UniTout.status |= HAVEELEM;
 		}
 		*this = UniTout;
-		this->addLabel(newLabels);
+		this->setLabel(newLabels);
 		return *this;
 	}
 }
 
-void UniTensor::addRawElem(std::vector<DOUBLE> rawElem){
-  addRawElem(&rawElem[0]);
+void UniTensor::setRawElem(std::vector<DOUBLE> rawElem){
+  setRawElem(&rawElem[0]);
 }
-void UniTensor::addRawElem(DOUBLE* rawElem){
+void UniTensor::setRawElem(DOUBLE* rawElem){
 	assert((status & HAVEBOND));   //If not INIT, CANNOT add elements
 	int bondNum = bonds.size();
 	std::vector<int> Q_idxs(bondNum, 0);
@@ -591,7 +599,8 @@ double UniTensor::operator[](size_t idx){
 UniTensor& UniTensor::transpose(){
 	assert(status & HAVEBOND);
 	int bondNum = bonds.size();
-	int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
+	//int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
+  std::vector<int> rsp_outin(bondNum);
 	int rbondNum = 0;
 	for(int b = 0; b < bondNum; b++)
 		if(bonds[b].type() == BD_IN)
@@ -623,7 +632,7 @@ UniTensor& UniTensor::transpose(){
 	}
 	UniTensor UniTout(outBonds, name);
 	//if(status & HAVELABEL)
-	UniTout.addLabel(outLabels);
+	UniTout.setLabel(outLabels);
 	if(status & HAVEELEM){
 		std::map<Qnum,Block>::iterator it_in;
 		std::map<Qnum,Block>::iterator it_out;
