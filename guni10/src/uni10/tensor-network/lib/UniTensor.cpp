@@ -119,11 +119,11 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name):
 
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	initUniT();
-	addLabel(_labels);
+	setLabel(_labels);
 }
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
 	initUniT();
-	addLabel(_labels);
+	setLabel(_labels);
 }
 
 UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from file
@@ -261,12 +261,12 @@ void UniTensor::profile(){
   std::cout<<"============================\n\n";
 }
 
-void UniTensor::addLabel(int* newLabels){
+void UniTensor::setLabel(int* newLabels){
 	std::vector<int> labels(newLabels, newLabels + bonds.size());
-	addLabel(labels);
+	setLabel(labels);
 }
 
-void UniTensor::addLabel(const std::vector<int>& newLabels){
+void UniTensor::setLabel(const std::vector<int>& newLabels){
 	std::set<int> labelS(&(newLabels[0]), &(newLabels[newLabels.size()]));
 	assert(bonds.size() == labelS.size());
 	labels = newLabels;
@@ -376,6 +376,10 @@ void UniTensor::set_zero(const Qnum& qnum){
 void UniTensor::set_zero(){
 	elemBzero(elem, m_elemNum * sizeof(DOUBLE), ongpu);
 	status |= HAVEELEM;
+}
+
+double* UniTensor::getElem(){
+  return elem;
 }
 
 void UniTensor::setElem(double* _elem, bool _ongpu){

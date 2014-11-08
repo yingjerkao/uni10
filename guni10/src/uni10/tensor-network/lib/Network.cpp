@@ -237,7 +237,7 @@ Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens):
 		assert(tens[i]->RBondNum == Rnums[i]);
 		UniTensor* ten = new UniTensor(*(tens[i]));
 		ten->setName(names[i]);
-		ten->addLabel(label_arr[i]);
+		ten->setLabel(label_arr[i]);
 		tensors[i] = ten;
 		Node* ndp = new Node(ten);
 		leafs[i] = ndp;
@@ -433,14 +433,14 @@ void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 	if(leafs[idx] != NULL){
 		//assert(tensors[idx]->similar(*UniT));
 		*(tensors[idx]) = *UniT;
-		tensors[idx]->addLabel(label_arr[idx]);
+		tensors[idx]->setLabel(label_arr[idx]);
 		tensors[idx]->setName(names[idx]);
 		swapflags[idx] = false;
 	}
 	else{
 		UniTensor* ten = new UniTensor(*UniT);
 		ten->setName(names[idx]);
-		ten->addLabel(label_arr[idx]);
+		ten->setLabel(label_arr[idx]);
 		tensors[idx] = ten;
 		Node* ndp = new Node(ten);
 		leafs[idx] = ndp;
@@ -773,8 +773,9 @@ void Network::addSwap(){
 	int Tnum = leafs.size();
 	findConOrd(root);
 	assert(Tnum == conOrder.size());
-	int tenOrder[conOrder.size()];
-	memcpy(tenOrder, &(conOrder[0]), Tnum * sizeof(int));
+	//int tenOrder[conOrder.size()];
+  std::vector<int> tenOrder = conOrder;
+	//memcpy(tenOrder, &(conOrder[0]), Tnum * sizeof(int));
 	std::vector<_Swap> tenSwaps = recSwap(tenOrder, Tnum);
 	std::vector<_Swap> swtmp;
 	for(int s = 0; s < tenSwaps.size(); s++){

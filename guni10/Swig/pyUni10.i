@@ -157,14 +157,16 @@ class Matrix {
         size_t elemNum()const;
         /*Matrix& operator=(const Matrix& _m);*/
         /*Matrix& operator*= (const Matrix& Mb);*/
-        std::vector<Matrix> diagonalize();
+        std::vector<Matrix> eigh();
         std::vector<Matrix> svd();
         double lanczosEig(Matrix& psi, int& max_iter, double err_tol = 5E-15);
+        void setElem(double* elem, bool _ongpu = false);
         void setElem(std::vector<double> elem, bool _ongpu = false);
         double* getElem()const;
         double* getHostElem();
         void randomize();
         void orthoRand();
+        void identity();
         void set_zero();
         Matrix& transpose();
         Matrix& resize(size_t row, size_t col);
@@ -236,10 +238,13 @@ class Matrix {
                 if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
            }          
         }
+          }
         Matrix& operator*= (double a);
         Matrix& operator+= (const Matrix& Mb);
         bool toGPU();
 };
+Matrix takeExp(double a, const Matrix& mat);
+
 
 /* End of Matrix */
 
@@ -257,9 +262,9 @@ class UniTensor{
     /*UniTensor& operator=(const UniTensor& UniT);*/
     UniTensor& assign(const std::vector<Bond>& _bond);
     ~UniTensor();
-    void addLabel(const std::vector<int>& newLabels);
-    void addLabel(int* newLabels);
-    void addRawElem(std::vector<double> rawElem);
+    void setLabel(const std::vector<int>& newLabels);
+    void setLabel(int* newLabels);
+    void setRawElem(std::vector<double> rawElem);
     double at(std::vector<int>idxs)const;
     /*double& operator[](size_t idx);*/
     std::vector<Qnum> blockQnum()const;
@@ -328,6 +333,9 @@ class UniTensor{
     void identity(const Qnum& qnum);
     void set_zero(const Qnum& qnum);
     void set_zero();
+    double* getElem();
+    void setElem(double* elem, bool _ongpu = false);
+    void setElem(std::vector<double>& elem, bool _ongpu = false);
     std::vector<_Swap> exSwap(const UniTensor& Tb)const;
     bool similar(const UniTensor& Tb)const;
     void addGate(std::vector<_Swap> swaps);

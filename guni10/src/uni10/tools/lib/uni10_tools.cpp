@@ -31,15 +31,15 @@
 
 namespace uni10{
 
-std::vector<_Swap> recSwap(int* _ord, int n){	//Given the reshape order out to in.
-	int ordF[n];
+std::vector<_Swap> recSwap(std::vector<int>& _ord, int n){	//Given the reshape order out to in.
+	//int ordF[n];
+  std::vector<int> ordF(n);
 	for(int i = 0; i < n; i++)
 		ordF[i] = i;
 	return recSwap(_ord, n, ordF);
 }
-std::vector<_Swap> recSwap(int* _ord, int n, int* ordF){	//Given the reshape order out to in.
-	int* ord = (int*)malloc(sizeof(int) * n);
-	memcpy(ord, _ord, sizeof(int) * n);
+std::vector<_Swap> recSwap(std::vector<int>& _ord, int n, std::vector<int>& ordF){	//Given the reshape order out to in.
+  std::vector<int> ord = _ord;
 	std::vector<_Swap> swaps;
 	_Swap sg;
 	int tmp;
@@ -53,8 +53,14 @@ std::vector<_Swap> recSwap(int* _ord, int n, int* ordF){	//Given the reshape ord
 				ord[j + 1] = tmp;
 				swaps.push_back(sg);
 			}
-	free(ord);
 	return swaps;
+}
+
+void propogate_exception(const std::exception& e, const std::string& msg){
+  std::string except_str;
+  except_str.append(msg);
+  except_str.append(e.what());
+  throw std::logic_error(except_str);
 }
 
 };	/* namespace uni10 */

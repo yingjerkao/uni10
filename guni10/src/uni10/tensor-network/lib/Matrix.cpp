@@ -199,7 +199,7 @@ void Matrix::setElem(double* elem, bool _ongpu){
 	elemCopy(m_elem, elem, m_elemNum * sizeof(double), ongpu, _ongpu);
 }
 
-std::vector<Matrix> Matrix::diagonalize()const{
+std::vector<Matrix> Matrix::eigh()const{
 	assert(Rnum == Cnum);
 	assert(!diag);
 	std::vector<Matrix> outs;
@@ -248,6 +248,18 @@ void Matrix::orthoRand(){
 	if(!diag){
 		orthoRandomize(m_elem, Rnum, Cnum, ongpu);
 	}
+}
+
+void Matrix::identity(){
+  diag = true;
+	m_elemNum = Rnum < Cnum ? Rnum : Cnum;
+	if(m_elem != NULL)
+		elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
+	m_elem = (double*)elemAlloc(m_elemNum * sizeof(double), ongpu);
+  double* elemI = (double*)malloc(m_elemNum * sizeof(double));
+  for(int i = 0; i < m_elemNum; i++)
+    elemI[i] = 1;
+  this->setElem(elemI, false);
 }
 
 void Matrix::set_zero(){
@@ -439,7 +451,7 @@ bool Matrix::toGPU(){
 	return ongpu;
 }
 Matrix takeExp(double a, const Matrix& mat){
-	std::vector<Matrix> rets = mat.diagonalize();
+	std::vector<Matrix> rets = mat.eigh();
 	Matrix UT(rets[1]);
 	UT.transpose();
 	vectorExp(a, rets[0].getElem(), rets[0].row(), rets[0].isOngpu());

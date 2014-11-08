@@ -4,6 +4,9 @@ INC := $(UNI10_ROOT)/include/
 LIB := $(UNI10_ROOT)/lib/
 CC:=g++
 FLAGS:=-O3 -m64
+PYTHONLIBDIR:=/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7
+PYTHONINCDIR:=/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7
+
 #OBJ := $(UNI10_ROOT)/qnum.o $(UNI10_ROOT)/bond.o $(UNI10_ROOT)/uni10_lapack.o $(UNI10_ROOT)/uni10_tools.o
 #OBJ := $(UNI10_ROOT)/qnum.o $(UNI10_ROOT)/bond.o
 

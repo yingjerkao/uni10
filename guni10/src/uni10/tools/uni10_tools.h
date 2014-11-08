@@ -49,8 +49,8 @@ void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool 
 void elemFree(void* ptr, size_t memsize, bool ongpu);
 void elemBzero(void* ptr, size_t memsize, bool ongpu);
 void elemRand(double* elem, size_t N, bool ongpu);
-std::vector<_Swap> recSwap(int* ord, int n, int* ordF);
-std::vector<_Swap> recSwap(int* _ord, int n);	//Given the reshape order out to in.
+std::vector<_Swap> recSwap(std::vector<int>& ord, int n, std::vector<int>& ordF);
+std::vector<_Swap> recSwap(std::vector<int>& ord, int n);	//Given the reshape order out to in.
 void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu);
 void getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu);
 void* mvGPU(void* elem, size_t memsize, bool& ongpu);
@@ -60,6 +60,8 @@ void shrinkWithoutFree(size_t memsize, bool ongpu);
 void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, double* newElem);
 double getElemAt(size_t idx, double* elem, bool ongpu);
 void setElemAt(size_t idx, double val, double* elem, bool ongpu);
+void propogate_exception(const std::exception& e, const std::string& msg);
+
 
 
 // trim from start
@@ -78,6 +80,8 @@ static inline std::string &rtrim(std::string &s) {
 static inline std::string &trim(std::string &s) {
 	return ltrim(rtrim(s));
 }
+
+
 };	/* namespace uni10 */
 
 #endif /* UNI10_TOOLS_H */
