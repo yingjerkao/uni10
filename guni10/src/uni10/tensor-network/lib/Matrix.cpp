@@ -450,6 +450,7 @@ bool Matrix::toGPU(){
 		m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	return ongpu;
 }
+
 Matrix takeExp(double a, const Matrix& mat){
 	std::vector<Matrix> rets = mat.eigh();
 	Matrix UT(rets[1]);

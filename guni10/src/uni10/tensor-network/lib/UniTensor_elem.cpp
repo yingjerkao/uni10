@@ -383,7 +383,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 						for(int j = 0; j < bondNum; j++)
 							if(inLabelF[i] == outLabelF[j])
 								rspF_outin[j] = i;
-					swaps = recSwap(rspF_outin, bondNum, ordF);
+					swaps = recSwap(rspF_outin, ordF);
 				}
 				//End Fermionic system
 				std::vector<int> Qin_idxs(bondNum, 0);

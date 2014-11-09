@@ -776,7 +776,7 @@ void Network::addSwap(){
 	//int tenOrder[conOrder.size()];
   std::vector<int> tenOrder = conOrder;
 	//memcpy(tenOrder, &(conOrder[0]), Tnum * sizeof(int));
-	std::vector<_Swap> tenSwaps = recSwap(tenOrder, Tnum);
+	std::vector<_Swap> tenSwaps = recSwap(tenOrder);
 	std::vector<_Swap> swtmp;
 	for(int s = 0; s < tenSwaps.size(); s++){
 		swtmp = tensors[tenSwaps[s].b1]->exSwap(*(tensors[tenSwaps[s].b2]));

@@ -8,6 +8,8 @@
   #include <uni10/tensor-network/UniTensor.h>
   #include <uni10/tensor-network/Network.h>
 %}
+
+
 %include "std_vector.i"
 %include "std_map.i"
 %include "std_string.i"
@@ -24,6 +26,17 @@ namespace std{
 }
 %feature("autodoc");
 
+%exception {
+    try {
+      $action
+    } catch (const std::exception &e) {
+      std::string s("uni10 error: "), s2(e.what());
+        s = s + s2;
+        SWIG_exception(SWIG_RuntimeError, s.c_str());
+    } catch (...) {
+        SWIG_exception(SWIG_RuntimeError, "unknown exception");
+    }
+}
 
 %inline{
   uni10::Qnum QnumF(uni10::parityFType _prtF, int _U1=0, uni10::parityType _prt=uni10::PRT_EVEN){
@@ -249,7 +262,6 @@ class Matrix {
                   // SWIG_fail;
                   //SWIG_exception(SWIG_TypeError,"Indices should be an int or a 2-tuple");
                }
-
           }
           void __setitem__(PyObject *parm, double val){
               if (PyTuple_Check(parm)){
@@ -295,6 +307,7 @@ class Matrix {
         bool toGPU();
 };
 Matrix takeExp(double a, const Matrix& mat);
+void throwException();
 
 
 /* End of Matrix */
@@ -470,4 +483,7 @@ class Network {
   */
 };
 /* End of Network */
+
+
 };
+
