@@ -89,6 +89,12 @@ class Qnum {
               return *self;
           }
       }
+      // Make Qnum Class immutable
+      /* %pythoncode{
+      def __setattr__(self, *args):
+         raise TypeError("can't modify immutable instance")
+      __delattr__ = __setattr__
+      } */
       static const int U1_UPB = 100;//Upper bound of U1
       static const int U1_LOB = -100;//Lower bound of U1
 };
@@ -238,7 +244,6 @@ class Matrix {
                 if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
            }          
         }
-          }
         Matrix& operator*= (double a);
         Matrix& operator+= (const Matrix& Mb);
         bool toGPU();
