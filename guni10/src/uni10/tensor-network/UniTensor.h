@@ -38,6 +38,7 @@
 #include <string>
 #include <assert.h>
 #include <stdint.h>
+#include <sstream>
 #define DOUBLE double
 
 #include <uni10/data-structure/uni10_struct.h>

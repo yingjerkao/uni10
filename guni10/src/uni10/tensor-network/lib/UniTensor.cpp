@@ -133,14 +133,24 @@ UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from fi
 	else
 		name = fname;
 	FILE* fp = fopen(fname.c_str(), "r");
-	assert(fp != NULL);
+  if(!(fp != NULL)){
+    std::string err("\nIn constructor UniTensor::UniTensor():\n  File '");
+    err += fname;
+    err += "' is not found.\n";
+    throw std::runtime_error(err);
+  }
 	int st;
 	fread(&st, 1, sizeof(int), fp);
 	int bondNum;
 	fread(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
 	size_t qnum_sz;
 	fread(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum)
-	assert(qnum_sz == sizeof(Qnum));
+	if(!(qnum_sz == sizeof(Qnum))){
+    std::string err("\nIn constructor UniTensor::UniTensor():\n  Error in reading file '");
+    err += fname;
+    err += "' in.\n";
+    throw std::runtime_error(err);
+  }
 	for(int b = 0; b < bondNum; b++){
 		int num_q;
 		bondType tp;
@@ -161,7 +171,12 @@ UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from fi
 	initUniT();
 	int num_l;
 	fread(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
-	assert(num_l == bonds.size());
+	if(!(num_l == bonds.size())){
+    std::string err("\nIn constructor UniTensor::UniTensor():\n  Error in reading file '");
+    err += fname;
+    err += "' in.\n";
+    throw std::runtime_error(err);
+  }
 	labels.assign(num_l, 0);
 	fread(&(labels[0]), num_l, sizeof(int), fp);
 	if(st & HAVEELEM){
@@ -171,7 +186,6 @@ UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from fi
 			tmp_elem = (double*)malloc(memsize);
 		size_t num_el;
 		fread(&num_el, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
-		assert(num_el == m_elemNum);
 		fread(tmp_elem, m_elemNum, sizeof(DOUBLE), fp);
 		if(ongpu){
 			elemCopy(elem, tmp_elem, memsize, ongpu, false);
@@ -185,7 +199,13 @@ UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from fi
 void UniTensor::initUniT(){
 	if(bonds.size()){
 		grouping();
-		assert(blocks.size() > 0); //No block in Tensor, Error!
+		if(!(blocks.size() > 0)){ //No block in Tensor, Error!
+      std::ostringstream err;
+      err<<"\nError when creating the Tensor:\n  There is no symmetry block with the given bonds:\n";
+      for(int b = 0; b < bonds.size(); b++)
+        err<<"    "<<bonds[b];
+      throw std::runtime_error(err.str());
+    }
 		Block blk = blocks.rbegin()->second;
 		m_elemNum = blk.offset + (blk.Rnum * blk.Cnum);
 		labels.assign(bonds.size(), 0);
@@ -240,7 +260,11 @@ std::vector<Qnum> UniTensor::blockQnum()const{
 	return keys;
 }
 Qnum UniTensor::blockQnum(int idx)const{
-	assert(idx < blocks.size());
+  if(!(idx < blocks.size() && idx >= 0)){
+    std::ostringstream err;
+    err<<"\nIn function UniTensor::blockQnum(int):\n  Index out of range.\n";
+    throw std::runtime_error(err.str());
+  }
 	for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
 		if(idx == 0)
 			return it->first;
@@ -268,7 +292,9 @@ void UniTensor::setLabel(int* newLabels){
 
 void UniTensor::setLabel(const std::vector<int>& newLabels){
 	std::set<int> labelS(&(newLabels[0]), &(newLabels[newLabels.size()]));
-	assert(bonds.size() == labelS.size());
+	if(!(bonds.size() == labelS.size())){
+    throw std::runtime_error("\nIn function UniTensor::setLabel(std::vector<int>):\n  The size of input vector(labels) does not match for the number of bonds.\n");
+  }
 	labels = newLabels;
 }
 
@@ -277,7 +303,9 @@ std::vector<int> UniTensor::label()const{
 }
 
 int UniTensor::label(int idx)const{
-	assert(idx < labels.size());
+  if(!(idx < labels.size() && idx >= 0)){
+    throw std::runtime_error("\nIn function UniTensor::label(int):\n  Index out of range.\n");
+  }
 	return labels[idx];
 }
 
@@ -286,25 +314,22 @@ std::vector<Bond> UniTensor::bond()const{
 }
 
 Bond UniTensor::bond(int idx)const{
-	assert(idx < bonds.size());
+  if(!(idx < bonds.size() && idx >= 0)){
+    throw std::runtime_error("\nIn function UniTensor::bond(int):\n  Index out of range.\n");
+  }
 	return bonds[idx];
 }
 
-UniTensor& UniTensor::permute(int rowBondNum){
-	this->permute(labels, rowBondNum);
-	return *this;
-}
-UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
-	assert(status & HAVEBOND);
-	std::vector<int> _labels(newLabels, newLabels + bonds.size());
-	this->permute(_labels, rowBondNum);
-	return *this;
-}
-
 void UniTensor::save(const std::string& fname){
-	assert((status & HAVEBOND));   //If not INIT, NO NEED to write out to file
+	if((status & HAVEBOND) == 0){   //If not INIT, NO NEED to write out to file
+    throw std::runtime_error("\nIn function UniTensor::save(std::string&):\n  Saving a tensor without bonds(scalar) is not supported.\n");
+  }
 	FILE* fp = fopen(fname.c_str(), "w");
-	assert(fp != NULL);
+	if(!(fp != NULL)){
+    std::ostringstream err;
+    err<<"\nIn function UniTensor::save(std::string&):\n  Error in writing to file '"<<fname<<"'.\n";
+    throw std::runtime_error(err.str());
+  }
 	fwrite(&status, 1, sizeof(status), fp);	//OUT: status(4 bytes)
 	int bondNum = bonds.size();
 	fwrite(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
@@ -400,29 +425,30 @@ std::string UniTensor::getName(){
 }
 
 std::vector<_Swap> UniTensor::exSwap(const UniTensor& Tb) const{
-	assert(status & Tb.status & HAVEBOND);
-	int bondNumA = labels.size();
-	int bondNumB = Tb.labels.size();
-	std::vector<int> intersect;
-	std::vector<int> left;
-	for(int a = 0; a < bondNumA; a++){
-		bool found = false;
-		for(int b = 0; b < bondNumB; b++)
-			if(labels[a] == Tb.labels[b])
-				found = true;
-		if(found)
-			intersect.push_back(a);
-		else
-			left.push_back(a);
-	}
 	std::vector<_Swap> swaps;
-	_Swap sp;
-	for(int i = 0; i < intersect.size(); i++)
-		for(int j = 0; j < left.size(); j++){
-			sp.b1 = intersect[i];
-			sp.b2 = left[j];
-			swaps.push_back(sp);
-		}
+  if(status & Tb.status & HAVEBOND){
+    int bondNumA = labels.size();
+    int bondNumB = Tb.labels.size();
+    std::vector<int> intersect;
+    std::vector<int> left;
+    for(int a = 0; a < bondNumA; a++){
+      bool found = false;
+      for(int b = 0; b < bondNumB; b++)
+        if(labels[a] == Tb.labels[b])
+          found = true;
+      if(found)
+        intersect.push_back(a);
+      else
+        left.push_back(a);
+    }
+    _Swap sp;
+    for(int i = 0; i < intersect.size(); i++)
+      for(int j = 0; j < left.size(); j++){
+        sp.b1 = intersect[i];
+        sp.b2 = left[j];
+        swaps.push_back(sp);
+      }
+  }
 	return swaps;
 }
 
@@ -611,15 +637,19 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
 }
 
 void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
-	assert(blocks.find(qnum) != blocks.end());
-	Block& blk = blocks[qnum];
-	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
+  std::map<Qnum, Block>::iterator it;
+	if(!((it = blocks.find(qnum)) != blocks.end())){
+    std::ostringstream err;
+    err<<"\nIn function UniTensor::putBlock(uni10::Qnum&, uni10::Matrix&):\n  There is no block with the given quantum number "<<qnum<<std::endl;
+    throw std::runtime_error(err.str());
+  }
+	assert(mat.row() == it->second.Rnum && mat.col() == it->second.Cnum);
 	if(mat.isDiag()){
-		elemBzero(blk.elem, blk.Rnum * blk.Cnum * sizeof(DOUBLE), ongpu);
-		setDiag(blk.elem, mat.getElem(), blk.Rnum, blk.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+		elemBzero(it->second.elem, it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu);
+		setDiag(it->second.elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
 	}
 	else{
-		elemCopy(blk.elem, mat.getElem(), blk.Rnum * blk.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
+		elemCopy(it->second.elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
 	}
 	status |= HAVEELEM;
 }

@@ -226,12 +226,20 @@ void UniTensor::addGate(std::vector<_Swap> swaps){
 	}
 }
 
+UniTensor& UniTensor::permute(int rowBondNum){
+	this->permute(labels, rowBondNum);
+	return *this;
+}
+UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
+	std::vector<int> _labels(newLabels, newLabels + bonds.size());
+	this->permute(_labels, rowBondNum);
+	return *this;
+}
+
 UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum){
 	assert(status & HAVEBOND);
-	//assert(status & HAVELABEL);
 	assert(labels.size() == newLabels.size());
 	int bondNum = bonds.size();
-	//int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
   std::vector<int> rsp_outin(bondNum);
 	int cnt = 0;
 	for(int i = 0; i < bondNum; i++)

@@ -30,7 +30,7 @@ namespace std{
     try {
       $action
     } catch (const std::exception &e) {
-      std::string s("uni10 error: "), s2(e.what());
+      std::string s("\nException raised by pyUni10: "), s2(e.what());
         s = s + s2;
         SWIG_exception(SWIG_RuntimeError, s.c_str());
     } catch (...) {
@@ -307,7 +307,6 @@ class Matrix {
         bool toGPU();
 };
 Matrix takeExp(double a, const Matrix& mat);
-void throwException();
 
 
 /* End of Matrix */
