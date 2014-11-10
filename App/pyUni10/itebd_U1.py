@@ -3,7 +3,7 @@
 # import modules
 import math
 import pyUni10 as uni10
-
+from copy import *
 # todo
 # create dictionary
 # U1 = dict([('q0', uni10.Qnum(0))])
@@ -71,35 +71,35 @@ bd_op_1 = uni10.Bond(uni10.BD_OUT, [q_2])
 # Sp_nosym
 Sp_nosym = uni10.UniTensor([bdi_nosym, bdo_nosym])
 Sp_nosym.setName('Sp_nosym')
-Sp_nosym.addRawElem(Sp_raw)
+Sp_nosym.setRawElem(Sp_raw)
 print Sp_nosym
 
 Sp = uni10.UniTensor([bdi, bd_op1, bdo])
 Sp.setName('Sp')
-Sp.addRawElem(Sp_raw)
+Sp.setRawElem(Sp_raw)
 print Sp
 
 # Sm
 Sm_nosym = uni10.UniTensor([bdi_nosym, bdo_nosym])
 Sm_nosym.setName('Sm_nosym')
-Sm_nosym.addRawElem(Sm_raw)
+Sm_nosym.setRawElem(Sm_raw)
 print Sm_nosym
 
 Sm = uni10.UniTensor([bdi, bd_op_1, bdo])
 Sm.setName('Sm')
-Sm.addRawElem(Sm_raw)
+Sm.setRawElem(Sm_raw)
 print Sm
 
 # Sz
 Sz = uni10.UniTensor([bdi, bdo])
 Sz.setName('Sz')
-Sz.addRawElem(Sz_raw)
+Sz.setRawElem(Sz_raw)
 print Sz
 
 #  Id
 Id = uni10.UniTensor([bdi, bdo])
 Id.setName('Id')
-Id.addRawElem(Id_raw)
+Id.setRawElem(Id_raw)
 print Id
 
 # two-sites operators
@@ -120,7 +120,7 @@ SpSm = uni10.otimes(Sp, Sm)
 SpSm.setName('SpSm')
 # print SpSm
 SpSm.combineBond([2, 3, 4])
-SpSm.addLabel([-1, -2, 1, 2])
+SpSm.setLabel([-1, -2, 1, 2])
 print SpSm
 
 # SmSp
@@ -128,7 +128,7 @@ SmSp = uni10.otimes(Sm, Sp)
 SmSp.setName('SmSp')
 # print SmSp
 SmSp.combineBond([2, 3, 4])
-SmSp.addLabel([-1, -2, 1, 2])
+SmSp.setLabel([-1, -2, 1, 2])
 print SmSp
 
 print SpSm + SmSp
@@ -136,13 +136,13 @@ print SpSm + SmSp
 # SzSz
 SzSz = uni10.otimes(Sz, Sz)
 SzSz.setName('SzSz')
-SzSz.addLabel([-1, -2, 1, 2])
+SzSz.setLabel([-1, -2, 1, 2])
 print SzSz
 
 # IdId
 IdId = uni10.otimes(Id, Id)
 IdId.setName('IdId')
-IdId.addLabel([-1, -2, 1, 2])
+IdId.setLabel([-1, -2, 1, 2])
 print IdId
 
 # set up Hamiltonian
@@ -155,14 +155,14 @@ print Ham
 
 # set up Exp(-Ham*dt)
 def Ham_Exp(Ham, dt):
-    Ham_Exp_dt = Ham.cp()
+    Ham_Exp_dt = copy(Ham)
 
     QList = Ham_Exp_dt.getBlocks()
     for q in QList:
         print 'q=', q
         M = Ham_Exp_dt.getBlock(q)
-        (D, U) = M.diagonalize()
-        UT=U.cp()
+        (D, U) = M.eigh()
+        UT=copy(U)
         UT.transpose()
         for i in range(D.row()):
             D[i]=math.exp(-D[i] * dt)
@@ -210,7 +210,7 @@ print Lambda_B
 
 # find inverse
 def tensor_inv(tensor):
-    tensor_inv = tensor.cp()
+    tensor_inv = copy(tensor)
     for block in range(tensor_inv.blockNum()):
         q = tensor_inv.blockQnum(block)
         M = tensor_inv.getBlock(q)
@@ -375,23 +375,3 @@ for block in range(Gamma_Lambda_new.blockNum()):
 
 # print Lambda_A_inv
 exit()
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
