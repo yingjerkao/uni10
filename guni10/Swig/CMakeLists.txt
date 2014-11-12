@@ -86,8 +86,17 @@ SWIG_ADD_MODULE(pyUni10 python pyUni10.i )
 SWIG_LINK_LIBRARIES(pyUni10 ${PYTHON_LIBRARY} uni10)
 
 set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
+if(UNIX) 
 execute_process(COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+
+if(WIN32)
+execute_process(COMMAND python.exe -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "PYTHON_SITE_PACKAGES:${PYTHON_SITE_PACKAGES}")
+endif()
+
 install(TARGETS _pyUni10 DESTINATION ${PYTHON_SITE_PACKAGES})
+
 install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py DESTINATION ${PYTHON_SITE_PACKAGES})
 
 ## Workaround for multiple versions of python on OS X

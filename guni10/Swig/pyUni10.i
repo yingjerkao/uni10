@@ -92,9 +92,6 @@ class Qnum {
           Qnum __copy__(){
               return (*self);
           }
-          Qnum cp(){
-              return (*self);
-          }
           const std::string __repr__() {
               std::ostringstream oss(std::ostringstream::out);
               oss << (*self);
@@ -105,6 +102,12 @@ class Qnum {
               return *self;
           }
       }
+      // Make Qnum Class immutable
+      /* %pythoncode{
+      def __setattr__(self, *args):
+         raise TypeError("can't modify immutable instance")
+      __delattr__ = __setattr__
+      } */
       static const int U1_UPB = 100;//Upper bound of U1
       static const int U1_LOB = -100;//Lower bound of U1
 };
@@ -136,9 +139,6 @@ class Bond {
               return (*self) == b2;
           }
           Bond __copy__(){
-              return (*self);
-          }
-          Bond cp(){
               return (*self);
           }
           const std::string  __repr__() {
@@ -179,13 +179,13 @@ class Matrix {
         std::vector<Matrix> eigh();
         std::vector<Matrix> svd();
         double lanczosEig(Matrix& psi, int& max_iter, double err_tol = 5E-15);
-		    void setElem(double* elem, bool _ongpu = false);
+        void setElem(double* elem, bool _ongpu = false);
         void setElem(std::vector<double> elem, bool _ongpu = false);
         double* getElem()const;
         double* getHostElem();
         void randomize();
         void orthoRand();
-		    void identity();
+        void identity();
         void set_zero();
         Matrix& transpose();
         Matrix& resize(size_t row, size_t col);
@@ -209,9 +209,6 @@ class Matrix {
           Matrix __copy__(){
               return (*self);
           }
-          Matrix cp(){
-              return (*self);
-          }
           const std::string __repr__() {
              std::ostringstream oss(std::ostringstream::out);
              oss << (*self);
@@ -230,80 +227,38 @@ class Matrix {
           Matrix __rmul__(double a){
               return a * (*self);
           }
-          double __getitem__(PyObject *parm){
-              if (PyTuple_Check(parm)){
-                if (PyTuple_Size(parm)<=2){
-                   long r,c;
-                   r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                   //if(r>(*self).row()-1) {
-                      //PyErr_SetString(PyExc_IndexError,"Row index too large.");
-                      //SWIG_fail;
-                      //SWIG_exception(SWIG_IndexError,"Row index too large.");
-                   //}
-                   c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                   //if(c>(*self).col()-1){
-                      //PyErr_SetString(PyExc_IndexError,"Column index too large.");
-                      //SWIG_fail;
-                      //SWIG_exception(SWIG_IndexError,"Column index too large.");
-                  // }
-                   if( (*self).isDiag() && r!=c) {
-                      return 0.0;
-                   } else
-                     return (*self).at(r,c);
-                 } else {
-                   //PyErr_SetString(PyExc_IndexError,"Too many indices.");
-                   //SWIG_fail;
-                   //SWIG_exception(SWIG_IndexError,"Too many indices.");
-                 }
-               } else if (PyInt_Check(parm))
-                        return (*self)[PyInt_AsLong(parm)];
-               else {
-                  // PyErr_SetString(PyExc_TypeError,"Indices should be an int or a 2-tuple");
-                  // SWIG_fail;
-                  //SWIG_exception(SWIG_TypeError,"Indices should be an int or a 2-tuple");
-               }
+          double __getitem__(PyObject *parm) {
+            if (PyTuple_Check(parm)){
+              long r,c;
+              r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+              c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+              if( (*self).isDiag() && r!=c) {
+                return 0.0;
+              }
+              else {
+                return (*self).at(r,c);
+              }
+            } else if (PyInt_Check(parm))
+              return (*self)[PyInt_AsLong(parm)];
           }
           void __setitem__(PyObject *parm, double val){
               if (PyTuple_Check(parm)){
-                if (PyTuple_Size(parm)<=2){
-                   long r,c;
-                   r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                   /*if(r>(*self).row()-1) {
-                      //PyErr_SetString(PyExc_IndexError,"Row index too large.");
-                      //SWIG_fail;
-                      //SWIG_exception(SWIG_IndexError,"Row index too large.");
-                   }*/
-                   c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                   /*if(c>(*self).col()-1) {
-                      //PyErr_SetString(PyExc_IndexError,"Column index too large.");
-                      //SWIG_fail;
-                      //SWIG_exception(SWIG_IndexError,"Column index too large.");
-                   }*/
-                   if((*self).isDiag()) {
-                     if (r==c) (*self)[r]=val;
-                   } else {
-                     (*self)[r*(*self).col()+c]=val;
-                   }
-                 } else {
-                   //PyErr_SetString(PyExc_IndexError,"Too many indices.");
-                   //SWIG_fail;
-                   //  SWIG_exception(SWIG_IndexError,"Too many indices.");
-                   }
-               } else  if (PyInt_Check(parm))
-                          (*self)[PyInt_AsLong(parm)]=val;
-               else {
-                 //PyErr_SetString(PyExc_TypeError,"Indices should be an int or a 2-tuple");
-                 //SWIG_fail;
-                 //SWIG_exception(SWIG_TypeError,"Indices should be an int or a 2-tuple");
-               }
+                 long r,c;
+                 r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                 c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                 if((*self).isDiag()) {
+                   if (r==c) (*self)[r]=val;
+                 }
+                 else {
+                   (*self)[r*(*self).col()+c]=val;
+                 }
+              }
+              else
+                if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
            }
-      }
+        }
         Matrix& operator*= (double a);
         Matrix& operator+= (const Matrix& Mb);
-        /*
-        double& operator[](size_t idx);
-        double& at(int i, int j);
-        */
         bool toGPU();
 };
 Matrix takeExp(double a, const Matrix& mat);
@@ -353,9 +308,6 @@ class UniTensor{
 
     %extend {
       UniTensor __copy__(){
-        return (*self);
-      }
-      UniTensor cp(){
         return (*self);
       }
       const std::string __repr__() {
@@ -410,7 +362,7 @@ class UniTensor{
     UniTensor& combineBond(const std::vector<int>& combined_labels);
     UniTensor& partialTrace(int la, int lb);
 };
-UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast=false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 /* End of UniTensor */
 
@@ -437,9 +389,6 @@ class Network {
     void profile();
     %extend {
       Network __copy__(){
-        return (*self);
-      }
-      Network cp(){
         return (*self);
       }
       const std::string __repr__() {

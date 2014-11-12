@@ -28,7 +28,7 @@
 *****************************************************************************/
 #include <uni10/tools/uni10_tools.h>
 #include <string.h>
-
+#include <stdexcept>
 namespace uni10{
 
 std::vector<_Swap> recSwap(std::vector<int>& _ord){	//Given the reshape order out to in.

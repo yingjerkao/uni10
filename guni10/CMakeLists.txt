@@ -75,7 +75,11 @@ set(UNI10_VERSION
 #option(BUILD_STATIC_LIBS "Build the static library" ON)
 #option(BUILD_SHARED_LIBS "Build the shared library" ON)
 #option(BUILD_TESTS "Build test programs" OFF)
-option(CUDA "Build Nvidia CUDA library" OFF)
+#set(BLAS_LIBRARIES  BLAS_LIBRARIES-NOTFOUND cache FILEPATH "BLAS libraries")
+#set(LAPACK_LIBRARIES   LAPACK_LIBRARIES-NOTFOUND cache FILEPATH cache "LAPACK libraries")
+#set(PYTHON_INCLUDE_DIR  PYTHON_INCLUDE_DIR-NOTFOUND cache PATH "Python header directory")
+#set(PYTHON_LIBRARY  PYTHON_LIBRARY-NOTFOUND cache FILEPATH "Python library")
+option(CUDA "Build using Nvidia CUDA for GPU library" OFF)
 option(BUILD_EXAMPLES "Build Example Codes" ON)
 option(BUILD_PYTHON_WRAPPER "Build Python wrapper" ON)
 option(BUILD_WITH_MKL "Build Uni10 with MKL" OFF)
@@ -285,11 +289,15 @@ install(DIRECTORY doc/
 	DESTINATION doc )
 install(FILES INSTALL.txt README.txt GPL.txt LGPL.txt release_notes.txt DESTINATION .)
 
-set(libname "libuni10${CMAKE_SHARED_LIBRARY_SUFFIX}")
+set(libname "${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
 install(CODE " EXECUTE_PROCESS(
-     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib )")
+     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib/${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX})")
 
+install(CODE " EXECUTE_PROCESS(
+     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib/${CMAKE_SHARED_LIBRARY_PREFIX}uni10${CMAKE_SHARED_LIBRARY_SUFFIX})")
+
+######################################################################
 ######################################################################
 # Information Messages
 ######################################################################
