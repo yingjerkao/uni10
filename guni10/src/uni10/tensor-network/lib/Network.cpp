@@ -35,7 +35,11 @@ Node::Node(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(
 }
 
 Node::Node(UniTensor* Tp): T(Tp), elemNum(Tp->m_elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){
-	assert(Tp->status & Tp->HAVEBOND);
+  if(!(Tp->status & Tp->HAVEBOND)){
+    std::ostringstream err;
+    err<<"Cannot create node of a network from tensor without bond.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 }
 
 Node::Node(const Node& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){
@@ -224,7 +228,11 @@ Network::Network(const std::string& fname): root(NULL), load(false), times(0), t
 
 Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
 	fromfile(fname);
-	assert((label_arr.size() - 1) == tens.size());
+	if(!((label_arr.size() - 1) == tens.size())){
+    std::ostringstream err;
+    err<<"The size of the input vector of tensors does not match for the number of tensors in the network file '"<<fname<<"'.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	int Tnum = tens.size();
 	swapflags.assign(Tnum, false);
 	std::vector<_Swap> swaps;
@@ -232,9 +240,11 @@ Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens):
 	leafs.assign(Tnum, (Node*)NULL);
 	tensors.assign(Tnum, (UniTensor*)NULL);
 	for(int i = 0; i < Tnum; i++){
-		if(tens[i]->name.length() > 0)
-			assert(tens[i]->name == names[i]);
-		assert(tens[i]->RBondNum == Rnums[i]);
+		if(!(tens[i]->RBondNum == Rnums[i])){
+      std::ostringstream err;
+      err<<"The number of in-coming bonds does not match with the tensor '"<<names[i]<<"' specified in network file '"<<fname<<"'.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
 		UniTensor* ten = new UniTensor(*(tens[i]));
 		ten->setName(names[i]);
 		ten->setLabel(label_arr[i]);
@@ -249,7 +259,11 @@ void Network::fromfile(const std::string& fname){//names, name2pos, label_arr, R
 	std::string str;
 	std::ifstream infile;
 	infile.open (fname.c_str());
-	assert(infile.is_open());
+	if(!(infile.is_open())){
+      std::ostringstream err;
+      err<<"Error in reading file '" << fname <<"'.";
+      throw std::runtime_error(exception_msg(err.str()));
+  }
 	int lnum = 0;
 	int MAXLINES = 1000;
 	int pos = 0;
@@ -315,7 +329,11 @@ void Network::fromfile(const std::string& fname){//names, name2pos, label_arr, R
 				for(int i = 0; i < brakets.size(); i++){
 					sum += brakets[i];
 				}
-				assert(sum == 0);
+        if(!(sum == 0)){
+          std::ostringstream err;
+          err<<"Error in the network file '"<<fname<<"'. There are imbalance brackets when specifying the contraction order.";
+          throw std::runtime_error(exception_msg(err.str()));
+        }
 			}
 			break;
 		}
@@ -353,17 +371,37 @@ void Network::fromfile(const std::string& fname){//names, name2pos, label_arr, R
 	}
 	int numT = names.size() - 1;
 	std::vector<bool> found(numT, false);
-	assert(names[numT] == "TOUT");
-	assert(names.size() > 0);
+  if(!(names[numT] == "TOUT")){
+    std::ostringstream err;
+    err<<"Error in the network file '"<<fname<<"'. Missing TOUT tensor. One must specify the bond labels for the resulting tensor by giving TOUT tag.\n  Hint: If the resulting tensor is a scalar(0-bond tensor), leave the TOUT empty like 'TOUT: '";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	if(!(names.size() > 2)){
+    std::ostringstream err;
+    err<<"Error in the network file '"<<fname<<"'. There must be at least two tensors in a tensor network.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	order.assign(numT, 0);
 	if(ord.size() > 0){
-		assert(ord.size() == numT);
-		std::map<std::string, int>::iterator it;
+    if(!(ord.size() == numT)){
+      std::ostringstream err;
+      err<<"Error in the network file '"<<fname<<"'. Some tensors are missing in the contraction order.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+		std::map<std::string, size_t>::iterator it;
 		for(int i = 0; i < numT; i++){
 			it = name2pos.find(ord[i]);
-			assert(it != name2pos.end());
+      if(!(it != name2pos.end())){
+        std::ostringstream err;
+        err<<"Error in the network file '"<<fname<<"'. '"<<ord[i]<<"' in the contraction order is not in the list of tensors above.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
 			order[i] = it->second;
-			assert(found[order[i]] == false);
+			if(!(found[order[i]] == false)){
+        std::ostringstream err;
+        err<<"Error in the network file '"<<fname<<"'. '"<<ord[i]<<"' appears more than once in the contraction order.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
 			found[order[i]] = true;
 		}
 	}
@@ -394,7 +432,11 @@ void Network::construct(){
 				}
 			}
 			else if(brakets[i] == 0){
-				assert(leafs[order[cnt]] != NULL);
+        if(leafs[order[cnt]] == NULL){
+          std::ostringstream err;
+          err<<"(((Tensor '"<<names[order[cnt]]<<"' has not yet been given.\n  Hint: Use addTensor() to add a tensor to a network.\n";
+          throw std::runtime_error(exception_msg(err.str()));
+        }
 				stack[cursor] = leafs[order[cnt]];
 				cnt++;
 				cursor++;
@@ -413,25 +455,62 @@ void Network::construct(){
 	}
 	else{
 		for(int i = 0; i < order.size(); i++){
-			assert(leafs[order[i]] != NULL);
+			if(leafs[order[i]] == NULL){
+          std::ostringstream err;
+          err<<"Tensor '"<<names[order[i]]<<"' has not yet been given.\n  Hint: Use addTensor to add a tensor to a network.\n";
+          throw std::runtime_error(exception_msg(err.str()));
+      }
 			matching(leafs[order[i]], root);
 		}
 	}
+  int Tnum = label_arr.size() - 1;
+  if(root->labels.size() == label_arr[Tnum].size()){
+    for(int l = 0; l < root->labels.size(); l++){
+      bool found = false;
+      for(int t = 0; t < label_arr[Tnum].size(); t++)
+        if(root->labels[l] == label_arr[Tnum][t]){
+          found = true;
+          break;
+        }
+      if(!found){
+        std::ostringstream err;
+        err<<"Error when constructing the network. The labels of the resulting tensor, ( ";
+        for(int i = 0; i < root->labels.size(); i++)
+          err<<root->labels[i]<<" ";
+        err<<"), do not match with the labels of 'TOUT' in the network file";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+    }
+
+  }
+  else{
+    std::ostringstream err;
+    err<<"Error when constructing the network. The bond number of the resulting tensor is different from the bond number of 'TOUT'";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  for(int l = 0; l < root->labels.size(); l++){
+    std::cout<<root->labels[l]<<", ";
+  }
+
 	addSwap();
 	load = true;
 }
 
-void Network::putTensor(int idx, const UniTensor* UniT, bool force){
-	assert(label_arr.size() > 0 && idx >= 0 && idx < (label_arr.size()-1));
+void Network::putTensor(size_t idx, const UniTensor* UniT, bool force){
+  if(!(idx < (label_arr.size()-1))){
+    std::ostringstream err;
+    err<<"Index exceeds the number of the tensors in the list of network file.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if((!force) && load){
 		destruct();
   }
-	//if(UniT->name.length() > 0)
-	//	assert(UniT->name == names[idx]);
-	assert(UniT->RBondNum == Rnums[idx]);
-
+	if(!(UniT->RBondNum == Rnums[idx])){
+      std::ostringstream err;
+      err<<"The number of in-coming bonds does not match with the tensor '"<<names[idx]<<"' specified in network file";
+      throw std::runtime_error(exception_msg(err.str()));
+  }
 	if(leafs[idx] != NULL){
-		//assert(tensors[idx]->similar(*UniT));
 		*(tensors[idx]) = *UniT;
 		tensors[idx]->setLabel(label_arr[idx]);
 		tensors[idx]->setName(names[idx]);
@@ -448,14 +527,22 @@ void Network::putTensor(int idx, const UniTensor* UniT, bool force){
 }
 
 void Network::putTensor(const std::string& name, const UniTensor* UniT, bool force){
-	std::map<std::string, int>::const_iterator it = name2pos.find(name);
-	assert(it != name2pos.end());
+	std::map<std::string, size_t>::const_iterator it = name2pos.find(name);
+  if(!(it != name2pos.end())){
+    std::ostringstream err;
+    err<<"There is no tensor named '"<<name<<"' in the network file";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	putTensor(it->second, UniT, force);
 }
 
 void Network::putTensorT(const std::string& nameT, const UniTensor* UniT, bool force){
-	std::map<std::string, int>::const_iterator itT = name2pos.find(nameT);
-	assert(itT != name2pos.end());
+	std::map<std::string, size_t>::const_iterator itT = name2pos.find(nameT);
+	if(!(itT != name2pos.end())){
+    std::ostringstream err;
+    err<<"There is no tensor named '"<<nameT<<"' in the network file";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	UniTensor transT = *UniT;
 	transT.transpose();
 	putTensor(itT->second, &transT, force);
@@ -516,7 +603,11 @@ void Network::matching(Node* sbj, Node* tar){
 	}
 	else if(tar->T == NULL){	//not leaf
 		if(sbj->metric(tar) > 0){	//has contracted bonds
-			assert(tar->left != NULL && tar->right != NULL);
+		  if(!(tar->left != NULL && tar->right != NULL)){
+          std::ostringstream err;
+          err<<"Fatal error(code = N1). Please contact the developer of the uni10 library.";
+          throw std::runtime_error(exception_msg(err.str()));
+      }
 			float tar_p = tar->point;
 			float lft_p = 0, rht_p = 0;
 			if((lft_p = sbj->metric(tar->left)) > tar_p || (rht_p = sbj->metric(tar->right)) > tar_p){	//go deeper comparison to the children
@@ -763,7 +854,11 @@ void Network::findConOrd(Node* nd){
 				found = true;
 				break;
 			}
-		assert(found);
+    if(!found){
+      std::ostringstream err;
+      err<<"Fatal error(code = N2). Please contact the developer of the uni10 library.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
 	}
 	findConOrd(nd->left);
 	findConOrd(nd->right);
@@ -772,11 +867,15 @@ void Network::findConOrd(Node* nd){
 void Network::addSwap(){
 	int Tnum = leafs.size();
 	findConOrd(root);
-	assert(Tnum == conOrder.size());
+	if(!(Tnum == conOrder.size())){
+      std::ostringstream err;
+      err<<"Fatal error(code = N3). Please contact the developer of the uni10 library.";
+      throw std::runtime_error(exception_msg(err.str()));
+  }
 	//int tenOrder[conOrder.size()];
   std::vector<int> tenOrder = conOrder;
 	//memcpy(tenOrder, &(conOrder[0]), Tnum * sizeof(int));
-	std::vector<_Swap> tenSwaps = recSwap(tenOrder, Tnum);
+	std::vector<_Swap> tenSwaps = recSwap(tenOrder);
 	std::vector<_Swap> swtmp;
 	for(int s = 0; s < tenSwaps.size(); s++){
 		swtmp = tensors[tenSwaps[s].b1]->exSwap(*(tensors[tenSwaps[s].b2]));

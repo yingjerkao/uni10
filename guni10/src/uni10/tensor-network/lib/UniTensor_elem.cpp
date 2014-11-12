@@ -32,7 +32,6 @@
 //using namespace uni10::datatype;
 namespace uni10{
 void UniTensor::grouping(){
-	assert(bonds.size() > 0);
 	blocks.clear();
 	int row_bondNum = 0;
 	int col_bondNum = 0;
@@ -41,7 +40,11 @@ void UniTensor::grouping(){
   bool IN_BONDS_BEFORE_OUT_BONDS = true;
 	for(int i = 0; i < bonds.size(); i++){
 		if(bonds[i].type() == BD_IN){
-      assert(IN_BONDS_BEFORE_OUT_BONDS == true);
+      if(!(IN_BONDS_BEFORE_OUT_BONDS == true)){
+        std::ostringstream err;
+        err<<"Error in the input bond array: BD_OUT bonds must be placed after all BD_IN bonds.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
 			RQdim *= bonds[i].Qnums.size();
 			row_bondNum++;
 		}
@@ -186,8 +189,16 @@ void UniTensor::grouping(){
 }
 
 void UniTensor::addGate(std::vector<_Swap> swaps){
-	assert(status & HAVEBOND);
-	assert(status & HAVEELEM);
+  if((status & HAVEBOND) == 0){
+    std::ostringstream err;
+    err<<"Adding swap gates to a tensor without bonds(scalar).";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	if((status & HAVEELEM) == 0){
+    std::ostringstream err;
+    err<<"Cannot add swap gates to a tensor before setting its elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	int sign = 1;
 	int bondNum = bonds.size();
 	std::vector<int> Q_idxs(bondNum, 0);
@@ -226,12 +237,28 @@ void UniTensor::addGate(std::vector<_Swap> swaps){
 	}
 }
 
+UniTensor& UniTensor::permute(int rowBondNum){
+	this->permute(labels, rowBondNum);
+	return *this;
+}
+UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
+	std::vector<int> _labels(newLabels, newLabels + bonds.size());
+	this->permute(_labels, rowBondNum);
+	return *this;
+}
+
 UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum){
-	assert(status & HAVEBOND);
-	//assert(status & HAVELABEL);
-	assert(labels.size() == newLabels.size());
+	if((status & HAVEBOND) == 0){
+    std::ostringstream err;
+    err<<"There is no bond in the tensor(scalar) to permute.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	if((labels.size() == newLabels.size()) == 0){
+    std::ostringstream err;
+    err<<"The size of the input new labels does not match for the number of bonds.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	int bondNum = bonds.size();
-	//int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
   std::vector<int> rsp_outin(bondNum);
 	int cnt = 0;
 	for(int i = 0; i < bondNum; i++)
@@ -240,8 +267,11 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 				rsp_outin[j] = i;
 				cnt++;
 			}
-
-	assert(cnt == newLabels.size());
+	if((cnt == newLabels.size()) == 0){
+    std::ostringstream err;
+    err<<"The input new labels do not 1-1 correspond to the labels of the tensor.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	bool inorder = true;
 	for(int i = 1; i < bondNum; i++)
 		if(((rsp_outin[i] + bondNum - i) % bondNum) != rsp_outin[0]){
@@ -268,8 +298,6 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 		if(status & HAVEELEM){
 			if(withoutSymmetry){
 				if(ongpu && UniTout.ongpu){
-					//printf("before reshape\n");
-					//printf("elemNum = %u, out_ongpu = %d, ongpu = %d\n", m_elemNum, UniTout.ongpu, ongpu);
 					size_t perInfo[bondNum * 2];
 					size_t newAcc[bondNum];
 					newAcc[bondNum - 1] = 1;
@@ -282,25 +310,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 						perInfo[bondNum + rsp_outin[b]] = newAcc[b];
 					double* des_elem = UniTout.elem;
 					double* src_elem = elem;
-					/*
-					size_t memsize = m_elemNum * sizeof(DOUBLE);
-					if(!ongpu){
-						src_elem = (double*)elemAllocForce(memsize, true);
-						elemCopy(src_elem, elem, memsize, true, ongpu);
-					}
-					if(!UniTout.ongpu)
-						des_elem = (double*)elemAllocForce(memsize, true);
-						*/
 					reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
-					/*
-					if(!ongpu)
-						elemFree(src_elem, memsize, true);
-					if(!UniTout.ongpu){
-						elemCopy(UniTout.elem, des_elem, memsize, UniTout.ongpu, true);
-						elemFree(des_elem, memsize, true);
-					}
-					*/
-					//printf("after reshape\n");
 				}
 				else{
 					double* des_elem = UniTout.elem;
@@ -319,8 +329,6 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					newAcc[bondNum - 1] = 1;
 					for(int b = bondNum - 1; b > 0; b--)
 						newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
-					//int bondDims[bondNum];
-					//int idxs[bondNum];
           std::vector<int> bondDims(bondNum);
           std::vector<int> idxs(bondNum);
 					for(int b = 0; b < bondNum; b++){
@@ -357,9 +365,6 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 				//For Fermionic system
 				std::vector<_Swap> swaps;
 				if(Qnum::isFermionic()){
-					//int inLabelF[bondNum];
-					//int outLabelF[bondNum];
-					//int ordF[bondNum];
           std::vector<int> inLabelF(bondNum);
           std::vector<int> outLabelF(bondNum);
           std::vector<int> ordF(bondNum);
@@ -377,13 +382,12 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					for(int b = bondNum - 1; b >= UniTout.RBondNum; b--)
 						outLabelF[bondNum - b + UniTout.RBondNum - 1] = newLabels[b];
 
-					//int rspF_outin[bondNum];
           std::vector<int> rspF_outin(bondNum);
 					for(int i = 0; i < bondNum; i++)
 						for(int j = 0; j < bondNum; j++)
 							if(inLabelF[i] == outLabelF[j])
 								rspF_outin[j] = i;
-					swaps = recSwap(rspF_outin, bondNum, ordF);
+					swaps = recSwap(rspF_outin, ordF);
 				}
 				//End Fermionic system
 				std::vector<int> Qin_idxs(bondNum, 0);
@@ -472,7 +476,11 @@ void UniTensor::setRawElem(std::vector<DOUBLE> rawElem){
   setRawElem(&rawElem[0]);
 }
 void UniTensor::setRawElem(DOUBLE* rawElem){
-	assert((status & HAVEBOND));   //If not INIT, CANNOT add elements
+	if((status & HAVEBOND) == 0){
+    std::ostringstream err;
+    err<<"Setting elements to a tensor without bonds is not supported.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	int bondNum = bonds.size();
 	std::vector<int> Q_idxs(bondNum, 0);
 	std::vector<int> Q_Bdims(bondNum, 0);
@@ -537,23 +545,27 @@ void UniTensor::setRawElem(DOUBLE* rawElem){
 	status |= HAVEELEM;
 }
 
-/*
-void UniTensor::elemSet(const Qnum& qnum, double* _elem){
-	Block& block = blocks[qnum];
-	memcpy(block.elem, _elem, block.Rnum * block.Cnum * sizeof(DOUBLE));
-	status |= HAVEELEM;
-}
-
-void UniTensor::elemSet(double* _elem){
-	memcpy(elem, _elem, elemNum() * sizeof(DOUBLE));
-	status |= HAVEELEM;
-}*/
-
 double UniTensor::at(std::vector<int> idxs)const{
-	assert(status & HAVEBOND);
+  std::vector<size_t> _idxs(idxs.size());
+  for(int i = 0; i < idxs.size(); i++)
+    _idxs[i] = idxs[i];
+  return at(_idxs);
+}
+double UniTensor::at(std::vector<size_t> idxs)const{
+	if((status & HAVEBOND) == 0){
+    std::ostringstream err;
+    err<<"The tensor is a scalar. Use UniTensor::operator[] instead.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+
 	int bondNum = bonds.size();
 	std::vector<int> Qidxs(bondNum, 0);
 	for(int b = 0; b < bondNum; b++){
+    if(!(idxs[b] < bonds[b].dim())){
+      std::ostringstream err;
+      err<<"The input indices are out of range.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
 		for(int q = bonds[b].offsets.size() - 1; q >= 0; q--){
 			if(idxs[b] < bonds[b].offsets[q])
 				continue;
@@ -589,7 +601,11 @@ double UniTensor::at(std::vector<int> idxs)const{
 	}
 }
 double UniTensor::operator[](size_t idx){
-	assert(idx < m_elemNum);
+  if(!(idx < m_elemNum)){
+    std::ostringstream err;
+    err<<"Index exceeds the number of elements("<<m_elemNum<<").";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if(ongpu)
 		return getElemAt(idx, elem, ongpu);
 	else
@@ -597,9 +613,12 @@ double UniTensor::operator[](size_t idx){
 }
 
 UniTensor& UniTensor::transpose(){
-	assert(status & HAVEBOND);
+	if(!(status & HAVEBOND)){
+    std::ostringstream err;
+    err<<"There is no bond in the tensor(scalar) to perform transposition.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	int bondNum = bonds.size();
-	//int rsp_outin[bondNum];	//rsp_outin[2] = 1 means the index "2" of UniTout is the index "1" of UniTin, opposite to the order in TensorLib
   std::vector<int> rsp_outin(bondNum);
 	int rbondNum = 0;
 	for(int b = 0; b < bondNum; b++)
@@ -647,11 +666,6 @@ UniTensor& UniTensor::transpose(){
 			elem_out = it_out->second.elem;
 
 	  		setTranspose(elem_in, Rnum, Cnum, elem_out, ongpu);
-			/*
-			for(size_t i = 0; i < Rnum; i++)
-				for(size_t j = 0; j < Cnum; j++)
-					elem_out[j * Rnum + i] = elem_in[i * Cnum + j];
-					*/
 		}
 		UniTout.status |= HAVEELEM;
 	}
@@ -672,12 +686,20 @@ bool UniTensor::elemCmp(const UniTensor& UniT)const{
 	return true;
 }
 double UniTensor::trace()const{
-	assert(status & HAVEELEM);
+	if(!(status & HAVEELEM)){
+    std::ostringstream err;
+    err<<"Cannot trace a tensor before setting its elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if(status & HAVEBOND){
 		size_t Rnum;
 		DOUBLE trVal = 0;
 		for(std::map<Qnum, Block>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-			assert(it->second.Rnum == it->second.Cnum);
+      if(!(it->second.Rnum == it->second.Cnum)){
+        std::ostringstream err;
+        err<<"Cannot trace a non-square block.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
 			Rnum = it->second.Rnum;
 			for(size_t r = 0; r < Rnum; r++)
 				trVal += it->second.elem[r * Rnum + r];
@@ -689,9 +711,16 @@ double UniTensor::trace()const{
 }
 
 UniTensor& UniTensor::partialTrace(int la, int lb){
-	assert(status & HAVEELEM);
-	assert(status & HAVEBOND);
-	assert(bonds.size() > 2 && la != lb);
+  if(!(status & HAVEELEM)){
+    std::ostringstream err;
+    err<<"Cannot trace bonds of a tensor before setting its elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	if(!(bonds.size() > 2)){
+    std::ostringstream err;
+    err<<"The number of bonds must larger than 2 for performing partialTrace.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	int bondNum = bonds.size();
 	std::vector<Bond> newBonds;
 	std::vector<int>newLabels(bondNum - 2, 0);
@@ -710,7 +739,11 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 			enc++;
 		}
 	}
-	assert(enc == newLabels.size());
+	if(!(enc == newLabels.size())){
+    std::ostringstream err;
+    err<<"Cannot find the two bonds with the given two labels.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 
 	UniTensor Tt(newBonds, newLabels);
 	rsp_labels[bondNum - 2] = labels[ia];
@@ -723,11 +756,18 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 		Q_acc[b - 1] = Q_acc[b] * bonds[b].Qnums.size();
 	int tQdim = bonds[ia].Qnums.size();
 	/*Sanity Check*/
-	assert(tQdim == bonds[ib].Qnums.size());
+  if(tQdim == bonds[ib].Qnums.size()){
+    std::ostringstream err;
+    err<<"The bonds of the given two labels does not match for trace.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	Qnum q0(0, PRT_EVEN);
 	for(int q = 0; q < tQdim; q++){
-		assert(bonds[ia].Qnums[q] * bonds[ib].Qnums[q] == q0);
-		assert(bonds[ia].Qdegs[q] == bonds[ib].Qdegs[q]);
+    if(!((bonds[ia].Qnums[q] * bonds[ib].Qnums[q] == q0) && (bonds[ia].Qdegs[q] == bonds[ib].Qdegs[q]))){
+      std::ostringstream err;
+      err<<"The bonds of the given two labels does not match for trace.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
 	}
 	/*END*/
 	int tBnum = Tt.bonds.size();

@@ -31,161 +31,222 @@
 #include <uni10/tools/uni10_tools.h>
 
 namespace uni10{
+
 int64_t UniTensor::ELEMNUM = 0;
 int UniTensor::COUNTER = 0;
 size_t UniTensor::MAXELEMNUM = 0;
 size_t UniTensor::MAXELEMTEN = 0;
 
 UniTensor::UniTensor(): status(0){
-	initUniT();
+  try{
+    initUniT();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor():");
+  }
 }
 
 UniTensor::UniTensor(double val): status(0){
-	initUniT();
-	if(ongpu)
-		setElemAt(0, val, elem, ongpu);
-	else
-		elem[0] = val;
+  try{
+    initUniT();
+    if(ongpu)
+      setElemAt(0, val, elem, ongpu);
+    else
+      elem[0] = val;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(double val):");
+  }
 }
 
 UniTensor::UniTensor(const UniTensor& UniT):
-	status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels),
-    RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL),
-	QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), CQidx2Dim(UniT.CQidx2Dim){
-	RQidx2Blk.clear();
-	if(UniT.status & HAVEBOND){
-		for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
-			RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
-	}
-	elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
-	std::map<Qnum,Block>::iterator it;
-	for ( it = blocks.begin() ; it != blocks.end(); it++ )
-		it->second.elem = &(elem[it->second.offset]);
-	ELEMNUM += m_elemNum;
-	COUNTER++;
-	if(ELEMNUM > MAXELEMNUM)
-		MAXELEMNUM = ELEMNUM;
-	if(m_elemNum > MAXELEMTEN)
-		MAXELEMTEN = m_elemNum;
-	elemCopy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, ongpu, UniT.ongpu);
-}
+  status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels),
+  RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL),
+  QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), CQidx2Dim(UniT.CQidx2Dim){
+    try{
+      RQidx2Blk.clear();
+      if(UniT.status & HAVEBOND){
+        for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
+          RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
+      }
+      elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
+      std::map<Qnum,Block>::iterator it;
+      for ( it = blocks.begin() ; it != blocks.end(); it++ )
+        it->second.elem = &(elem[it->second.offset]);
+      ELEMNUM += m_elemNum;
+      COUNTER++;
+      if(ELEMNUM > MAXELEMNUM)
+        MAXELEMNUM = ELEMNUM;
+      if(m_elemNum > MAXELEMTEN)
+        MAXELEMTEN = m_elemNum;
+      elemCopy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, ongpu, UniT.ongpu);
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In copy constructor UniTensor::UniTensor(uni10::UniTensor&):");
+    }
+  }
 
 UniTensor& UniTensor::operator=(const UniTensor& UniT){
-	//std::cout<<"ASSING CONSTRUCTING " << this << std::endl;
-	//name = UniT.name;
-	bonds = UniT.bonds;
-	blocks = UniT.blocks;
-	labels = UniT.labels;
-	RBondNum = UniT.RBondNum;
-	RQdim = UniT.RQdim;
-	CQdim = UniT.CQdim;
-	QidxEnc = UniT.QidxEnc;
-	RQidx2Off = UniT.RQidx2Off;
-	CQidx2Off = UniT.CQidx2Off;
-	RQidx2Dim = UniT.RQidx2Dim;
-	CQidx2Dim = UniT.CQidx2Dim;
-	RQidx2Blk.clear();
-	if(UniT.status & HAVEBOND){
-		for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
-			RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
-	}
-	ELEMNUM -= m_elemNum;	//free original memory
-	if(elem != NULL)
-		elemFree(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
-	status = UniT.status;
-	m_elemNum = UniT.m_elemNum;
-	elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
-	std::map<Qnum,Block>::iterator it;
-	for ( it = blocks.begin(); it != blocks.end(); it++ )
-		it->second.elem = &(elem[it->second.offset]);
-	ELEMNUM += m_elemNum;
-	if(ELEMNUM > MAXELEMNUM)
-		MAXELEMNUM = ELEMNUM;
-	if(m_elemNum > MAXELEMTEN)
-		MAXELEMTEN = m_elemNum;
-	elemCopy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, ongpu, UniT.ongpu);
-	return *this;
+  try{
+    bonds = UniT.bonds;
+    blocks = UniT.blocks;
+    labels = UniT.labels;
+    RBondNum = UniT.RBondNum;
+    RQdim = UniT.RQdim;
+    CQdim = UniT.CQdim;
+    QidxEnc = UniT.QidxEnc;
+    RQidx2Off = UniT.RQidx2Off;
+    CQidx2Off = UniT.CQidx2Off;
+    RQidx2Dim = UniT.RQidx2Dim;
+    CQidx2Dim = UniT.CQidx2Dim;
+    RQidx2Blk.clear();
+    if(UniT.status & HAVEBOND){
+      for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
+        RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
+    }
+    ELEMNUM -= m_elemNum;	//free original memory
+    if(elem != NULL)
+      elemFree(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
+    status = UniT.status;
+    m_elemNum = UniT.m_elemNum;
+    elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
+    std::map<Qnum,Block>::iterator it;
+    for ( it = blocks.begin(); it != blocks.end(); it++ )
+      it->second.elem = &(elem[it->second.offset]);
+    ELEMNUM += m_elemNum;
+    if(ELEMNUM > MAXELEMNUM)
+      MAXELEMNUM = ELEMNUM;
+    if(m_elemNum > MAXELEMTEN)
+      MAXELEMTEN = m_elemNum;
+    elemCopy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, ongpu, UniT.ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::operator=(uni10::UniTensor&):");
+  }
+  return *this;
 }
 
 UniTensor& UniTensor::assign(const std::vector<Bond>& _bond){
-	UniTensor T(_bond);
-	return (*this = T);
+  try{
+    UniTensor T(_bond);
+	  *this = T;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::assign(std::vector<Bond>&):");
+  }
+  return *this;
 }
 
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
-	//cout<<"CONSTRUCTING " << this << std::endl;
-	initUniT();
+  try{
+    initUniT();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::string& = \"\"):");
+  }
 }
 
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
-	initUniT();
-	setLabel(_labels);
+  try{
+    initUniT();
+    setLabel(_labels);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::vector<int>&, std::string& = \"\"):");
+  }
 }
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
-	initUniT();
-	setLabel(_labels);
+  try{
+    initUniT();
+    setLabel(_labels);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, int*, std::string& = \"\"):");
+  }
 }
 
 UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from file
-	int namemax = 32;
-	if(fname.size() > namemax)
-		name = fname.substr(fname.size() - namemax);
-	else
-		name = fname;
-	FILE* fp = fopen(fname.c_str(), "r");
-	assert(fp != NULL);
-	int st;
-	fread(&st, 1, sizeof(int), fp);
-	int bondNum;
-	fread(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
-	size_t qnum_sz;
-	fread(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum)
-	assert(qnum_sz == sizeof(Qnum));
-	for(int b = 0; b < bondNum; b++){
-		int num_q;
-		bondType tp;
-		fread(&tp, 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
-		fread(&num_q, 1, sizeof(int), fp);	//OUT: Number of Qnums in the bond(4 bytes)
-		Qnum q0;
-		std::vector<Qnum> qnums(num_q, q0);
-		fread(&(qnums[0]), num_q, qnum_sz, fp);
-		std::vector<int> qdegs(num_q, 0);
-		fread(&(qdegs[0]), num_q, sizeof(int), fp);
-		std::vector<Qnum> tot_qnums;
-		for(int q = 0; q < num_q; q++)
-			for(int d = 0; d < qdegs[q]; d++)
-				tot_qnums.push_back(qnums[q]);
-		Bond bd(tp, tot_qnums);
-		bonds.push_back(bd);
-	}
-	initUniT();
-	int num_l;
-	fread(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
-	assert(num_l == bonds.size());
-	labels.assign(num_l, 0);
-	fread(&(labels[0]), num_l, sizeof(int), fp);
-	if(st & HAVEELEM){
-		double *tmp_elem = elem;
-		size_t memsize = m_elemNum * sizeof(double);
-		if(ongpu)
-			tmp_elem = (double*)malloc(memsize);
-		size_t num_el;
-		fread(&num_el, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
-		assert(num_el == m_elemNum);
-		fread(tmp_elem, m_elemNum, sizeof(DOUBLE), fp);
-		if(ongpu){
-			elemCopy(elem, tmp_elem, memsize, ongpu, false);
-			free(tmp_elem);
-		}
-		status |= HAVEELEM;
-	}
-	fclose(fp);
+  try{
+    int namemax = 32;
+    if(fname.size() > namemax)
+      name = fname.substr(fname.size() - namemax);
+    else
+      name = fname;
+    FILE* fp = fopen(fname.c_str(), "r");
+    if(!(fp != NULL)){
+      std::ostringstream err;
+      err<<"Error in reading file '" << fname <<"'.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    int st;
+    fread(&st, 1, sizeof(int), fp);
+    int bondNum;
+    fread(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
+    size_t qnum_sz;
+    fread(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum)
+    if(!(qnum_sz == sizeof(Qnum))){
+      std::ostringstream err;
+      err<<"Error in reading file '"<<fname<<"' in.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    for(int b = 0; b < bondNum; b++){
+      int num_q;
+      bondType tp;
+      fread(&tp, 1, sizeof(bondType), fp);	//OUT: Number of Qnums in the bond(4 bytes)
+      fread(&num_q, 1, sizeof(int), fp);	//OUT: Number of Qnums in the bond(4 bytes)
+      Qnum q0;
+      std::vector<Qnum> qnums(num_q, q0);
+      fread(&(qnums[0]), num_q, qnum_sz, fp);
+      std::vector<int> qdegs(num_q, 0);
+      fread(&(qdegs[0]), num_q, sizeof(int), fp);
+      std::vector<Qnum> tot_qnums;
+      for(int q = 0; q < num_q; q++)
+        for(int d = 0; d < qdegs[q]; d++)
+          tot_qnums.push_back(qnums[q]);
+      Bond bd(tp, tot_qnums);
+      bonds.push_back(bd);
+    }
+    initUniT();
+    int num_l;
+    fread(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
+    if(!(num_l == bonds.size())){
+      std::ostringstream err;
+      err<<"Error in reading file '"<<fname<<"' in.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    labels.assign(num_l, 0);
+    fread(&(labels[0]), num_l, sizeof(int), fp);
+    if(st & HAVEELEM){
+      double *tmp_elem = elem;
+      size_t memsize = m_elemNum * sizeof(double);
+      if(ongpu)
+        tmp_elem = (double*)malloc(memsize);
+      size_t num_el;
+      fread(&num_el, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
+      fread(tmp_elem, m_elemNum, sizeof(DOUBLE), fp);
+      if(ongpu){
+        elemCopy(elem, tmp_elem, memsize, ongpu, false);
+        free(tmp_elem);
+      }
+      status |= HAVEELEM;
+    }
+    fclose(fp);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::string&):");
+  }
 }
 
 void UniTensor::initUniT(){
 	if(bonds.size()){
 		grouping();
-		assert(blocks.size() > 0); //No block in Tensor, Error!
+		if(!(blocks.size() > 0)){ //No block in Tensor, Error!
+      std::ostringstream err;
+      err<<"There is no symmetry block with the given bonds:\n";
+      for(int b = 0; b < bonds.size(); b++)
+        err<<"    "<<bonds[b];
+      throw std::runtime_error(exception_msg(err.str()));
+    }
 		Block blk = blocks.rbegin()->second;
 		m_elemNum = blk.offset + (blk.Rnum * blk.Cnum);
 		labels.assign(bonds.size(), 0);
@@ -221,9 +282,7 @@ void UniTensor::initUniT(){
 		MAXELEMTEN = m_elemNum;
 }
 
-
 UniTensor::~UniTensor(){
-	//cout<<"DESTRUCTING " << this << std::endl;
 	elemFree(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
 	ELEMNUM -= m_elemNum;
 	COUNTER--;
@@ -239,8 +298,13 @@ std::vector<Qnum> UniTensor::blockQnum()const{
 		keys.push_back(it->first);
 	return keys;
 }
-Qnum UniTensor::blockQnum(int idx)const{
-	assert(idx < blocks.size());
+
+Qnum UniTensor::blockQnum(size_t idx)const{
+  if(!(idx < blocks.size())){
+    std::ostringstream err;
+    err<<"Index exceeds the number of the blocks("<<blocks.size()<<").";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
 		if(idx == 0)
 			return it->first;
@@ -248,6 +312,7 @@ Qnum UniTensor::blockQnum(int idx)const{
 	}
 	return Qnum(0);
 }
+
 size_t UniTensor::blockNum()const{
 	return blocks.size();
 }
@@ -268,7 +333,9 @@ void UniTensor::setLabel(int* newLabels){
 
 void UniTensor::setLabel(const std::vector<int>& newLabels){
 	std::set<int> labelS(&(newLabels[0]), &(newLabels[newLabels.size()]));
-	assert(bonds.size() == labelS.size());
+	if(!(bonds.size() == labelS.size())){
+    throw std::runtime_error(exception_msg("The size of input vector(labels) does not match for the number of bonds."));
+  }
 	labels = newLabels;
 }
 
@@ -276,8 +343,12 @@ std::vector<int> UniTensor::label()const{
 	return labels;
 }
 
-int UniTensor::label(int idx)const{
-	assert(idx < labels.size());
+int UniTensor::label(size_t idx)const{
+  if(!(idx < labels.size())){
+    std::ostringstream err;
+    err<<"Index exceeds the number of the bonds("<<bonds.size()<<").";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	return labels[idx];
 }
 
@@ -285,26 +356,25 @@ std::vector<Bond> UniTensor::bond()const{
 	return bonds;
 }
 
-Bond UniTensor::bond(int idx)const{
-	assert(idx < bonds.size());
+Bond UniTensor::bond(size_t idx)const{
+  if(!(idx < bonds.size())){
+    std::ostringstream err;
+    err<<"Index exceeds the number of the bonds("<<bonds.size()<<").";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	return bonds[idx];
 }
 
-UniTensor& UniTensor::permute(int rowBondNum){
-	this->permute(labels, rowBondNum);
-	return *this;
-}
-UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
-	assert(status & HAVEBOND);
-	std::vector<int> _labels(newLabels, newLabels + bonds.size());
-	this->permute(_labels, rowBondNum);
-	return *this;
-}
-
 void UniTensor::save(const std::string& fname){
-	assert((status & HAVEBOND));   //If not INIT, NO NEED to write out to file
+	if((status & HAVEBOND) == 0){   //If not INIT, NO NEED to write out to file
+    throw std::runtime_error(exception_msg("Saving a tensor without bonds(scalar) is not supported."));
+  }
 	FILE* fp = fopen(fname.c_str(), "w");
-	assert(fp != NULL);
+	if(!(fp != NULL)){
+    std::ostringstream err;
+    err<<"Error in writing to file '"<<fname<<"'.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	fwrite(&status, 1, sizeof(status), fp);	//OUT: status(4 bytes)
 	int bondNum = bonds.size();
 	fwrite(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
@@ -400,29 +470,30 @@ std::string UniTensor::getName(){
 }
 
 std::vector<_Swap> UniTensor::exSwap(const UniTensor& Tb) const{
-	assert(status & Tb.status & HAVEBOND);
-	int bondNumA = labels.size();
-	int bondNumB = Tb.labels.size();
-	std::vector<int> intersect;
-	std::vector<int> left;
-	for(int a = 0; a < bondNumA; a++){
-		bool found = false;
-		for(int b = 0; b < bondNumB; b++)
-			if(labels[a] == Tb.labels[b])
-				found = true;
-		if(found)
-			intersect.push_back(a);
-		else
-			left.push_back(a);
-	}
 	std::vector<_Swap> swaps;
-	_Swap sp;
-	for(int i = 0; i < intersect.size(); i++)
-		for(int j = 0; j < left.size(); j++){
-			sp.b1 = intersect[i];
-			sp.b2 = left[j];
-			swaps.push_back(sp);
-		}
+  if(status & Tb.status & HAVEBOND){
+    int bondNumA = labels.size();
+    int bondNumB = Tb.labels.size();
+    std::vector<int> intersect;
+    std::vector<int> left;
+    for(int a = 0; a < bondNumA; a++){
+      bool found = false;
+      for(int b = 0; b < bondNumB; b++)
+        if(labels[a] == Tb.labels[b])
+          found = true;
+      if(found)
+        intersect.push_back(a);
+      else
+        left.push_back(a);
+    }
+    _Swap sp;
+    for(int i = 0; i < intersect.size(); i++)
+      for(int j = 0; j < left.size(); j++){
+        sp.b1 = intersect[i];
+        sp.b2 = left[j];
+        swaps.push_back(sp);
+      }
+  }
 	return swaps;
 }
 
@@ -455,7 +526,7 @@ Matrix UniTensor::printRaw(bool flag)const{
 		std::vector<Qnum> colQ = cBond.Qlist();
 		size_t rowNum = rBond.dim();
 		size_t colNum = cBond.dim();
-		std::vector<int> idxs(bondNum, 0);
+		std::vector<size_t> idxs(bondNum, 0);
 
     if(flag){
       std::cout<< "     ";
@@ -611,22 +682,39 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
 }
 
 void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
-	assert(blocks.find(qnum) != blocks.end());
-	Block& blk = blocks[qnum];
-	assert(mat.row() == blk.Rnum && mat.col() == blk.Cnum);
+  std::map<Qnum, Block>::iterator it;
+	if(!((it = blocks.find(qnum)) != blocks.end())){
+    std::ostringstream err;
+    err<<"There is no block with the given quantum number "<<qnum;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	if(!(mat.row() == it->second.Rnum && mat.col() == it->second.Cnum)){
+    std::ostringstream err;
+    err<<"The dimension of input matrix does not match for the dimension of the block with quantum number "<<qnum<<std::endl;
+    err<<"  Hint: Use Matrix::resize(int, int)";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if(mat.isDiag()){
-		elemBzero(blk.elem, blk.Rnum * blk.Cnum * sizeof(DOUBLE), ongpu);
-		setDiag(blk.elem, mat.getElem(), blk.Rnum, blk.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+		elemBzero(it->second.elem, it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu);
+		setDiag(it->second.elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
 	}
 	else{
-		elemCopy(blk.elem, mat.getElem(), blk.Rnum * blk.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
+		elemCopy(it->second.elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
 	}
 	status |= HAVEELEM;
 }
 
 UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
-	assert(status & HAVEBOND);
-	assert(cmbLabels.size() > 1);
+	if((status & HAVEBOND) == 0){
+    std::ostringstream err;
+    err<<"There is no bond in the tensor to be combined.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	if(!(cmbLabels.size() > 1)){
+    std::ostringstream err;
+    err<<"There should be at least two labels of bond in the input vector.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	std::vector<int> rsp_labels(labels.size(), 0);
 	std::vector<int> reduced_labels(labels.size() - cmbLabels.size() + 1, 0);
 
@@ -645,7 +733,11 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 	for(int m = 0; m < marked.size(); m++)
 		if(marked[m])
 			mark++;
-	assert(mark == cmbLabels.size());
+	if(!(mark == cmbLabels.size())){
+    std::ostringstream err;
+    err<<"The input labels do not match for the labels of the tensor.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	int enc = 0;
 	int enc_r = 0;
 	std::vector<Bond> newBonds;

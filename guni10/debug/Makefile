@@ -1,5 +1,5 @@
 #UNI10_ROOT := /home/yundasie/guni10
-UNI10_ROOT := /Users/yunda/myLibrary/uni10
+UNI10_ROOT := /Users/yunda/myLibrary/guni10
 INC := ../src/
 LIB := $(UNI10_ROOT)/lib
 CC:=g++
@@ -12,6 +12,8 @@ CULA_INC := /usr/local/cula/include
 CULA_LIB := /usr/local/cula/lib64
 CULA_LINK := -lcula_core -lcula_lapack -lcudart -lcublas
 
+asd.e: Ascend.cpp
+	$(CC) -I$(INC) $(FLAGS) -o $@ -lblas -llapack -lm  $< $(CPU_OBJ)
 unit.e: UniT.cpp
 	$(CC) -I$(INC) $(FLAGS) -o $@ -lblas -llapack -lm  $< $(CPU_OBJ)
 lan.e: Lanczos.cpp

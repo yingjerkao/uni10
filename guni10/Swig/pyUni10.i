@@ -8,6 +8,8 @@
   #include <uni10/tensor-network/UniTensor.h>
   #include <uni10/tensor-network/Network.h>
 %}
+
+
 %include "std_vector.i"
 %include "std_map.i"
 %include "std_string.i"
@@ -24,6 +26,17 @@ namespace std{
 }
 %feature("autodoc");
 
+%exception {
+    try {
+      $action
+    } catch (const std::exception &e) {
+      std::string s("\nException raised by pyUni10: "), s2(e.what());
+        s = s + s2;
+        SWIG_exception(SWIG_RuntimeError, s.c_str());
+    } catch (...) {
+        SWIG_exception(SWIG_RuntimeError, "unknown exception");
+    }
+}
 
 %inline{
   uni10::Qnum QnumF(uni10::parityFType _prtF, int _U1=0, uni10::parityType _prt=uni10::PRT_EVEN){
@@ -215,18 +228,18 @@ class Matrix {
               return a * (*self);
           }
           double __getitem__(PyObject *parm) {
-              if (PyTuple_Check(parm)){
-                 long r,c;
-                 r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                 c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                 if( (*self).isDiag() && r!=c) {
-                    return 0.0;
-                 }
-                 else {
-                     return (*self).at(r,c);
-                 }  
-               } else if (PyInt_Check(parm)) 
-                        return (*self)[PyInt_AsLong(parm)];
+            if (PyTuple_Check(parm)){
+              long r,c;
+              r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+              c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+              if( (*self).isDiag() && r!=c) {
+                return 0.0;
+              }
+              else {
+                return (*self).at(r,c);
+              }
+            } else if (PyInt_Check(parm))
+              return (*self)[PyInt_AsLong(parm)];
           }
           void __setitem__(PyObject *parm, double val){
               if (PyTuple_Check(parm)){
@@ -235,14 +248,14 @@ class Matrix {
                  c=PyInt_AsLong(PyTuple_GetItem(parm,1));
                  if((*self).isDiag()) {
                    if (r==c) (*self)[r]=val;
-                 } 
+                 }
                  else {
                    (*self)[r*(*self).col()+c]=val;
                  }
-              } 
-              else  
+              }
+              else
                 if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
-           }          
+           }
         }
         Matrix& operator*= (double a);
         Matrix& operator+= (const Matrix& Mb);
@@ -418,4 +431,7 @@ class Network {
   */
 };
 /* End of Network */
+
+
 };
+

@@ -27,32 +27,50 @@
 *
 *****************************************************************************/
 #include <uni10/tensor-network/UniTensor.h>
+#include <uni10/tools/uni10_tools.h>
 #include <uni10/numeric/uni10_lapack.h>
 //using namespace uni10::datatype;
 namespace uni10{
 UniTensor& UniTensor::operator+= (const UniTensor& Tb){
-	assert(status & Tb.status & HAVEELEM);
-	assert(bonds == Tb.bonds);
-	assert(blocks == Tb.blocks);
+	if(!(status & Tb.status & HAVEELEM)){
+    std::ostringstream err;
+    err<<"Cannot perform addition of tensors before setting their elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  if(!(bonds == Tb.bonds)){
+    std::ostringstream err;
+    err<<"Cannot perform addition of two tensors having different bonds.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	vectorAdd(elem, Tb.elem, m_elemNum, ongpu, Tb.ongpu);
 	return *this;
 }
 UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
-	assert(Ta.status & Tb.status & Ta.HAVEELEM);
-	assert(Ta.bonds == Tb.bonds);
-	assert(Ta.blocks == Tb.blocks);
+	if(!(Ta.status & Tb.status & Ta.HAVEELEM)){
+    std::ostringstream err;
+    err<<"Cannot perform addition of tensors before setting their elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  if(!(Ta.bonds == Tb.bonds)){
+    std::ostringstream err;
+    err<<"Cannot perform addition of two tensors having diffirent bonds.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	UniTensor Tc(Ta);
 	vectorAdd(Tc.elem, Tb.elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu);
 	return Tc;
 }
 UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
-	assert(Ta.status & Tb.status & Ta.HAVEELEM);
 	UniTensor cTa = Ta;
 	UniTensor cTb = Tb;
 	return contract(cTa, cTb, true);
 }
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
-	assert(Ta.status & Tb.status & Ta.HAVEELEM);
+	if(!(Ta.status & Tb.status & Ta.HAVEELEM)){
+    std::ostringstream err;
+    err<<"Cannot perform contraction of two tensors before setting their elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if(&Ta == &Tb){
 		UniTensor Ttmp = Tb;
 		return contract(Ta, Ttmp, fast);
@@ -77,8 +95,11 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 					markB[b] = 1;
 					interLabel.push_back(Ta.labels[a]);
 					newLabelB.push_back(Tb.labels[b]);
-          bool BOND_DIMENSION_MATCHED = Ta.bonds[a].dim() == Tb.bonds[b].dim();
-          assert(BOND_DIMENSION_MATCHED);
+          if(!(Ta.bonds[a].dim() == Tb.bonds[b].dim())){
+            std::ostringstream err;
+            err<<"Cannot contract two bonds having different dimensions";
+            throw std::runtime_error(exception_msg(err.str()));
+          }
 					match = true;
 					break;
 				}
@@ -113,7 +134,11 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
 				blockA = it->second;
 				blockB = it2->second;
 				blockC = Tc.blocks[it->first];
-				assert(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum);
+        if(!(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum)){
+          std::ostringstream err;
+          err<<"The dimensions the bonds to be contracted out are different.";
+          throw std::runtime_error(exception_msg(err.str()));
+        }
 				matrixMul(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem, Ta.ongpu, Tb.ongpu, Tc.ongpu);
 			}
 		}
@@ -159,13 +184,21 @@ UniTensor& UniTensor::operator*=(const UniTensor& uT){
 }
 
 UniTensor& UniTensor::operator*= (double a){
-	assert(status & HAVEELEM);
+	if(!(status & HAVEELEM)){
+    std::ostringstream err;
+    err<<"Cannot perform scalar multiplication on a tensor before setting its elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	vectorScal(a, elem, m_elemNum, ongpu);
 	return *this;
 }
 
 UniTensor operator*(const UniTensor& Ta, double a){
-	assert(Ta.status & Ta.HAVEELEM);
+  if(!(Ta.status & Ta.HAVEELEM)){
+    std::ostringstream err;
+    err<<"Cannot perform scalar multiplication on a tensor before setting its elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	UniTensor Tb(Ta);
 	vectorScal(a, Tb.elem, Tb.m_elemNum, Tb.ongpu);
 	return Tb;
@@ -173,8 +206,6 @@ UniTensor operator*(const UniTensor& Ta, double a){
 UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
 	UniTensor T1 = Ta;
 	UniTensor T2 = Tb;
-	//int label1[T1.bondNum()];
-	//int label2[T2.bondNum()];
   std::vector<int> label1(T1.bondNum());
   std::vector<int> label2(T2.bondNum());
 	for(int i = 0; i < T1.bondNum(); i++){
