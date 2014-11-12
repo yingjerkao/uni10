@@ -202,7 +202,9 @@ endif ()
 if (UNIX OR MINGW OR CYGWIN)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 endif ()
-
+if (WIN32)
+        include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+endif ()
 ######################################################################
 ### ADD SUBDIRECTORIES
 ######################################################################
