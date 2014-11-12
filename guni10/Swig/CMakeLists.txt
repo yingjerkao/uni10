@@ -73,7 +73,7 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
     endif()
   endif(UNIX)
   if (WIN32)
-    STRING(REGEX REPLACE "/bin/python.*$" "" PYTHON_ROOT "${PYTHON_EXECUTABLE}")
+    STRING(REGEX REPLACE "python.*$" "" PYTHON_ROOT "${PYTHON_EXECUTABLE}")
     find_path(PYTHON_INCLUDE_DIR NAMES Python.h 
           PATHS ${PYTHON_ROOT}/include/ 
           DOC "Location of Python Header files"
@@ -86,9 +86,10 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
       message(FATAL_ERROR "Python.h not found! Please set PYTHON_INCLUDE_DIR manually.")
     endif()
     find_library(PYTHON_LIBRARY 
-               NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}python${_CURRENT_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}
-                     ${CMAKE_SHARED_LIBRARY_PREFIX}python${CMAKE_SHARED_LIBRARY_SUFFIX} 
-               PATHS ${PYTHON_ROOT}/lib/
+               NAMES python${_CURRENT_VERSION}.lib
+                     python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.lib
+                     python.lib        
+               PATHS ${PYTHON_ROOT}/libs/
                DOC "Location of Python Libraries"
                PATH_SUFFIXES 
                    python${_CURRENT_VERSION}
@@ -103,7 +104,7 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
     endif()
   else()
     FIND_PACKAGE(PythonLibs)
-  endif(WIN32) 
+  endif(WIN32)
 endif()
 
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
@@ -119,12 +120,13 @@ SWIG_LINK_LIBRARIES(pyUni10 ${PYTHON_LIBRARY} uni10)
 
 set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 if(UNIX) 
-execute_process(COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
+ OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
 if(WIN32)
-execute_process(COMMAND python.exe -c "from distutils.sysconfig import get_python_lib; print get_python_lib()" OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-message(STATUS "PYTHON_SITE_PACKAGES:${PYTHON_SITE_PACKAGES}")
+execute_process(COMMAND python.exe -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
+ OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
 install(TARGETS _pyUni10 DESTINATION ${PYTHON_SITE_PACKAGES})
