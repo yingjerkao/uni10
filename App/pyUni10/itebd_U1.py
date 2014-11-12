@@ -239,12 +239,6 @@ def tensor_inv(tensor):
         tensor_inv.putBlock(q, M)
     return tensor_inv
 
-Lambda_A_inv = tensor_inv(Lambda_A)
-Lambda_A_inv.setName('Lambda_A_inv')
-Lambda_B_inv = tensor_inv(Lambda_B)
-Lambda_B_inv.setName('Lambda_B_inv')
-print Lambda_B_inv
-
 # setup dt and exp(-H*dt)
 dt = 0.1
 Ham_Exp_dt = Ham_Exp(Ham, dt)
@@ -262,7 +256,13 @@ print Ham_Exp_dt
 # return (Gamma_L, Lambda_C, Gamma_R)
 # (Gamma_L, Lambda_C, Gamma_R) = iTEBD_update(....)
 def iTEBD_update(Ham_Expt_dt, Lambda_L, Gamma_L, Lambda_C, Gamma_R, Lambda_R):
-    print ">>>>> iTEBD_update >>>>>"
+    print ">>>>> iTEBD_update start >>>>>"
+
+    Lambda_L_Inv = tensor_inv(Lambda_L)
+    Lambda_L_Inv.setName('Lambda_L_Inv')
+    Lambda_R_Inv = tensor_inv(Lambda_L)
+    Lambda_R_Inv.setName('Lambda_R_Inv')
+
     # construct S via network
     net = uni10.Network("t.net")
     net.putTensor("Ham_Exp_dt", Ham_Exp_dt)
@@ -302,14 +302,24 @@ def iTEBD_update(Ham_Expt_dt, Lambda_L, Gamma_L, Lambda_C, Gamma_R, Lambda_R):
     print '>>>>> Q_list=\n', Q_list
     Lambda_all.sort(reverse=True)
     print '>>>>> Lambda_all=\n', Lambda_all
+    Lambda_all_M=uni10.Matrix(len(Lambda_all), len(Lambda_all), True)
+    Lambda_all_M.setElem(Lambda_all)
+    print '>>>>> Lambda_all_M\n', Lambda_all_M
+    print Lambda_all_M.norm()
 
     # identify the smallest lambda to keep
-    D_cut = 12
+    D_cut = 13
     if D_cut >= len(Lambda_all):
         Lambda_smallest = Lambda_all[-1]
     else:
         Lambda_smallest = Lambda_all[D_cut-1]
     print '>>>>> Lambda_smallest = \n', Lambda_smallest
+
+    Lambda_all_M_cut=uni10.Matrix(D_cut, D_cut, True)
+    Lambda_all_M_cut.setElem(Lambda_all)
+    print '>>>>> Lambda_all_M_cut\n', Lambda_all_M_cut
+    print Lambda_all_M_cut.norm()
+    print Lambda_all_M.norm()-Lambda_all_M_cut.norm()
 
     # copy the in and out bond of the S separately
     bdi_old_list = []
@@ -335,7 +345,7 @@ def iTEBD_update(Ham_Expt_dt, Lambda_L, Gamma_L, Lambda_C, Gamma_R, Lambda_R):
         for i in range(M_q.col()):
             # print M_q[i], Lambda_cut, M_q[i] >= Lambda_cut
             if M_q[i] >= Lambda_smallest:
-                Lambda_q_cut.append(M_q[i])
+                Lambda_q_cut.append(M_q[i]/Lambda_all_M_cut.norm())
         print '>>>>> Lambda_q_cut=\n', Lambda_q_cut
         M_q_cut = uni10.Matrix(len(Lambda_q_cut), len(Lambda_q_cut), Lambda_q_cut, True)
         Lambda_M_new[repr(q)] = M_q_cut
@@ -363,53 +373,121 @@ def iTEBD_update(Ham_Expt_dt, Lambda_L, Gamma_L, Lambda_C, Gamma_R, Lambda_R):
     # print Q_list_cut
     # print Lambda_M_new
 
-    Lambda_new = rank2tensor(Q_list_cut)
-    Lambda_new.setName('Lambda_new')
-    for block in range(Lambda_new.blockNum()):
-        q = Lambda_new.blockQnum(block)
-        # print q
-        # print Lambda_M_new[repr(q)]
-        Lambda_new.putBlock(q, Lambda_M_new[repr(q)])
-    print Lambda_new
+    Lambda_C_new = rank2tensor(Q_list_cut)
+    Lambda_C_new.setName('Lambda_C_new')
+    for block in range(Lambda_C_new.blockNum()):
+        q = Lambda_C_new.blockQnum(block)
+        Lambda_C_new.putBlock(q, Lambda_M_new[repr(q)])
+    print Lambda_C_new
 
     # new IN and OUT bound after the truncation
     q_new_list = QL_2_BL(Q_list_cut)
     bdi_new = uni10.Bond(uni10.BD_IN, q_new_list)
     bdo_new = uni10.Bond(uni10.BD_OUT, q_new_list)
 
-    Lambda_Gamma_new = uni10.UniTensor(bdi_old_list + [bdo_new])
-    Lambda_Gamma_new.setName('Lambda_Gamma_new')
-    Lambda_Gamma_new.set_zero()
-    for block in range(Lambda_Gamma_new.blockNum()):
-        q = Lambda_Gamma_new.blockQnum(block)
-        # print 'block:', block, q
-        # print U_cut[repr(q)]
-        Lambda_Gamma_new.putBlock(q, U_cut[repr(q)])#
-    print Lambda_Gamma_new
+    Lambda_L_Gamma_L_new = uni10.UniTensor(bdi_old_list + [bdo_new])
+    Lambda_L_Gamma_L_new.setName('Lambda_L_Gamma_L_new')
+    Lambda_L_Gamma_L_new.set_zero()
+    for block in range(Lambda_L_Gamma_L_new.blockNum()):
+        q = Lambda_L_Gamma_L_new.blockQnum(block)
+        Lambda_L_Gamma_L_new.putBlock(q, U_cut[repr(q)])
+    print Lambda_L_Gamma_L_new
 
-    Gamma_Lambda_new = uni10.UniTensor([bdi_new] + bdo_old_list)
-    Gamma_Lambda_new.setName('Gamma_Lambda_new')
-    Gamma_Lambda_new.set_zero()
-    for block in range(Gamma_Lambda_new.blockNum()):
-        q = Gamma_Lambda_new.blockQnum(block)
-        Gamma_Lambda_new.putBlock(q, VT_cut[repr(q)])#
-    print Gamma_Lambda_new
+    net = uni10.Network("LambdaInv_LambdaGamma.net")
+    net.putTensor("Lambda_Inv", Lambda_L_Inv)
+    net.putTensor("Lambda_Gamma", Lambda_L_Gamma_L_new)
+    Gamma_L_new = net.launch()
+    print Gamma_L_new
+
+    Gamma_R_Lambda_R_new = uni10.UniTensor([bdi_new] + bdo_old_list)
+    Gamma_R_Lambda_R_new.setName('Gamma_R_Lambda_R_new')
+    Gamma_R_Lambda_R_new.set_zero()
+    for block in range(Gamma_R_Lambda_R_new.blockNum()):
+        q = Gamma_R_Lambda_R_new.blockQnum(block)
+        Gamma_R_Lambda_R_new.putBlock(q, VT_cut[repr(q)])
+    print Gamma_R_Lambda_R_new
+
+    net = uni10.Network("GammaLambda_LambdaInv.net")
+    net.putTensor("Lambda_Inv", Lambda_R_Inv)
+    net.putTensor("Gamma_Lambda", Gamma_R_Lambda_R_new)
+    Gamma_R_new = net.launch()
+    print Gamma_R_new
+
+    print ">>>>> iTEBD_update end >>>>>"
+    return Gamma_L_new, Lambda_C_new, Gamma_R_new
 
 
+for i in range(10):
+    (Gamma_A, Lambda_A, Gamma_B) = iTEBD_update(Ham_Exp_dt, Lambda_B, Gamma_A, Lambda_A, Gamma_B, Lambda_B)
+    Gamma_A.setName('Gamma_A')
+    Lambda_A.setName('Lambda_A')
+    Gamma_B.setName('Gamma_B')
 
-    pass
+    (Gamma_B, Lambda_B, Gamma_A) = iTEBD_update(Ham_Exp_dt, Lambda_A, Gamma_B, Lambda_B, Gamma_A, Lambda_A)
+    Gamma_B.setName('Gamma_B')
+    Lambda_B.setName('Lambda_B')
+    Gamma_A.setName('Gamma_A')
+
+    print Lambda_A
+    print Lambda_B
+
+def measurement(Operator, Lambda_L, Gamma_L, Lambda_C, Gamma_R, Lambda_R):
+    # transpose
+    Lambda_L_t = copy(Lambda_L)
+    Lambda_L_t.transpose()
+    Gamma_L_t = copy(Gamma_L)
+    Gamma_L_t.transpose()
+    Lambda_C_t = copy(Lambda_C)
+    Lambda_C_t.transpose()
+    Gamma_R_t = copy(Gamma_R)
+    Gamma_R_t.transpose()
+    Lambda_R_t = copy(Lambda_R)
+    Lambda_R_t.transpose()
+
+    net_L = uni10.Network("L.net")
+    net_L.putTensor("Lambda_L", Lambda_L)
+    net_L.putTensor("Lambda_L_t", Lambda_L_t)
+    L = net_L.launch()
+
+    net_R = uni10.Network("R.net")
+    net_R.putTensor("Lambda_R", Lambda_R)
+    net_R.putTensor("Lambda_R_t", Lambda_R_t)
+    R = net_R.launch()
+
+    net_C = uni10.Network("C.net")
+    net_C.putTensor("Gamma_L", Gamma_L)
+    net_C.putTensor("Lambda_C", Lambda_C)
+    net_C.putTensor("Gamma_R", Gamma_R)
+    net_C.putTensor("Operator", Operator)
+    net_C.putTensor("Gamma_L_t", Gamma_L_t)
+    net_C.putTensor("Lambda_C_t", Lambda_C_t)
+    net_C.putTensor("Gamma_R_t", Gamma_R_t)
+
+    C = net_C.launch()
+
+    print L * C * R
+
+    # measurement network
+    net = uni10.Network("measure.net")
+    net.putTensor("Lambda_L", Lambda_L)
+    net.putTensor("Gamma_L", Gamma_L)
+    net.putTensor("Lambda_C", Lambda_C)
+    net.putTensor("Gamma_R", Gamma_R)
+    net.putTensor("Lambda_R", Lambda_R)
+    net.putTensor("Operator", Operator)
+    net.putTensor("Lambda_L_t", Lambda_L_t)
+    net.putTensor("Gamma_L_t", Gamma_L_t)
+    net.putTensor("Lambda_C_t", Lambda_C_t)
+    net.putTensor("Gamma_R_t", Gamma_R_t)
+    net.putTensor("Lambda_R_t", Lambda_R_t)
+
+    result = net.launch()
+    print result
+    return result
+
+measurement(Ham, Lambda_B, Gamma_A, Lambda_A, Gamma_B, Lambda_B)
+measurement(Ham, Lambda_A, Gamma_B, Lambda_B, Gamma_A, Lambda_A)
 
 
-iTEBD_update(Ham_Exp_dt, Lambda_B, Gamma_A, Lambda_A, Gamma_B, Lambda_B)
-
-exit()
-
-exit()
-
-net = uni10.Network("LambdaInv_GammaLambda.net")
-net.putTensor("Lambda_inv", Lambda_A_inv)
-net.putTensor("Gamma_Lambda", Gamma_Lambda_new)
-Lambda_A_new = net.launch()
-print Y
-
+print "HAPPY"
 exit()

@@ -1,0 +1,13 @@
+Lambda_L: 1; -2
+Lambda_L_t: -10; 1
+Gamma_L: -2, 13; 3
+Lambda_C: 3; 4
+Gamma_R: 4, 14; -5
+Operator: 11, 12; 13, 14
+Gamma_R_t: -7; 8, 12
+Lambda_C_t: 8; 9
+Gamma_L_t: 9; -10, 11
+Lambda_R: -5; 6
+Lambda_R_t: 6; -7
+TOUT:
+ORDER:
