@@ -13,7 +13,7 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
     if (NOT ${PYTHON_EXECUTABLE} STREQUAL "/usr/bin/python")
         ### Homebrew work around 
        if (${PYTHON_EXECUTABLE} STREQUAL "/usr/local/bin/python" AND APPLE) 
-          set(BREW_PREFIX /usr/local/Cellar/python/PYTHON_VERSION_STRING/Frmaeworks/Python.frameworks/Versions/Current) ## HOME BREW PYTHON
+          set(BREW_PREFIX /usr/local/Cellar/python/PYTHON_VERSION_STRING/Frmaeworks/Python.frameworks/Versions/Current) ## Homebrew Python
           message(WARNING "Using Homebrew Python.") 
           find_path(PYTHON_INCLUDE_DIR NAMES Python.h
                PATHS ${BREW_PREFIX}/Headers
@@ -38,7 +38,7 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
          if (PYTHON_LIBRARY AND PYTHON_INCLUDE_DIR)
             set(PYTHONLIBS_FOUND)
          endif()
-       else()
+       else() ### Not Homebrew, other Pythons
          STRING(REGEX REPLACE "/bin/python.*$" "" PYTHON_ROOT "${PYTHON_EXECUTABLE}")
          find_path(PYTHON_INCLUDE_DIR NAMES Python.h 
                PATHS ${PYTHON_ROOT}/include/ 
@@ -71,7 +71,39 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
     else()
      FIND_PACKAGE(PythonLibs)
     endif()
-  endif()
+  endif(UNIX)
+  if (WIN32)
+    STRING(REGEX REPLACE "/bin/python.*$" "" PYTHON_ROOT "${PYTHON_EXECUTABLE}")
+    find_path(PYTHON_INCLUDE_DIR NAMES Python.h 
+          PATHS ${PYTHON_ROOT}/include/ 
+          DOC "Location of Python Header files"
+          PATH_SUFFIXES 
+               python${_CURRENT_VERSION}
+          NO_DEFAULT_PATH )
+    if (PYTHON_INCLUDE_DIR)
+      message(STATUS "Found Python.h in ${PYTHON_INCLUDE_DIR}" )
+    else ()
+      message(FATAL_ERROR "Python.h not found! Please set PYTHON_INCLUDE_DIR manually.")
+    endif()
+    find_library(PYTHON_LIBRARY 
+               NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}python${_CURRENT_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}
+                     ${CMAKE_SHARED_LIBRARY_PREFIX}python${CMAKE_SHARED_LIBRARY_SUFFIX} 
+               PATHS ${PYTHON_ROOT}/lib/
+               DOC "Location of Python Libraries"
+               PATH_SUFFIXES 
+                   python${_CURRENT_VERSION}
+               NO_DEFAULT_PATH )
+    if (PYTHON_LIBRARY)
+       message(STATUS "Found PythonLibs: ${PYTHON_LIBRARY}")
+    else ()
+       message(FATAL_ERROR "PythonLibs not found! Please set PYTHON_LIBRARY manully.")
+    endif()
+    if (PYTHON_LIBRARY AND PYTHON_INCLUDE_DIR)
+       set(PYTHONLIBS_FOUND)
+    endif()
+  else()
+    FIND_PACKAGE(PythonLibs)
+  endif(WIN32) 
 endif()
 
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})

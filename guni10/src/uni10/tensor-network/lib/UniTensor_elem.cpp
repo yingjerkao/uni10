@@ -37,29 +37,29 @@ void UniTensor::grouping(){
 	int col_bondNum = 0;
 	RQdim = 1;
 	CQdim = 1;
-  bool IN_BONDS_BEFORE_OUT_BONDS = true;
+        bool IN_BONDS_BEFORE_OUT_BONDS = true;
 	for(int i = 0; i < bonds.size(); i++){
-		if(bonds[i].type() == BD_IN){
-      if(!(IN_BONDS_BEFORE_OUT_BONDS == true)){
-        std::ostringstream err;
-        err<<"Error in the input bond array: BD_OUT bonds must be placed after all BD_IN bonds.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-			RQdim *= bonds[i].Qnums.size();
-			row_bondNum++;
-		}
-		else{
-			CQdim *= bonds[i].Qnums.size();
-			col_bondNum++;
-      IN_BONDS_BEFORE_OUT_BONDS = false;
-		}
+	  if(bonds[i].type() == BD_IN){
+            if(!(IN_BONDS_BEFORE_OUT_BONDS == true)){
+              std::ostringstream err;
+              err<<"Error in the input bond array: BD_OUT bonds must be placed after all BD_IN bonds.";
+              throw std::runtime_error(exception_msg(err.str()));
+            }
+	    RQdim *= bonds[i].Qnums.size();
+	    row_bondNum++;
+	  }
+	  else{
+            CQdim *= bonds[i].Qnums.size();
+            col_bondNum++;
+            IN_BONDS_BEFORE_OUT_BONDS = false;
+	  }
 	}
 	RBondNum = row_bondNum;
 	std::map<Qnum,size_t> row_QnumMdim;
 	std::vector<int> row_offs(row_bondNum, 0);
 	std::map<Qnum,std::vector<int> > row_Qnum2Qidx;
 	Qnum qnum;
-  size_t dim;
+        size_t dim;
 	int boff = 0;
 	std::vector<size_t>tmpRQidx2Dim(RQdim, 1);
 	std::vector<size_t>tmpCQidx2Dim(CQdim, 1);
@@ -298,8 +298,10 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 		if(status & HAVEELEM){
 			if(withoutSymmetry){
 				if(ongpu && UniTout.ongpu){
-					size_t perInfo[bondNum * 2];
-					size_t newAcc[bondNum];
+					//size_t perInfo[bondNum * 2];
+					//size_t newAcc[bondNum];
+					std::vector<size_t> perInfo(bondNum*2);
+					std::vector<size_t> newAcc(bondNum);
 					newAcc[bondNum - 1] = 1;
 					perInfo[bondNum - 1] = 1;
 					for(int b = bondNum - 1; b > 0; b--){
@@ -323,8 +325,10 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					if(UniTout.ongpu)
 						des_elem = (double*)elemAllocForce(memsize, false);
 
-					size_t transAcc[bondNum];
-					size_t newAcc[bondNum];
+					//size_t transAcc[bondNum];
+					//size_t newAcc[bondNum];
+					std::vector<size_t> transAcc(bondNum);
+                                        std::vector<size_t> newAcc(bondNum);
 					transAcc[bondNum - 1] = 1;
 					newAcc[bondNum - 1] = 1;
 					for(int b = bondNum - 1; b > 0; b--)
