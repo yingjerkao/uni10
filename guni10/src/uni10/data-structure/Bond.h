@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -35,6 +35,7 @@
 #include <vector>
 #include <map>
 #include <uni10/datatype.hpp>
+#include <sstream>
 
 namespace uni10{
 enum bondType{

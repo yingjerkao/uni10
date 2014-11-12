@@ -298,8 +298,8 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 		if(status & HAVEELEM){
 			if(withoutSymmetry){
 				if(ongpu && UniTout.ongpu){
-					size_t perInfo[bondNum * 2];
-					size_t newAcc[bondNum];
+          size_t* perInfo = (size_t*)malloc(bondNum * 2 * sizeof(size_t));
+          std::vector<size_t> newAcc(bondNum);
 					newAcc[bondNum - 1] = 1;
 					perInfo[bondNum - 1] = 1;
 					for(int b = bondNum - 1; b > 0; b--){
@@ -311,6 +311,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					double* des_elem = UniTout.elem;
 					double* src_elem = elem;
 					reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
+          free(perInfo);
 				}
 				else{
 					double* des_elem = UniTout.elem;
@@ -323,8 +324,8 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
 					if(UniTout.ongpu)
 						des_elem = (double*)elemAllocForce(memsize, false);
 
-					size_t transAcc[bondNum];
-					size_t newAcc[bondNum];
+          std::vector<size_t> transAcc(bondNum);
+          std::vector<size_t> newAcc(bondNum);
 					transAcc[bondNum - 1] = 1;
 					newAcc[bondNum - 1] = 1;
 					for(int b = bondNum - 1; b > 0; b--)

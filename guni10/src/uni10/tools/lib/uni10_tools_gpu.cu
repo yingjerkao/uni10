@@ -211,7 +211,7 @@ void* mvCPU(void* elem, size_t memsize, bool& ongpu){
 	return elem;
 }
 
-void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool& ongpuA, bool& ongpuB){	
+void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool& ongpuA, bool& ongpuB){
 	if((!ongpuA) || (!ongpuB)){
 		size_t memsize = 0;
 		if(!ongpuA)
@@ -267,7 +267,7 @@ double getElemAt(size_t idx, double* elem, bool ongpu){
 		assert(cudaMemcpy(&val, &(elem[idx]), sizeof(double), cudaMemcpyDeviceToHost) == cudaSuccess);
 		//printf("mvCPU");
 		return val;
-	}	
+	}
 	else
 		return elem[idx];
 }

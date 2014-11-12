@@ -74,7 +74,7 @@ void putBack(int startR, int startC, int spanR, int spanC, int M, int N, double 
 			assert(cudaMemcpy(C + (pos + startR) * N + startC, subC + pos * spanC, spanC * sizeof(double), cudaMemcpyDeviceToDevice) == cudaSuccess);
 	}
 }
-	
+
 void getRows(int M, int N, int start, int span, double* iA, double* fA, mmtype how){
 	assert(start + span <= M);
 	if(how & 4){

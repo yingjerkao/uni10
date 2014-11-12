@@ -27,8 +27,9 @@
 *
 *****************************************************************************/
 #include <uni10/data-structure/Bond.h>
+#include <uni10/tools/uni10_tools.h>
+
 namespace uni10{
-//namespace datatype{
 
 Bond::Bond(bondType _type, int dim) : m_type(_type){
 	Qnum q0(0);
@@ -66,7 +67,11 @@ void Bond::assign(bondType _type, const std::vector<Qnum>& qnums){
 }
 
 void Bond::setting(const std::vector<Qnum>& qnums){
-	assert(qnums.size() > 0);
+  if(!(qnums.size() > 0)){
+    std::ostringstream err;
+    err<<"Cannot create a bond of dimension 0.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	std::map<Qnum, bool> mark;
 	int cnt = 0;
 	m_dim = 0;
@@ -157,7 +162,11 @@ Bond& Bond::combine(Bond bd){
 }
 
 Bond combine(bondType tp, const std::vector<Bond>& bds){
-	assert(bds.size() > 0);
+  if(!(bds.size() > 1)){
+    std::ostringstream err;
+    err<<"There should be at least two bonds in the input vector to be combined.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if(bds.size() > 1){
 	int bd_num = bds.size();
 	Bond outBond1 = bds[bd_num - 1];
