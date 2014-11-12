@@ -35,6 +35,7 @@
 #include <assert.h>
 #include <vector>
 #include <map>
+#include <sstream>
 //Bond property
 #include <uni10/data-structure/uni10_struct.h>
 #include <uni10/data-structure/Bond.h>
@@ -45,7 +46,7 @@ class Network {
 		Network(const std::string& fname);
 		~Network();
 		//Node* add(UniTensor*);
-		void putTensor(int idx, const UniTensor* UniT, bool force=true);	//if force is true, force replace without change the all network
+		void putTensor(size_t idx, const UniTensor* UniT, bool force=true);	//if force is true, force replace without change the all network
 		void putTensor(const std::string& name, const UniTensor* UniT, bool force=true);	//if force is true, force replace without change the all network
 		void putTensorT(const std::string& nameT, const UniTensor* UniT, bool force=true);
     void putTensor(int idx, const UniTensor& UniT, bool force=true);
@@ -62,7 +63,7 @@ class Network {
 	private:
 		void preprint(std::ostream& os, Node* nd, int layer);	//pre-order print
 		std::vector<std::string> names;
-		std::map<std::string, int> name2pos;
+		std::map<std::string, size_t> name2pos;
 		std::vector< std::vector<int> > label_arr;
 		std::vector< int > Rnums;
 		std::vector<Node*> leafs;

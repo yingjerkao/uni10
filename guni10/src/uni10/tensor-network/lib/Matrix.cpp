@@ -133,7 +133,11 @@ size_t Matrix::elemNum()const{
 }
 
 Matrix operator* (const Matrix& Ma, const Matrix& Mb){
-	assert(Ma.Cnum == Mb.Rnum);
+  if(!(Ma.Cnum == Mb.Rnum)){
+    std::ostringstream err;
+    err<<"The dimensions of the two matrices do not match for matrix multiplication.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if((!Ma.diag) && (!Mb.diag)){
 		Matrix Mc(Ma.Rnum, Mb.Cnum);
 	  	matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
@@ -141,18 +145,6 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
 	}
 	else if(Ma.diag && (!Mb.diag)){
 		Matrix Mc(Mb);
-		/*
-		double* Ma_elem = Ma.m_elem;
-		if(Ma.ongpu){
-			Ma_elem = (double*)malloc(Ma.m_elemNum * sizeof(double));
-			elemCopy(Ma_elem, Ma.m_elem, Ma.m_elemNum * sizeof(double), false, Ma.ongpu);
-		}
-		for(size_t i = 0; i < Ma.m_elemNum; i++)
-			vectorScal(Ma_elem[i], &(Mc.m_elem[i * Mc.Cnum]), Mc.Cnum, Mc.ongpu);
-		if(Ma.ongpu){
-			free(Ma_elem);
-		}
-		*/
 		diagMM(Ma.m_elem, Mc.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
 		return Mc;
 	}
@@ -200,8 +192,16 @@ void Matrix::setElem(double* elem, bool _ongpu){
 }
 
 std::vector<Matrix> Matrix::eigh()const{
-	assert(Rnum == Cnum);
-	assert(!diag);
+	if(!(Rnum == Cnum)){
+    std::ostringstream err;
+    err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	if(diag){
+    std::ostringstream err;
+    err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	std::vector<Matrix> outs;
 	Matrix Eig(Rnum, Cnum, true, ongpu);
 	Matrix EigV(Rnum, Cnum, false, ongpu);
@@ -212,7 +212,11 @@ std::vector<Matrix> Matrix::eigh()const{
 }
 
 std::vector<Matrix> Matrix::svd()const{
-	assert(!diag);
+	if(diag){
+    std::ostringstream err;
+    err<<"Cannot perform singular value decomposition on a diagonal matrix. Need not to do so.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	std::vector<Matrix> outs;
 	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
 	Matrix U(Rnum, min, false, ongpu);
@@ -227,7 +231,11 @@ std::vector<Matrix> Matrix::svd()const{
 }
 
 double Matrix::lanczosEig(Matrix& psi, int& max_iter, double err_tol){
-  assert(Rnum == Cnum);
+  if(!(Rnum == Cnum)){
+    std::ostringstream err;
+    err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
   double eigVal;
   if(ongpu && !psi.ongpu)
 	  psi.m_elem = (double*)mvGPU(psi.m_elem, psi.m_elemNum * sizeof(double), psi.ongpu);
@@ -382,7 +390,11 @@ double Matrix::sum(){
 	return vectorSum(m_elem, m_elemNum, 1, ongpu);
 }
 double Matrix::trace(){
-	assert(Rnum == Cnum);
+  if(!(Rnum == Cnum)){
+    std::ostringstream err;
+    err<<"Cannot perform trace on a non-square matrix.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if(diag)
 		return vectorSum(m_elem, m_elemNum, 1, ongpu);
 	else
@@ -390,7 +402,11 @@ double Matrix::trace(){
 }
 void Matrix::save(const std::string& fname){
 	FILE *fp = fopen(fname.c_str(), "w");
-	assert(fp != NULL);
+	if(!(fp != NULL)){
+    std::ostringstream err;
+    err<<"Error in writing to file '"<<fname<<"'.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	double* elem = m_elem;
 	if(ongpu){
 		elem = (double*)malloc(m_elemNum * sizeof(double));
@@ -404,7 +420,11 @@ void Matrix::save(const std::string& fname){
 
 void Matrix::load(const std::string& fname){
 	FILE *fp = fopen(fname.c_str(), "r");
-	assert(fp != NULL);
+  if(!(fp != NULL)){
+    std::ostringstream err;
+    err<<"Error in reading file '" << fname <<"'.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	double* elem = m_elem;
 	if(ongpu)
 		elem = (double*)malloc(m_elemNum * sizeof(double));
@@ -417,7 +437,11 @@ void Matrix::load(const std::string& fname){
 }
 
 double& Matrix::operator[](size_t idx){
-	assert(idx < m_elemNum);
+	if(!(idx < m_elemNum)){
+    std::ostringstream err;
+    err<<"Index exceeds the number of the matrix elements("<<m_elemNum<<").";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	m_elem = (double*)mvCPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	return m_elem[idx];
 }
@@ -434,11 +458,18 @@ double* Matrix::getHostElem(){
 }
 
 double& Matrix::at(size_t r, size_t c){
-	assert(r < Rnum);
-	assert(c < Cnum);
+	if(!((r < Rnum) && (c < Cnum))){
+    std::ostringstream err;
+    err<<"The input indices are out of range.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	m_elem = (double*)mvCPU(m_elem, m_elemNum * sizeof(double), ongpu);
 	if(diag){
-		assert(r == c && r < m_elemNum);
+    if(!(r == c && r < m_elemNum)){
+      std::ostringstream err;
+      err<<"The matrix is diagonal, there is no off-diagonal element.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
 		return m_elem[r];
 	}
 	else

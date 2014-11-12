@@ -65,4 +65,11 @@ void propogate_exception(const std::exception& e, const std::string& msg){
   throw std::logic_error(except_str);
 }
 
+std::string exception_msg(const std::string& msg){
+  std::string except_str("\n  ");
+  except_str.append(msg);
+  except_str.append("\n");
+  return except_str;
+}
+
 };	/* namespace uni10 */
