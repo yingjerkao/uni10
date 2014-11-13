@@ -230,17 +230,17 @@ std::vector<Matrix> Matrix::svd()const{
 	return outs;
 }
 
-double Matrix::lanczosEig(Matrix& psi, int& max_iter, double err_tol){
+size_t Matrix::lanczosEig(double& E0, Matrix& psi, size_t max_iter, double err_tol){
   if(!(Rnum == Cnum)){
     std::ostringstream err;
     err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
     throw std::runtime_error(exception_msg(err.str()));
   }
-  double eigVal;
   if(ongpu && !psi.ongpu)
 	  psi.m_elem = (double*)mvGPU(psi.m_elem, psi.m_elemNum * sizeof(double), psi.ongpu);
-  lanczosEV(m_elem, psi.m_elem, Rnum, max_iter, err_tol, eigVal, psi.m_elem, ongpu);
-  return eigVal;
+  size_t iter = max_iter;
+  lanczosEV(m_elem, psi.m_elem, Rnum, iter, err_tol, E0, psi.m_elem, ongpu);
+  return iter;
 }
 
 void Matrix::randomize(){

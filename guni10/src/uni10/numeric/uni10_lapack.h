@@ -63,7 +63,7 @@ void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, 
 void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu);
 void setIdentity(double* elem, size_t M, size_t N, bool ongpu);
 void reshapeElem(double* elem, size_t* transOffset);
-bool lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu);
+bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu);
 
 };	/* namespace uni10 */
 #endif /* UNI10_LAPACK_H */

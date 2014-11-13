@@ -58,7 +58,7 @@ class Matrix {
 		friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
 		std::vector<Matrix> eigh()const;
 		std::vector<Matrix> svd()const;
-    double lanczosEig(Matrix& psi, int& max_iter, double err_tol = 5E-15);
+    size_t lanczosEig(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
 		friend Matrix takeExp(double a, const Matrix& mat);
 		void setElem(double* elem, bool _ongpu = false);
 		void setElem(std::vector<double> elem, bool _ongpu = false);

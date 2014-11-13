@@ -193,7 +193,7 @@ double vectorNorm(double* X, size_t N, int inc, bool ongpu){
 	return sqrt(norm2);
 }
 
-bool lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu){
+bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu){
   int N = dim;
   const int min_iter = 2;
   const double beta_err = 1E-15;
