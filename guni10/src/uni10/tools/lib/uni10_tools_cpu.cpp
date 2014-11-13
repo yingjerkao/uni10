@@ -9,7 +9,11 @@ size_t MEM_USAGE = 0;
 void* elemAlloc(size_t memsize, bool& ongpu){
 	void* ptr = NULL;
 	ptr = malloc(memsize);
-	assert(ptr != NULL);
+  if(ptr == NULL){
+    std::ostringstream err;
+    err<<"Fails in allocating memory.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	MEM_USAGE += memsize;
 	ongpu = false;
 	return ptr;
@@ -18,7 +22,11 @@ void* elemAlloc(size_t memsize, bool& ongpu){
 void* elemAllocForce(size_t memsize, bool ongpu){
 	void* ptr = NULL;
 	ptr = malloc(memsize);
-	assert(ptr != NULL);
+  if(ptr == NULL){
+    std::ostringstream err;
+    err<<"Fails in allocating memory.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	MEM_USAGE += memsize;
 	return ptr;
 }
@@ -61,7 +69,7 @@ void* mvCPU(void* elem, size_t memsize, bool& ongpu){
 	ongpu = false;
 	return elem;
 }
-void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool& ongpuA, bool& ongpuB){	
+void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool& ongpuA, bool& ongpuB){
 	ongpuA = false;
 	ongpuB = false;
 }
@@ -71,7 +79,9 @@ void shrinkWithoutFree(size_t memsize, bool ongpu){
 }
 
 void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, double* newElem){
-	assert(false);
+  std::ostringstream err;
+  err<<"Fatal error(code = T1). Please contact the developer of the uni10 library.";
+  throw std::runtime_error(exception_msg(err.str()));
 }
 
 double getElemAt(size_t idx, double* elem, bool ongpu){

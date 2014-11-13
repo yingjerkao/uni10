@@ -12,9 +12,9 @@ CULA_INC := /usr/local/cula/include
 CULA_LIB := /usr/local/cula/lib64
 CULA_LINK := -lcula_core -lcula_lapack -lcudart -lcublas
 
-dmrg.e: fDMRG_U1.cpp
-	$(CC) -I$(INC) $(FLAGS) -o $@ -lblas -llapack -lm  $< $(CPU_OBJ)
 unit.e: UniT.cpp
+	$(CC) -I$(INC) $(FLAGS) -o $@ -lblas -llapack -lm  $< $(CPU_OBJ)
+dmrg.e: fDMRG_U1.cpp
 	$(CC) -I$(INC) $(FLAGS) -o $@ -lblas -llapack -lm  $< $(CPU_OBJ)
 asd.e: Ascend.cpp
 	$(CC) -I$(INC) $(FLAGS) -o $@ -lblas -llapack -lm  $< $(CPU_OBJ)

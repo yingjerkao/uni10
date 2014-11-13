@@ -37,6 +37,7 @@
 #include <functional>
 #include <cctype>
 #include <locale>
+#include <sstream>
 #include <uni10/data-structure/uni10_struct.h>
 namespace uni10{
 

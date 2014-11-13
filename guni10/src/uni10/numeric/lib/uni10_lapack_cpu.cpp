@@ -115,11 +115,19 @@ void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu){
 	double worktest;
 	int info;
 	dsyev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, &worktest, &lwork, &info);
-	assert(info == 0);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dsyev': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	lwork = (int)worktest;
 	double* work= (double*)malloc(sizeof(double)*lwork);
 	dsyev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, work, &lwork, &info);
-	assert(info == 0);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dsyev': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	free(work);
 }
 
@@ -134,11 +142,19 @@ void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, 
 	double worktest;
 	int info;
 	dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, &worktest, &lwork, &info);
-	assert(info == 0);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dgesvd': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	lwork = (int)worktest;
 	double *work = (double*)malloc(lwork*sizeof(double));
 	dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, work, &lwork, &info);
-	assert(info == 0);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dgesvd': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	free(work);
 	free(Mij);
 }
@@ -220,7 +236,8 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
   memset(Bs, 0, M * sizeof(double));
   double e_diff = 1;
   double e0_old = 0;
-  while(((e_diff > err_tol && it < max_iter) || it < min_iter) && beta > beta_err){
+  bool converged = false;
+  while((((e_diff > err_tol) && it < max_iter) || it < min_iter) && beta > beta_err){
     double minus_beta = -beta;
 	  dgemv((char*)"T", &N, &N, &a, A, &N, &Vm[it * N], &inc, &minus_beta, &Vm[(it+1) * N], &inc);
     alpha = ddot(&N, &Vm[it*N], &inc, &Vm[(it+1) * N], &inc);
@@ -236,6 +253,9 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
       if(it < max_iter - 1)
         Bs[it] = beta;
     }
+    else
+      converged = true;
+
     it++;
     if(it > 1){
       double* z = (double*)malloc(it * it * sizeof(double));
@@ -244,10 +264,16 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
       memcpy(d, As, it * sizeof(double));
       memcpy(e, Bs, it * sizeof(double));
       dstev((char*)"N", &it, d, e, z, &it, work, &info);
-      assert(info == 0);
+      if(info != 0){
+        std::ostringstream err;
+        err<<"Error in Lapack function 'dstev': Lapack INFO = "<<info;
+        throw std::runtime_error(exception_msg(err.str()));
+      }
       double base = fabs(d[0]) > 1 ? fabs(d[0]) : 1;
       e_diff = fabs(d[0] - e0_old) / base;
       e0_old = d[0];
+      if(e_diff <= err_tol)
+        converged = true;
     }
   }
   if(it > 1){
@@ -257,7 +283,11 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
     double* work = (double*)malloc(4 * it * sizeof(double));
     int info;
     dstev((char*)"V", &it, d, e, z, &it, work, &info);
-    assert(info == 0);
+    if(info != 0){
+      std::ostringstream err;
+      err<<"Error in Lapack function 'dstev': Lapack INFO = "<<info;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
     memset(eigVec, 0, N * sizeof(double));
 
     for(int k = 0; k < it; k++){
@@ -272,5 +302,6 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
     eigVal = 0;
   }
   free(Vm), free(As), free(Bs), free(d), free(e);
+  return converged;
 }
 };	/* namespace uni10 */
