@@ -33,7 +33,7 @@
 #include <vector>
 #include <assert.h>
 #include <string.h>
-#include <math.h>
+#include <cmath>
 #include <sstream>
 //Type of Matrix
 //#include <uni10/tensor-network/UniTensor.h>
