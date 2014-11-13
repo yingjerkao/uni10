@@ -197,8 +197,6 @@ bool lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol
   int N = dim;
   const int min_iter = 2;
   const double beta_err = 1E-15;
-  if(max_iter > N)
-    max_iter = N;
   if(!(max_iter > min_iter)){
     std::ostringstream err;
     err<<"Maximum iteration number should be set greater than 2.";
