@@ -178,7 +178,7 @@ class Matrix {
         /*Matrix& operator*= (const Matrix& Mb);*/
         std::vector<Matrix> eigh();
         std::vector<Matrix> svd();
-        double lanczosEig(Matrix& psi, int& max_iter, double err_tol = 5E-15);
+        size_t lanczosEig(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
         void setElem(double* elem, bool _ongpu = false);
         void setElem(std::vector<double> elem, bool _ongpu = false);
         double* getElem()const;
