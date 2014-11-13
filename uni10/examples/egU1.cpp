@@ -32,7 +32,7 @@ int main(){
 	bonds.push_back(bd_out);
 	// Create tensor from the bonds and name it "H".
 	uni10::UniTensor H(bonds, "H");
-	H.addRawElem(heisenberg_s1);
+	H.setRawElem(heisenberg_s1);
 	std::cout<< H;
 
 
@@ -57,7 +57,7 @@ int main(){
 	// Create tensor from the bonds and name it "H_U1".
 	uni10::UniTensor H_U1(bonds, "H_U1");
 	// Add raw elements to tensor
-	H_U1.addRawElem(heisenberg_s1);
+	H_U1.setRawElem(heisenberg_s1);
 	std::cout<< H_U1;
 	
 	// Check the quantum number of the blocks

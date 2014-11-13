@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -20,7 +20,7 @@
 *    You should have received a copy of the GNU Lesser General Public License
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
-*  @brief Header file for Qnum (Quantum Number) class 
+*  @brief Header file for Qnum (Quantum Number) class
 *  @author Yun-Da Hsieh
 *  @date 2014-05-06
 *  @since 0.1.0
@@ -31,6 +31,7 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
+#include <sstream>
 
 namespace uni10{
 enum parityType{
@@ -65,8 +66,8 @@ class Qnum {
 		friend Qnum operator- (const Qnum& q1);
 		friend Qnum operator* (const Qnum& q1, const Qnum& q2);
 		friend std::ostream& operator<< (std::ostream& os, const Qnum& q);
-		static const int U1_UPB = 100;	//Upper bound of U1
-		static const int U1_LOB = -100;//Lower bound of U1
+		static const int U1_UPB = 1000;	//Upper bound of U1
+		static const int U1_LOB = -1000;//Lower bound of U1
 	private:
 		static bool Fermionic;
 		int m_U1;
