@@ -193,13 +193,17 @@ double vectorNorm(double* X, size_t N, int inc, bool ongpu){
 	return sqrt(norm2);
 }
 
-void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu){
+bool lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu){
   int N = dim;
   const int min_iter = 2;
   const double beta_err = 1E-15;
   if(max_iter > N)
     max_iter = N;
-  assert(max_iter > min_iter);
+  if(!(max_iter > min_iter)){
+    std::ostringstream err;
+    err<<"Maximum iteration number should be set greater than 2.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
   double a = 1;
   double alpha;
   double beta = 1;
@@ -219,9 +223,7 @@ void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol
   double e_diff = 1;
   double e0_old = 0;
   while(((e_diff > err_tol && it < max_iter) || it < min_iter) && beta > beta_err){
-    // q1 = Vm[it*N], v = Vm[(it+1) * N], q0 = v
     double minus_beta = -beta;
-    //v = A * q1 - beta * q0 = A * q1 - beta * v
 	  dgemv((char*)"T", &N, &N, &a, A, &N, &Vm[it * N], &inc, &minus_beta, &Vm[(it+1) * N], &inc);
     alpha = ddot(&N, &Vm[it*N], &inc, &Vm[(it+1) * N], &inc);
     double minus_alpha = -alpha;

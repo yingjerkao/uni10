@@ -148,7 +148,7 @@ void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA
 		}
 		printf("p = %d, q = %d, mm_t = %d\n", p, q, mm_idx);
 		uni10Dgemm(p, q, M, N, K, A, B, C, mm_t);
-	}	
+	}
 }
 
 __global__ void _diagMM(double* diag, double* mat, size_t M, size_t N){
@@ -289,7 +289,7 @@ void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu){
 	int ldA = N;
 	if(ongpu){
 		culaInit();
-		assert(culaDeviceDsyev('V', 'U', N, EigVec, ldA, Eig) == culaNoError);	
+		assert(culaDeviceDsyev('V', 'U', N, EigVec, ldA, Eig) == culaNoError);
 	}
 	else{
 		int lwork = -1;
