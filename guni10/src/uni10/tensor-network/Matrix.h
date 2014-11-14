@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <string.h>
 #include <cmath>
+#include <stdexcept>
 #include <sstream>
 //Type of Matrix
 //#include <uni10/tensor-network/UniTensor.h>

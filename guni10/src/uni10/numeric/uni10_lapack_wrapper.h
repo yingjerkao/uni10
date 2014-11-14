@@ -28,6 +28,7 @@
 *****************************************************************************/
 #ifndef UNI10_LAPACK_WRAPPER_H
 #define UNI10_LAPACK_WRAPPER_H
+#include <stdexcept>
 #include <stdint.h>
 extern "C" {
 // BLAS functions

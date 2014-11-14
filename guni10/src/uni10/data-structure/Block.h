@@ -33,7 +33,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <uni10/datatype.hpp>
-
+#include <stdexcept>
 namespace uni10{
 class UniTensor;
 class Block{
@@ -43,7 +43,7 @@ class Block{
 		~Block();
 		friend class UniTensor;
 		friend std::ostream& operator<< (std::ostream& os, const Block& b);
-		friend std::ostream& operator<< (std::ostream& os, UniTensor& UniT);
+		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 		friend bool operator== (const Block& b1, const Block& b2);
 	private:
