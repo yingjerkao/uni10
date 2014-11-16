@@ -75,10 +75,6 @@ set(UNI10_VERSION
 #option(BUILD_STATIC_LIBS "Build the static library" ON)
 #option(BUILD_SHARED_LIBS "Build the shared library" ON)
 #option(BUILD_TESTS "Build test programs" OFF)
-#set(BLAS_LIBRARIES  BLAS_LIBRARIES-NOTFOUND cache FILEPATH "BLAS libraries")
-#set(LAPACK_LIBRARIES   LAPACK_LIBRARIES-NOTFOUND cache FILEPATH cache "LAPACK libraries")
-#set(PYTHON_INCLUDE_DIR  PYTHON_INCLUDE_DIR-NOTFOUND cache PATH "Python header directory")
-#set(PYTHON_LIBRARY  PYTHON_LIBRARY-NOTFOUND cache FILEPATH "Python library")
 option(CUDA "Build using Nvidia CUDA for GPU library" OFF)
 option(BUILD_EXAMPLES "Build Example Codes" ON)
 option(BUILD_PYTHON_WRAPPER "Build Python wrapper" ON)
@@ -97,10 +93,10 @@ if (BUILD_WITH_INTEL_COMPILERS)
   find_program(CMAKE_AR NAMES xiar)
   find_program(CMAKE_LINKER NAMES xild)
  
-  if (CMAKE_C_COMPILER MATCHES CMAKE_C_COMPILER-NOTFOUND OR
-    CMAKE_CXX_COMPILER MATCHES CMAKE_CXX_COMPILER-NOTFOUND OR
-    CMAKE_AR MATCHES CMAKE_AR-NOTFOUND OR
-    CMAKE_LINKER MATCHES CMAKE_LINKER-NOTFOUND)
+  if (NOT (CMAKE_C_COMPILER AND
+           CMAKE_CXX_COMPILER AND
+           CMAKE_AR AND
+           CMAKE_LINKER ))
     message("Cannot find Intel compilers.")
     message("You may need to run `. /opt/intel/bin/compilervars.sh intel64/ia32'")
     message("Falling back to system compilers.")
@@ -192,6 +188,7 @@ endif()
 if (MKL_MLT) 
   set(CMAKE_EXE_LINKER_FLAGS "-pthread")
 endif()
+
 ######################################################################
 ### PATHS
 ######################################################################
@@ -199,15 +196,16 @@ endif()
 #set the default path for built executables to the "bin" directory
 if (UNIX OR MINGW OR CYGWIN)
 	set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
-endif ()
+endif()
 
 #set the default path for built libraries to the "lib" directory
 if (UNIX OR MINGW OR CYGWIN)
   set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-endif ()
+endif()
 
 # path to include directory
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+
 ######################################################################
 ### ADD SUBDIRECTORIES
 ######################################################################
@@ -219,6 +217,7 @@ endif()
 if (BUILD_PYTHON_WRAPPER)
   add_subdirectory(Swig)
 endif()
+
 ######################################################################
 ### ADD LIBRARY
 ######################################################################
@@ -246,10 +245,34 @@ add_library(uni10 SHARED ${uni10-objects} )
 add_library(uni10-static STATIC ${uni10-objects})
 endif()
 SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
-SET_TARGET_PROPERTIES(uni10 PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR})
+if(APPLE) 
+  set(MACOSX_RPATH 0)
+endif()
+if (APPLE AND (CMAKE_VERSION GREATER 2.8.11))
+  set(MACOSX_RPATH 1)
+  SET_TARGET_PROPERTIES(uni10 PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR} MACOSX_RPATH 1)
+else()
+  SET_TARGET_PROPERTIES(uni10 PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR})
+endif()
 target_link_libraries(uni10 ${LAPACK_LIBRARIES})
 target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
 
+
+######################################################################
+### RPATH SETTINGS
+######################################################################
+if(NOT MACOSX_RPATH)
+  mesage(WARNING "MACOSX_RPATH not supported. Please upgrade to CMAKE > 2.8.12 or set DYLD_LIBRARY_PATH.") 
+else()
+  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+  IF("${isSystemDir}" STREQUAL "-1")
+     SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  ENDIF("${isSystemDir}" STREQUAL "-1")
+endif()
 ######################################################################
 ### INSTALL
 ######################################################################
@@ -269,6 +292,7 @@ install(TARGETS uni10 uni10-static
 
 install(DIRECTORY src/
 	DESTINATION include 
+        COMPONENT headers
 	FILES_MATCHING PATTERN 		"*.h*"	
 )
 
@@ -278,12 +302,14 @@ install(DIRECTORY src/
 if(BUILD_EXAMPLES)
   install(DIRECTORY examples/
 	DESTINATION examples/
+	COMPONENT examples
 	PATTERN "CMakeLists*" EXCLUDE
   )
 endif()
 if (BUILD_PYTHON_WRAPPER)
   install(DIRECTORY Swig/examples/
 	DESTINATION examples/python/
+        COMPONENT python_examples
   )
 endif()
 ######################################################################
@@ -291,18 +317,25 @@ endif()
 ######################################################################
 
 install(DIRECTORY doc/
-	DESTINATION doc )
-install(FILES INSTALL.txt README.txt GPL.txt LGPL.txt release_notes.txt DESTINATION .)
+	DESTINATION doc 
+        COMPONENT documentation
+)
+install(FILES INSTALL.txt README.txt GPL.txt LGPL.txt release_notes.txt 
+        DESTINATION .
+        COMPONENT common)
 
 set(libname "${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-install(CODE " EXECUTE_PROCESS(
-     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib/${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX})")
 
-install(CODE " EXECUTE_PROCESS(
-     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib/${CMAKE_SHARED_LIBRARY_PREFIX}uni10${CMAKE_SHARED_LIBRARY_SUFFIX})")
 
-######################################################################
+#if (UNIX)
+  #### Make Symlink to /usr/local/lib ####
+#  install(CODE " EXECUTE_PROCESS(
+#     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib/${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX})")
+
+#  install(CODE " EXECUTE_PROCESS(
+#     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib/${CMAKE_SHARED_LIBRARY_PREFIX}uni10${CMAKE_SHARED_LIBRARY_SUFFIX})")
+#endif()
 ######################################################################
 # Information Messages
 ######################################################################
@@ -325,15 +358,43 @@ else()
 endif()
 if(BUILD_PYTHON_WRAPPER)
   message(STATUS " Build Python Wrapper: YES")
-  message(STATUS " Python Excutable: ${PYTHON_EXECUTABLE}")
-  message(STATUS " Python Headers  : ${PYTHON_INCLUDE_DIR}")
-  message(STATUS " Python Library  : ${PYTHON_LIBRARY}")
-  message(STATUS " Python Site-Package Dir:${PYTHON_SITE_PACKAGES}")
-  message(STATUS " Swig Version    : ${SWIG_VERSION}")
-  message(STATUS " Swig Directory  : ${SWIG_DIR}")
+  message(STATUS " Python Excutable  : ${PYTHON_EXECUTABLE}")
+  message(STATUS " Python Headers    : ${PYTHON_INCLUDE_DIR}")
+  message(STATUS " Python Library    : ${PYTHON_LIBRARY}")
+  message(STATUS " Python Module Dir : ${PYTHON_SITE_PACKAGES}")
+  message(STATUS " Swig Version      : ${SWIG_VERSION}")
+  message(STATUS " Swig Directory    : ${SWIG_DIR}")
 else()
   message(STATUS " Build Python Wrapper: NO")
 endif()
 message(STATUS "")
 message(STATUS "")
-#include(CPACK)
+
+######################################################################
+### CPACK 
+######################################################################
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Uni10: the Universal Tensor Network Library")
+SET(CPACK_PACKAGE_VENDOR "Uni10")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.txt")
+SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LGPL.txt")
+SET(CPACK_PACKAGE_VERSION_MAJOR "${UNI10_VERSION_MAJOR}")
+SET(CPACK_PACKAGE_VERSION_MINOR "${UNI10_VERSION_MINOR}")
+SET(CPACK_PACKAGE_VERSION_PATCH "${UNI10_VERSION_PATCH}")
+SET(CPACK_PACKAGE_INSTALL_DIRECTORY "uni10 ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}")
+#IF(WIN32 AND NOT UNIX)
+  # There is a bug in NSI that does not handle full unix paths properly. Make
+  # sure there is at least one set of four (4) backlasshes.
+#  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
+#  SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\MyExecutable.exe")
+#  SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} My Famous Project")
+#  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.my-project-home-page.org")
+#  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.my-personal-home-page.com")
+#  SET(CPACK_NSIS_CONTACT "me@my-personal-home-page.com")
+#  SET(CPACK_NSIS_MODIFY_PATH ON)
+#ELSE(WIN32 AND NOT UNIX)
+#  SET(CPACK_STRIP_FILES "bin/MyExecutable")
+#  SET(CPACK_SOURCE_STRIP_FILES "")
+#ENDIF(WIN32 AND NOT UNIX)
+#SET(CPACK_PACKAGE_EXECUTABLES "MyExecutable" "My Executable")
+INCLUDE(CPack)
+
