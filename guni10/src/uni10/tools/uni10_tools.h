@@ -37,11 +37,7 @@
 #include <functional>
 #include <cctype>
 #include <locale>
-<<<<<<< HEAD
 #include <sstream>
-=======
-#include <stdexcept>
->>>>>>> eb617fd2f94a713f341e55cde422fb32a424c0f7
 #include <uni10/data-structure/uni10_struct.h>
 namespace uni10{
 
