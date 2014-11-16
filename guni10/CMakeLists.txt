@@ -129,6 +129,14 @@ if(UNIX)
 	)
   endif()
 endif()
+if(WIN32)
+  if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(CMAKE_INSTALL_PREFIX "C:\Program Files\uni10" 
+                CACHE PATH "UNI10 install prefix" 
+                FORCE
+        )
+  endif()
+endif()
 ######################################################################
 ### CMAKE BUILD TYPE
 ######################################################################
