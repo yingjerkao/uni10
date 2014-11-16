@@ -178,7 +178,7 @@ class Matrix {
         /*Matrix& operator*= (const Matrix& Mb);*/
         std::vector<Matrix> eigh();
         std::vector<Matrix> svd();
-        size_t lanczosEig(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
+        size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
         void setElem(double* elem, bool _ongpu = false);
         void setElem(std::vector<double> elem, bool _ongpu = false);
         double* getElem()const;
@@ -341,7 +341,7 @@ class UniTensor{
     Matrix getBlock(const Qnum& qnum, bool diag = false)const;
     void putBlock(const Qnum& qnum, const Matrix& mat);
     std::map<Qnum, Matrix> getBlocks()const;
-    Matrix rawElem()const;
+    Matrix getRawElem()const;
     void printRawElem()const;
     /*              friend class Node;
                     friend class Network;*/
@@ -382,10 +382,10 @@ class Network {
     void putTensorT(const std::string& nameT, const UniTensor& UniT, bool force=true);
     UniTensor launch(const std::string& name="");
     /*friend std::ostream& operator<< (std::ostream& os, Network& nd);*/
-    int rollcall();
-    size_t max_tensor_elemNum();
-    size_t sum_of_memory_usage();
-    size_t memory_requirement();
+    //int rollcall();
+    //size_t max_tensor_elemNum();
+    //size_t sum_of_memory_usage();
+    //size_t memory_requirement();
     void profile();
     %extend {
       Network __copy__(){
