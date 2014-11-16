@@ -132,12 +132,10 @@ void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu){
 }
 
 void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, bool ongpu){
-	//Mij = U * S * VT
 	double* Mij = (double*)malloc(M * N * sizeof(double));
 	memcpy(Mij, Mij_ori, M * N * sizeof(double));
 	int min = M < N ? M : N;	//min = min(M,N)
 	int ldA = N, ldu = N, ldvT = min;
-	//int lwork = 12 * N;
 	int lwork = -1;
 	double worktest;
 	int info;
@@ -255,7 +253,6 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
     }
     else
       converged = true;
-
     it++;
     if(it > 1){
       double* z = (double*)malloc(it * it * sizeof(double));

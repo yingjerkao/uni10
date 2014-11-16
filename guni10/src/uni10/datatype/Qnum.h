@@ -32,6 +32,7 @@
 #include <iomanip>
 #include <assert.h>
 #include <sstream>
+#include <exception>
 
 namespace uni10{
 enum parityType{
@@ -45,12 +46,12 @@ enum parityFType{
 
 class Qnum {
 	public:
-		Qnum();
-		Qnum(int _U1);
-		Qnum(int _U1, parityType _prt);
-		Qnum(parityFType _prtF);
-		Qnum(parityFType _prtF, int _U1);
-		Qnum(parityFType _prtF, int _U1, parityType _prt);
+		//Qnum();
+		//Qnum(int _U1);
+		Qnum(int _U1=0, parityType _prt=PRT_EVEN);
+		//Qnum(parityFType _prtF);
+		//Qnum(parityFType _prtF, int _U1);
+		Qnum(parityFType _prtF, int _U1 = 0, parityType _prt = PRT_EVEN);
 		Qnum(const Qnum& _q);
 		~Qnum(){};
 		int U1()const;

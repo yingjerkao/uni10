@@ -217,42 +217,52 @@ int64_t Node::cal_elemNum(std::vector<Bond>& _bonds){
 
 
 Network::Network(const std::string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
-	fromfile(fname);
-	int Tnum = label_arr.size() - 1;
-	swapflags.assign(Tnum, false);
-	std::vector<_Swap> swaps;
-	swaps_arr.assign(Tnum, swaps);
-	leafs.assign(Tnum, (Node*)NULL);
-	tensors.assign(Tnum, (UniTensor*)NULL);
+  try{
+    fromfile(fname);
+    int Tnum = label_arr.size() - 1;
+    swapflags.assign(Tnum, false);
+    std::vector<_Swap> swaps;
+    swaps_arr.assign(Tnum, swaps);
+    leafs.assign(Tnum, (Node*)NULL);
+    tensors.assign(Tnum, (UniTensor*)NULL);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor Network::Network(std::string&):");
+  }
 }
 
 Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
-	fromfile(fname);
-	if(!((label_arr.size() - 1) == tens.size())){
-    std::ostringstream err;
-    err<<"The size of the input vector of tensors does not match for the number of tensors in the network file '"<<fname<<"'.";
-    throw std::runtime_error(exception_msg(err.str()));
-  }
-	int Tnum = tens.size();
-	swapflags.assign(Tnum, false);
-	std::vector<_Swap> swaps;
-	swaps_arr.assign(Tnum, swaps);
-	leafs.assign(Tnum, (Node*)NULL);
-	tensors.assign(Tnum, (UniTensor*)NULL);
-	for(int i = 0; i < Tnum; i++){
-		if(!(tens[i]->RBondNum == Rnums[i])){
+  try{
+    fromfile(fname);
+    if(!((label_arr.size() - 1) == tens.size())){
       std::ostringstream err;
-      err<<"The number of in-coming bonds does not match with the tensor '"<<names[i]<<"' specified in network file '"<<fname<<"'.";
+      err<<"The size of the input vector of tensors does not match for the number of tensors in the network file '"<<fname<<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-		UniTensor* ten = new UniTensor(*(tens[i]));
-		ten->setName(names[i]);
-		ten->setLabel(label_arr[i]);
-		tensors[i] = ten;
-		Node* ndp = new Node(ten);
-		leafs[i] = ndp;
-	}
-	construct();
+    int Tnum = tens.size();
+    swapflags.assign(Tnum, false);
+    std::vector<_Swap> swaps;
+    swaps_arr.assign(Tnum, swaps);
+    leafs.assign(Tnum, (Node*)NULL);
+    tensors.assign(Tnum, (UniTensor*)NULL);
+    for(int i = 0; i < Tnum; i++){
+      if(!(tens[i]->RBondNum == Rnums[i])){
+        std::ostringstream err;
+        err<<"The number of in-coming bonds does not match with the tensor '"<<names[i]<<"' specified in network file '"<<fname<<"'.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      UniTensor* ten = new UniTensor(*(tens[i]));
+      ten->setName(names[i]);
+      ten->setLabel(label_arr[i]);
+      tensors[i] = ten;
+      Node* ndp = new Node(ten);
+      leafs[i] = ndp;
+    }
+    construct();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor Network::Network(std::string&, std::vector<UniTensor*>&):");
+  }
 }
 
 void Network::fromfile(const std::string& fname){//names, name2pos, label_arr, Rnums, order, brakets
@@ -497,66 +507,99 @@ void Network::construct(){
 }
 
 void Network::putTensor(size_t idx, const UniTensor* UniT, bool force){
-  if(!(idx < (label_arr.size()-1))){
-    std::ostringstream err;
-    err<<"Index exceeds the number of the tensors in the list of network file.";
-    throw std::runtime_error(exception_msg(err.str()));
-  }
-	if((!force) && load){
-		destruct();
-  }
-	if(!(UniT->RBondNum == Rnums[idx])){
+  try{
+    if(!(idx < (label_arr.size()-1))){
+      std::ostringstream err;
+      err<<"Index exceeds the number of the tensors in the list of network file.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if((!force) && load){
+      destruct();
+    }
+    if(!(UniT->RBondNum == Rnums[idx])){
       std::ostringstream err;
       err<<"The number of in-coming bonds does not match with the tensor '"<<names[idx]<<"' specified in network file";
       throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(leafs[idx] != NULL){
+      *(tensors[idx]) = *UniT;
+      tensors[idx]->setLabel(label_arr[idx]);
+      tensors[idx]->setName(names[idx]);
+      swapflags[idx] = false;
+    }
+    else{
+      UniTensor* ten = new UniTensor(*UniT);
+      ten->setName(names[idx]);
+      ten->setLabel(label_arr[idx]);
+      tensors[idx] = ten;
+      Node* ndp = new Node(ten);
+      leafs[idx] = ndp;
+    }
   }
-	if(leafs[idx] != NULL){
-		*(tensors[idx]) = *UniT;
-		tensors[idx]->setLabel(label_arr[idx]);
-		tensors[idx]->setName(names[idx]);
-		swapflags[idx] = false;
-	}
-	else{
-		UniTensor* ten = new UniTensor(*UniT);
-		ten->setName(names[idx]);
-		ten->setLabel(label_arr[idx]);
-		tensors[idx] = ten;
-		Node* ndp = new Node(ten);
-		leafs[idx] = ndp;
-	}
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Network::putTensor(size_t, uni10::UniTensor*, bool=true):");
+  }
+}
+
+void Network::putTensor(size_t idx, const UniTensor& UniT, bool force){
+  try{
+    putTensor(idx, &UniT, force);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Network::putTensor(size_t, uni10::UniTensor&, bool=true):");
+  }
 }
 
 void Network::putTensor(const std::string& name, const UniTensor* UniT, bool force){
-	std::map<std::string, size_t>::const_iterator it = name2pos.find(name);
-  if(!(it != name2pos.end())){
-    std::ostringstream err;
-    err<<"There is no tensor named '"<<name<<"' in the network file";
-    throw std::runtime_error(exception_msg(err.str()));
+  try{
+    std::map<std::string, size_t>::const_iterator it = name2pos.find(name);
+    if(!(it != name2pos.end())){
+      std::ostringstream err;
+      err<<"There is no tensor named '"<<name<<"' in the network file";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    putTensor(it->second, UniT, force);
   }
-	putTensor(it->second, UniT, force);
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Network::putTensor(std::string&, uni10::UniTensor*, bool=true):");
+  }
+}
+
+void Network::putTensor(const std::string& name, const UniTensor& UniT, bool force){
+  try{
+    putTensor(name, &UniT, force);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Network::putTensor(std::string&, uni10::UniTensor&, bool=true):");
+  }
 }
 
 void Network::putTensorT(const std::string& nameT, const UniTensor* UniT, bool force){
-	std::map<std::string, size_t>::const_iterator itT = name2pos.find(nameT);
-	if(!(itT != name2pos.end())){
-    std::ostringstream err;
-    err<<"There is no tensor named '"<<nameT<<"' in the network file";
-    throw std::runtime_error(exception_msg(err.str()));
+  try{
+    std::map<std::string, size_t>::const_iterator itT = name2pos.find(nameT);
+    if(!(itT != name2pos.end())){
+      std::ostringstream err;
+      err<<"There is no tensor named '"<<nameT<<"' in the network file";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    UniTensor transT = *UniT;
+    transT.transpose();
+    putTensor(itT->second, &transT, force);
   }
-	UniTensor transT = *UniT;
-	transT.transpose();
-	putTensor(itT->second, &transT, force);
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Network::putTensorT(std::string&, uni10::UniTensor*, bool=true):");
+  }
 }
 
-void Network::putTensor(int idx, const UniTensor& UniT, bool force){
-  putTensor(idx, &UniT, force);
-}
-void Network::putTensor(const std::string& name, const UniTensor& UniT, bool force){
-  putTensor(name, &UniT, force);
-}
 void Network::putTensorT(const std::string& nameT, const UniTensor& UniT, bool force){
-  putTensorT(nameT, &UniT, force);
+  try{
+    putTensorT(nameT, &UniT, force);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Network::putTensorT(std::string&, uni10::UniTensor&, bool=true):");
+  }
 }
+
 void Network::branch(Node* sbj, Node* tar){
 	Node* par = new Node(tar->contract(sbj));
 	if(sbj->parent == NULL){	//create a parent node
@@ -653,19 +696,25 @@ void Network::destruct(){
 
 
 UniTensor Network::launch(const std::string& _name){
-	if(!load)
-		construct();
-	for(int t = 0; t < tensors.size(); t++)
-		if(Qnum::isFermionic() && !swapflags[t]){
-			tensors[t]->addGate(swaps_arr[t]);
-			swapflags[t] = true;
-		}
-	UniTensor UniT = merge(root);
-	int idx = label_arr.size() - 1;
-	if(label_arr.size() > 0 && label_arr[idx].size() > 1)
-		UniT.permute(label_arr[idx], Rnums[idx]);
-	UniT.setName(_name);
-	return UniT;
+  try{
+    if(!load)
+      construct();
+    for(int t = 0; t < tensors.size(); t++)
+      if(Qnum::isFermionic() && !swapflags[t]){
+        tensors[t]->addGate(swaps_arr[t]);
+        swapflags[t] = true;
+      }
+    UniTensor UniT = merge(root);
+    int idx = label_arr.size() - 1;
+    if(label_arr.size() > 0 && label_arr[idx].size() > 1)
+      UniT.permute(label_arr[idx], Rnums[idx]);
+    UniT.setName(_name);
+    return UniT;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Network::launch(std::string&):");
+    return UniTensor();
+  }
 }
 
 UniTensor Network::merge(Node* nd){
@@ -691,12 +740,17 @@ UniTensor Network::merge(Node* nd){
 }
 
 Network::~Network(){
+  try{
 	if(load)
 		destruct();
 	for(int i = 0; i < leafs.size(); i++)
 		delete leafs[i];
 	for(int i = 0; i < tensors.size(); i++)
 		delete tensors[i];
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In destructor Network::~Network():");
+  }
 }
 
 int Network::rollcall(){
@@ -766,23 +820,28 @@ void Network::_max_tensor_elemNum(Node* nd, size_t& max_num, Node& max_nd) const
 }
 
 void Network::profile(){
-  if(rollcall() >= 0)
-    return;
-  std::cout<<"\n===== Network profile =====\n";
-  std::cout<<"Memory Requirement: "<<memory_requirement()<<std::endl;
-  std::cout<<"Sum of memory usage: "<<sum_of_memory_usage()<<std::endl;
-  size_t max_num = 0;
-  Node max_nd;
-  _max_tensor_elemNum(root, max_num, max_nd);
-  std::cout<<"Maximun tensor: \n";
-  std::cout<<"  elemNum: "<<max_num<<"\n  "<<max_nd.labels.size()<<" bonds and labels: ";
-	for(int i = 0; i < max_nd.labels.size(); i++)
-		std::cout<< max_nd.labels[i] << ", ";
-  std::cout<<std::endl;
-  std::cout<<"===========================\n\n";
+  try{
+    if(rollcall() >= 0)
+      return;
+    std::cout<<"\n===== Network profile =====\n";
+    std::cout<<"Memory Requirement: "<<memory_requirement()<<std::endl;
+    //std::cout<<"Sum of memory usage: "<<sum_of_memory_usage()<<std::endl;
+    size_t max_num = 0;
+    Node max_nd;
+    _max_tensor_elemNum(root, max_num, max_nd);
+    std::cout<<"Maximun tensor: \n";
+    std::cout<<"  elemNum: "<<max_num<<"\n  "<<max_nd.labels.size()<<" bonds and labels: ";
+    for(int i = 0; i < max_nd.labels.size(); i++)
+      std::cout<< max_nd.labels[i] << ", ";
+    std::cout<<std::endl;
+    std::cout<<"===========================\n\n";
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Network::profile():");
+  }
 }
 
-void Network::preprint(std::ostream& os, Node* nd, int layer){
+void Network::preprint(std::ostream& os, Node* nd, int layer)const{
 	if(nd == NULL)
 		return;
 	for(int i = 0; i < layer; i++)
@@ -799,33 +858,38 @@ void Network::preprint(std::ostream& os, Node* nd, int layer){
 }
 
 std::ostream& operator<< (std::ostream& os, Network& net){
-	os<<std::endl;
-	for(int i = 0; i < net.names.size(); i++){
-		os<<net.names[i]<< ": ";
-		if(net.Rnums[i])
-			os<<"i[";
-		for(int l = 0; l < net.Rnums[i]; l++){
-			os<<net.label_arr[i][l];
-			if(l < net.Rnums[i] - 1)
-				os<<", ";
-		}
-		if(net.Rnums[i])
-			os<<"] ";
-		if(net.label_arr[i].size() - net.Rnums[i])
-			os<<"o[";
-		for(int l = net.Rnums[i]; l < net.label_arr[i].size(); l++){
-			os<<net.label_arr[i][l];
-			if(l < net.label_arr[i].size() - 1)
-				os<<", ";
-		}
-		if(net.label_arr[i].size() - net.Rnums[i])
-			os<<"]";
-		os<<std::endl;
-	}
-	os<<std::endl;
+  try{
+    os<<std::endl;
+    for(int i = 0; i < net.names.size(); i++){
+      os<<net.names[i]<< ": ";
+      if(net.Rnums[i])
+        os<<"i[";
+      for(int l = 0; l < net.Rnums[i]; l++){
+        os<<net.label_arr[i][l];
+        if(l < net.Rnums[i] - 1)
+          os<<", ";
+      }
+      if(net.Rnums[i])
+        os<<"] ";
+      if(net.label_arr[i].size() - net.Rnums[i])
+        os<<"o[";
+      for(int l = net.Rnums[i]; l < net.label_arr[i].size(); l++){
+        os<<net.label_arr[i][l];
+        if(l < net.label_arr[i].size() - 1)
+          os<<", ";
+      }
+      if(net.label_arr[i].size() - net.Rnums[i])
+        os<<"]";
+      os<<std::endl;
+    }
+    os<<std::endl;
 
-  if(net.rollcall() < 0)
-		net.preprint(os, net.root, 0);
+    if(net.rollcall() < 0)
+      net.preprint(os, net.root, 0);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator<<(std::ostream&, uni10::Network&):");
+  }
 	return os;
 }
 std::ostream& operator<< (std::ostream& os, const Node& nd){

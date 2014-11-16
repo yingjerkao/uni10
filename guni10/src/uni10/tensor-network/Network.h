@@ -45,23 +45,17 @@ class Network {
 		Network(const std::string& fname, const std::vector<UniTensor*>& tens);
 		Network(const std::string& fname);
 		~Network();
-		//Node* add(UniTensor*);
+    void putTensor(size_t idx, const UniTensor& UniT, bool force=true);
 		void putTensor(size_t idx, const UniTensor* UniT, bool force=true);	//if force is true, force replace without change the all network
-		void putTensor(const std::string& name, const UniTensor* UniT, bool force=true);	//if force is true, force replace without change the all network
-		void putTensorT(const std::string& nameT, const UniTensor* UniT, bool force=true);
-    void putTensor(int idx, const UniTensor& UniT, bool force=true);
     void putTensor(const std::string& name, const UniTensor& UniT, bool force=true);
+		void putTensor(const std::string& name, const UniTensor* UniT, bool force=true);	//if force is true, force replace without change the all network
     void putTensorT(const std::string& nameT, const UniTensor& UniT, bool force=true);
+		void putTensorT(const std::string& nameT, const UniTensor* UniT, bool force=true);
 		UniTensor launch(const std::string& name="");
-		//void optimize(int num=1);
-		friend std::ostream& operator<< (std::ostream& os, Network& nd);
-    int rollcall();
-    size_t max_tensor_elemNum();
-    size_t sum_of_memory_usage();
-    size_t memory_requirement();
     void profile();
+		friend std::ostream& operator<< (std::ostream& os, Network& net);
 	private:
-		void preprint(std::ostream& os, Node* nd, int layer);	//pre-order print
+		void preprint(std::ostream& os, Node* nd, int layer)const;	//pre-order print
 		std::vector<std::string> names;
 		std::map<std::string, size_t> name2pos;
 		std::vector< std::vector<int> > label_arr;
@@ -87,6 +81,10 @@ class Network {
 		void fromfile(const std::string& fname);
 		void findConOrd(Node* nd);
 		void addSwap();
+    int rollcall();
+    size_t sum_of_memory_usage();
+    size_t max_tensor_elemNum();
+    size_t memory_requirement();
     void _max_tensor_elemNum(Node* nd, size_t& max_num, Node& max_nd) const;
     size_t _sum_of_tensor_elem(Node* nd) const;
     size_t _elem_usage(Node* nd, size_t& usage, size_t& max_usage)const;

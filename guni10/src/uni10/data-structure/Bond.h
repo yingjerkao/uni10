@@ -46,24 +46,24 @@ class UniTensor;
 class Bond {
 	public:
 		Bond(){};
-		Bond(bondType _type, int dim);
+		Bond(bondType _type, size_t dim);
 		Bond(bondType, const std::vector<Qnum>& qnums);
 		Bond(const Bond& _b);
-		void assign(bondType, int dim);
+		~Bond();
+		void assign(bondType, size_t dim);
 		void assign(bondType, const std::vector<Qnum>& qnums);
 		bondType type()const;
 		int dim()const;
+		std::map<Qnum, int> degeneracy()const;
+		std::vector<Qnum> Qlist()const;
+		void change(bondType tp);
+		Bond& combine(Bond bd);
 		friend class UniTensor;
 		friend class Node;
 		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
 		friend bool operator== (const Bond& b1, const Bond& b2);
-		void change(bondType tp);
-		Bond& combine(const Bond bd);
 		friend Bond combine(bondType tp, const std::vector<Bond>& bds);
 		friend Bond combine(const std::vector<Bond>& bds);
-		std::map<Qnum, int> degeneracy()const;
-		std::vector<Qnum> Qlist()const;
-		~Bond();
 	private:
 		void setting(const std::vector<Qnum>& qnums);
 		bondType m_type;

@@ -18,6 +18,8 @@ int main(){
 	std::cout<<net.launch();
 	// Print out the network
 	std::cout<<net;
+  // Print out the memory usage
+  net.profile();
 
 	return 0;
 }
