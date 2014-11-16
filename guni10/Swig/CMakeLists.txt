@@ -1,4 +1,30 @@
-# This is a CMake example for Python
+###
+#  @file CMakeLists.txt
+#  @license
+#    Copyright (c) 2013-2014
+#    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+#
+#    This file is part of Uni10.
+#
+#    Uni10 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    Uni10 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+#  @endlicense
+#  @brief SWIG specification file for CMake 
+#  @author Ying-Jer Kao
+#  @date 2014-10-20
+#  @since 0.9.0
+###
+
 cmake_minimum_required(VERSION 2.8)
 
 FIND_PACKAGE(SWIG REQUIRED)
@@ -116,19 +142,23 @@ SET(CMAKE_SWIG_FLAGS "")
 SET_SOURCE_FILES_PROPERTIES(pyUni10.i PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(pyUni10.i PROPERTIES SWIG_FLAGS "-includeall")
 SWIG_ADD_MODULE(pyUni10 python pyUni10.i )
-SWIG_LINK_LIBRARIES(pyUni10 ${PYTHON_LIBRARY} uni10)
+SWIG_LINK_LIBRARIES(pyUni10 ${PYTHON_LIBRARY} uni10-static)
 
 set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 if(UNIX) 
-execute_process(COMMAND python -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
- OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
+ OUTPUT_VARIABLE _SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 
 if(WIN32)
-execute_process(COMMAND python.exe -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
- OUTPUT_VARIABLE PYTHON_SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
+ OUTPUT_VARIABLE _SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
-
+set(PYTHON_SITE_PACKAGES "${_SITE_PACKAGES}" CACHE PATH "Python Module Direcotry")
+message(WARNING "${PYTHON_SITE_PACKAGES}")
+if( "${PYTHON_SITE_PACKAGES}" STREQUAL "" )
+  message(FATAL_ERROR "Cannot find Python site package directory. Set  PYTHON_SITE_PACKAGES manully.")
+endif()
 install(TARGETS _pyUni10 DESTINATION ${PYTHON_SITE_PACKAGES})
 
 install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py DESTINATION ${PYTHON_SITE_PACKAGES})

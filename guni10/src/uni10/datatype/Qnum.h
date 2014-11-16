@@ -31,6 +31,7 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
+#include <stdexcept>
 #include <sstream>
 #include <exception>
 

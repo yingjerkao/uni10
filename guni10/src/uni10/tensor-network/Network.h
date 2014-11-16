@@ -35,6 +35,7 @@
 #include <assert.h>
 #include <vector>
 #include <map>
+#include <stdexcept>
 #include <sstream>
 //Bond property
 #include <uni10/data-structure/uni10_struct.h>

@@ -30,6 +30,7 @@
 #define UNI10_STRUCT_H
 #include "stdint.h"
 #include <string>
+#include <stdexcept>
 namespace uni10{
 typedef struct{
 	int b1; 

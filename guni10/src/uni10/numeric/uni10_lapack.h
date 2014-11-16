@@ -32,6 +32,7 @@
 #include <limits.h>
 #include <assert.h>
 #include <sstream>
+#include <stdexcept>
 #include <cmath>
 namespace uni10{
 enum mmtype{

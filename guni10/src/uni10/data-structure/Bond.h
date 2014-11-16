@@ -35,6 +35,7 @@
 #include <vector>
 #include <map>
 #include <uni10/datatype.hpp>
+#include <stdexcept>
 #include <sstream>
 
 namespace uni10{
