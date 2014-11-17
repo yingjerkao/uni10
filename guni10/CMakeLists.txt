@@ -248,7 +248,7 @@ SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
 if(APPLE) 
   set(MACOSX_RPATH 0)
 endif()
-if (APPLE AND (CMAKE_VERSION GREATER 2.8.11))
+if (APPLE AND (${CMAKE_VERSION} GREATER "2.8.11"))
   set(MACOSX_RPATH 1)
   SET_TARGET_PROPERTIES(uni10 PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR} MACOSX_RPATH 1)
 else()
@@ -256,13 +256,11 @@ else()
 endif()
 target_link_libraries(uni10 ${LAPACK_LIBRARIES})
 target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
-
-
 ######################################################################
 ### RPATH SETTINGS
 ######################################################################
 if(NOT MACOSX_RPATH)
-  mesage(WARNING "MACOSX_RPATH not supported. Please upgrade to CMAKE > 2.8.12 or set DYLD_LIBRARY_PATH.") 
+  message(WARNING "MACOSX_RPATH not supported. Please upgrade to CMAKE version >= 2.8.12 or set DYLD_LIBRARY_PATH.") 
 else()
   SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
   SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)

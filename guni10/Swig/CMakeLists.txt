@@ -155,7 +155,6 @@ execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import
  OUTPUT_VARIABLE _SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
 set(PYTHON_SITE_PACKAGES "${_SITE_PACKAGES}" CACHE PATH "Python Module Direcotry")
-message(WARNING "${PYTHON_SITE_PACKAGES}")
 if( "${PYTHON_SITE_PACKAGES}" STREQUAL "" )
   message(FATAL_ERROR "Cannot find Python site package directory. Set  PYTHON_SITE_PACKAGES manully.")
 endif()
