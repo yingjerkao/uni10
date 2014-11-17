@@ -87,8 +87,8 @@ class UniTensor{
     void setElem(const double* elem, bool _ongpu = false);
     void setElem(const std::vector<double>& elem, bool _ongpu = false);
     double operator[](size_t idx);
-		void set_zero(const Qnum& qnum);
 		void set_zero();
+		void set_zero(const Qnum& qnum);
 		void identity();
 		void identity(const Qnum& qnum);
 		void randomize();

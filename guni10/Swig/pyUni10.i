@@ -167,40 +167,46 @@ class Matrix {
         Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
         Matrix(size_t _Rnum, size_t _Cnum, double* _elem, bool _diag=false, bool src_ongpu=false);
         Matrix(size_t _Rnum, size_t _Cnum, std::vector<double> _elem, bool _diag=false, bool src_ongpu=false);
+		    /*Matrix(const Matrix& _m);*/
         Matrix();
         ~Matrix();
+        /*Matrix& operator=(const Matrix& _m);*/
         int row()const;
         int col()const;
         bool isDiag()const{return diag;};
         bool isOngpu()const{return ongpu;};
         size_t elemNum()const;
-        /*Matrix& operator=(const Matrix& _m);*/
-        /*Matrix& operator*= (const Matrix& Mb);*/
-        std::vector<Matrix> eigh();
-        std::vector<Matrix> svd();
-        size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
-        void setElem(double* elem, bool _ongpu = false);
-        void setElem(std::vector<double> elem, bool _ongpu = false);
+		    /*double& operator[](size_t idx);*/
+		    /*double& at(size_t i, size_t j);*/
         double* getElem()const;
         double* getHostElem();
-        void randomize();
-        void orthoRand();
+		    void setElem(const double* elem, bool _ongpu = false);
+    		void setElem(const std::vector<double>& elem, bool _ongpu = false);
+        Matrix& resize(size_t row, size_t col);
+        void save(const std::string& fname);
+        void load(const std::string& fname);
         void identity();
         void set_zero();
+        void randomize();
+        void orthoRand();
         Matrix& transpose();
-        Matrix& resize(size_t row, size_t col);
+        std::vector<Matrix> eigh()const;
+        std::vector<Matrix> svd()const;
+        size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
         double trace();
         double norm();
         double sum();
-        void save(const std::string& fname);
-        void load(const std::string& fname);
+        Matrix& operator*= (double a);
+		    Matrix& operator*= (const Matrix& Mb);
+        Matrix& operator+= (const Matrix& Mb);
         /*
-        friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
+		    friend Matrix takeExp(double a, const Matrix& mat);
         friend Matrix operator* (const Matrix& Ma, const Matrix& Mb);
         friend Matrix operator*(const Matrix& Ma, double a);
         friend Matrix operator*(double a, const Matrix& Ma){return Ma * a;};
-        friend bool operator== (const Matrix& m1, const Matrix& m2);
         friend Matrix operator+(const Matrix& Ma, const Matrix& Mb);
+        friend bool operator== (const Matrix& m1, const Matrix& m2);
+        friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
         */
       %extend {
           bool __eq__(const Matrix& m2){
@@ -257,9 +263,6 @@ class Matrix {
                 if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
            }
         }
-        Matrix& operator*= (double a);
-        Matrix& operator+= (const Matrix& Mb);
-        bool toGPU();
 };
 Matrix takeExp(double a, const Matrix& mat);
 
@@ -276,34 +279,63 @@ class UniTensor{
     UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
     UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
     UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
-    UniTensor(const UniTensor& UniT);
+    /*UniTensor(const UniTensor& UniT);*/
+    ~UniTensor();
     /*UniTensor& operator=(const UniTensor& UniT);*/
     UniTensor& assign(const std::vector<Bond>& _bond);
-    ~UniTensor();
     void setLabel(const std::vector<int>& newLabels);
     void setLabel(int* newLabels);
-    void setRawElem(std::vector<double> rawElem);
-    double at(std::vector<int>idxs)const;
-    /*double& operator[](size_t idx);*/
-    std::vector<Qnum> blockQnum()const;
-    Qnum blockQnum(int idx)const;
-    size_t blockNum()const;
-    void save(const std::string& fname);
     std::vector<int> label()const;
-    int label(int idx)const;
-    std::vector<Bond> bond()const;
-    Bond bond(int idx)const;
-    void setName(const std::string& _name);
-    std::string getName();
-    size_t elemNum()const;
+    int label(size_t idx)const;
     size_t bondNum()const;
     int inBondNum()const;
-    static void profile();
+    std::vector<Bond> bond()const;
+    Bond bond(size_t idx)const;
+    size_t elemNum()const;
+    Matrix getRawElem()const;
+    void setRawElem(const std::vector<double>& rawElem);
+    void setRawElem(const double* rawElem);
+    double at(const std::vector<int>& idxs)const;
+    /*double at(const std::vector<size_t>& idxs)const;*/
+    size_t blockNum()const;
+    std::vector<Qnum> blockQnum()const;
+    Qnum blockQnum(size_t idx)const;
+    std::map<Qnum, Matrix> getBlocks()const;
+    Matrix getBlock(const Qnum& qnum, bool diag = false)const;
+    void putBlock(const Qnum& qnum, const Matrix& mat);
+    double* getElem();
+    void setElem(const double* elem, bool _ongpu = false);
+    void setElem(const std::vector<double>& elem, bool _ongpu = false);
+    /*double operator[](size_t idx);*/
+    void set_zero();
+    void set_zero(const Qnum& qnum);
+    void identity();
+    void identity(const Qnum& qnum);
+    void randomize();
+    void orthoRand();
+    void orthoRand(const Qnum& qnum);
+    std::string getName();
+    void setName(const std::string& _name);
+    void save(const std::string& fname);
     UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
-    UniTensor& permute(int* newLabels, int inBondNum);
+    /*UniTensor& permute(int* newLabels, int inBondNum);*/
     UniTensor& permute(int inBondNum);
     UniTensor& transpose();
-    void randomize();
+    UniTensor& combineBond(const std::vector<int>& combined_labels);
+    UniTensor& partialTrace(int la, int lb);
+    double trace()const;
+    std::vector<_Swap> exSwap(const UniTensor& Tb)const;
+    void addGate(const std::vector<_Swap>& swaps);
+    UniTensor& operator*= (double a);
+    UniTensor& operator*= (const UniTensor& Tb);
+    UniTensor& operator+= (const UniTensor& Tb);
+    bool similar(const UniTensor& Tb)const;
+    bool elemCmp(const UniTensor& UniT)const;
+    void printRawElem()const;
+    static void profile();
+
+
+
     /*friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);*/
 
     %extend {
@@ -328,39 +360,15 @@ class UniTensor{
         return a * (*self);
       }
     }
-    UniTensor& operator*= (const UniTensor& Tb);
     /*friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
       friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
      */
-    UniTensor& operator+= (const UniTensor& Tb);
     /*friend UniTensor operator* (const UniTensor& Ta, double a);
       friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};*/
     %rename(__add__) UniTensor::operator+;
     %rename(__mul__) UniTensor::operator*;
-    UniTensor& operator*= (double a);
-    Matrix getBlock(const Qnum& qnum, bool diag = false)const;
-    void putBlock(const Qnum& qnum, const Matrix& mat);
-    std::map<Qnum, Matrix> getBlocks()const;
-    Matrix getRawElem()const;
-    void printRawElem()const;
     /*              friend class Node;
                     friend class Network;*/
-    void orthoRand();
-    void orthoRand(const Qnum& qnum);
-    void identity();
-    void identity(const Qnum& qnum);
-    void set_zero(const Qnum& qnum);
-    void set_zero();
-    double* getElem();
-    void setElem(double* elem, bool _ongpu = false);
-    void setElem(std::vector<double>& elem, bool _ongpu = false);
-    std::vector<_Swap> exSwap(const UniTensor& Tb)const;
-    bool similar(const UniTensor& Tb)const;
-    void addGate(std::vector<_Swap> swaps);
-    bool elemCmp(const UniTensor& UniT)const;
-    double trace()const;
-    UniTensor& combineBond(const std::vector<int>& combined_labels);
-    UniTensor& partialTrace(int la, int lb);
 };
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast=false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
