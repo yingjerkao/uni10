@@ -1,4 +1,5 @@
 import sys
+import copy
 sys.path.append('..')
 import pyUni10 as uni10
 
@@ -12,7 +13,7 @@ H = uni10.Matrix(4, 4, elem)
 
 # Diagonlize H
 print H
-results = H.diagonalize()
+results = H.eigh()
 print "The eigen values:\n\n", results[0]
 print "The eigen vectors:\n\n", results[1]
 
@@ -34,7 +35,7 @@ U = results[1];
 # Generate ground state by taking the first H.rol() elements from U.
 GS = uni10.Matrix(1, H.col(), U.getElem());
 # Transpose GS
-GST = GS.cp();
+GST = copy.copy(GS)
 GST.transpose()
 
 Rho = GST * GS
