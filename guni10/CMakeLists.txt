@@ -29,7 +29,7 @@
 ######################################################################
 ### CMAKE VERSION
 ######################################################################
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 
@@ -245,10 +245,7 @@ add_library(uni10 SHARED ${uni10-objects} )
 add_library(uni10-static STATIC ${uni10-objects})
 endif()
 SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
-if(APPLE) 
-  set(MACOSX_RPATH 0)
-endif()
-if (APPLE AND (${CMAKE_VERSION} GREATER "2.8.11"))
+if(APPLE)
   set(MACOSX_RPATH 1)
   SET_TARGET_PROPERTIES(uni10 PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR} MACOSX_RPATH 1)
 else()
@@ -259,18 +256,14 @@ target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
 ######################################################################
 ### RPATH SETTINGS
 ######################################################################
-if(NOT MACOSX_RPATH)
-  message(WARNING "MACOSX_RPATH not supported. Please upgrade to CMAKE version >= 2.8.12 or set DYLD_LIBRARY_PATH.") 
-else()
-  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
-  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-  LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
-  IF("${isSystemDir}" STREQUAL "-1")
-     SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-  ENDIF("${isSystemDir}" STREQUAL "-1")
-endif()
+SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+IF("${isSystemDir}" STREQUAL "-1")
+   SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+ENDIF("${isSystemDir}" STREQUAL "-1")
 ######################################################################
 ### INSTALL
 ######################################################################
