@@ -63,7 +63,7 @@ set(UNI10_VERSION_MINOR 9)
 set(UNI10_VERSION_PATCH 0)
 set(UNI10_VERSION COUNT 3)
 set(UNI10_VERSION
-  ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}-${UNI10_VERSION_PATCH}
+  ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
 )
 
 
@@ -127,7 +127,7 @@ if(UNIX)
 endif()
 if(WIN32)
   if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(CMAKE_INSTALL_PREFIX "C:\Program Files\uni10" 
+        set(CMAKE_INSTALL_PREFIX "C:\\Program Files\\uni10" 
                 CACHE PATH "UNI10 install prefix" 
                 FORCE
         )
@@ -137,8 +137,8 @@ endif()
 ### CMAKE BUILD TYPE
 ######################################################################
 
-#set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Debug)
 
 
 
