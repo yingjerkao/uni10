@@ -80,8 +80,17 @@ class Qnum {
          friend std::ostream& operator<< (std::ostream& os, const Qnum& q);
        */
       %extend {
+          /*
           bool __eq__(const Qnum& q2){
               return (*self) == q2;
+          }*/
+          bool __cmp__(const Qnum& q2){
+            if((*self) < q2)
+              return -1;
+            else if((*self) == q2)
+              return 0;
+            else
+              return 1;
           }
           Qnum __mul__(const Qnum& q2){
               return (*self) * q2;
@@ -208,30 +217,30 @@ class Matrix {
         friend bool operator== (const Matrix& m1, const Matrix& m2);
         friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
         */
-      %extend {
+        %extend {
           bool __eq__(const Matrix& m2){
-              return (*self) == m2;
+            return (*self) == m2;
           }
           Matrix __copy__(){
-              return (*self);
+            return (*self);
           }
           const std::string __repr__() {
-             std::ostringstream oss(std::ostringstream::out);
-             oss << (*self);
-             return oss.str();
+            std::ostringstream oss(std::ostringstream::out);
+            oss << (*self);
+            return oss.str();
 
           }
           Matrix __mul__(const Matrix& Ma){
-              return (*self) * Ma;
+            return (*self) * Ma;
           }
           Matrix __add__(const Matrix& Ma){
-              return (*self) + Ma;
+            return (*self) + Ma;
           }
           Matrix __mul__(double a){
-              return a * (*self);
+            return a * (*self);
           }
           Matrix __rmul__(double a){
-              return a * (*self);
+            return a * (*self);
           }
           double __getitem__(PyObject *parm) {
             if (PyTuple_Check(parm)){
@@ -248,20 +257,20 @@ class Matrix {
               return (*self)[PyInt_AsLong(parm)];
           }
           void __setitem__(PyObject *parm, double val){
-              if (PyTuple_Check(parm)){
-                 long r,c;
-                 r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                 c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                 if((*self).isDiag()) {
-                   if (r==c) (*self)[r]=val;
-                 }
-                 else {
-                   (*self)[r*(*self).col()+c]=val;
-                 }
+            if (PyTuple_Check(parm)){
+              long r,c;
+              r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+              c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+              if((*self).isDiag()) {
+                if (r==c) (*self)[r]=val;
               }
-              else
-                if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
-           }
+              else {
+                (*self)[r*(*self).col()+c]=val;
+              }
+            }
+            else
+              if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
+          }
         }
 };
 Matrix takeExp(double a, const Matrix& mat);
@@ -334,7 +343,9 @@ class UniTensor{
     void printRawElem()const;
     static void profile();
 
-
+		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+		friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
+    friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
 
     /*friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);*/
 
@@ -359,14 +370,18 @@ class UniTensor{
       UniTensor __rmul__(double a){
         return a * (*self);
       }
+      double __getitem__(PyObject *parm) {
+        return (*self)[PyInt_AsLong(parm)];
+      }
     }
     /*friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
-      friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
      */
     /*friend UniTensor operator* (const UniTensor& Ta, double a);
       friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};*/
+    /*
     %rename(__add__) UniTensor::operator+;
     %rename(__mul__) UniTensor::operator*;
+    */
     /*              friend class Node;
                     friend class Network;*/
 };

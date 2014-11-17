@@ -595,6 +595,11 @@ double UniTensor::at(const std::vector<size_t>& idxs)const{
       err<<"The tensor is a scalar. Use UniTensor::operator[] instead.";
       throw std::runtime_error(exception_msg(err.str()));
     }
+    if(!(idxs.size() == bonds.size())){
+      std::ostringstream err;
+      err<<"The size of input indices array does not match with the number of the bonds.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
 
     int bondNum = bonds.size();
     std::vector<int> Qidxs(bondNum, 0);
