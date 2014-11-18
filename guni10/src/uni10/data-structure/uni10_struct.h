@@ -28,7 +28,7 @@
 *****************************************************************************/
 #ifndef UNI10_STRUCT_H
 #define UNI10_STRUCT_H
-#include "stdint.h"
+#include <stdint.h>
 #include <string>
 #include <stdexcept>
 namespace uni10{

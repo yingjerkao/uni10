@@ -195,7 +195,7 @@ endif()
 
 #set the default path for built executables to the "bin" directory
 if (UNIX OR MINGW OR CYGWIN)
-	set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+  set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 endif()
 
 #set the default path for built libraries to the "lib" directory
