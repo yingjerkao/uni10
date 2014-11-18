@@ -498,10 +498,6 @@ void Network::construct(){
     err<<"Error when constructing the network. The bond number of the resulting tensor is different from the bond number of 'TOUT'";
     throw std::runtime_error(exception_msg(err.str()));
   }
-  for(int l = 0; l < root->labels.size(); l++){
-    std::cout<<root->labels[l]<<", ";
-  }
-
 	addSwap();
 	load = true;
 }
