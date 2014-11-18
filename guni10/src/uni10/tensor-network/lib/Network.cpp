@@ -271,7 +271,7 @@ void Network::fromfile(const std::string& fname){//names, name2pos, label_arr, R
 	infile.open (fname.c_str());
 	if(!(infile.is_open())){
       std::ostringstream err;
-      err<<"Error in reading file '" << fname <<"'.";
+      err<<"Error in opening file '" << fname <<"'.";
       throw std::runtime_error(exception_msg(err.str()));
   }
 	int lnum = 0;

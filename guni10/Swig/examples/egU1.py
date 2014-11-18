@@ -1,5 +1,4 @@
 import sys
-sys.path.append('..')
 import pyUni10 as uni10
 
 # Construct spin 1 Heisenberg model
@@ -21,7 +20,7 @@ bdo = uni10.Bond(uni10.BD_OUT, 3 );
 
 # Create tensor from the bonds and name it "H".
 H = uni10.UniTensor([bdi, bdi, bdo, bdo]);
-H.addRawElem(heisenberg_s1);
+H.setRawElem(heisenberg_s1);
 print H
 
 # Since it has U1 symmetry(total Sz conserved)
@@ -35,7 +34,7 @@ bdo = uni10.Bond(uni10.BD_OUT, [q1, q0, q_1] );
 
 # Create tensor from the in-coming and out-going bonds.
 H_U1 = uni10.UniTensor([bdi, bdi, bdo, bdo], "H_U1");
-H_U1.addRawElem(heisenberg_s1);
+H_U1.setRawElem(heisenberg_s1);
 print H_U1
 
 # See the details of the blocks

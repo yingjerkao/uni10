@@ -644,7 +644,7 @@ double UniTensor::at(const std::vector<size_t>& idxs)const{
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::setRawElem(std::vector<size_t>):");
+    propogate_exception(e, "In function UniTensor::at(std::vector<size_t>&):");
     return 0;
   }
 }

@@ -14,6 +14,7 @@
 %include "std_map.i"
 %include "std_string.i"
 %include "exception.i"
+/*%include "typemaps.i"*/
 namespace std{
   %template(int_arr) vector<int>;
   %template(double_arr) vector<double>;
@@ -84,7 +85,7 @@ class Qnum {
           bool __eq__(const Qnum& q2){
               return (*self) == q2;
           }*/
-          bool __cmp__(const Qnum& q2){
+          int __cmp__(const Qnum& q2){
             if((*self) < q2)
               return -1;
             else if((*self) == q2)
@@ -111,14 +112,9 @@ class Qnum {
               return *self;
           }
       }
-      // Make Qnum Class immutable
-      /* %pythoncode{
-      def __setattr__(self, *args):
-         raise TypeError("can't modify immutable instance")
-      __delattr__ = __setattr__
-      } */
-      static const int U1_UPB = 100;//Upper bound of U1
-      static const int U1_LOB = -100;//Lower bound of U1
+      /* Make Qnum Class immutable */
+      static const int U1_UPB = 1000;//Upper bound of U1
+      static const int U1_LOB = -1000;//Lower bound of U1
 };
 /* End of Qnum */
 
@@ -137,11 +133,17 @@ class Bond {
       void assign(bondType, const std::vector<Qnum>& qnums);
       bondType type()const;
       int dim()const;
+      std::map<Qnum, int> degeneracy()const;
+      std::vector<Qnum> Qlist()const;
+      void change(bondType tp);
+      Bond& combine(const Bond bd);
       /*
+      friend bool operator== (const Bond& b1, const Bond& b2);
+      friend Bond combine(bondType tp, const std::vector<Bond>& bds);
+      friend Bond combine(const std::vector<Bond>& bds);
+      friend std::ostream& operator<< (std::ostream& os, const Bond& b);
       friend class UniTensor;
       friend class Node;
-      friend std::ostream& operator<< (std::ostream& os, const Bond& b);
-      friend bool operator== (const Bond& b1, const Bond& b2);
       */
       %extend {
           bool __eq__(const Bond& b2){
@@ -156,14 +158,6 @@ class Bond {
               return oss.str();
           }
       }
-      void change(bondType tp);
-      Bond& combine(const Bond bd);
-      /*
-      friend Bond combine(bondType tp, const std::vector<Bond>& bds);
-      friend Bond combine(const std::vector<Bond>& bds);
-      */
-      std::map<Qnum, int> degeneracy()const;
-      std::vector<Qnum> Qlist()const;
       ~Bond();
 };
 extern Bond combine(bondType tp, const std::vector<Bond>& bds);
@@ -171,6 +165,7 @@ extern Bond combine(const std::vector<Bond>& bds);
 /* End of Bond */
 
 /* Matrix */
+%apply int *OUTPUT { int *lanczos_iter};
 class Matrix {
     public:
         Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
@@ -201,7 +196,7 @@ class Matrix {
         Matrix& transpose();
         std::vector<Matrix> eigh()const;
         std::vector<Matrix> svd()const;
-        size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
+        /*size_t lanczosEigh(double E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);*/
         double trace();
         double norm();
         double sum();
@@ -228,7 +223,6 @@ class Matrix {
             std::ostringstream oss(std::ostringstream::out);
             oss << (*self);
             return oss.str();
-
           }
           Matrix __mul__(const Matrix& Ma){
             return (*self) * Ma;
@@ -271,10 +265,15 @@ class Matrix {
             else
               if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
           }
+          double lanczosEigh(Matrix& psi, int *lanczos_iter, size_t max_iter=200, double err_tol = 5E-15){
+            double E0;
+            *lanczos_iter = (*self).lanczosEigh(E0, psi, max_iter, err_tol);
+            return E0;
+          }
         }
 };
 Matrix takeExp(double a, const Matrix& mat);
-
+%clear int *lanczos_iter;
 
 /* End of Matrix */
 
@@ -343,11 +342,15 @@ class UniTensor{
     void printRawElem()const;
     static void profile();
 
+    /*
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 		friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
     friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
-
-    /*friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);*/
+    friend UniTensor operator* (const UniTensor& Ta, double a);
+    friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};
+    friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
+    friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
+    */
 
     %extend {
       UniTensor __copy__(){
@@ -374,16 +377,6 @@ class UniTensor{
         return (*self)[PyInt_AsLong(parm)];
       }
     }
-    /*friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
-     */
-    /*friend UniTensor operator* (const UniTensor& Ta, double a);
-      friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};*/
-    /*
-    %rename(__add__) UniTensor::operator+;
-    %rename(__mul__) UniTensor::operator*;
-    */
-    /*              friend class Node;
-                    friend class Network;*/
 };
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast=false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
@@ -395,21 +388,12 @@ class Network {
     Network(const std::string& fname, const std::vector<UniTensor*>& tens);
     Network(const std::string& fname);
     ~Network();
-    /*
-    void putTensor(int idx, const UniTensor* UniT, bool force=true);
-    void putTensor(const std::string& name, const UniTensor* UniT, bool force=true);
-    void putTensorT(const std::string& nameT, const UniTensor* UniT, bool force=true);
-    */
     void putTensor(int idx, const UniTensor& UniT, bool force=true);
     void putTensor(const std::string& name, const UniTensor& UniT, bool force=true);
     void putTensorT(const std::string& nameT, const UniTensor& UniT, bool force=true);
     UniTensor launch(const std::string& name="");
-    /*friend std::ostream& operator<< (std::ostream& os, Network& nd);*/
-    //int rollcall();
-    //size_t max_tensor_elemNum();
-    //size_t sum_of_memory_usage();
-    //size_t memory_requirement();
     void profile();
+    /*friend std::ostream& operator<< (std::ostream& os, Network& nd);*/
     %extend {
       Network __copy__(){
         return (*self);
@@ -420,38 +404,6 @@ class Network {
         return oss.str();
       }
     }
-  /*
-  private:
-    void preprint(std::ostream& os, Node* nd, int layer);	//pre-order print
-    std::vector<std::string> names;
-    std::map<std::string, int> name2pos;
-    std::vector< std::vector<int> > label_arr;
-    std::vector< int > Rnums;
-    std::vector<Node*> leafs;
-    std::vector<UniTensor*> tensors;
-    std::vector< std::vector<_Swap> > swaps_arr;
-    std::vector<bool> swapflags;
-    std::vector<int> conOrder;	//contraction order;
-    std::vector<int> order;	//add order
-    std::vector<int> brakets;	//add order
-    Node* root;
-    bool load;	//whether or not the network is ready for contraction, construct=> load=true, destruct=>load=false
-    int times;	//construction times
-    int tot_elem;	//total memory ussage
-    int max_elem;	//maximum
-    void construct();
-    void destruct();
-    void matching(Node* sbj, Node* tar);
-    void branch(Node* sbj, Node* tar);
-    UniTensor merge(Node* nd);
-    void clean(Node* nd);
-    void fromfile(const std::string& fname);
-    void findConOrd(Node* nd);
-    void addSwap();
-    void _max_tensor_elemNum(Node* nd, size_t& max_num, Node& max_nd) const;
-    size_t _sum_of_tensor_elem(Node* nd) const;
-    size_t _elem_usage(Node* nd, size_t& usage, size_t& max_usage)const;
-  */
 };
 /* End of Network */
 

@@ -1,5 +1,4 @@
 import sys
-sys.path.append('..')
 import pyUni10 as uni10
 
 # Read in the tensor H_U1 which is written out in example egU1 and W, WT in example egU3

@@ -1,5 +1,4 @@
 import sys
-sys.path.append('..')
 import pyUni10 as uni10
 
 # Construct spin 1 Heisenberg model by reading in the tensor which is written out in example egU1

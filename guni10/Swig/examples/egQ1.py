@@ -1,11 +1,10 @@
 import sys
-sys.path.append('..')
 import pyUni10 as uni10
 
 # U1 = 1, parity even.
 q10 = uni10.Qnum(1, uni10.PRT_EVEN)
 # U1 = -1, parity odd.
-q_11 = uni10.Qnum(1, uni10.PRT_ODD)
+q_11 = uni10.Qnum(-1, uni10.PRT_ODD)
 
 print "q10:", q10
 print "q10:", q_11

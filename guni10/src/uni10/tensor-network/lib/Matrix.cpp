@@ -310,6 +310,11 @@ size_t Matrix::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_
       err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
       throw std::runtime_error(exception_msg(err.str()));
     }
+    if(!(Rnum == psi.elemNum())){
+      std::ostringstream err;
+      err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
     if(ongpu && !psi.ongpu)
       psi.m_elem = (double*)mvGPU(psi.m_elem, psi.m_elemNum * sizeof(double), psi.ongpu);
     size_t iter = max_iter;
@@ -574,7 +579,7 @@ void Matrix::load(const std::string& fname){
     FILE *fp = fopen(fname.c_str(), "r");
     if(!(fp != NULL)){
       std::ostringstream err;
-      err<<"Error in reading file '" << fname <<"'.";
+      err<<"Error in opening file '" << fname <<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
     double* elem = m_elem;

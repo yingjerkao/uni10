@@ -59,12 +59,12 @@ class Bond {
 		std::vector<Qnum> Qlist()const;
 		void change(bondType tp);
 		Bond& combine(Bond bd);
-		friend class UniTensor;
-		friend class Node;
-		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
 		friend bool operator== (const Bond& b1, const Bond& b2);
 		friend Bond combine(bondType tp, const std::vector<Bond>& bds);
 		friend Bond combine(const std::vector<Bond>& bds);
+		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
+		friend class UniTensor;
+		friend class Node;
 	private:
 		void setting(const std::vector<Qnum>& qnums);
 		bondType m_type;

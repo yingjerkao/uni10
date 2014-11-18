@@ -1,5 +1,4 @@
 import sys
-sys.path.append('..')
 import pyUni10 as uni10
 
 M = uni10.Matrix(4, 5)

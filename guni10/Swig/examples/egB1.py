@@ -1,5 +1,4 @@
 import sys
-sys.path.append('..')
 import pyUni10 as uni10
 
 q1 = uni10.Qnum(1)

@@ -175,7 +175,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){	//load Tensor from fi
     FILE* fp = fopen(fname.c_str(), "r");
     if(!(fp != NULL)){
       std::ostringstream err;
-      err<<"Error in reading file '" << fname <<"'.";
+      err<<"Error in opening file '" << fname <<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
     int st;
