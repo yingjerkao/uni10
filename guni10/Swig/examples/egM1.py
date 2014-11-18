@@ -34,7 +34,11 @@ U = results[1];
 # Generate ground state by taking the first H.rol() elements from U.
 GS = uni10.Matrix(1, H.col(), U.getElem());
 # Transpose GS
+<<<<<<< HEAD
 GST = copy.copy(GS);
+=======
+GST = copy.copy(GS)
+>>>>>>> 8022a1e0469f0896bc1c31dba5f1fa3c900a1c2a
 GST.transpose()
 
 Rho = GST * GS
