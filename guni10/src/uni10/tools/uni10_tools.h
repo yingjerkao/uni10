@@ -28,7 +28,7 @@
 *****************************************************************************/
 #ifndef UNI10_TOOLS_H
 #define UNI10_TOOLS_H
-#include <stdint.h>
+#include <cstdint>
 #include <limits.h>
 #include <string>
 #include <assert.h>

@@ -29,7 +29,7 @@
 #ifndef UNI10_LAPACK_WRAPPER_H
 #define UNI10_LAPACK_WRAPPER_H
 #include <stdexcept>
-#include <stdint.h>
+#include <cstdint>
 extern "C" {
 // BLAS functions
 void dgemm_(const char *transa, const char *transb, const int32_t *m, const int32_t *n, const int32_t *k,
