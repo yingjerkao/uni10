@@ -28,7 +28,7 @@
 *****************************************************************************/
 #ifndef UNI10_LAPACK_H
 #define UNI10_LAPACK_H
-#include <stdint.h>
+#include <cstdint>
 #include <limits.h>
 #include <assert.h>
 #include <sstream>

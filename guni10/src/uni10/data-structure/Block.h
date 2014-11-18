@@ -31,7 +31,7 @@
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
-#include <stdint.h>
+#include <cstdint>
 #include <uni10/datatype.hpp>
 #include <stdexcept>
 namespace uni10{
