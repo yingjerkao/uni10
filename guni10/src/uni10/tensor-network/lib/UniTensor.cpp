@@ -761,6 +761,16 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	return os;
 }
 
+Matrix UniTensor::getBlock(bool diag)const{
+  try{
+    Qnum q0(0);
+    return getBlock(q0, diag);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::getBlock(bool=false):");
+    return Matrix();
+  }
+}
 Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
   try{
     std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
@@ -799,6 +809,15 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
 	return mats;
 }
 
+void UniTensor::putBlock(const Matrix& mat){
+  try{
+    Qnum q0(0);
+    putBlock(q0, mat);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::putBlock(uni10::Matrix&):");
+  }
+}
 void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
   try{
     std::map<Qnum, Block>::iterator it;

@@ -96,5 +96,6 @@ class Matrix {
 		bool ongpu;
 };
 Matrix takeExp(double a, const Matrix& mat);
+Matrix otimes(const Matrix& Ma, const Matrix& Mb);
 };	/* namespace uni10 */
 #endif /* MATRIX_H */

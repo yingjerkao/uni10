@@ -272,4 +272,26 @@ UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
     return UniTensor();
   }
 }
+Matrix otimes(const Matrix& Ma, const Matrix& Mb){
+  try{
+    std::vector<Bond> bonds;
+    Bond bdr_a(BD_IN, Ma.row());
+    Bond bdc_a(BD_OUT, Ma.col());
+    Bond bdr_b(BD_IN, Mb.row());
+    Bond bdc_b(BD_OUT, Mb.col());
+    bonds.push_back(bdr_a); bonds.push_back(bdc_a);
+    UniTensor Ta(bonds);
+    bonds.clear();
+    bonds.push_back(bdr_b); bonds.push_back(bdc_b);
+    UniTensor Tb(bonds);
+    Ta.putBlock(Ma);
+    Tb.putBlock(Mb);
+    return otimes(Ta, Tb).getBlock();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function otimes(uni10::Matrix&, uni10::Matrix&):");
+    return Matrix();
+  }
+
+}
 };	/* namespace uni10 */
