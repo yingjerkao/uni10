@@ -279,6 +279,7 @@ class Matrix {
         }
 };
 Matrix takeExp(double a, const Matrix& mat);
+Matrix otimes(const Matrix& Ta, const Matrix& Tb);
 %clear int *lanczos_iter;
 
 /* End of Matrix */
@@ -315,7 +316,9 @@ class UniTensor{
     std::vector<Qnum> blockQnum()const;
     Qnum blockQnum(size_t idx)const;
     std::map<Qnum, Matrix> getBlocks()const;
+		Matrix getBlock(bool diag = false)const;
     Matrix getBlock(const Qnum& qnum, bool diag = false)const;
+		void putBlock(const Matrix& mat);
     void putBlock(const Qnum& qnum, const Matrix& mat);
     double* getElem();
     void setElem(const double* elem, bool _ongpu = false);
