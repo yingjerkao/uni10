@@ -343,7 +343,7 @@ void UniTensor::setLabel(int* newLabels){
 
 void UniTensor::setLabel(const std::vector<int>& newLabels){
   try{
-    std::set<int> labelS(&(newLabels[0]), &(newLabels[newLabels.size()]));
+    std::set<int> labelS(newLabels.begin(), newLabels.end());
     if(!(bonds.size() == labelS.size())){
       throw std::runtime_error(exception_msg("The size of input vector(labels) does not match for the number of bonds."));
     }
