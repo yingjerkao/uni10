@@ -11,15 +11,16 @@ using namespace uni10;
 
 int main(){
   // Define the parameters of the model / simulation
-  int chi = 30;
+  int chi = 20;
   double delta = 0.02;
-  int N = 10000;
+  int N = 2000;
   UniTensor H = Heisenberg();
 
 	Bond bdi_chi(BD_IN, chi);
+	Bond bdo_chi(BD_OUT, chi);
 	vector<Bond> bondG;
 	bondG.push_back(bdi_chi);
-	bondG.push_back(bdi_chi);
+	bondG.push_back(bdo_chi);
 	bondG.push_back(H.bond(2));
 
   vector<UniTensor> Gs;

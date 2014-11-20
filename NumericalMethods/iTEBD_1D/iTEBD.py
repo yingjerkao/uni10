@@ -26,9 +26,10 @@ N = 10000
 H = ham.Heisenberg()
 
 bdi_chi = uni10.Bond(uni10.BD_IN, chi);
+bdo_chi = uni10.Bond(uni10.BD_OUT, chi);
 Gs = []
-Gs.append(uni10.UniTensor([bdi_chi, bdi_chi, H.bond(2)], "Ga"))
-Gs.append(uni10.UniTensor([bdi_chi, bdi_chi, H.bond(2)], "Gb"))
+Gs.append(uni10.UniTensor([bdi_chi, bdo_chi, H.bond(2)], "Ga"))
+Gs.append(uni10.UniTensor([bdi_chi, bdo_chi, H.bond(2)], "Gb"))
 Gs[0].randomize(), Gs[1].randomize()
 
 Ls = []

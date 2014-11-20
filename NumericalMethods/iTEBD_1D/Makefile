@@ -3,7 +3,6 @@ INC := $(UNI10_ROOT)/include
 LIB := $(UNI10_ROOT)/lib
 CC:=g++
 FLAGS:=-O3 -m64
-
 HAMILTONIAN_INC := ../Hamiltonians
 
 itebd.e: iTEBD.cpp iTEBD_tools.cpp
