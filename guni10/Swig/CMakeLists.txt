@@ -158,21 +158,25 @@ set(PYTHON_SITE_PACKAGES "${_SITE_PACKAGES}" CACHE PATH "Python Module Direcotry
 if( "${PYTHON_SITE_PACKAGES}" STREQUAL "" )
   message(FATAL_ERROR "Cannot find Python site package directory. Set  PYTHON_SITE_PACKAGES manully.")
 endif()
-install(TARGETS _pyUni10 DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10)
+install(TARGETS _pyUni10 DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10 COMPONENT pyUni10 )
 
-install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10)
+install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py 
+        DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10 COMPONENT pyUni10)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py 
+        DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10 COMPONENT pyUni10)
 if (WIN32)
   if ("$CMAKE_SYSTEM_PROCESSOR" STREQUAL "x86")
     file(GLOB DEP_LIBS "../dep/x86/lib*")
     foreach(DLIB ${DEP_LIBS})
-	  install(FILES ${DLIB} DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10  )
+       install(FILES ${DLIB} DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10
+           COMPONENT pyUni10  )
     endforeach()
   else()
     file(GLOB DEP_LIBS "../dep/x64/lib*")
     foreach(DLIB ${DEP_LIBS})
-	  install(FILES ${DLIB} DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10  )
+       install(FILES ${DLIB} DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10
+           COMPONENT pyUni10 )
     endforeach()
   endif()
 endif()
