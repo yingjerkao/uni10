@@ -154,28 +154,32 @@ if(WIN32)
 execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
  OUTPUT_VARIABLE _SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 endif()
-set(PYTHON_SITE_PACKAGES "${_SITE_PACKAGES}" CACHE PATH "Python Module Direcotry")
-if( "${PYTHON_SITE_PACKAGES}" STREQUAL "" )
-  message(FATAL_ERROR "Cannot find Python site package directory. Set  PYTHON_SITE_PACKAGES manully.")
-endif()
-install(TARGETS _pyUni10 DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10 COMPONENT pyUni10 )
+#set(PYTHON_SITE_PACKAGES "${_SITE_PACKAGES}" CACHE PATH "Python Module Direcotry")
+#if( "${PYTHON_SITE_PACKAGES}" STREQUAL "" )
+#  message(ERROR "Cannot find Python site package directory. Set PYTHON_SITE_PACKAGES manully.")
+#endif()
+
+configure_file(setup.py.in setup.py)
+install(TARGETS _pyUni10 DESTINATION pyUni10 COMPONENT pyUni10 )
 
 install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py 
-        DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10 COMPONENT pyUni10)
+        DESTINATION pyUni10 COMPONENT pyUni10)
 
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py 
-        DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10 COMPONENT pyUni10)
+        DESTINATION pyUni10 COMPONENT pyUni10)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/setup.py 
+        DESTINATION pyUni10 COMPONENT pyUni10)
 if (WIN32)
   if ("$CMAKE_SYSTEM_PROCESSOR" STREQUAL "x86")
     file(GLOB DEP_LIBS "../dep/x86/lib*")
     foreach(DLIB ${DEP_LIBS})
-       install(FILES ${DLIB} DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10
+       install(FILES ${DLIB} DESTINATION pyUni10
            COMPONENT pyUni10  )
     endforeach()
   else()
     file(GLOB DEP_LIBS "../dep/x64/lib*")
     foreach(DLIB ${DEP_LIBS})
-       install(FILES ${DLIB} DESTINATION ${PYTHON_SITE_PACKAGES}/pyUni10
+       install(FILES ${DLIB} DESTINATION pyUni10
            COMPONENT pyUni10 )
     endforeach()
   endif()
@@ -183,5 +187,11 @@ endif()
 ## Workaround for multiple versions of python on OS X
 if (APPLE)
   string(REGEX MATCH "libpython.*.dylib$" LIBPYTHON ${PYTHON_LIBRARY})
-  install(CODE "execute_process(COMMAND install_name_tool -change ${LIBPYTHON} ${PYTHON_LIBRARY} ${PYTHON_SITE_PACKAGES}/_pyUni10.so)")
+  install(CODE "execute_process(COMMAND install_name_tool -change ${LIBPYTHON} ${PYTHON_LIBRARY} 
+         ${CMAKE_INSTALL_PREFIX}/pyUni10/_pyUni10.so)"
+         COMPONENT pyUni10)
 endif()
+
+
+
+
