@@ -138,7 +138,7 @@ endif()
 ######################################################################
 
 set(CMAKE_BUILD_TYPE Release)
-#set(CMAKE_BUILD_TYPE Debug)
+
 
 
 
@@ -205,13 +205,13 @@ endif()
 
 #set the default path for built executables to the "bin" directory
 if (UNIX OR MINGW OR CYGWIN)
-  set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+  set(EXECUTABLE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
 #set the default path for built libraries to the "lib" directory
-if (UNIX OR MINGW OR CYGWIN)
-  set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
-endif()
+#if (UNIX OR MINGW OR CYGWIN)
+#  set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+#endif()
 
 # path to include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
@@ -225,7 +225,7 @@ if (BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 if (BUILD_PYTHON_WRAPPER)
-  add_subdirectory(Swig)
+  add_subdirectory(Swig pyUni10 )
 endif()
 
 ######################################################################
@@ -329,14 +329,6 @@ set(libname "${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION}${CMAKE_SHARED_
 
 
 
-#if (UNIX)
-  #### Make Symlink to /usr/local/lib ####
-#  install(CODE " EXECUTE_PROCESS(
-#     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib/${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION_MAJOR}${CMAKE_SHARED_LIBRARY_SUFFIX})")
-
-#  install(CODE " EXECUTE_PROCESS(
-#     COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/${libname} /usr/local/lib/${CMAKE_SHARED_LIBRARY_PREFIX}uni10${CMAKE_SHARED_LIBRARY_SUFFIX})")
-#endif()
 ######################################################################
 # Information Messages
 ######################################################################
@@ -362,7 +354,7 @@ if(BUILD_PYTHON_WRAPPER)
   message(STATUS " Python Excutable  : ${PYTHON_EXECUTABLE}")
   message(STATUS " Python Headers    : ${PYTHON_INCLUDE_DIR}")
   message(STATUS " Python Library    : ${PYTHON_LIBRARY}")
-  message(STATUS " Python Module Dir : ${PYTHON_SITE_PACKAGES}")
+#  message(STATUS " Python Module Dir : ${PYTHON_SITE_PACKAGES}")
   message(STATUS " Swig Version      : ${SWIG_VERSION}")
   message(STATUS " Swig Directory    : ${SWIG_DIR}")
 else()
@@ -371,31 +363,65 @@ endif()
 message(STATUS "")
 message(STATUS "")
 
+
+
+
 ######################################################################
 ### CPACK 
 ######################################################################
+
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Uni10: the Universal Tensor Network Library")
 SET(CPACK_PACKAGE_VENDOR "Uni10")
-SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.txt")
+SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL.txt")
+SET(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.txt")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LGPL.txt")
 SET(CPACK_PACKAGE_VERSION_MAJOR "${UNI10_VERSION_MAJOR}")
 SET(CPACK_PACKAGE_VERSION_MINOR "${UNI10_VERSION_MINOR}")
 SET(CPACK_PACKAGE_VERSION_PATCH "${UNI10_VERSION_PATCH}")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "uni10 ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}")
-#IF(WIN32 AND NOT UNIX)
-  # There is a bug in NSI that does not handle full unix paths properly. Make
-  # sure there is at least one set of four (4) backlasshes.
+if (UNIX) 
+   SET(CPACK_INSTALL_PREFIX "/usr/local/uni10")
+endif()
+SET(CPACK_SET_DESTDIR "ON")
+set(GENERATORS "ZIP;TGZ")
+IF ( APPLE ) 
+  SET(GENERATORS "${GENERATORS};PackageMaker")
+ELSEIF ( UNIX )
+  SET(GENERATORS "${GENERATORS};DEB;RPM")
+ENDIF()
+SET(CPACK_GENERATOR ${GENERATORS})
+set(CPACK_COMPONENTS_ALL libraries headers python_examples examples pyUni10 common documentation)
+set(CPACK_COMPONENT_EXAMPLES_DISPLAYNAME "Uni10 C++ Examples")
+set(CPACK_COMPONENT_libraries_DISPLAYNAME "Uni10 Libraries")
+set(CPACK_COMPONENT_headers_DISPLAYNAME "C++ Headers")
+set(CPACK_COMPONENT_documentation_DISPLAYNAME "Uni10 API Reference")
+set(CPACK_COMPONENT_pyUni10_DISPLAYNAME "pyUni10: Python Wrappers")
+set(CPACK_COMPONENT_python_examples_DISPLAYNAME "pyUni10 Examples")
+set(CPACK_COMPONENT_examples_GROUP "Applications")
+set(CPACK_COMPONENT_python_examples_GROUP "Applications")
+set(CPACK_COMPONENT_pyUni10_GROUP "Development")
+set(CPACK_COMPONENT_libraries_GROUP "Development")
+set(CPACK_COMPONENT_headers_GROUP "Development")
+set(CPACK_COMPONENT_common_GROUP "Development")
+set(CPACK_COMPONENT_documentation_GROUP "Development")
+set(CPACK_COMPONENT_GROUP_DEVELOPMENT_DESCRIPTION "Tools for developing Uni10 applications.")
+set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
+set(CPACK_COMPONENT_PYTHON_EXAMPLES_DEPENDS pyUni10)
+
+SET(CPACK_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION 1)
+IF(WIN32 AND NOT UNIX)
+  SET(CPACK_GENERATOR "NSIS")
 #  SET(CPACK_PACKAGE_ICON "${CMake_SOURCE_DIR}/Utilities/Release\\\\InstallIcon.bmp")
 #  SET(CPACK_NSIS_INSTALLED_ICON_NAME "bin\\\\MyExecutable.exe")
-#  SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} My Famous Project")
+  SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY} Uni10")
 #  SET(CPACK_NSIS_HELP_LINK "http:\\\\\\\\www.my-project-home-page.org")
 #  SET(CPACK_NSIS_URL_INFO_ABOUT "http:\\\\\\\\www.my-personal-home-page.com")
 #  SET(CPACK_NSIS_CONTACT "me@my-personal-home-page.com")
-#  SET(CPACK_NSIS_MODIFY_PATH ON)
+  SET(CPACK_NSIS_MODIFY_PATH ON)
 #ELSE(WIN32 AND NOT UNIX)
 #  SET(CPACK_STRIP_FILES "bin/MyExecutable")
 #  SET(CPACK_SOURCE_STRIP_FILES "")
-#ENDIF(WIN32 AND NOT UNIX)
+ENDIF(WIN32 AND NOT UNIX)
 #SET(CPACK_PACKAGE_EXECUTABLES "MyExecutable" "My Executable")
 INCLUDE(CPack)
 
