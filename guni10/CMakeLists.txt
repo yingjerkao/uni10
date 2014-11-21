@@ -205,12 +205,12 @@ endif()
 
 #set the default path for built executables to the "bin" directory
 if (UNIX OR MINGW OR CYGWIN)
-  set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+  set(EXECUTABLE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
 #set the default path for built libraries to the "lib" directory
 #if (UNIX OR MINGW OR CYGWIN)
-#  set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
+#  set(LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 #endif()
 
 # path to include directory
@@ -225,7 +225,7 @@ if (BUILD_EXAMPLES)
   add_subdirectory(examples)
 endif()
 if (BUILD_PYTHON_WRAPPER)
-  add_subdirectory(Swig pyUni10)
+  add_subdirectory(Swig pyUni10 )
 endif()
 
 ######################################################################
@@ -363,9 +363,13 @@ endif()
 message(STATUS "")
 message(STATUS "")
 
+
+
+
 ######################################################################
 ### CPACK 
 ######################################################################
+
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Uni10: the Universal Tensor Network Library")
 SET(CPACK_PACKAGE_VENDOR "Uni10")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL.txt")
@@ -379,14 +383,31 @@ if (UNIX)
    SET(CPACK_INSTALL_PREFIX "/usr/local/uni10")
 endif()
 SET(CPACK_SET_DESTDIR "ON")
-SET(CPACK_GENERATOR "ZIP;TGZ")
-#SET("PackageMaker;NSIS;RPM;DEB")
+set(GENERATORS "ZIP;TGZ")
 IF ( APPLE ) 
-  SET(CPACK_GENERATOR "PackageMaker")
+  SET(GENERATORS "${GENERATORS};PackageMaker")
 ELSEIF ( UNIX )
-  SET(CPACK_GENERATOR "DEB;RPM")
+  SET(GENERATORS "${GENERATORS};DEB;RPM")
 ENDIF()
-SET(CPACK_COMPONENTS_ALL_IN_ONE_PACKAGE 1)
+SET(CPACK_GENERATOR ${GENERATORS})
+set(CPACK_COMPONENTS_ALL libraries headers python_examples examples pyUni10 common documentation)
+set(CPACK_COMPONENT_EXAMPLES_DISPLAYNAME "Uni10 C++ Examples")
+set(CPACK_COMPONENT_libraries_DISPLAYNAME "Uni10 Libraries")
+set(CPACK_COMPONENT_headers_DISPLAYNAME "C++ Headers")
+set(CPACK_COMPONENT_documentation_DISPLAYNAME "Uni10 API Reference")
+set(CPACK_COMPONENT_pyUni10_DISPLAYNAME "pyUni10: Python Wrappers")
+set(CPACK_COMPONENT_python_examples_DISPLAYNAME "pyUni10 Examples")
+set(CPACK_COMPONENT_examples_GROUP "Applications")
+set(CPACK_COMPONENT_python_examples_GROUP "Applications")
+set(CPACK_COMPONENT_pyUni10_GROUP "Development")
+set(CPACK_COMPONENT_libraries_GROUP "Development")
+set(CPACK_COMPONENT_headers_GROUP "Development")
+set(CPACK_COMPONENT_common_GROUP "Development")
+set(CPACK_COMPONENT_documentation_GROUP "Development")
+set(CPACK_COMPONENT_GROUP_DEVELOPMENT_DESCRIPTION "Tools for developing Uni10 applications.")
+set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
+set(CPACK_COMPONENT_PYTHON_EXAMPLES_DEPENDS pyUni10)
+
 SET(CPACK_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION 1)
 IF(WIN32 AND NOT UNIX)
   SET(CPACK_GENERATOR "NSIS")

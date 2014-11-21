@@ -146,7 +146,7 @@ PYTHONLIBS_VERSION_STRING )
    endif ()
 endif ( )
 
-set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR} )
+set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
 
@@ -156,42 +156,49 @@ SET_SOURCE_FILES_PROPERTIES(pyUni10.i PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(pyUni10.i PROPERTIES SWIG_FLAGS "-includeall")
 SWIG_ADD_MODULE(pyUni10 python pyUni10.i )
 SWIG_LINK_LIBRARIES(pyUni10 ${PYTHON_LIBRARY} uni10-static)
-
+#SET_SOURCE_FILES_PROPERTIES(${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-Wl,rpath,@loader_path/../../../${PYTHON_LIBRARY}")
 if (WIN32)
   if ("$CMAKE_SYSTEM_PROCESSOR" STREQUAL "x86")
     file(GLOB DEP_LIBS "../dep/x86/lib*")
     foreach(DLIB ${DEP_LIBS})
-       install(FILES ${DLIB} DESTINATION pyUni10/pyUni10
+       innstall(FILES ${DLIB} DESTINATION pyUni10
            COMPONENT pyUni10  )
     endforeach()
   else()
     file(GLOB DEP_LIBS "../dep/x64/lib*")
     foreach(DLIB ${DEP_LIBS})
-       install(FILES ${DLIB} DESTINATION pyUni10/pyUni10
+       install(FILES ${DLIB} DESTINATION pyUni10
            COMPONENT pyUni10 )
     endforeach()
   endif()
 endif()
 
-
 configure_file(setup.py.in setup.py)
-install(TARGETS _pyUni10 DESTINATION pyUni10/pyUni10 COMPONENT pyUni10 )
+configure_file(__init__.py.in __init__.py)
+
+#add_custom_command(TARGET _pyUni10
+#                   POST_BUILD
+#                   COMMAND ${PYTHON_EXECUTABLE} ARGS setup.py install
+#                   WORKING_DIRECTORY ${CMAKE_SWIG_OUTDIR})
+if ( APPLE)
+  string(REGEX MATCH "libpython.*.dylib$" LIBPYTHON ${PYTHON_LIBRARY})
+  install(CODE "execute_process( COMMAND install_name_tool -change ${LIBPYTHON} @loader_path/../../../${LIBPYTHON} ${CMAKE_SWIG_OUTDIR}/_pyUni10.so)"
+         COMPONENT pyUni10)
+endif()
+
+install(TARGETS _pyUni10 DESTINATION pyUni10 COMPONENT pyUni10 )
 
 install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py 
-        DESTINATION pyUni10/pyUni10 COMPONENT pyUni10)
+        DESTINATION pyUni10 COMPONENT pyUni10)
 
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py 
-        DESTINATION pyUni10/pyUni10 COMPONENT pyUni10)
+install(FILES ${CMAKE_SWIG_OUTDIR}/__init__.py 
+        DESTINATION pyUni10 COMPONENT pyUni10)
 install(FILES ${CMAKE_SWIG_OUTDIR}/setup.py 
         DESTINATION pyUni10 COMPONENT pyUni10)
-## Workaround for multiple versions of python on OS X
-#if (APPLE)
-#  string(REGEX MATCH "libpython.*.dylib$" LIBPYTHON ${PYTHON_LIBRARY})
-#  install(CODE "execute_process(COMMAND install_name_tool -change ${LIBPYTHON} ${PYTHON_LIBRARY} 
-#         ${CMAKE_INSTALL_PREFIX}/pyUni10/_pyUni10.so)"
-#         COMPONENT pyUni10)
-#endif()
 
+install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} setup.py install
+                              WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/pyUni10
+                              )")
 
 
 
