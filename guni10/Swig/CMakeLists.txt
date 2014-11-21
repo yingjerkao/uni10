@@ -25,7 +25,7 @@
 #  @since 0.9.0
 ###
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 
 FIND_PACKAGE(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
@@ -38,33 +38,38 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
   if(UNIX)
     if (NOT ${PYTHON_EXECUTABLE} STREQUAL "/usr/bin/python")
         ### Homebrew work around 
-       if (${PYTHON_EXECUTABLE} STREQUAL "/usr/local/bin/python" AND APPLE) 
-          set(BREW_PREFIX /usr/local/Cellar/python/PYTHON_VERSION_STRING/Frmaeworks/Python.frameworks/Versions/Current) ## Homebrew Python
-          message(WARNING "Using Homebrew Python.") 
-          find_path(PYTHON_INCLUDE_DIR NAMES Python.h
+        if(APPLE)
+          if (${PYTHON_EXECUTABLE} STREQUAL "/usr/local/bin/python") 
+            set(BREW_PREFIX 
+     /usr/local/Cellar/python/PYTHON_VERSION_STRING/Frmaeworks/Python.frameworks/Versions/Current) 
+           ## Homebrew Python
+           message(WARNING "Using Homebrew Python.") 
+           find_path(PYTHON_INCLUDE_DIR NAMES Python.h
                PATHS ${BREW_PREFIX}/Headers
                DOC "Location of Python Header files"
                NO_DEFAULT_PATH )
-         if (PYTHON_INCLUDE_DIR)
-           message(STATUS "Found Python.h in ${PYTHON_INCLUDE_DIR}" )
-         else ()
-           message(FATAL_ERROR "Python.h not found! Please set PYTHON_INCLUDE_DIR manually.")
-         endif()
-         find_library(PYTHON_LIBRARY
+           if (PYTHON_INCLUDE_DIR)
+             message(STATUS "Found Python.h in ${PYTHON_INCLUDE_DIR}" )
+           else ()
+             message(FATAL_ERROR "Python.h not found! Please set PYTHON_INCLUDE_DIR manually.")
+           endif()
+           find_library(PYTHON_LIBRARY
                     NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}python${_CURRENT_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}
                           ${CMAKE_SHARED_LIBRARY_PREFIX}python${CMAKE_SHARED_LIBRARY_SUFFIX}
                     PATHS ${BREW_PREFIX}/lib/
                     DOC "Location of Python Libraries"
                NO_DEFAULT_PATH )
-         if (PYTHON_LIBRARY)
-           message(STATUS "Found PythonLibs: ${PYTHON_LIBRARY}")
-         else ()
-           message(FATAL_ERROR "PythonLibs not found! Please set PYTHON_LIBRARY manully.")
-         endif()
-         if (PYTHON_LIBRARY AND PYTHON_INCLUDE_DIR)
+           if (PYTHON_LIBRARY)
+             message(STATUS "Found PythonLibs: ${PYTHON_LIBRARY}")
+           else ()
+             message(FATAL_ERROR "PythonLibs not found! Please set PYTHON_LIBRARY manully.")
+           endif()
+           if (PYTHON_LIBRARY AND PYTHON_INCLUDE_DIR)
             set(PYTHONLIBS_FOUND)
+           endif()
          endif()
-       else() ### Not Homebrew, other Pythons
+       endif(APPLE)
+       if (NOT PYTHONLIBS_FOUND)
          STRING(REGEX REPLACE "/bin/python.*$" "" PYTHON_ROOT "${PYTHON_EXECUTABLE}")
          find_path(PYTHON_INCLUDE_DIR NAMES Python.h 
                PATHS ${PYTHON_ROOT}/include/ 
@@ -132,10 +137,18 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
     FIND_PACKAGE(PythonLibs)
   endif(WIN32)
 endif()
+if ( PYTHON_VERSION_STRING AND PYTHONLIBS_VERSION_STRING ) 
+   if ( NOT PYTHON_VERSION_STRING VERSION_EQUAL 
+PYTHONLIBS_VERSION_STRING ) 
+     message ( FATAL_ERROR 
+             "Version mismatch between python interpreter and libraries" 
+) 
+   endif ()
+endif ( )
 
-INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
-
+set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR} )
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
+INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
 
 SET(CMAKE_SWIG_FLAGS "")
 
@@ -144,53 +157,40 @@ SET_SOURCE_FILES_PROPERTIES(pyUni10.i PROPERTIES SWIG_FLAGS "-includeall")
 SWIG_ADD_MODULE(pyUni10 python pyUni10.i )
 SWIG_LINK_LIBRARIES(pyUni10 ${PYTHON_LIBRARY} uni10-static)
 
-set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
-if(UNIX) 
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
- OUTPUT_VARIABLE _SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-
-if(WIN32)
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()"
- OUTPUT_VARIABLE _SITE_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
-endif()
-#set(PYTHON_SITE_PACKAGES "${_SITE_PACKAGES}" CACHE PATH "Python Module Direcotry")
-#if( "${PYTHON_SITE_PACKAGES}" STREQUAL "" )
-#  message(ERROR "Cannot find Python site package directory. Set PYTHON_SITE_PACKAGES manully.")
-#endif()
-
-configure_file(setup.py.in setup.py)
-install(TARGETS _pyUni10 DESTINATION pyUni10 COMPONENT pyUni10 )
-
-install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py 
-        DESTINATION pyUni10 COMPONENT pyUni10)
-
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py 
-        DESTINATION pyUni10 COMPONENT pyUni10)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/setup.py 
-        DESTINATION pyUni10 COMPONENT pyUni10)
 if (WIN32)
   if ("$CMAKE_SYSTEM_PROCESSOR" STREQUAL "x86")
     file(GLOB DEP_LIBS "../dep/x86/lib*")
     foreach(DLIB ${DEP_LIBS})
-       install(FILES ${DLIB} DESTINATION pyUni10
+       install(FILES ${DLIB} DESTINATION pyUni10/pyUni10
            COMPONENT pyUni10  )
     endforeach()
   else()
     file(GLOB DEP_LIBS "../dep/x64/lib*")
     foreach(DLIB ${DEP_LIBS})
-       install(FILES ${DLIB} DESTINATION pyUni10
+       install(FILES ${DLIB} DESTINATION pyUni10/pyUni10
            COMPONENT pyUni10 )
     endforeach()
   endif()
 endif()
+
+
+configure_file(setup.py.in setup.py)
+install(TARGETS _pyUni10 DESTINATION pyUni10/pyUni10 COMPONENT pyUni10 )
+
+install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py 
+        DESTINATION pyUni10/pyUni10 COMPONENT pyUni10)
+
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/__init__.py 
+        DESTINATION pyUni10/pyUni10 COMPONENT pyUni10)
+install(FILES ${CMAKE_SWIG_OUTDIR}/setup.py 
+        DESTINATION pyUni10 COMPONENT pyUni10)
 ## Workaround for multiple versions of python on OS X
-if (APPLE)
-  string(REGEX MATCH "libpython.*.dylib$" LIBPYTHON ${PYTHON_LIBRARY})
-  install(CODE "execute_process(COMMAND install_name_tool -change ${LIBPYTHON} ${PYTHON_LIBRARY} 
-         ${CMAKE_INSTALL_PREFIX}/pyUni10/_pyUni10.so)"
-         COMPONENT pyUni10)
-endif()
+#if (APPLE)
+#  string(REGEX MATCH "libpython.*.dylib$" LIBPYTHON ${PYTHON_LIBRARY})
+#  install(CODE "execute_process(COMMAND install_name_tool -change ${LIBPYTHON} ${PYTHON_LIBRARY} 
+#         ${CMAKE_INSTALL_PREFIX}/pyUni10/_pyUni10.so)"
+#         COMPONENT pyUni10)
+#endif()
 
 
 

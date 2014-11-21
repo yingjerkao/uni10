@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-import glob
-
+dep_lib=['lib*','_pyUni10*']
 setup(name='pyUni10',
       version='${UNI10_VERSION}',
       description='Uni10 Python Wapper',
       author='Ying-Jer Kao, Yun-Da Hsieh',
       author_email='uni10@gmail.com',
       url='http://www.uni10.org',
-      packages=[''],
-      package_data={'':glob.glob("lib*")+glob.glob("_pyUni10*")} ,
+      license='LGPL',
+      packages=['pyUni10'],
+      package_data={'pyUni10':dep_lib} ,
      )
