@@ -11,6 +11,7 @@ void bondcat(UniTensor& T, Matrix& L, int bidx){
   T.permute(per_labels, 1);
   T.putBlock(L * T.getBlock());
   T.permute(labels, inBondNum);
+
 }
 
 void bondrm(UniTensor& T, Matrix& L, int bidx){

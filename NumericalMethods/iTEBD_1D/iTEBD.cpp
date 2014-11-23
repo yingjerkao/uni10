@@ -11,8 +11,8 @@ using namespace uni10;
 
 int main(){
   // Define the parameters of the model / simulation
-  int chi = 20;
-  double delta = 0.02;
+  int chi = 30;
+  double delta = 0.1;
   int N = 2000;
   UniTensor H = Heisenberg();
 
@@ -41,6 +41,10 @@ int main(){
   U.putBlock(takeExp(-delta, H.getBlock()));
   UniTensor theta;
 
+  int ordA[] = {-1, 3, 1};
+  int ordB[] = {3, -3, 2};
+  int ordU[] = {1, 2, -2, -4};
+
   // Perform the imaginary time evolution alternating on A and B bonds
   for(int step = 0; step < N; step++){
     // Construct theta
@@ -50,9 +54,6 @@ int main(){
     bondcat(Gs[A], Ls[B], 0);
     bondcat(Gs[B], Ls[B], 1);
 
-    int ordA[] = {-1, 3, 1};
-    int ordB[] = {3, -3, 2};
-    int ordU[] = {1, 2, -2, -4};
     Gs[A].setLabel(ordA);
 		Gs[B].setLabel(ordB);
 		U.setLabel(ordU);
@@ -67,6 +68,7 @@ int main(){
 		// Truncate
 		double norm = svd[1].resize(chi, chi).norm();
 		svd[1] *= (1.0 / norm);
+    cout<<norm<<endl;
 		Ls[A] = svd[1];
 		Gs[A].putBlock(svd[0].resize(svd[0].row(), chi));
 		Gs[B].putBlock(svd[2].resize(chi, svd[2].col()));
