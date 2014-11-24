@@ -99,6 +99,9 @@ class Qnum {
             else
               return 1;
           }
+          long __hash__(){
+            return (*self).hash();
+          }
           Qnum __mul__(const Qnum& q2){
               return (*self) * q2;
           }

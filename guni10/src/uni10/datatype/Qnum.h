@@ -62,6 +62,7 @@ class Qnum {
 		void assign(parityFType _prtF, int _U1 = 0, parityType _prt = PRT_EVEN);
 		//static bool isFermionic();
 		static bool isFermionic(){return Fermionic;}
+    long int hash()const;
 		friend bool operator< (const Qnum& q1, const Qnum& q2);
 		friend bool operator<= (const Qnum& q1, const Qnum& q2);
 		friend bool operator== (const Qnum& q1, const Qnum& q2);

@@ -35,6 +35,5 @@ def Heisenberg_U1():
 	bdi = uni10.Bond(uni10.BD_IN, [q1, -q1]);
 	bdo = uni10.Bond(uni10.BD_OUT, [q1, -q1]);
 	H = uni10.UniTensor([bdi, bdi, bdo, bdo], "Heisenberg")
-	print Heisenberg().getBlock()
 	H.setRawElem(Heisenberg().getBlock().getElem());
 	return H

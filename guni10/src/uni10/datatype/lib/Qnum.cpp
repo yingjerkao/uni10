@@ -60,10 +60,10 @@ Qnum::Qnum(parityFType _prtF, int _U1, parityType _prt): m_U1(_U1), m_prt(_prt),
 
 Qnum::Qnum(const Qnum& _q):m_U1(_q.m_U1), m_prt(_q.m_prt), m_prtF(_q.m_prtF){}
 bool operator< (const Qnum& q1, const Qnum& q2){
-	return ((q1.m_U1 * 10) + (q1.m_prt * 2) + q1.m_prtF) < ((q2.m_U1 * 10) + (q2.m_prt * 2) + q2.m_prtF);
+	return q1.hash() < q2.hash();
 }
 bool operator<= (const Qnum& q1, const Qnum& q2){
-	return ((q1.m_U1 * 10) + (q1.m_prt * 2) + q1.m_prtF) <= ((q2.m_U1 * 10) + (q2.m_prt * 2) + q2.m_prtF);
+	return q1.hash() <= q2.hash();
 }
 bool operator== (const Qnum& q1, const Qnum& q2){
 	return (q1.m_U1 == q2.m_U1) && (q1.m_prt == q2.m_prt) && (q1.m_prtF == q2.m_prtF);
@@ -97,4 +97,5 @@ void Qnum::assign(parityFType _prtF, int _U1, parityType _prt){
 int Qnum::U1()const{return m_U1;}
 parityType Qnum::prt()const{return m_prt;}
 parityFType Qnum::prtF()const{return m_prtF;}
+long int Qnum::hash()const{ return m_U1 * 4 + m_prt * 2 + m_prtF; }
 };
