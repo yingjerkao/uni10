@@ -351,7 +351,7 @@ class UniTensor{
     UniTensor& operator+= (const UniTensor& Tb);
     bool similar(const UniTensor& Tb)const;
     bool elemCmp(const UniTensor& UniT)const;
-    void printRawElem()const;
+    /*void printRawElem()const;*/
     /*static void profile();*/
 
     /*
@@ -390,6 +390,9 @@ class UniTensor{
       }
       const std::string profile(){
         return (*self).profile(false);
+      }
+      const std::string printRawElem(){
+        return (*self).printRawElem(false);
       }
     }
 };

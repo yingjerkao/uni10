@@ -603,81 +603,105 @@ bool UniTensor::similar(const UniTensor& Tb)const{
 
 //=============================ACCESS MEMORY EXPLICITLY=====================================
 
-Matrix UniTensor::printRaw(bool flag)const{
-	if(status & HAVEBOND && status & HAVEELEM){
-		int bondNum = bonds.size();
-		std::vector<Bond> ins;
-		std::vector<Bond> outs;
-		for(std::vector<Bond>::const_iterator it = bonds.begin(); it != bonds.end(); ++it){
-			if(it->type() == BD_IN)
-				ins.push_back(*it);
-			else
-				outs.push_back(*it);
-		}
-		Bond rBond = combine(ins);
-		Bond cBond = combine(outs);
-		std::vector<Qnum> rowQ = rBond.Qlist();
-		std::vector<Qnum> colQ = cBond.Qlist();
-		size_t rowNum = rBond.dim();
-		size_t colNum = cBond.dim();
-		std::vector<size_t> idxs(bondNum, 0);
+std::string UniTensor::printRawElem(bool print)const{
+  try{
+    std::ostringstream os;
+    if(status & HAVEBOND && status & HAVEELEM){
+      int bondNum = bonds.size();
+      std::vector<Bond> ins;
+      std::vector<Bond> outs;
+      for(std::vector<Bond>::const_iterator it = bonds.begin(); it != bonds.end(); ++it){
+        if(it->type() == BD_IN)
+          ins.push_back(*it);
+        else
+          outs.push_back(*it);
+      }
+      Bond rBond = combine(ins);
+      Bond cBond = combine(outs);
+      std::vector<Qnum> rowQ = rBond.Qlist();
+      std::vector<Qnum> colQ = cBond.Qlist();
+      size_t rowNum = rBond.dim();
+      size_t colNum = cBond.dim();
+      std::vector<size_t> idxs(bondNum, 0);
 
-    if(flag){
-      std::cout<< "     ";
+      os<< "     ";
       for(int q = 0; q < colQ.size(); q++)
-        std::cout<< "   " << std::setw(2) << colQ[q].U1() << "," << colQ[q].prt();
-      std::cout<< std::endl << std::setw(5) << "" << std::setw(colQ.size() * 7 + 2) <<std::setfill('-')<<"";
-      std::cout<<std::setfill(' ');
-    }
-    int cnt = 0;
-    int r = 0;
-    int bend;
-    std::vector<double> rawElem;
-    while(1){
-      if(flag){
+        os<< "   " << std::setw(2) << colQ[q].U1() << "," << colQ[q].prt();
+      os<< std::endl << std::setw(5) << "" << std::setw(colQ.size() * 7 + 2) <<std::setfill('-')<<"";
+      os<<std::setfill(' ');
+      int cnt = 0;
+      int r = 0;
+      int bend;
+      while(1){
         if(cnt % colNum == 0){
-          std::cout<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
+          os<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
           r++;
         }
-        std::cout<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
-      }
-      rawElem.push_back(at(idxs));
-      for(bend = bondNum - 1; bend >= 0; bend--){
-        idxs[bend]++;
-        if(idxs[bend] < bonds[bend].dim())
+        os<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
+        for(bend = bondNum - 1; bend >= 0; bend--){
+          idxs[bend]++;
+          if(idxs[bend] < bonds[bend].dim())
+            break;
+          else
+            idxs[bend] = 0;
+        }
+        cnt++;
+        if(bend < 0)
           break;
-        else
-          idxs[bend] = 0;
       }
-      cnt++;
-      if(bend < 0)
-        break;
+      os <<"\n    |\n";
     }
-    if(flag)
-      std::cout <<"\n    |\n";
-    return Matrix(rowNum, colNum, &rawElem[0]);
-	}
-	else if(status & HAVEELEM){
-		std::cout<<"\nScalar: " << elem[0]<<"\n\n";
-		return Matrix(1, 1, elem);
-	}
-	else{
-		std::cout<<"NO ELEMENT IN THE TENSOR!!!\n";
-		return Matrix(0, 0);
-	}
-}
-
-void UniTensor::printRawElem()const{
-  try{
-	  printRaw(true);
+    else if(status & HAVEELEM){
+      os<<"\nScalar: " << elem[0]<<"\n\n";
+    }
+    else{
+      os<<"NO ELEMENT IN THE TENSOR!!!\n";
+    }
+    if(print){
+      std::cout<<os.str();
+      return "";
+    }
+    return os.str();
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::printRawElem():");
+    return "";
   }
 }
+
 Matrix UniTensor::getRawElem()const{
   try{
-	  return printRaw(false);
+    if(status & HAVEBOND && status & HAVEELEM){
+      int bondNum = bonds.size();
+      size_t rowNum = 1;
+      size_t colNum = 1;
+      for(std::vector<Bond>::const_iterator it = bonds.begin(); it != bonds.end(); ++it){
+        if(it->type() == BD_IN)
+          rowNum *= it->dim();
+        else
+          colNum *= it->dim();
+      }
+      std::vector<size_t> idxs(bondNum, 0);
+      int bend;
+      std::vector<double> rawElem;
+      while(1){
+        rawElem.push_back(at(idxs));
+        for(bend = bondNum - 1; bend >= 0; bend--){
+          idxs[bend]++;
+          if(idxs[bend] < bonds[bend].dim())
+            break;
+          else
+            idxs[bend] = 0;
+        }
+        if(bend < 0)
+          break;
+      }
+      return Matrix(rowNum, colNum, &rawElem[0]);
+    }
+    else if(status & HAVEELEM)
+      return Matrix(1, 1, elem);
+    else
+      return Matrix();
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getRawElem():");

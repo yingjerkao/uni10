@@ -114,7 +114,7 @@ class UniTensor{
 		UniTensor& operator+= (const UniTensor& Tb);
     bool similar(const UniTensor& Tb)const;
 		bool elemCmp(const UniTensor& UniT)const;
-		void printRawElem()const;
+    std::string printRawElem(bool print=true)const;
 		static std::string profile(bool print = true);
 
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
@@ -155,7 +155,6 @@ class UniTensor{
 		void initUniT();
 		static const int HAVEBOND = 1;		  /**< A flag for initialization */
 		static const int HAVEELEM = 2;		  /**< A flag for having element assigned */
-		Matrix printRaw(bool flag)const;
 };
 UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
 UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);

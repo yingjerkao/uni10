@@ -189,10 +189,15 @@ Bond& Bond::combine(Bond bd){
 
 Bond combine(bondType tp, const std::vector<Bond>& bds){
   try{
-    if(!(bds.size() > 1)){
+    if((bds.size() == 0)){
       std::ostringstream err;
-      err<<"There should be at least two bonds in the input vector to be combined.";
+      err<<"There should be at least one bond in the input vector to be combined.";
       throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(bds.size() == 1){
+      Bond bd = bds[0];
+      bd.change(tp);
+      return bd;
     }
     int bd_num = bds.size();
     Bond outBond1 = bds[bd_num - 1];
