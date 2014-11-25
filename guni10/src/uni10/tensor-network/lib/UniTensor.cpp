@@ -616,40 +616,44 @@ std::string UniTensor::printRawElem(bool print)const{
         else
           outs.push_back(*it);
       }
-      Bond rBond = combine(ins);
-      Bond cBond = combine(outs);
-      std::vector<Qnum> rowQ = rBond.Qlist();
-      std::vector<Qnum> colQ = cBond.Qlist();
-      size_t rowNum = rBond.dim();
-      size_t colNum = cBond.dim();
-      std::vector<size_t> idxs(bondNum, 0);
+      if(ins.size() == 0 || outs.size() == 0)
+        os<<getRawElem();
+      else{
+        Bond rBond = combine(ins);
+        Bond cBond = combine(outs);
+        std::vector<Qnum> rowQ = rBond.Qlist();
+        std::vector<Qnum> colQ = cBond.Qlist();
+        size_t rowNum = rBond.dim();
+        size_t colNum = cBond.dim();
+        std::vector<size_t> idxs(bondNum, 0);
 
-      os<< "     ";
-      for(int q = 0; q < colQ.size(); q++)
-        os<< "   " << std::setw(2) << colQ[q].U1() << "," << colQ[q].prt();
-      os<< std::endl << std::setw(5) << "" << std::setw(colQ.size() * 7 + 2) <<std::setfill('-')<<"";
-      os<<std::setfill(' ');
-      int cnt = 0;
-      int r = 0;
-      int bend;
-      while(1){
-        if(cnt % colNum == 0){
-          os<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
-          r++;
-        }
-        os<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
-        for(bend = bondNum - 1; bend >= 0; bend--){
-          idxs[bend]++;
-          if(idxs[bend] < bonds[bend].dim())
+        os<< "     ";
+        for(int q = 0; q < colQ.size(); q++)
+          os<< "   " << std::setw(2) << colQ[q].U1() << "," << colQ[q].prt();
+        os<< std::endl << std::setw(5) << "" << std::setw(colQ.size() * 7 + 2) <<std::setfill('-')<<"";
+        os<<std::setfill(' ');
+        int cnt = 0;
+        int r = 0;
+        int bend;
+        while(1){
+          if(cnt % colNum == 0){
+            os<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
+            r++;
+          }
+          os<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
+          for(bend = bondNum - 1; bend >= 0; bend--){
+            idxs[bend]++;
+            if(idxs[bend] < bonds[bend].dim())
+              break;
+            else
+              idxs[bend] = 0;
+          }
+          cnt++;
+          if(bend < 0)
             break;
-          else
-            idxs[bend] = 0;
         }
-        cnt++;
-        if(bend < 0)
-          break;
+        os <<"\n    |\n";
       }
-      os <<"\n    |\n";
     }
     else if(status & HAVEELEM){
       os<<"\nScalar: " << elem[0]<<"\n\n";

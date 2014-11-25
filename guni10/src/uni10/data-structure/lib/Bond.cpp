@@ -230,6 +230,11 @@ Bond combine(bondType tp, const std::vector<Bond>& bds){
 }
 Bond combine(const std::vector<Bond>& bds){
   try{
+    if((bds.size() == 0)){
+      std::ostringstream err;
+      err<<"There should be at least one bond in the input vector to be combined.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
     return combine(bds[0].m_type, bds);
   }
   catch(const std::exception& e){
