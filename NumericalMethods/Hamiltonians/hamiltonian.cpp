@@ -53,8 +53,8 @@ Matrix matSx(float spin){
   double* mat_elem = (double*)malloc(dim * dim * sizeof(double));
   memset(mat_elem, 0, dim * dim * sizeof(double));
   if(dim == 2){
-    mat_elem[1] = 1;
-    mat_elem[2] = 1;
+    mat_elem[1] = 0.5;
+    mat_elem[2] = 0.5;
   }
   Matrix sp(dim, dim, mat_elem);
   free(mat_elem);
@@ -118,9 +118,9 @@ UniTensor transverseIsing(float spin, float h){
   Matrix sz = matSz(spin);
   Matrix I(sx.row(), sx.col(), true);
   I.identity();
-  Matrix ham = 2 * otimes(sz, sz);
-  ham += otimes((h/2) * sx, I);
-  ham += otimes(I, (h/2) * sx);
+  Matrix ham = otimes(2*sz, 2*sz); // otimes(sigma_z, sizga_z);
+  ham += otimes((h/2) * 2*sx, I);
+  ham += otimes(I, (h/2) * 2*sx);
   Bond bdi = spin_bond(spin, BD_IN);
   Bond bdo = spin_bond(spin, BD_OUT);
   vector<Bond> bonds(2, bdi);

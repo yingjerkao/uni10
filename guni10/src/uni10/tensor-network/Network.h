@@ -53,7 +53,7 @@ class Network {
     void putTensorT(const std::string& nameT, const UniTensor& UniT, bool force=true);
 		void putTensorT(const std::string& nameT, const UniTensor* UniT, bool force=true);
 		UniTensor launch(const std::string& name="");
-    void profile();
+    std::string profile(bool print=true);
 		friend std::ostream& operator<< (std::ostream& os, Network& net);
 	private:
 		void preprint(std::ostream& os, Node* nd, int layer)const;	//pre-order print

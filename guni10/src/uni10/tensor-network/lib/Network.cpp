@@ -753,7 +753,6 @@ int Network::rollcall(){
   if(!load){
     for(int i = 0; i < leafs.size(); i++)
       if(leafs[i] == NULL){
-        std::cout<<"\nTensor '"<<names[i]<<"' has not yet been given!\n\n";
         return i;
       }
     construct();
@@ -815,25 +814,39 @@ void Network::_max_tensor_elemNum(Node* nd, size_t& max_num, Node& max_nd) const
   }
 }
 
-void Network::profile(){
+std::string Network::profile(bool print){
   try{
-    if(rollcall() >= 0)
-      return;
-    std::cout<<"\n===== Network profile =====\n";
-    std::cout<<"Memory Requirement: "<<memory_requirement()<<std::endl;
-    //std::cout<<"Sum of memory usage: "<<sum_of_memory_usage()<<std::endl;
+    std::ostringstream os;
+    int miss;
+    if((miss = rollcall()) >= 0){
+      os<<"\nTensor '"<<names[miss]<<"' has not yet been given!\n\n";
+      if(print){
+        std::cout<<os.str();
+        return "";
+      }
+      return os.str();
+    }
+    os<<"\n===== Network profile =====\n";
+    os<<"Memory Requirement: "<<memory_requirement()<<std::endl;
+    //os<<"Sum of memory usage: "<<sum_of_memory_usage()<<std::endl;
     size_t max_num = 0;
     Node max_nd;
     _max_tensor_elemNum(root, max_num, max_nd);
-    std::cout<<"Maximun tensor: \n";
-    std::cout<<"  elemNum: "<<max_num<<"\n  "<<max_nd.labels.size()<<" bonds and labels: ";
+    os<<"Maximun tensor: \n";
+    os<<"  elemNum: "<<max_num<<"\n  "<<max_nd.labels.size()<<" bonds and labels: ";
     for(int i = 0; i < max_nd.labels.size(); i++)
-      std::cout<< max_nd.labels[i] << ", ";
-    std::cout<<std::endl;
-    std::cout<<"===========================\n\n";
+      os<< max_nd.labels[i] << ", ";
+    os<<std::endl;
+    os<<"===========================\n\n";
+    if(print){
+      std::cout<<os.str();
+      return "";
+    }
+    return os.str();
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Network::profile():");
+    return "";
   }
 }
 
@@ -879,9 +892,10 @@ std::ostream& operator<< (std::ostream& os, Network& net){
       os<<std::endl;
     }
     os<<std::endl;
-
     if(net.rollcall() < 0)
       net.preprint(os, net.root, 0);
+    else
+      os<<"\nSome tensors have not yet been given!\n\n";
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator<<(std::ostream&, uni10::Network&):");

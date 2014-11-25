@@ -322,13 +322,19 @@ size_t UniTensor::blockNum()const{
 	return blocks.size();
 }
 
-void UniTensor::profile(){
-  std::cout<<"\n===== Tensor profile =====\n";
-	std::cout<<"Existing Tensors: " << COUNTER << std::endl;
-	std::cout<<"Allocated Elements: " << ELEMNUM << std::endl;
-	std::cout<<"Max Allocated Elements: " << MAXELEMNUM << std::endl;
-	std::cout<<"Max Allocated Elements for a Tensor: " << MAXELEMTEN << std::endl;
-  std::cout<<"============================\n\n";
+std::string UniTensor::profile(bool print){
+  std::ostringstream os;
+  os<<"\n===== Tensor profile =====\n";
+	os<<"Existing Tensors: " << COUNTER << std::endl;
+	os<<"Allocated Elements: " << ELEMNUM << std::endl;
+	os<<"Max Allocated Elements: " << MAXELEMNUM << std::endl;
+	os<<"Max Allocated Elements for a Tensor: " << MAXELEMTEN << std::endl;
+  os<<"============================\n\n";
+  if(print){
+    std::cout<<os.str();
+    return "";
+  }
+  return os.str();
 }
 
 void UniTensor::setLabel(int* newLabels){

@@ -352,7 +352,7 @@ class UniTensor{
     bool similar(const UniTensor& Tb)const;
     bool elemCmp(const UniTensor& UniT)const;
     void printRawElem()const;
-    static void profile();
+    /*static void profile();*/
 
     /*
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
@@ -387,6 +387,9 @@ class UniTensor{
       }
       double __getitem__(PyObject *parm) {
         return (*self)[PyInt_AsLong(parm)];
+      }
+      const std::string profile(){
+        return (*self).profile(false);
       }
     }
 };

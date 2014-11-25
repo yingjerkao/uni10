@@ -115,7 +115,7 @@ class UniTensor{
     bool similar(const UniTensor& Tb)const;
 		bool elemCmp(const UniTensor& UniT)const;
 		void printRawElem()const;
-		static void profile();
+		static std::string profile(bool print = true);
 
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 		friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
