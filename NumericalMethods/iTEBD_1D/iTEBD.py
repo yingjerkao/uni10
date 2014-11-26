@@ -61,7 +61,7 @@ for step in range(N):
 	# Truncation
 	sv = svd[1]
 	norm = sv.resize(chi, chi).norm()
-	sv *= 1.0 / norm;
+	sv = sv * (1.0 / norm);
 	Ls[A] = sv
 	Gs[A].putBlock(svd[0].resize(svd[0].row(), chi));
 	Gs[B].putBlock(svd[2].resize(chi, svd[2].col()));
