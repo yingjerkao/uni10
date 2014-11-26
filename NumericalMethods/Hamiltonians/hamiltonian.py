@@ -10,6 +10,11 @@ def matSm():
   dim = int(spin * 2 + 1)
   return uni10.Matrix(dim, dim, [0, 0, 1, 0]);
 
+def matSx():
+  spin = 0.5
+  dim = int(spin * 2 + 1)
+  return uni10.Matrix(dim, dim, [0, 0.5, 0.5, 0]);
+
 def matSz():
   spin = 0.5
   dim = int(spin * 2 + 1)
@@ -37,3 +42,21 @@ def Heisenberg_U1():
 	H = uni10.UniTensor([bdi, bdi, bdo, bdo], "Heisenberg")
 	H.setRawElem(Heisenberg().getBlock().getElem());
 	return H
+
+def transverseIsing(h):
+	spin = 0.5
+	sx = matSx();
+	sz = matSz();
+	I = uni10.Matrix(sx.row(), sx.col(), True);
+	I.identity();
+	ham = uni10.otimes(2*sz, 2*sz)
+	ham += uni10.otimes((h/2) * 2*sx, I);
+	ham += uni10.otimes(I, (h/2) * 2*sx);
+	dim = int(spin * 2 + 1)
+	bdi = uni10.Bond(uni10.BD_IN, dim)
+	bdo = uni10.Bond(uni10.BD_OUT, dim)
+	H = uni10.UniTensor([bdi, bdi, bdo, bdo], "transverse Ising")
+	H.putBlock(ham);
+	return H
+
+

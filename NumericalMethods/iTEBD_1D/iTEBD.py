@@ -13,16 +13,17 @@ def bondcat(T, L, bidx):
 	T.permute(per_labels, 1)
 	T.putBlock(L * T.getBlock())
 	T.permute(labels, inBondNum);
+	return T
 
 def bondrm(T, L, bidx):
 	invL = uni10.Matrix(L.row(), L.col(), True)
 	for i in xrange(L.elemNum()):
 		invL[i] = 0 if L[i] == 0 else 1.0 / L[i]
-	bondcat(T, invL, bidx)
+	return bondcat(T, invL, bidx)
 
 chi = 30
 delta = 0.02
-N = 10000
+N = 2000
 H = ham.Heisenberg()
 
 bdi_chi = uni10.Bond(uni10.BD_IN, chi);
@@ -44,9 +45,9 @@ for step in range(N):
 	# Construct theta
 	A = step % 2
 	B = (step + 1) % 2
-	bondcat(Gs[A], Ls[A], 1);
-	bondcat(Gs[A], Ls[B], 0);
-	bondcat(Gs[B], Ls[B], 1);
+	Gs[A] = bondcat(Gs[A], Ls[A], 1);
+	Gs[A] = bondcat(Gs[A], Ls[B], 0);
+	Gs[B] = bondcat(Gs[B], Ls[B], 1);
 	Gs[A].setLabel([-1, 3, 1]);
 	Gs[B].setLabel([3, -3, 2]);
 	U.setLabel([1, 2, -2, -4]);
@@ -65,8 +66,8 @@ for step in range(N):
 	Gs[A].putBlock(svd[0].resize(svd[0].row(), chi));
 	Gs[B].putBlock(svd[2].resize(chi, svd[2].col()));
 	Gs[A].permute([-1, 3, 1], 1);
-	bondrm(Gs[A], Ls[B], 0);
-	bondrm(Gs[B], Ls[B], 1);
+	Gs[A] = bondrm(Gs[A], Ls[B], 0);
+	Gs[B] = bondrm(Gs[B], Ls[B], 1);
 
 val = (theta * theta)[0]
 print "E =", -np.log(val) / delta / 2
