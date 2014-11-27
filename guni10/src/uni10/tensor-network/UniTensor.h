@@ -99,7 +99,7 @@ class UniTensor{
 		std::string getName();
 		void setName(const std::string& _name);
 		void save(const std::string& fname);
-    UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
+                UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
 		UniTensor& permute(int* newLabels, int inBondNum);
 		UniTensor& permute(int inBondNum);
 		UniTensor& transpose();
@@ -112,9 +112,9 @@ class UniTensor{
 		UniTensor& operator*= (double a);
 		UniTensor& operator*= (const UniTensor& Tb);
 		UniTensor& operator+= (const UniTensor& Tb);
-    bool similar(const UniTensor& Tb)const;
+                bool similar(const UniTensor& Tb)const;
 		bool elemCmp(const UniTensor& UniT)const;
-    std::string printRawElem(bool print=true)const;
+                std::string printRawElem(bool print=true)const;
 		static std::string profile(bool print = true);
 
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
