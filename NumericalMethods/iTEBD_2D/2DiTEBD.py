@@ -29,8 +29,8 @@ def updateU(AL, BL, LU, LR, LD, LL, U, iTEBD, updateA):
 	iTEBD.putTensor("expH", U);
 	C = iTEBD.launch();
 	Theta = copy.copy(C);
-	Thata = bondcat(Theta, LD, 2)
-	Thata = bondcat(Theta, LL, 3)
+	Theta = bondcat(Theta, LD, 2)
+	Theta = bondcat(Theta, LL, 3)
 
 	svds = Theta.getBlock().svd();
 	dim = LU.row()
@@ -56,8 +56,8 @@ def updateR(AL, BL, LU, LR, LD, LL, U, iTEBD, updateA):
 	iTEBD.putTensor("expH", U);
 	C = iTEBD.launch();
 	Theta = copy.copy(C);
-	Thata = bondcat(Theta, LD, 1)
-	Thata = bondcat(Theta, LL, 2)
+	Theta = bondcat(Theta, LD, 1)
+	Theta = bondcat(Theta, LL, 2)
 
 	svds = Theta.getBlock().svd();
 	dim = LR.row()
