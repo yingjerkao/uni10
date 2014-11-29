@@ -410,7 +410,7 @@ class Network {
     void putTensor(const std::string& name, const UniTensor& UniT, bool force=true);
     void putTensorT(const std::string& nameT, const UniTensor& UniT, bool force=true);
     UniTensor launch(const std::string& name="");
-    void profile();
+    /*void profile();*/
     /*friend std::ostream& operator<< (std::ostream& os, Network& nd);*/
     %extend {
       Network __copy__(){
@@ -420,6 +420,9 @@ class Network {
         std::ostringstream oss(std::ostringstream::out);
         oss << (*self);
         return oss.str();
+      }
+      const std::string profile() {
+        return (*self).profile(false);
       }
     }
 };
