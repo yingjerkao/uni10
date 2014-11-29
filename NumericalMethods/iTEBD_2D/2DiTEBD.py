@@ -22,6 +22,12 @@ def bondrm(T, L, bidx):
 		invL[i] = 0 if L[i] == 0 else 1.0 / L[i]
 	return bondcat(T, invL, bidx)
 
+def sqrt_bondcat(T, L, bidx):
+	sqL = uni10.Matrix(L.row(), L.col(), True)
+	for i in xrange(L.elemNum()):
+		sqL[i] = np.sqrt(L[i])
+	return bondcat(T, sqL, bidx);
+
 def updateU(AL, BL, LU, LR, LD, LL, U, iTEBD, updateA):
 	BL = bondcat(BL, LR, 4);
 	iTEBD.putTensor("A", AL)
@@ -122,7 +128,7 @@ def measure(AL, BL, LU, LR, LD, LL, Ob, measure_net, norm_net):
 	return val / 4.0;
 
 
-chi = 4
+chi = 2
 N = 1000
 tau = 0.01
 H = ham.transverseIsing(0.7)
@@ -146,7 +152,7 @@ LL = copy.copy(I_chi) #left
 GaL = bondcat(GaL, LU, 1);
 GaL = bondcat(GaL, LR, 2);
 GbL = bondcat(GbL, LD, 1);
-GbL = bondcat(GbL, LL, 1);
+GbL = bondcat(GbL, LL, 2);
 
 U = uni10.UniTensor(H.bond(), "U")
 U.putBlock(uni10.takeExp(-tau, H.getBlock()));
@@ -166,3 +172,21 @@ for i in xrange(N):
 	E = measure(GaL, GbL, LU, LR, LD, LL, H, measure_net, norm_net)
 	print "E =", E
 
+
+GaL = bondrm(GaL, LU, 1);
+GaL = bondrm(GaL, LR, 2);
+GbL = bondrm(GbL, LD, 1);
+GbL = bondrm(GbL, LL, 2);
+
+GaL = sqrt_bondcat(GaL, LU, 1);
+GaL = sqrt_bondcat(GaL, LR, 2);
+GaL = sqrt_bondcat(GaL, LD, 3);
+GaL = sqrt_bondcat(GaL, LL, 4);
+
+GbL = sqrt_bondcat(GbL, LD, 1);
+GbL = sqrt_bondcat(GbL, LL, 2);
+GbL = sqrt_bondcat(GbL, LU, 3);
+GbL = sqrt_bondcat(GbL, LR, 4);
+
+GaL.save("Data/GaL.ten");
+GbL.save("Data/GbL.ten");
