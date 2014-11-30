@@ -3,6 +3,9 @@ import os
 import sys
 import numpy as np
 import copy
+if("../Hamiltonians" not in sys.path):
+  sys.path.append("../Hamiltonians")
+import hamiltonian as ham
 
 def makeT(GL):
 	GLT = copy.copy(GL);
@@ -85,16 +88,15 @@ exp_net = uni10.Network("expectation.net");
 
 bdi = uni10.Bond(uni10.BD_IN, 2);
 bdo = uni10.Bond(uni10.BD_OUT, 2);
-Mz = uni10.UniTensor([bdi, bdo], "Mz");
-Mz.setElem([1, 0, 0, -1])
+Sz = uni10.UniTensor([bdi, bdo], "Sz");
+Sz.putBlock(ham.matSz());
 
 Ts = [makeT(GaL), makeT(GbL)]
-Imps = [makeT(GaL), makeT(GbL), makeImpurity(GaL, Mz), makeT(GbL)]
+Imps = [makeT(GaL), makeT(GbL), makeImpurity(GaL, 2*Sz), makeT(GbL)]
 chi = Ts[0].bond(0).dim()
-
 print "<O>:", trgExpectation(Imps, exp_net) / trgExpectation(Ts, exp_net),
 print "norm:", trgExpectation(Ts, exp_net)
-for i in xrange(25):
+for i in xrange(10):
 	Ts, Imps = updateAll(Ts, Imps, chi, TRG_net);
 	print "<O>:", trgExpectation(Imps, exp_net) / trgExpectation(Ts, exp_net),
 	print "norm:", trgExpectation(Ts, exp_net)

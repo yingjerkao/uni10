@@ -58,5 +58,3 @@ def transverseIsing(h):
 	H = uni10.UniTensor([bdi, bdi, bdo, bdo], "transverse Ising")
 	H.putBlock(ham);
 	return H
-
-

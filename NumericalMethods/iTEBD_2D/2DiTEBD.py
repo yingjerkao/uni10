@@ -172,6 +172,7 @@ for i in xrange(N):
 	E = measure(GaL, GbL, LU, LR, LD, LL, H, measure_net, norm_net)
 	print "E =", E
 
+# Measurements
 Mz = uni10.UniTensor(H.bond())
 Mx = uni10.UniTensor(H.bond())
 I = uni10.Matrix(H.bond(0).dim(), H.bond(0).dim());
@@ -183,6 +184,7 @@ mx = abs(measure(GaL, GbL, LU, LR, LD, LL, Mx, measure_net, norm_net))
 mz = abs(measure(GaL, GbL, LU, LR, LD, LL, Mz, measure_net, norm_net))
 print mx, mz
 
+# Output gamma for other numerical methods
 GaL = bondrm(GaL, LU, 1);
 GaL = bondrm(GaL, LR, 2);
 GbL = bondrm(GbL, LD, 1);
