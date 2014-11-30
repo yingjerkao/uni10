@@ -244,7 +244,8 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
 
 UniTensor& UniTensor::permute(int rowBondNum){
   try{
-	  this->permute(labels, rowBondNum);
+    std::vector<int> ori_labels = labels;
+	  this->permute(ori_labels, rowBondNum);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::permute(int):");

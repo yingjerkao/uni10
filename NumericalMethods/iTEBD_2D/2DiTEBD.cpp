@@ -9,8 +9,8 @@ using namespace uni10;
 
 int main(){
 	/*** Initialization ***/
-  const int chi = 4;
-  const int N = 1000;
+  const int chi = 2;
+  const int N = 200;
   double tau = 0.01;
 	UniTensor H = transverseIsing(0.5, 0.7);
   cout<< H;
@@ -64,4 +64,8 @@ int main(){
     cout<<"E = "<<setprecision(9)<<measure(AL, BL, LU, LR, LD, LL, H, measure_net, norm_net)<<endl;
   }
   cout<<"E = "<<setprecision(9)<<measure2(AL, BL, LU, LR, LD, LL, U, iTEBD_V)<<endl;
+  int ll[] = {-1, -2, -3, -4, -5};
+  AL.setLabel(ll);
+  AL.permute( 2);
+  cout<<AL;
 }
