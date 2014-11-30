@@ -172,6 +172,16 @@ for i in xrange(N):
 	E = measure(GaL, GbL, LU, LR, LD, LL, H, measure_net, norm_net)
 	print "E =", E
 
+Mz = uni10.UniTensor(H.bond())
+Mx = uni10.UniTensor(H.bond())
+I = uni10.Matrix(H.bond(0).dim(), H.bond(0).dim());
+I.identity();
+Mx.putBlock(uni10.otimes(2*ham.matSx(), I));
+Mz.putBlock(uni10.otimes(2*ham.matSz(), I));
+
+mx = abs(measure(GaL, GbL, LU, LR, LD, LL, Mx, measure_net, norm_net))
+mz = abs(measure(GaL, GbL, LU, LR, LD, LL, Mz, measure_net, norm_net))
+print mx, mz
 
 GaL = bondrm(GaL, LU, 1);
 GaL = bondrm(GaL, LR, 2);
