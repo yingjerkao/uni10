@@ -282,13 +282,13 @@ void Network::fromfile(const std::string& fname){//names, name2pos, label_arr, R
 	std::vector<std::string> ord;
 	while(lnum < MAXLINES){
 		getline(infile, str); // Saves the line in STRING.
+    endpos = 0;
 		if(infile.eof())
 			break;
 		pos = str.find(":");
 		if(pos == std::string::npos)
 			break;
 		std::string name = str.substr(0, pos);
-		//boost::algorithm::trim(name);
 		trim(name);
 		if(name == "ORDER"){
 			std::string bra("(");
