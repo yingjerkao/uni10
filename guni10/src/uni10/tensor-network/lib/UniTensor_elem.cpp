@@ -314,68 +314,73 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
       UniTensor UniTout(outBonds, name);
       if(status & HAVEELEM){
         if(withoutSymmetry){
-          if(ongpu && UniTout.ongpu){
-            size_t* perInfo = (size_t*)malloc(bondNum * 2 * sizeof(size_t));
-            std::vector<size_t> newAcc(bondNum);
-            newAcc[bondNum - 1] = 1;
-            perInfo[bondNum - 1] = 1;
-            for(int b = bondNum - 1; b > 0; b--){
-              newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
-              perInfo[b - 1] = perInfo[b] * bonds[b].Qdegs[0];
+          if(!inorder){
+            if(ongpu && UniTout.ongpu){
+              size_t* perInfo = (size_t*)malloc(bondNum * 2 * sizeof(size_t));
+              std::vector<size_t> newAcc(bondNum);
+              newAcc[bondNum - 1] = 1;
+              perInfo[bondNum - 1] = 1;
+              for(int b = bondNum - 1; b > 0; b--){
+                newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
+                perInfo[b - 1] = perInfo[b] * bonds[b].Qdegs[0];
+              }
+              for(int b = 0; b < bondNum; b++)
+                perInfo[bondNum + rsp_outin[b]] = newAcc[b];
+              double* des_elem = UniTout.elem;
+              double* src_elem = elem;
+              reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
+              free(perInfo);
             }
-            for(int b = 0; b < bondNum; b++)
-              perInfo[bondNum + rsp_outin[b]] = newAcc[b];
-            double* des_elem = UniTout.elem;
-            double* src_elem = elem;
-            reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
-            free(perInfo);
-          }
-          else{
-            double* des_elem = UniTout.elem;
-            double* src_elem = elem;
-            size_t memsize = m_elemNum * sizeof(DOUBLE);
-            if(ongpu){
-              src_elem = (double*)elemAllocForce(memsize, false);
-              elemCopy(src_elem, elem, memsize, false, ongpu);
-            }
-            if(UniTout.ongpu)
-              des_elem = (double*)elemAllocForce(memsize, false);
+            else{
+              double* des_elem = UniTout.elem;
+              double* src_elem = elem;
+              size_t memsize = m_elemNum * sizeof(DOUBLE);
+              if(ongpu){
+                src_elem = (double*)elemAllocForce(memsize, false);
+                elemCopy(src_elem, elem, memsize, false, ongpu);
+              }
+              if(UniTout.ongpu)
+                des_elem = (double*)elemAllocForce(memsize, false);
 
-            std::vector<size_t> transAcc(bondNum);
-            std::vector<size_t> newAcc(bondNum);
-            transAcc[bondNum - 1] = 1;
-            newAcc[bondNum - 1] = 1;
-            for(int b = bondNum - 1; b > 0; b--)
-              newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
-            std::vector<int> bondDims(bondNum);
-            std::vector<int> idxs(bondNum);
-            for(int b = 0; b < bondNum; b++){
-              transAcc[rsp_outin[b]] = newAcc[b];
-              bondDims[b] = bonds[b].Qdegs[0];
-              idxs[b] = 0;
-            }
-            size_t cnt_ot = 0;
-            for(int i = 0; i < m_elemNum; i++){
-              des_elem[cnt_ot] = src_elem[i];
-              //std::cout<<cnt_ot<<std::endl;
-              for(int bend = bondNum - 1; bend >= 0; bend--){
-                idxs[bend]++;
-                if(idxs[bend] < bondDims[bend]){
-                  cnt_ot += transAcc[bend];
-                  break;
-                }
-                else{
-                  cnt_ot -= transAcc[bend] * (idxs[bend] - 1);
-                  idxs[bend] = 0;
+              std::vector<size_t> transAcc(bondNum);
+              std::vector<size_t> newAcc(bondNum);
+              transAcc[bondNum - 1] = 1;
+              newAcc[bondNum - 1] = 1;
+              for(int b = bondNum - 1; b > 0; b--)
+                newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
+              std::vector<int> bondDims(bondNum);
+              std::vector<int> idxs(bondNum);
+              for(int b = 0; b < bondNum; b++){
+                transAcc[rsp_outin[b]] = newAcc[b];
+                bondDims[b] = bonds[b].Qdegs[0];
+                idxs[b] = 0;
+              }
+              size_t cnt_ot = 0;
+              for(int i = 0; i < m_elemNum; i++){
+                des_elem[cnt_ot] = src_elem[i];
+                for(int bend = bondNum - 1; bend >= 0; bend--){
+                  idxs[bend]++;
+                  if(idxs[bend] < bondDims[bend]){
+                    cnt_ot += transAcc[bend];
+                    break;
+                  }
+                  else{
+                    cnt_ot -= transAcc[bend] * (idxs[bend] - 1);
+                    idxs[bend] = 0;
+                  }
                 }
               }
+              if(ongpu)
+                elemFree(src_elem, memsize, false);
+              if(UniTout.ongpu){
+                elemCopy(UniTout.elem, des_elem, memsize, UniTout.ongpu, false);
+                elemFree(des_elem, memsize, false);
+              }
             }
-            if(ongpu)
-              elemFree(src_elem, memsize, false);
-            if(UniTout.ongpu){
-              elemCopy(UniTout.elem, des_elem, memsize, UniTout.ongpu, false);
-              elemFree(des_elem, memsize, false);
-            }
+          }
+          else{  //non-symmetry inorder
+            size_t memsize = m_elemNum * sizeof(DOUBLE);
+            elemCopy(UniTout.elem, elem, memsize, UniTout.ongpu, ongpu);
           }
         }
         else{

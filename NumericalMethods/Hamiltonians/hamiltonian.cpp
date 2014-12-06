@@ -3,10 +3,9 @@
 #include <exception>
 #include "hamiltonian.h"
 using namespace std;
-using namespace uni10;
 const int CURRENT_SUPPORTED_SPIN_DIM = 2;
 
-Matrix matSp(float spin){
+uni10::Matrix matSp(float spin){
   spin_check(spin);
   int dim = spin * 2 + 1;
   if(dim > CURRENT_SUPPORTED_SPIN_DIM){
@@ -19,12 +18,12 @@ Matrix matSp(float spin){
   if(dim == 2){
     mat_elem[1] = 1;
   }
-  Matrix sp(dim, dim, mat_elem);
+  uni10::Matrix sp(dim, dim, mat_elem);
   free(mat_elem);
   return sp;
 }
 
-Matrix matSm(float spin){
+uni10::Matrix matSm(float spin){
   spin_check(spin);
   int dim = spin * 2 + 1;
   if(dim > CURRENT_SUPPORTED_SPIN_DIM){
@@ -37,12 +36,12 @@ Matrix matSm(float spin){
   if(dim == 2){
     mat_elem[2] = 1;
   }
-  Matrix sm(dim, dim, mat_elem);
+  uni10::Matrix sm(dim, dim, mat_elem);
   free(mat_elem);
   return sm;
 }
 
-Matrix matSx(float spin){
+uni10::Matrix matSx(float spin){
   spin_check(spin);
   int dim = spin * 2 + 1;
   if(dim > CURRENT_SUPPORTED_SPIN_DIM){
@@ -56,12 +55,12 @@ Matrix matSx(float spin){
     mat_elem[1] = 0.5;
     mat_elem[2] = 0.5;
   }
-  Matrix sp(dim, dim, mat_elem);
+  uni10::Matrix sp(dim, dim, mat_elem);
   free(mat_elem);
   return sp;
 }
 
-Matrix matSz(float spin){
+uni10::Matrix matSz(float spin){
   spin_check(spin);
   int dim = spin * 2 + 1;
   if(dim > CURRENT_SUPPORTED_SPIN_DIM){
@@ -75,58 +74,53 @@ Matrix matSz(float spin){
     mat_elem[0] = 0.5;
     mat_elem[3] = -0.5;
   }
-  Matrix sz(dim, dim, mat_elem);
+  uni10::Matrix sz(dim, dim, mat_elem);
   free(mat_elem);
   return sz;
 }
 
-UniTensor Heisenberg(float spin){
-  Matrix sp = matSp(spin);
-  Matrix sm = matSm(spin);
-  Matrix sz = matSz(spin);
-  Matrix ham = otimes(sz, sz);
-  ham += 0.5 * (otimes(sp, sm) + otimes(sm, sp));
-  Bond bdi = spin_bond(spin, BD_IN);
-  Bond bdo = spin_bond(spin, BD_OUT);
-  vector<Bond> bonds(2, bdi);
+uni10::UniTensor Heisenberg(float spin, double J){
+  uni10::Matrix sp = matSp(spin);
+  uni10::Matrix sm = matSm(spin);
+  uni10::Matrix sz = matSz(spin);
+  uni10::Matrix ham = uni10::otimes(sz, sz);
+  ham += 0.5 * (uni10::otimes(sp, sm) + uni10::otimes(sm, sp));
+  uni10::Bond bdi = spin_bond(spin, uni10::BD_IN);
+  uni10::Bond bdo = spin_bond(spin, uni10::BD_OUT);
+  vector<uni10::Bond> bonds(2, bdi);
   bonds.push_back(bdo);
   bonds.push_back(bdo);
-  UniTensor H(bonds, "Heisenberg");
+  uni10::UniTensor H(bonds, "Heisenberg");
   H.putBlock(ham);
-  return H;
+  return J * H;
 }
 
-UniTensor Heisenberg_U1(float spin){
-  Matrix sp = matSp(spin);
-  Matrix sm = matSm(spin);
-  Matrix sz = matSz(spin);
-  Matrix ham = otimes(sz, sz);
-  ham += 0.5 * (otimes(sp, sm) + otimes(sm, sp));
+uni10::UniTensor Heisenberg_U1(float spin, double J){
   const bool U1 = true;
-  Bond bdi = spin_bond(spin, BD_IN, U1);
-  Bond bdo = spin_bond(spin, BD_OUT, U1);
-  vector<Bond> bonds(2, bdi);
+  uni10::Bond bdi = spin_bond(spin, uni10::BD_IN, U1);
+  uni10::Bond bdo = spin_bond(spin, uni10::BD_OUT, U1);
+  vector<uni10::Bond> bonds(2, bdi);
   bonds.push_back(bdo);
   bonds.push_back(bdo);
-  UniTensor H(bonds, "Heisenberg");
-  H.setRawElem(ham.getElem());
+  uni10::UniTensor H(bonds, "Heisenberg");
+  H.setRawElem(Heisenberg(spin, J).getBlock().getElem());
   return H;
 }
 
-UniTensor transverseIsing(float spin, float h){
-  Matrix sx = matSx(spin);
-  Matrix sz = matSz(spin);
-  Matrix I(sx.row(), sx.col(), true);
+uni10::UniTensor transverseIsing(float spin, float h){
+  uni10::Matrix sx = matSx(spin);
+  uni10::Matrix sz = matSz(spin);
+  uni10::Matrix I(sx.row(), sx.col(), true);
   I.identity();
-  Matrix ham = otimes(2*sz, 2*sz); // otimes(sigma_z, sizga_z);
-  ham += otimes((h/2) * 2*sx, I);
-  ham += otimes(I, (h/2) * 2*sx);
-  Bond bdi = spin_bond(spin, BD_IN);
-  Bond bdo = spin_bond(spin, BD_OUT);
-  vector<Bond> bonds(2, bdi);
+  uni10::Matrix ham = uni10::otimes(2*sz, 2*sz); // otimes(sigma_z, sizga_z);
+  ham += uni10::otimes((h/2) * 2*sx, I);
+  ham += uni10::otimes(I, (h/2) * 2*sx);
+  uni10::Bond bdi = spin_bond(spin, uni10::BD_IN);
+  uni10::Bond bdo = spin_bond(spin, uni10::BD_OUT);
+  vector<uni10::Bond> bonds(2, bdi);
   bonds.push_back(bdo);
   bonds.push_back(bdo);
-  UniTensor H(bonds, "transverseIsing");
+  uni10::UniTensor H(bonds, "transverseIsing");
   H.putBlock(ham);
   return H;
 }
@@ -139,11 +133,11 @@ void spin_check(float spin){
   }
 }
 
-Bond spin_bond(float spin, bondType btype, bool U1){
+uni10::Bond spin_bond(float spin, uni10::bondType btype, bool U1){
   spin_check(spin);
   int dim = spin * 2 + 1;
   if(U1){
-    vector<Qnum> qnums(dim);
+    vector<uni10::Qnum> qnums(dim);
     int halfint = true;
     if(spin == floor(spin))
       halfint = false;
@@ -154,12 +148,12 @@ Bond spin_bond(float spin, bondType btype, bool U1){
         if(s <= 0)
           s--;
       }
-      qnums[i] = Qnum(s);
+      qnums[i] = uni10::Qnum(s);
     }
-    return Bond(btype, qnums);
+    return uni10::Bond(btype, qnums);
   }
   else{
-    return Bond(btype, dim);
+    return uni10::Bond(btype, dim);
   }
 }
 
