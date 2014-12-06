@@ -12,7 +12,7 @@ using namespace uni10;
 int main(){
   // Define the parameters of the model / simulation
   int chi = 30;
-  double delta = 0.1;
+  double delta = 0.02;
   int N = 2000;
   UniTensor H = Heisenberg();
 
@@ -68,7 +68,6 @@ int main(){
 		// Truncate
 		double norm = svd[1].resize(chi, chi).norm();
 		svd[1] *= (1.0 / norm);
-    cout<<norm<<endl;
 		Ls[A] = svd[1];
 		Gs[A].putBlock(svd[0].resize(svd[0].row(), chi));
 		Gs[B].putBlock(svd[2].resize(chi, svd[2].col()));
