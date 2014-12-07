@@ -9,12 +9,14 @@ using namespace uni10;
 #include "DMRG_tools.cpp"
 #include "hamiltonian.cpp"
 
-int main(){
-  const int chi = 20;
-  const int N = 20;
+int main(int argc, char* argv[]){
+  const int chi = 10;
+  const int N = 50;
   Matrix rand(1, 2*N-1);
 
-  double dJ = 0.2;
+  float dJ = 0.2;
+  if(argc > 1)
+	  sscanf(argv[1], "%f", &dJ);
   int sNum = 200;
   srand((int)dJ * chi * N * 1773);
   for(int s = 0; s < sNum; s++){

@@ -34,7 +34,7 @@ UniTensor findGS(const UniTensor& SB, double& E0, Matrix& refState, int& iter){
     refState.resize(1, blk.col());
     refState.randomize();
   }
-  iter= blk.lanczosEigh(E0, refState, 200);
+  iter= blk.lanczosEigh(E0, refState, 1000);
 
   vector<Bond> stateBonds;
   for(int b = 4; b < 8; b++)
