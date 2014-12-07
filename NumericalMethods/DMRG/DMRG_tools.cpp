@@ -2,8 +2,8 @@ enum Side{Left = -1, Right= 1};
 UniTensor combineH(const UniTensor& H0, const UniTensor& HL, const UniTensor& HR);
 UniTensor findGS(const UniTensor& SB, double& E0, Matrix& refState, int& iter);
 int updateMPS(const UniTensor& GS, size_t chi, UniTensor& A, UniTensor& B);
-void sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn);
-void sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn);
+double sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn);
+double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn);
 size_t hidx(int N, Side side, int l);
 
 UniTensor combineH(const UniTensor& H0, const UniTensor& HL, const UniTensor& HR){
@@ -103,19 +103,19 @@ void updateH(const UniTensor& HL, const UniTensor& HR, const UniTensor& A, const
   newHR = HRn.launch();
 }
 
-void sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn){
+double sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn){
   vector<UniTensor> H0s(1, H0);
-  sweep(N, chi, range, times, H0s, HLs, HRs, HLn, HRn);
+  return sweep(N, chi, range, times, H0s, HLs, HRs, HLn, HRn);
 }
 
-void sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn){
+double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn){
   assert(range < N);
   Matrix psi;
   int dir = Left; //direction
   int cursor = -1;
   int cnt = 0;
+  double E0;
   while(cnt < times + 1){
-    double E0;
     UniTensor* Hptr;
     for( ; abs(cursor) < range; cursor += dir){
       if(H0s.size() > 1)
@@ -142,11 +142,11 @@ void sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<
         HRs.push_back(newHR);
       }
     }
-    cout<<setprecision(10)<<"E = " << E0  << ", e = " << E0 / (2 * N) <<endl;
     dir *= -1;
     cursor += 2*dir;
     cnt++;
   }
+  return E0;
 }
 
 size_t hidx(int N, Side side, int l){
