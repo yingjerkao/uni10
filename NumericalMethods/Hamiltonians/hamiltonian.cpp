@@ -17,7 +17,14 @@ uni10::Matrix matSp(float spin){
     double mat_elem[] = {\
       0, 1,\
       0, 0};
-    return uni10::Matrix sp(dim, dim, mat_elem);
+    return uni10::Matrix(dim, dim, mat_elem);
+  }
+  else if(dim == 3){
+    double mat_elem[] = {\
+      0.0, 1.0, 0.0,\
+      0.0, 0.0, 1.0,\
+      0.0, 0.0, 0.0};
+    return sqrt(2) * uni10::Matrix(dim, dim, mat_elem);
   }
 
   return uni10::Matrix();
@@ -37,6 +44,13 @@ uni10::Matrix matSm(float spin){
       1, 0};
     return uni10::Matrix(dim, dim, mat_elem);
   }
+  else if(dim == 3){
+    double mat_elem[] = {\
+      0.0, 0.0, 0.0,\
+      1.0, 0.0, 0.0,\
+      0.0, 1.0, 0.0};
+    return sqrt(2) * uni10::Matrix(dim, dim, mat_elem);
+  }
   return uni10::Matrix();
 }
 
@@ -54,6 +68,13 @@ uni10::Matrix matSx(float spin){
       0.5, 0  };
     return uni10::Matrix(dim, dim, mat_elem);
   }
+  else if(dim == 3){
+    double mat_elem[] = {\
+      0.0, 1.0, 0.0,\
+      1.0, 0.0, 1.0,\
+      0.0, 1.0, 0.0};
+    return (1.0 / sqrt(2)) * uni10::Matrix(dim, dim, mat_elem);
+  }
   return uni10::Matrix();
 }
 
@@ -69,6 +90,13 @@ uni10::Matrix matSz(float spin){
     double mat_elem[] = {\
       0.5,  0,\
       0,   -0.5  };
+    return uni10::Matrix(dim, dim, mat_elem);
+  }
+  else if(dim == 3){
+    double mat_elem[] = {\
+      1.0, 0.0,  0.0,\
+      0.0, 0.0,  0.0,\
+      0.0, 0.0, -1.0};
     return uni10::Matrix(dim, dim, mat_elem);
   }
   return uni10::Matrix();

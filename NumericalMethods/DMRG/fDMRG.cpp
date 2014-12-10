@@ -11,9 +11,9 @@ using namespace uni10;
 
 int main(){
 	/*** Initialization ***/
-  const int chi = 20;
-  const int N = 20;
-	UniTensor H0 = Heisenberg();
+  const int chi = 30;
+  const int N = 2000;
+	UniTensor H0 = Heisenberg(1);
 
 	vector<Bond> bond2;
 	bond2.push_back(H0.bond(0));
@@ -37,10 +37,10 @@ int main(){
   Matrix psi;
 	/*** END initilization ***/
 
+  double Ep = 0, E0;
 	for(int l = 1; l < N; l++){
 		UniTensor SB = combineH(H0, HLs[l - 1], HRs[l - 1]);
 
-    double E0;
     int iter;
     UniTensor GS = findGS(SB, E0, psi, iter);
 
@@ -49,11 +49,12 @@ int main(){
     As.push_back(A);
     Bs.push_back(B);
 
-    cout<<"N = "<< 2 * (l+1) <<", D = " << D << setprecision(10) << ", E = " << E0  << ", e = " << E0 / (2 * (l + 1)) <<", iter = "<<iter<<endl;
+    cout<<"N = "<< 2 * (l+1) <<", D = " << D << setprecision(10) << ", E = " << E0  << ", e = " << E0 / (2 * (l + 1)) <<", iter = "<<iter<<", dE = "<<(Ep - E0)/2<<endl;
     UniTensor newHL, newHR;
     updateH(HLs[l - 1], HRs[l - 1], A, B, H0, H0, HLn, HRn, newHL, newHR);
     HLs.push_back(newHL);
     HRs.push_back(newHR);
+    Ep = E0;
 	}
   sweep(N, chi, N-1, 1, H0, HLs, HRs, HLn, HRn);
 }

@@ -14,7 +14,7 @@ int main(){
   int chi = 30;
   double delta = 0.02;
   int N = 2000;
-  UniTensor H = Heisenberg();
+  UniTensor H = Heisenberg(1);
 
 	Bond bdi_chi(BD_IN, chi);
 	Bond bdo_chi(BD_OUT, chi);
@@ -48,6 +48,7 @@ int main(){
   // Perform the imaginary time evolution alternating on A and B bonds
   for(int step = 0; step < N; step++){
     // Construct theta
+    cout<<step<<endl;
     int A = step % 2;
     int B = (step + 1) % 2;
     bondcat(Gs[A], Ls[A], 1);
