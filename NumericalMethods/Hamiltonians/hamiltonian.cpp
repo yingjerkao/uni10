@@ -3,7 +3,7 @@
 #include <exception>
 #include "hamiltonian.h"
 using namespace std;
-const int CURRENT_SUPPORTED_SPIN_DIM = 2;
+const int CURRENT_SUPPORTED_SPIN_DIM = 3;
 
 uni10::Matrix matSp(float spin){
   spin_check(spin);
@@ -13,14 +13,14 @@ uni10::Matrix matSp(float spin){
     err<<"Spin = "<<spin <<" is not yet supported.";
     throw std::runtime_error(err.str());
   }
-  double* mat_elem = (double*)malloc(dim * dim * sizeof(double));
-  memset(mat_elem, 0, dim * dim * sizeof(double));
   if(dim == 2){
-    mat_elem[1] = 1;
+    double mat_elem[] = {\
+      0, 1,\
+      0, 0};
+    return uni10::Matrix sp(dim, dim, mat_elem);
   }
-  uni10::Matrix sp(dim, dim, mat_elem);
-  free(mat_elem);
-  return sp;
+
+  return uni10::Matrix();
 }
 
 uni10::Matrix matSm(float spin){
@@ -31,14 +31,13 @@ uni10::Matrix matSm(float spin){
     err<<"Spin = "<<spin <<" is not yet supported.";
     throw std::runtime_error(err.str());
   }
-  double* mat_elem = (double*)malloc(dim * dim * sizeof(double));
-  memset(mat_elem, 0, dim * dim * sizeof(double));
   if(dim == 2){
-    mat_elem[2] = 1;
+    double mat_elem[] = {\
+      0, 0,\
+      1, 0};
+    return uni10::Matrix(dim, dim, mat_elem);
   }
-  uni10::Matrix sm(dim, dim, mat_elem);
-  free(mat_elem);
-  return sm;
+  return uni10::Matrix();
 }
 
 uni10::Matrix matSx(float spin){
@@ -49,15 +48,13 @@ uni10::Matrix matSx(float spin){
     err<<"Spin = "<<spin <<" is not yet supported.";
     throw std::runtime_error(err.str());
   }
-  double* mat_elem = (double*)malloc(dim * dim * sizeof(double));
-  memset(mat_elem, 0, dim * dim * sizeof(double));
   if(dim == 2){
-    mat_elem[1] = 0.5;
-    mat_elem[2] = 0.5;
+    double mat_elem[] = {\
+      0,   0.5,\
+      0.5, 0  };
+    return uni10::Matrix(dim, dim, mat_elem);
   }
-  uni10::Matrix sp(dim, dim, mat_elem);
-  free(mat_elem);
-  return sp;
+  return uni10::Matrix();
 }
 
 uni10::Matrix matSz(float spin){
@@ -68,15 +65,13 @@ uni10::Matrix matSz(float spin){
     err<<"Spin = "<<spin <<" is not yet supported.";
     throw std::runtime_error(err.str());
   }
-  double* mat_elem = (double*)malloc(dim * dim * sizeof(double));
-  memset(mat_elem, 0, dim * dim * sizeof(double));
   if(dim == 2){
-    mat_elem[0] = 0.5;
-    mat_elem[3] = -0.5;
+    double mat_elem[] = {\
+      0.5,  0,\
+      0,   -0.5  };
+    return uni10::Matrix(dim, dim, mat_elem);
   }
-  uni10::Matrix sz(dim, dim, mat_elem);
-  free(mat_elem);
-  return sz;
+  return uni10::Matrix();
 }
 
 uni10::UniTensor Heisenberg(float spin, double J){
