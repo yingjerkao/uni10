@@ -11,4 +11,6 @@ int main(){
   cout<<mx;
   cout<<mx.eigh()[0];
   cout<<mx.eigh()[1];
+  cout<<theModel(0.5, 0, 0, 1.5, 0.1, 0);
+  cout<<theModel(1, 0, 0, 1.5, 0.1, 0);
 }

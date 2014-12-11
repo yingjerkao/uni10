@@ -12,3 +12,4 @@ uni10::UniTensor Heisenberg(float spin=0.5, double J=1.0);
 uni10::UniTensor Heisenberg_U1(float spin=0.5, double J=1.0);
 
 uni10::UniTensor transverseIsing(float spin, float h);
+uni10::UniTensor theModel(float spin, int i, double delta, double Dz, double hz, double dx);

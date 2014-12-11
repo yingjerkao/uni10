@@ -771,9 +771,12 @@ double UniTensor::trace()const{
           err<<"Cannot trace a non-square block.";
           throw std::runtime_error(exception_msg(err.str()));
         }
+        trVal += vectorSum(it->second.elem, it->second.Rnum, it->second.Cnum + 1, ongpu);
+        /*
         Rnum = it->second.Rnum;
         for(size_t r = 0; r < Rnum; r++)
           trVal += it->second.elem[r * Rnum + r];
+          */
       }
       return trVal;
     }

@@ -180,3 +180,26 @@ uni10::Bond spin_bond(float spin, uni10::bondType btype, bool U1){
   }
 }
 
+// arXiv:1409.8616v1, eq(S1), page 6
+uni10::UniTensor theModel(float spin, int i, double delta, double Dz, double hz, double dx){
+  uni10::Matrix sx = matSx(spin);
+  uni10::Matrix sz = matSz(spin);
+  uni10::Matrix sp = matSp(spin);
+  uni10::Matrix sm = matSm(spin);
+  uni10::Matrix I(sz.row(), sz.col(), true);
+  I.identity();
+  uni10::Matrix ham = (1.0 + delta*pow(-1, i)) * (otimes(sz, sz) + (1.0/2.0) * (otimes(sp, sm) + otimes(sm, sp)))\
+             + (Dz/2.0) * (otimes(sz*sz, I) + otimes(I, sz*sz))\
+             + (hz/2.0) * ((pow(-1, i) * otimes(sz, I)) + (pow(-1, i+1) * otimes(I, sz)))\
+             + dx * (otimes(sx, sz) + (-1) * otimes(sz, sx));
+
+  uni10::Bond bdi = spin_bond(spin, uni10::BD_IN);
+  uni10::Bond bdo = spin_bond(spin, uni10::BD_OUT);
+  vector<uni10::Bond> bonds(2, bdi);
+  bonds.push_back(bdo);
+  bonds.push_back(bdo);
+  uni10::UniTensor H(bonds, "The model");
+  H.putBlock(ham);
+  return H;
+}
+

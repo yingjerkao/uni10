@@ -544,7 +544,7 @@ double Matrix::trace(){
     if(diag)
       return vectorSum(m_elem, m_elemNum, 1, ongpu);
     else
-      return vectorSum(m_elem, Cnum, Cnum + 1, ongpu);
+      return vectorSum(m_elem, Rnum, Cnum + 1, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::trace():");
