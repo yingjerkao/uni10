@@ -1,9 +1,13 @@
 enum Side{Left = -1, Right= 1};
 UniTensor combineH(const UniTensor& H0, const UniTensor& HL, const UniTensor& HR);
 UniTensor findGS(const UniTensor& SB, double& E0, Matrix& refState, int& iter);
+int updateMPS(const UniTensor& GS, size_t chi, UniTensor& A, UniTensor& B, Matrix& lambda);
 int updateMPS(const UniTensor& GS, size_t chi, UniTensor& A, UniTensor& B);
 double sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn);
 double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn);
+void bondcat(UniTensor& T, const Matrix& L, int bidx);
+void bondrm(UniTensor& T, const Matrix& L, int bidx);
+Matrix trialState(const UniTensor& A, const UniTensor& B, vector<Matrix>& Ls);
 size_t hidx(int N, Side side, int l);
 
 UniTensor combineH(const UniTensor& H0, const UniTensor& HL, const UniTensor& HR){
@@ -45,6 +49,10 @@ UniTensor findGS(const UniTensor& SB, double& E0, Matrix& refState, int& iter){
 }
 
 int updateMPS(const UniTensor& GS, size_t chi, UniTensor& A, UniTensor& B){
+  Matrix lambda;
+  return updateMPS(GS, chi, A, B, lambda);
+}
+int updateMPS(const UniTensor& GS, size_t chi, UniTensor& A, UniTensor& B, Matrix& lambda){
   int DL = GS.bond(0).dim() * GS.bond(1).dim();
   int DR = GS.bond(2).dim() * GS.bond(3).dim();
   int D = DL > DR ? DL : DR;
@@ -60,12 +68,13 @@ int updateMPS(const UniTensor& GS, size_t chi, UniTensor& A, UniTensor& B){
   bondB.push_back(bDi);
   bondB.push_back(GS.bond(2));
   bondB.push_back(GS.bond(3));
-
   vector<Matrix> svd = GS.getBlock().svd();
+
 	A.assign(bondA);
   A.putBlock(svd[0].resize(bondA[0].dim() * bondA[1].dim(), bDo.dim()));
 	B.assign(bondB);
   B.putBlock(svd[2].resize(bDi.dim(), bondB[1].dim() * bondB[2].dim()));
+  lambda = svd[1].resize(chi, chi);
   return D;
 }
 
@@ -154,5 +163,40 @@ size_t hidx(int N, Side side, int l){
     return l;
   else
     return (2*N-1) - l - 1;
+}
 
+void bondcat(UniTensor& T, const Matrix& L, int bidx){
+  int inBondNum = T.inBondNum();
+	vector<int> labels = T.label();
+  vector<int> per_labels = labels;
+  int l = labels[bidx];
+  per_labels.erase(per_labels.begin() + bidx);
+	per_labels.insert(per_labels.begin(), l);
+  T.permute(per_labels, 1);
+  T.putBlock(L * T.getBlock());
+  T.permute(labels, inBondNum);
+}
+
+void bondrm(UniTensor& T, const Matrix& L, int bidx){
+	Matrix invL = L;
+  for(int i = 0; i < L.elemNum(); i++)
+    invL[i] = invL[i] == 0 ? 0 : (1 / invL[i]);
+	bondcat(T, invL, bidx);
+}
+
+Matrix trialState(const UniTensor& A, const UniTensor& B, vector<Matrix>& Ls){
+  UniTensor tA = A;
+  UniTensor tB = B;
+  int labelA[] = {1, -3, -4};
+  int labelB[] = {-1, -2, 1};
+  int labelS[] = {-1, -2, -3, -4};
+  tA.setLabel(labelA);
+  tB.setLabel(labelB);
+  bondcat(tA, Ls[1], 2);
+  bondcat(tB, Ls[1], 0);
+  tA.permute(labelA, 1);
+  bondrm(tA, Ls[0], 0);
+  UniTensor S = contract(tB, tA, true);
+  S.permute(labelS, 0);
+  return S.getBlock();
 }

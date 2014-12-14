@@ -1,5 +1,5 @@
-void bondcat(UniTensor& T, Matrix& L, int bidx);
-void bondrm(UniTensor& T, Matrix& L, int bidx);
+void bondcat(UniTensor& T, const Matrix& L, int bidx);
+void bondrm(UniTensor& T, const Matrix& L, int bidx);
 void updateU(UniTensor& AL, UniTensor& BL, Matrix& LU, Matrix& LR, Matrix& LD, Matrix& LL, UniTensor& expH, Network& iTEBD, Network& updateA);
 void updateR(UniTensor& AL, UniTensor& BL, Matrix& LU, Matrix& LR, Matrix& LD, Matrix& LL, UniTensor& expH, Network& iTEBD, Network& updateA);
 void updateD(UniTensor& AL, UniTensor& BL, Matrix& LU, Matrix& LR, Matrix& LD, Matrix& LL, UniTensor& expH, Network& iTEBD, Network& updateA);
@@ -8,7 +8,7 @@ double measure2(UniTensor& AL, UniTensor& BL, Matrix& LU, Matrix& LR, Matrix& LD
 double measure(UniTensor& AL, UniTensor& BL, Matrix& LU, Matrix& LR, Matrix& LD, Matrix& LL, UniTensor& Ob, Network& measure_net, Network& norm_net);
 double bond_expectation(UniTensor& ALL, UniTensor& BLL, UniTensor& Ob, Network& measure_net, Network& norm_net);
 
-void bondcat(UniTensor& T, Matrix& L, int bidx){
+void bondcat(UniTensor& T, const Matrix& L, int bidx){
   int inBondNum = T.inBondNum();
 	vector<int> labels = T.label();
   vector<int> per_labels = labels;
@@ -20,10 +20,10 @@ void bondcat(UniTensor& T, Matrix& L, int bidx){
   T.permute(labels, inBondNum);
 }
 
-void bondrm(UniTensor& T, Matrix& L, int bidx){
-	Matrix invL(L.row(), L.col(), L.isDiag());
+void bondrm(UniTensor& T, const Matrix& L, int bidx){
+	Matrix invL = L;
   for(int i = 0; i < L.elemNum(); i++)
-    invL[i] = L[i] == 0 ? 0 : (1 / L[i]);
+    invL[i] = invL[i] == 0 ? 0 : (1 / invL[i]);
 	bondcat(T, invL, bidx);
 }
 
