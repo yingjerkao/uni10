@@ -27,6 +27,8 @@
 *
 *****************************************************************************/
 #include <uni10/data-structure/Block.h>
+#include <uni10/numeric/uni10_lapack.h>
+#include <uni10/tools/uni10_tools.h>
 //using namespace uni10::datatype;
 namespace uni10{
 Block::Block(): Rnum(0), Cnum(0), m_elemNum(0), diag(false), ongpu(false), m_elem(NULL){}
@@ -34,17 +36,38 @@ Block::Block(size_t _Rnum, size_t _Cnum): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_R
 Block::Block(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), m_elemNum(_b.m_elemNum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
 Block::~Block(){}
 std::ostream& operator<< (std::ostream& os, const Block& b){
-	os << ": " << b.Rnum << " x " << b.Cnum << " = " << b.Rnum * b.Cnum << " ---\n\n";
-	for(size_t r = 0; r < b.Rnum; r++){
-		for(size_t c = 0; c < b.Cnum; c++)
-			os<< std::setw(7) << std::setprecision(3) << b.m_elem[r * b.Cnum + c];
-		os << "\n\n";
-	}
-	return os;
+  try{
+    os << b.Rnum << " x " << b.Cnum << " = " << b.m_elemNum;
+    if(b.diag)
+      os << ", Diagonal";
+    if(b.ongpu)
+      os<< ", onGPU";
+    os <<std::endl << std::endl;
+    double* elem;
+    if(b.ongpu){
+      elem = (double*)malloc(b.m_elemNum * sizeof(double));
+      elemCopy(elem, b.m_elem, b.m_elemNum * sizeof(double), false, b.ongpu);
+    }
+    else
+      elem = b.m_elem;
+    for(size_t i = 0; i < b.Rnum; i++){
+      for(size_t j = 0; j < b.Cnum; j++)
+        if(b.diag){
+          if(i == j)
+            os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i];
+          else
+            os << std::setw(7) << std::fixed << std::setprecision(3) << 0.0;
+        }
+        else
+          os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
+      os << std::endl << std::endl;
+    }
+    if(b.ongpu)
+      free(elem);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator<<(std::ostream&, uni10::Matrix&):");
+  }
+  return os;
 }
-/*
-bool operator== (const Block& b1, const Block& b2){
-	return (b1.qnum == b2.qnum) && (b1.Rnum == b2.Rnum) && (b1.Cnum == b2.Cnum);
-}
-*/
 };	/* namespace uni10 */
