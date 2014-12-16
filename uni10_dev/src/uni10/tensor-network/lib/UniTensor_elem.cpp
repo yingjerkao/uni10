@@ -151,14 +151,12 @@ size_t UniTensor::grouping(){
 	std::map<Qnum,size_t>::iterator it;
 	std::map<Qnum,size_t>::iterator it2;
 	std::set<int> Qidx;
-	Block blk;
 	int qidx;
 	size_t off = 0;
 	for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
 		it = row_QnumMdim.find(it2->first);
-		blk.Rnum = it->second;
-		blk.Cnum = it2->second;
-		blk.qnum = it2->first;
+    Block blk(it->second, it2->second); // blk(Rnum, Cnum);
+		//blk.qnum = it2->first;
 		off += blk.Rnum * blk.Cnum;
 		blocks[it->first] = blk;
 		Block* blkptr= &(blocks[it->first]);
@@ -223,7 +221,7 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
 		RQoff = Q_off / CQdim;
 		CQoff = Q_off % CQdim;
 		B_cDim = RQidx2Blk[RQoff]->Cnum;
-		Eptr = RQidx2Blk[RQoff]->elem + (RQidx2Off[RQoff] * B_cDim) + CQidx2Off[CQoff];
+		Eptr = RQidx2Blk[RQoff]->m_elem + (RQidx2Off[RQoff] * B_cDim) + CQidx2Off[CQoff];
 		sB_rDim = RQidx2Dim[RQoff];
 		sB_cDim = CQidx2Dim[CQoff];
 
@@ -463,8 +461,8 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
             Qot_CQoff = Qot_off % UniTout.CQdim;
             Bin_cDim = RQidx2Blk[Qin_RQoff]->Cnum;
             Bot_cDim = UniTout.RQidx2Blk[Qot_RQoff]->Cnum;
-            Ein_ptr = RQidx2Blk[Qin_RQoff]->elem + (RQidx2Off[Qin_RQoff] * Bin_cDim) + CQidx2Off[Qin_CQoff];
-            Eot_ptr = UniTout.RQidx2Blk[Qot_RQoff]->elem + (UniTout.RQidx2Off[Qot_RQoff] * Bot_cDim) + UniTout.CQidx2Off[Qot_CQoff];
+            Ein_ptr = RQidx2Blk[Qin_RQoff]->m_elem + (RQidx2Off[Qin_RQoff] * Bin_cDim) + CQidx2Off[Qin_CQoff];
+            Eot_ptr = UniTout.RQidx2Blk[Qot_RQoff]->m_elem + (UniTout.RQidx2Off[Qot_RQoff] * Bot_cDim) + UniTout.CQidx2Off[Qot_CQoff];
             sBin_rDim = RQidx2Dim[Qin_RQoff];
             sBin_cDim = CQidx2Dim[Qin_CQoff];
             sBot_cDim = UniTout.CQidx2Dim[Qot_CQoff];
@@ -559,7 +557,7 @@ void UniTensor::setRawElem(const DOUBLE* rawElem){
       RQoff = Q_off / CQdim;
       CQoff = Q_off % CQdim;
       B_cDim = RQidx2Blk[RQoff]->Cnum;
-      E_off = (RQidx2Blk[RQoff]->elem - elem) + (RQidx2Off[RQoff] * B_cDim) + CQidx2Off[CQoff];
+      E_off = (RQidx2Blk[RQoff]->m_elem - elem) + (RQidx2Off[RQoff] * B_cDim) + CQidx2Off[CQoff];
       sB_rDim = RQidx2Dim[RQoff];
       sB_cDim = CQidx2Dim[CQoff];
       sB_idxs.assign(bondNum, 0);
@@ -644,7 +642,7 @@ double UniTensor::at(const std::vector<size_t>& idxs)const{
       size_t sB_cDim = CQidx2Dim.find(Q_CQoff)->second;
       size_t blkRoff = RQidx2Off.find(Q_RQoff)->second;
       size_t blkCoff = CQidx2Off.find(Q_CQoff)->second;
-      double* boff = blk->elem + (blkRoff * B_cDim) + blkCoff;
+      double* boff = blk->m_elem + (blkRoff * B_cDim) + blkCoff;
       int cnt = 0;
       std::vector<int> D_acc(bondNum, 1);
       for(int b = bondNum	- 1; b > 0; b--)
@@ -723,8 +721,8 @@ UniTensor& UniTensor::transpose(){
         it_out = UniTout.blocks.find((it_in->first));
         Rnum = it_in->second.Rnum;
         Cnum = it_in->second.Cnum;
-        elem_in = it_in->second.elem;
-        elem_out = it_out->second.elem;
+        elem_in = it_in->second.m_elem;
+        elem_out = it_out->second.m_elem;
 
         setTranspose(elem_in, Rnum, Cnum, elem_out, ongpu);
       }
@@ -774,7 +772,7 @@ double UniTensor::trace()const{
         }
         Rnum = it->second.Rnum;
         for(size_t r = 0; r < Rnum; r++)
-          trVal += it->second.elem[r * Rnum + r];
+          trVal += it->second.m_elem[r * Rnum + r];
       }
       return trVal;
     }
@@ -871,7 +869,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
       Qt_RQoff = Qt_off / Tt.CQdim;
       Qt_CQoff = Qt_off % Tt.CQdim;
       Bt_cDim = Tt.RQidx2Blk[Qt_RQoff]->Cnum;
-      Et_ptr = Tt.RQidx2Blk[Qt_RQoff]->elem + (Tt.RQidx2Off[Qt_RQoff] * Bt_cDim) + Tt.CQidx2Off[Qt_CQoff];
+      Et_ptr = Tt.RQidx2Blk[Qt_RQoff]->m_elem + (Tt.RQidx2Off[Qt_RQoff] * Bt_cDim) + Tt.CQidx2Off[Qt_CQoff];
       sBt_rDim = Tt.RQidx2Dim[Qt_RQoff];
       sBt_cDim = Tt.CQidx2Dim[Qt_CQoff];
 
@@ -880,7 +878,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
         Q_RQoff = Q_off / CQdim;
         Q_CQoff = Q_off % CQdim;
         B_cDims[q] = RQidx2Blk[Q_RQoff]->Cnum;
-        E_offs[q] = RQidx2Blk[Q_RQoff]->elem + (RQidx2Off[Q_RQoff] * B_cDims[q]) + CQidx2Off[Q_CQoff];
+        E_offs[q] = RQidx2Blk[Q_RQoff]->m_elem + (RQidx2Off[Q_RQoff] * B_cDims[q]) + CQidx2Off[Q_CQoff];
       }
       int tQdeg, sB_c_off;
       DOUBLE trVal;

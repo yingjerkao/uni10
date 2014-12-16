@@ -303,7 +303,7 @@ std::vector<Matrix> Matrix::svd()const{
 	return outs;
 }
 
-size_t Matrix::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol){
+size_t Matrix::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol)const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -516,7 +516,7 @@ Matrix& Matrix::resize(size_t row, size_t col){
   return *this;
 }
 
-double Matrix::norm(){
+double Matrix::norm()const{
   try{
 	  return vectorNorm(m_elem, m_elemNum, 1, ongpu);
   }
@@ -525,7 +525,8 @@ double Matrix::norm(){
     return 0;
   }
 }
-double Matrix::sum(){
+
+double Matrix::sum()const{
   try{
 	  return vectorSum(m_elem, m_elemNum, 1, ongpu);
   }
@@ -534,7 +535,8 @@ double Matrix::sum(){
     return 0;
   }
 }
-double Matrix::trace(){
+
+double Matrix::trace()const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -551,7 +553,8 @@ double Matrix::trace(){
     return 0;
   }
 }
-void Matrix::save(const std::string& fname){
+
+void Matrix::save(const std::string& fname)const{
   try{
     FILE *fp = fopen(fname.c_str(), "w");
     if(!(fp != NULL)){

@@ -39,6 +39,7 @@ class UniTensor;
 class Block{
 	public:
 		Block();
+    Block(size_t _Rnum, size_t _Cnum);
 		Block(const Block& _b);
 		~Block();
 		friend class UniTensor;
@@ -46,10 +47,13 @@ class Block{
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 		friend bool operator== (const Block& b1, const Block& b2);
 	private:
-		Qnum qnum;
-		double* elem;
+		//Qnum qnum;
+		double* m_elem;
 		size_t Rnum;		//number of rows of the block
 		size_t Cnum;		//number of columns of the block
+		size_t m_elemNum;
+		bool diag;
+		bool ongpu;
 		//size_t offset;	//index of the first element of a block element in Tensor
 };
 };

@@ -467,7 +467,7 @@ void Network::construct(){
 		for(int i = 0; i < order.size(); i++){
 			if(leafs[order[i]] == NULL){
           std::ostringstream err;
-          err<<"Tensor '"<<names[order[i]]<<"' has not yet been given.\n  Hint: Use addTensor to add a tensor to a network.\n";
+          err<<"Tensor '"<<names[order[i]]<<"' has not yet been given.\n  Hint: Use putTensor() to add a tensor to a network.\n";
           throw std::runtime_error(exception_msg(err.str()));
       }
 			matching(leafs[order[i]], root);

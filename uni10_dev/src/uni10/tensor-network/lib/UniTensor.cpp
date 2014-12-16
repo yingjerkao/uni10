@@ -62,17 +62,22 @@ UniTensor::UniTensor(double val): status(0){
 UniTensor::UniTensor(const UniTensor& UniT):
   status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels),
   RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL),
-  QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), CQidx2Dim(UniT.CQidx2Dim){
+  QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), RQidx2Blk(UniT.RQidx2Blk), CQidx2Dim(UniT.CQidx2Dim){
     try{
-      RQidx2Blk.clear();
-      if(UniT.status & HAVEBOND){
-        for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
-          RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
-      }
       elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
-      std::map<Qnum,Block>::iterator it;
-      for ( it = blocks.begin() ; it != blocks.end(); it++ )
-        it->second.elem = &(elem[(it->second.elem - UniT.elem)]);
+      std::map<Qnum,Block>::const_iterator it2;
+      std::map<Block* , Block* , bptr_less> blkmap;
+      for (std::map<Qnum,Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+        it->second.m_elem = &(elem[(it->second.m_elem - UniT.elem)]);
+
+        it2 = UniT.blocks.find(it->first);
+        blkmap[&(it2->second)] = &(it->second);
+      }
+
+      if(UniT.status & HAVEBOND){
+        for(std::map<int, Block*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
+          it->second = blkmap[it->second];
+      }
       ELEMNUM += m_elemNum;
       COUNTER++;
       if(ELEMNUM > MAXELEMNUM)
@@ -99,20 +104,28 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){
     CQidx2Off = UniT.CQidx2Off;
     RQidx2Dim = UniT.RQidx2Dim;
     CQidx2Dim = UniT.CQidx2Dim;
-    RQidx2Blk.clear();
-    if(UniT.status & HAVEBOND){
-      for(std::map<int, Block*>::const_iterator it = UniT.RQidx2Blk.begin(); it != UniT.RQidx2Blk.end(); it++)
-        RQidx2Blk[it->first] = &(blocks[(it->second)->qnum]);
-    }
+    RQidx2Blk = UniT.RQidx2Blk;
+
     ELEMNUM -= m_elemNum;	//free original memory
     if(elem != NULL)
       elemFree(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
     status = UniT.status;
     m_elemNum = UniT.m_elemNum;
     elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
-    std::map<Qnum,Block>::iterator it;
-    for ( it = blocks.begin(); it != blocks.end(); it++ )
-      it->second.elem = &(elem[it->second.elem - UniT.elem]);
+    std::map<Qnum,Block>::const_iterator it2;
+    std::map< Block* , Block* , bptr_less> blkmap;
+    for (std::map<Qnum,Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
+      it->second.m_elem = &(elem[it->second.m_elem - UniT.elem]);
+
+      it2 = UniT.blocks.find(it->first);
+      blkmap[&(it2->second)] = &(it->second);
+    }
+
+    if(UniT.status & HAVEBOND){
+      for(std::map<int, Block*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
+        it->second = blkmap[it->second];
+    }
+
     ELEMNUM += m_elemNum;
     if(ELEMNUM > MAXELEMNUM)
       MAXELEMNUM = ELEMNUM;
@@ -256,10 +269,10 @@ void UniTensor::initUniT(){
 	}
 	else{
 		Qnum q0(0);
-		Block blk;
-		blk.Rnum = 1;
-		blk.Cnum = 1;
-		blk.qnum = q0;
+		Block blk(1, 1);
+		//blk.Rnum = 1;
+		//blk.Cnum = 1;
+		//blk.qnum = q0;
 		//blk.offset = 0;
 		blocks[q0] = blk;
 		RBondNum = 0;
@@ -273,7 +286,7 @@ void UniTensor::initUniT(){
 	std::map<Qnum,Block>::iterator it;
   size_t offset = 0;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ ){
-		it->second.elem = &(elem[offset]);
+		it->second.m_elem = &(elem[offset]);
     offset += it->second.Rnum * it->second.Cnum;
   }
 	elemBzero(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
@@ -459,7 +472,7 @@ void UniTensor::orthoRand(const Qnum& qnum){
     throw std::runtime_error(exception_msg(err.str()));
   }
   Block& block = it->second;
-	orthoRandomize(block.elem, block.Rnum, block.Cnum, ongpu);
+	orthoRandomize(block.m_elem, block.Rnum, block.Cnum, ongpu);
 	status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -470,7 +483,7 @@ void UniTensor::orthoRand(const Qnum& qnum){
 void UniTensor::orthoRand(){
 	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
-		orthoRandomize(it->second.elem, it->second.Rnum, it->second.Cnum, ongpu);
+		orthoRandomize(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
 	status |= HAVEELEM;
 }
 
@@ -483,7 +496,7 @@ void UniTensor::identity(const Qnum& qnum){
       throw std::runtime_error(exception_msg(err.str()));
     }
     Block& block = it->second;
-    setIdentity(block.elem, block.Rnum, block.Cnum, ongpu);
+    setIdentity(block.m_elem, block.Rnum, block.Cnum, ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -494,7 +507,7 @@ void UniTensor::identity(const Qnum& qnum){
 void UniTensor::identity(){
 	std::map<Qnum,Block>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
-		setIdentity(it->second.elem, it->second.Rnum, it->second.Cnum, ongpu);
+		setIdentity(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
 	status |= HAVEELEM;
 }
 
@@ -507,7 +520,7 @@ void UniTensor::set_zero(const Qnum& qnum){
       throw std::runtime_error(exception_msg(err.str()));
     }
     Block& block = it->second;
-    elemBzero(block.elem, block.Rnum * block.Cnum * sizeof(DOUBLE), ongpu);
+    elemBzero(block.m_elem, block.Rnum * block.Cnum * sizeof(DOUBLE), ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -818,11 +831,11 @@ Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
     }
     if(diag){
       Matrix mat(it->second.Rnum, it->second.Cnum, true, ongpu);
-      getDiag(it->second.elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+      getDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
       return mat;
     }
     else{
-      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.elem, false, ongpu);
+      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
       return mat;
     }
   }
@@ -836,7 +849,7 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
 	std::map<Qnum, Matrix> mats;
   try{
     for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
-      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.elem, false, ongpu);
+      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
       mats.insert(std::pair<Qnum, Matrix>(it->first, mat));
     }
   }
@@ -870,11 +883,11 @@ void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(mat.isDiag()){
-      elemBzero(it->second.elem, it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu);
-      setDiag(it->second.elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+      elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu);
+      setDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
     }
     else{
-      elemCopy(it->second.elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
+      elemCopy(it->second.m_elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
     }
     status |= HAVEELEM;
   }

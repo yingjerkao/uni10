@@ -159,7 +159,7 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
             err<<"The dimensions the bonds to be contracted out are different.";
             throw std::runtime_error(exception_msg(err.str()));
           }
-          matrixMul(blockA.elem, blockB.elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.elem, Ta.ongpu, Tb.ongpu, Tc.ongpu);
+          matrixMul(blockA.m_elem, blockB.m_elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.m_elem, Ta.ongpu, Tb.ongpu, Tc.ongpu);
         }
       }
       Tc.status |= Tc.HAVEELEM;

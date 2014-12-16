@@ -61,7 +61,7 @@ class Matrix {
 		void setElem(const double* elem, bool _ongpu = false);
 		void setElem(const std::vector<double>& elem, bool _ongpu = false);
 		Matrix& resize(size_t row, size_t col);
-		void save(const std::string& fname);
+		void save(const std::string& fname)const;
 		void load(const std::string& fname);
 		void identity();
 		void set_zero();
@@ -70,10 +70,10 @@ class Matrix {
 		Matrix& transpose();
 		std::vector<Matrix> eigh()const;
 		std::vector<Matrix> svd()const;
-    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
-		double trace();
-		double norm();
-		double sum();
+    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
+		double trace()const;
+		double norm()const;
+		double sum()const;
 		Matrix& operator*= (double a);
 		Matrix& operator*= (const Matrix& Mb);
 		Matrix& operator+= (const Matrix& Mb);
