@@ -65,13 +65,14 @@ UniTensor::UniTensor(const UniTensor& UniT):
   QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), RQidx2Blk(UniT.RQidx2Blk), CQidx2Dim(UniT.CQidx2Dim){
     try{
       elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
+
       std::map<Qnum,Block>::const_iterator it2;
-      std::map<Block* , Block* , bptr_less> blkmap;
+      std::map<const Block* , Block*> blkmap;
       for (std::map<Qnum,Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
         it->second.m_elem = &(elem[(it->second.m_elem - UniT.elem)]);
 
         it2 = UniT.blocks.find(it->first);
-        blkmap[&(it2->second)] = &(it->second);
+        blkmap[(&(it2->second))] = &(it->second);
       }
 
       if(UniT.status & HAVEBOND){
@@ -113,7 +114,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){
     m_elemNum = UniT.m_elemNum;
     elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
     std::map<Qnum,Block>::const_iterator it2;
-    std::map< Block* , Block* , bptr_less> blkmap;
+    std::map< const Block* , Block*> blkmap;
     for (std::map<Qnum,Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
       it->second.m_elem = &(elem[it->second.m_elem - UniT.elem]);
 
