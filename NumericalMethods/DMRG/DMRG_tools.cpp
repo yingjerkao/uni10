@@ -1,12 +1,15 @@
-enum Side{Left = -1, Right= 1};
+enum Side{Left = -1, Center = 0, Right = 1};
 UniTensor combineH(const UniTensor& H0, const UniTensor& HL, const UniTensor& HR);
 UniTensor findGS(const UniTensor& SB, double& E0, Matrix& refState, int& iter);
 int updateMPS(const UniTensor& GS, size_t chi, UniTensor& A, UniTensor& B, Matrix& lambda);
 int updateMPS(const UniTensor& GS, size_t chi, UniTensor& A, UniTensor& B);
 double sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn);
 double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn);
+double sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTensor>& HLs, vector<UniTensor>& HRs, vector<UniTensor>& As, vector<UniTensor>& Bs, vector<Matrix>& Ls, Network& HLn, Network& HRn);
+double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, vector<UniTensor>& As, vector<UniTensor>& Bs, vector<Matrix>& Ls, Network& HLn, Network& HRn);
 void bondcat(UniTensor& T, const Matrix& L, int bidx);
 void bondrm(UniTensor& T, const Matrix& L, int bidx);
+Matrix makeMPS(Side side, const UniTensor& A, const UniTensor& B, const Matrix& L);
 Matrix trialState(const UniTensor& A, const UniTensor& B, vector<Matrix>& Ls);
 size_t hidx(int N, Side side, int l);
 
@@ -118,12 +121,29 @@ double sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTens
 }
 
 double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, Network& HLn, Network& HRn){
+  vector<UniTensor> As;
+  vector<UniTensor> Bs;
+  vector<Matrix> Ls;
+  return sweep(N, chi, range, times, H0s, HLs, HRs, As, Bs, Ls, HLn, HRn);
+}
+double sweep(int N, int chi, int range, int times, UniTensor& H0, vector<UniTensor>& HLs, vector<UniTensor>& HRs, vector<UniTensor>& As, vector<UniTensor>& Bs, vector<Matrix>& Ls, Network& HLn, Network& HRn){
+  vector<UniTensor> H0s(1, H0);
+  return sweep(N, chi, range, times, H0s, HLs, HRs, As, Bs, Ls, HLn, HRn);
+}
+
+double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vector<UniTensor>& HLs, vector<UniTensor>& HRs, vector<UniTensor>& As, vector<UniTensor>& Bs, vector<Matrix>& Ls, Network& HLn, Network& HRn){
   assert(range < N);
   Matrix psi;
-  int dir = Left; //direction
-  int cursor = -1;
+  int dir = Left;
+  int cursor = 0;
   int cnt = 0;
   double E0;
+  bool MPS_READY = false;
+  if(As.size() == N && Bs.size() == N && Ls.size() == N){
+    MPS_READY = true;
+    for(int l = N - 1; l > 0; l--) //Ls.size() is 2N-1
+      Ls.push_back(Ls[l]);
+  }
   while(cnt < times + 1){
     UniTensor* Hptr;
     for( ; abs(cursor) < range; cursor += dir){
@@ -133,11 +153,19 @@ double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vecto
         Hptr = &(H0s[0]);
       UniTensor SB = combineH(*Hptr, HLs[N + cursor - 2], HRs[N - cursor - 2]);
       int iter;
+      if(MPS_READY){
+        if(cursor < 0)
+          psi = makeMPS(Left, As[N + cursor -1], As[N + cursor], Ls[hidx(N, Left, N + cursor)]);
+        else if(cursor > 0)
+          psi = makeMPS(Right, Bs[N - cursor], Bs[N - cursor - 1], Ls[hidx(N, Left, N + cursor - 2)]);
+        else
+          psi = makeMPS(Center, As[N - 1], Bs[N - 1], Ls[hidx(N, Left, N + cursor - 1)]);
+      }
       UniTensor GS = findGS(SB, E0, psi, iter);
 
       UniTensor A, B;
       int D = updateMPS(GS, chi, A, B);
-      //cout<<"cursor = "<< cursor <<", D = " << chi << setprecision(10) << ", E = " << E0  << ", e = " << E0 / (2 * N) <<", iter = "<<iter<<endl;
+      cout<<"cursor = "<< cursor <<", D = " << chi << setprecision(10) << ", E = " << E0  << ", e = " << E0 / (2 * N) <<", iter = "<<iter<<endl;
 
       UniTensor newHL, newHR;
       updateH(HLs[N + cursor - 2], HRs[N - cursor - 2], A, B, *Hptr, *Hptr, HLn, HRn, newHL, newHR);
@@ -154,6 +182,7 @@ double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vecto
     dir *= -1;
     cursor += 2*dir;
     cnt++;
+    cout<<"sweep "<< cnt<<": E0 = "<< E0 / (2*N)<<endl;
   }
   return E0;
 }
@@ -182,6 +211,31 @@ void bondrm(UniTensor& T, const Matrix& L, int bidx){
   for(int i = 0; i < L.elemNum(); i++)
     invL[i] = invL[i] == 0 ? 0 : (1 / invL[i]);
 	bondcat(T, invL, bidx);
+}
+
+Matrix makeMPS(Side side, const UniTensor& A, const UniTensor& B, const Matrix& L){
+  UniTensor tA = A;
+  UniTensor tB = B;
+  if(side == Left){
+    if(tB.bond(2).dim() != L.row())
+      return Matrix();
+    bondcat(tB, L, 2);
+  }
+  else if(side == Right){
+    if(tA.bond(0).dim() != L.row())
+      return Matrix();
+    bondcat(tA, L, 0);
+  }
+  else
+    bondcat(tB, L, 0);
+  int labelA[] = {-1, -2, 1};
+  int labelB[] = {1, -3, -4};
+  int labelS[] = {-1, -2, -3, -4};
+  tA.setLabel(labelA);
+  tB.setLabel(labelB);
+  UniTensor S = contract(tA, tB, true);
+  S.permute(labelS, 0);
+  return S.getBlock();
 }
 
 Matrix trialState(const UniTensor& A, const UniTensor& B, vector<Matrix>& Ls){
