@@ -254,6 +254,7 @@ void Matrix::setElem(const double* elem, bool _ongpu){
   }
 }
 
+/*
 std::vector<Matrix> Matrix::eigh()const{
   std::vector<Matrix> outs;
   try{
@@ -277,7 +278,7 @@ std::vector<Matrix> Matrix::eigh()const{
     propogate_exception(e, "In function Matrix::eigh():");
   }
 	return outs;
-}
+}*/
 
 std::vector<Matrix> Matrix::svd()const{
 	std::vector<Matrix> outs;

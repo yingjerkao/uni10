@@ -68,7 +68,7 @@ class Matrix: public Block {
 		void randomize();
 		void orthoRand();
 		Matrix& transpose();
-		std::vector<Matrix> eigh()const;
+		//std::vector<Matrix> eigh()const;
 		std::vector<Matrix> svd()const;
     size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
 		double trace()const;

@@ -29,6 +29,7 @@
 #include <uni10/data-structure/Block.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
+#include <uni10/tensor-network/Matrix.h>
 //using namespace uni10::datatype;
 namespace uni10{
 Block::Block(): Rnum(0), Cnum(0), m_elemNum(0), diag(false), ongpu(false), m_elem(NULL){}
@@ -69,6 +70,31 @@ void Block::save(const std::string& fname)const{
   catch(const std::exception& e){
     propogate_exception(e, "In function Block::save(std::string&):");
   }
+}
+
+std::vector<Matrix> Block::eigh()const{
+  std::vector<Matrix> outs;
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(diag){
+      std::ostringstream err;
+      err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    Matrix Eig(Rnum, Cnum, true, ongpu);
+    Matrix EigV(Rnum, Cnum, false, ongpu);
+    syDiag(m_elem, Rnum, Eig.m_elem, EigV.m_elem, ongpu);
+    outs.push_back(Eig);
+    outs.push_back(EigV);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::eigh():");
+  }
+	return outs;
 }
 
 

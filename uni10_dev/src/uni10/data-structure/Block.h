@@ -32,10 +32,12 @@
 #include <iomanip>
 #include <assert.h>
 #include <cstdint>
+#include <vector>
 #include <uni10/datatype.hpp>
 #include <stdexcept>
 namespace uni10{
 class UniTensor;
+class Matrix;
 class Block{
 	public:
 		Block();
@@ -52,8 +54,8 @@ class Block{
 		double* getElem()const;
 		void save(const std::string& fname)const;
 
-    /*
 		std::vector<Matrix> eigh()const;
+    /*
 		std::vector<Matrix> svd()const;
     size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
 		double trace()const;
