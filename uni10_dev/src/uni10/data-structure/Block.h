@@ -39,13 +39,34 @@ class UniTensor;
 class Block{
 	public:
 		Block();
-    Block(size_t _Rnum, size_t _Cnum);
 		Block(const Block& _b);
+    Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
+
+		size_t row()const;
+		size_t col()const;
+		bool isDiag()const{return diag;};
+		bool isOngpu()const{return ongpu;};
+		size_t elemNum()const;
+		//double operator[](size_t idx)const;
+		//double at(size_t i, size_t j)const;
+		double* getElem()const;
+		void save(const std::string& fname)const;
+
+    /*
+		std::vector<Matrix> eigh()const;
+		std::vector<Matrix> svd()const;
+    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
+		double trace()const;
+		double norm()const;
+		double sum()const;
+    */
+
+
 		virtual ~Block();
 		friend class UniTensor;
 		friend std::ostream& operator<< (std::ostream& os, const Block& b);
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
-	private:
+	protected:
 		//Qnum qnum;
 		double* m_elem;
 		size_t Rnum;		//number of rows of the block

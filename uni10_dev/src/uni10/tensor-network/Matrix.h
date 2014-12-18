@@ -36,11 +36,11 @@
 #include <cmath>
 #include <stdexcept>
 #include <sstream>
+#include <uni10/data-structure/Block.h>
 //Type of Matrix
-//#include <uni10/tensor-network/UniTensor.h>
 namespace uni10{
 
-class Matrix {
+class Matrix: public Block {
 	public:
 		Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=true);
 		Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
@@ -49,19 +49,19 @@ class Matrix {
 		Matrix();
 		~Matrix();
 		Matrix& operator=(const Matrix& _m);
-		size_t row()const;
-		size_t col()const;
-		bool isDiag()const{return diag;};
-		bool isOngpu()const{return ongpu;};
-		size_t elemNum()const;
+		//size_t row()const;
+		//size_t col()const;
+		//bool isDiag()const{return diag;};
+		//bool isOngpu()const{return ongpu;};
+		//size_t elemNum()const;
 		double& operator[](size_t idx);
 		double& at(size_t i, size_t j);
-		double* getElem()const;
+		//double* getElem()const;
 		double* getHostElem();
 		void setElem(const double* elem, bool _ongpu = false);
 		void setElem(const std::vector<double>& elem, bool _ongpu = false);
 		Matrix& resize(size_t row, size_t col);
-		void save(const std::string& fname)const;
+		//void save(const std::string& fname)const;
 		void load(const std::string& fname);
 		void identity();
 		void set_zero();
@@ -88,12 +88,14 @@ class Matrix {
 	private:
 		void init(bool togpu);
 		void init(const double* elem, bool _ongpu);
+    /*
 		size_t Rnum;		//number of rows of the block
 		size_t Cnum;		//number of columns of the block
 		double* m_elem;
 		size_t m_elemNum;
 		bool diag;
 		bool ongpu;
+    */
 };
 Matrix takeExp(double a, const Matrix& mat);
 Matrix otimes(const Matrix& Ma, const Matrix& Mb);

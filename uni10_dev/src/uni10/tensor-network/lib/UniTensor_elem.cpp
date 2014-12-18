@@ -156,10 +156,9 @@ size_t UniTensor::grouping(){
 	for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
 		it = row_QnumMdim.find(it2->first);
     Block blk(it->second, it2->second); // blk(Rnum, Cnum);
-		//blk.qnum = it2->first;
 		off += blk.Rnum * blk.Cnum;
 		blocks[it->first] = blk;
-		Block* blkptr= &(blocks[it->first]);
+		Block* blkptr = &(blocks[it->first]);
 		std::vector<int>& tmpRQidx = row_Qnum2Qidx[it->first];
 		std::vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];
 		for(int i = 0; i < tmpRQidx.size(); i++){
@@ -660,7 +659,7 @@ double UniTensor::at(const std::vector<size_t>& idxs)const{
     return 0;
   }
 }
-double UniTensor::operator[](size_t idx){
+double UniTensor::operator[](size_t idx)const{
   try{
     if(!(idx < m_elemNum)){
       std::ostringstream err;

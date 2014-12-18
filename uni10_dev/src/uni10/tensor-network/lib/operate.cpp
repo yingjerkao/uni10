@@ -147,8 +147,8 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
       if(cBonds.size())
         Tc.setLabel(newLabelC);
       Block blockA, blockB, blockC;
-      std::map<Qnum,Block>::iterator it;
-      std::map<Qnum,Block>::iterator it2;
+      std::map<Qnum, Block>::iterator it;
+      std::map<Qnum, Block>::iterator it2;
       for(it = Ta.blocks.begin() ; it != Ta.blocks.end(); it++){
         if((it2 = Tb.blocks.find(it->first)) != Tb.blocks.end()){
           blockA = it->second;

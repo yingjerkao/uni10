@@ -69,9 +69,9 @@ std::ostream& operator<< (std::ostream& os, const Matrix& m){
   return os;
 }
 
-Matrix::Matrix(): Rnum(0), Cnum(0), m_elemNum(0), diag(false), m_elem(NULL), ongpu(false){
+Matrix::Matrix(): Block(){
 }
-Matrix::Matrix(const Matrix& _m): Rnum(_m.Rnum), Cnum(_m.Cnum), m_elemNum(_m.m_elemNum), diag(_m.diag), m_elem(NULL), ongpu(false){
+Matrix::Matrix(const Matrix& _m): Block(_m.Rnum, _m.Cnum, _m.diag){
   try{
     if(m_elemNum){
       m_elem = (double*)elemAlloc(m_elemNum * sizeof(double), ongpu);
@@ -101,7 +101,7 @@ void Matrix::init(const double* _elem, bool src_ongpu){
 	elemCopy(m_elem, _elem, m_elemNum * sizeof(double), ongpu, src_ongpu);
 }
 
-Matrix::Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag, bool src_ongpu): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL), ongpu(false){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag, bool src_ongpu): Block(_Rnum, _Cnum, _diag){
   try{
 	  init(_elem, src_ongpu);
   }
@@ -110,7 +110,7 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag, bool
   }
 }
 
-Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag, bool src_ongpu): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL), ongpu(false){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag, bool src_ongpu): Block(_Rnum, _Cnum, _diag){
   try{
 	  init(&_elem[0], src_ongpu);
   }
@@ -119,7 +119,7 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, boo
   }
 }
 
-Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), m_elem(NULL), ongpu(false){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Block(_Rnum, _Cnum, _diag){
   try{
     init(_ongpu);
     if(m_elemNum)
@@ -156,7 +156,7 @@ Matrix::~Matrix(){
     propogate_exception(e, "In destructor Matrix::~Matrix():");
   }
 }
-
+/*
 size_t Matrix::row()const{
 	return Rnum;
 }
@@ -167,7 +167,7 @@ size_t Matrix::col()const{
 size_t Matrix::elemNum()const{
 	return m_elemNum;
 }
-
+*/
 Matrix operator* (const Matrix& Ma, const Matrix& Mb){
   try{
     if(!(Ma.Cnum == Mb.Rnum)){
@@ -553,7 +553,7 @@ double Matrix::trace()const{
     return 0;
   }
 }
-
+/*
 void Matrix::save(const std::string& fname)const{
   try{
     FILE *fp = fopen(fname.c_str(), "w");
@@ -576,7 +576,7 @@ void Matrix::save(const std::string& fname)const{
     propogate_exception(e, "In function Matrix::save(std::string&):");
   }
 }
-
+*/
 void Matrix::load(const std::string& fname){
   try{
     FILE *fp = fopen(fname.c_str(), "r");
@@ -616,10 +616,11 @@ double& Matrix::operator[](size_t idx){
   }
 }
 
+/*
 double* Matrix::getElem()const{
 	return m_elem;
 }
-
+*/
 double* Matrix::getHostElem(){
   try{
     if(ongpu){

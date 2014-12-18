@@ -261,8 +261,6 @@ void UniTensor::initUniT(){
         err<<"    "<<bonds[b];
       throw std::runtime_error(exception_msg(err.str()));
     }
-		//Block blk = blocks.rbegin()->second;
-		//m_elemNum = blk.offset + (blk.Rnum * blk.Cnum);
 		labels.assign(bonds.size(), 0);
 		for(int b = 0; b < bonds.size(); b++)
 			labels[b] = b;
@@ -270,12 +268,7 @@ void UniTensor::initUniT(){
 	}
 	else{
 		Qnum q0(0);
-		Block blk(1, 1);
-		//blk.Rnum = 1;
-		//blk.Cnum = 1;
-		//blk.qnum = q0;
-		//blk.offset = 0;
-		blocks[q0] = blk;
+		blocks[q0] = Block(1, 1);
 		RBondNum = 0;
 		RQdim = 0;
 		CQdim = 0;
@@ -284,10 +277,10 @@ void UniTensor::initUniT(){
 	}
 	elem = NULL;
 	elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
-	std::map<Qnum,Block>::iterator it;
   size_t offset = 0;
-	for ( it = blocks.begin() ; it != blocks.end(); it++ ){
+	for (std::map<Qnum,Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
 		it->second.m_elem = &(elem[offset]);
+    it->second.ongpu = ongpu;
     offset += it->second.Rnum * it->second.Cnum;
   }
 	elemBzero(elem, sizeof(DOUBLE) * m_elemNum, ongpu);

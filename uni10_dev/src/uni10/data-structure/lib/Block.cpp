@@ -32,8 +32,46 @@
 //using namespace uni10::datatype;
 namespace uni10{
 Block::Block(): Rnum(0), Cnum(0), m_elemNum(0), diag(false), ongpu(false), m_elem(NULL){}
-Block::Block(size_t _Rnum, size_t _Cnum): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(false), ongpu(false), m_elem(NULL){}
+Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
 Block::Block(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), m_elemNum(_b.m_elemNum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
+
+size_t Block::row()const{
+	return Rnum;
+}
+
+size_t Block::col()const{
+	return Cnum;
+}
+size_t Block::elemNum()const{
+	return m_elemNum;
+}
+double* Block::getElem()const{
+	return m_elem;
+}
+void Block::save(const std::string& fname)const{
+  try{
+    FILE *fp = fopen(fname.c_str(), "w");
+    if(!(fp != NULL)){
+      std::ostringstream err;
+      err<<"Error in writing to file '"<<fname<<"'.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    double* elem = m_elem;
+    if(ongpu){
+      elem = (double*)malloc(m_elemNum * sizeof(double));
+      elemCopy(elem, m_elem, m_elemNum * sizeof(double), false, ongpu);
+    }
+    fwrite(elem, sizeof(double), m_elemNum, fp);
+    fclose(fp);
+    if(ongpu)
+      free(elem);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Block::save(std::string&):");
+  }
+}
+
+
 Block::~Block(){}
 std::ostream& operator<< (std::ostream& os, const Block& b){
   try{
