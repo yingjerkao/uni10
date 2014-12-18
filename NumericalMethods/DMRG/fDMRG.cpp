@@ -13,8 +13,9 @@ int main(){
 	/*** Initialization ***/
   const int chi = 20;
   const int N = 20;
-	//UniTensor H0 = theModel(1, 0, 0, 1, 0.1, 0);
+	//UniTensor H0 = theModel(1, 0, 0, 1.5, 0.1, 0);
 	UniTensor H0 = Heisenberg();
+  //UniTensor H0 = transverseIsing(0.5, 0);
 
 	vector<Bond> bond2;
 	bond2.push_back(H0.bond(0));
@@ -61,8 +62,32 @@ int main(){
     HRs.push_back(newHR);
     Ep = E0;
 	}
-  cout<<"size = "<<As.size()<<endl;
-  cout<<As[0];
-  sweep(N, chi, N-1, 1, H0, HLs, HRs, As, Bs, Ls, HLn, HRn);
-  cout<<As[0];
+ // sweep(N, chi, N-1, 1, H0, HLs, HRs, As, Bs, Ls, HLn, HRn);
+
+  Network normL("normL.net");
+  Network normR("normR.net");
+  Network expOb("expOb.net");
+  cout<<H0;
+  cout<<"expH = "<<mpsExp2s(As, Bs, Ls[N - 1], N, H0, normL, normR, expOb)<<endl;
+  cout<<"mpsNorm = "<<mpsNorm(As, Bs, Ls[N - 1], normL, normR)<<endl;
+
+  double up_elem[] = {0, 1, 0};
+  double dn_elem[] = {0, 1.0, 0};
+  vector<Bond> bond1(1, H0.bond(0));
+  UniTensor up_st(bond1);
+  UniTensor dn_st(bond1);
+  up_st.setElem(up_elem);
+  dn_st.setElem(dn_elem);
+  cout<<up_st<<dn_st;
+
+  vector<UniTensor> prdState;
+  for(int i = 0; i < 2*N; i++){
+    if(i % 2 == 0)
+      prdState.push_back(up_st);
+    else
+      prdState.push_back(dn_st);
+  }
+  Network prdL("expPrdL.net");
+  Network prdR("expPrdR.net");
+  cout<<"expPrd = "<<mpsPrdS(As, Bs, Ls[N - 1], prdState, prdL, prdR)<<endl;
 }
