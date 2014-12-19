@@ -504,6 +504,14 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
   return *this;
 }
 
+void UniTensor::setRawElem(const Block& blk){
+  try{
+    setRawElem(blk.getElem());
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::setRawElem(std::vector<DOUBLE>&):");
+  }
+}
 void UniTensor::setRawElem(const std::vector<DOUBLE>& rawElem){
   try{
     setRawElem(&rawElem[0]);
@@ -659,6 +667,7 @@ double UniTensor::at(const std::vector<size_t>& idxs)const{
     return 0;
   }
 }
+
 double UniTensor::operator[](size_t idx)const{
   try{
     if(!(idx < m_elemNum)){
@@ -769,9 +778,7 @@ double UniTensor::trace()const{
           err<<"Cannot trace a non-square block.";
           throw std::runtime_error(exception_msg(err.str()));
         }
-        Rnum = it->second.Rnum;
-        for(size_t r = 0; r < Rnum; r++)
-          trVal += it->second.m_elem[r * Rnum + r];
+        trVal += it->second.trace();
       }
       return trVal;
     }

@@ -172,19 +172,12 @@ void setIdentity(double* elem, size_t M, size_t N, bool ongpu){
 }
 
 double vectorSum(double* X, size_t N, int inc, bool ongpu){
-	double sum = 0;
-	int64_t left = N;
-	size_t offset = 0;
-	int chunk;
-	while(left > 0){
-		if(left > INT_MAX)
-			chunk = INT_MAX;
-		else
-			chunk = left;
-		sum += dasum(&chunk, X + offset, &inc);
-		offset += chunk;
-		left -= INT_MAX;
-	}
+  double sum = 0;
+  size_t idx = 0;
+  for(size_t i = 0; i < N; i++){
+    sum += X[idx];
+    idx += inc;
+  }
 	return sum;
 }
 

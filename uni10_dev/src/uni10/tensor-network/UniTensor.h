@@ -60,6 +60,7 @@ class UniTensor{
 		UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
 		UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
 		UniTensor(const UniTensor& UniT);
+		UniTensor(const Block& UniT);
 		~UniTensor();
 		UniTensor& operator=(const UniTensor& UniT);
 		UniTensor& assign(const std::vector<Bond>& _bond);
@@ -73,6 +74,7 @@ class UniTensor{
 		Bond bond(size_t idx)const;
 		size_t elemNum()const;
 		Matrix getRawElem()const;
+    void setRawElem(const Block& blk);
     void setRawElem(const std::vector<double>& rawElem);
     void setRawElem(const double* rawElem);
     double at(const std::vector<int>& idxs)const;
@@ -80,7 +82,7 @@ class UniTensor{
     size_t blockNum()const;
     std::vector<Qnum> blockQnum()const;
     Qnum blockQnum(size_t idx)const;
-		std::map<Qnum, Block> getBlocks()const;
+		const std::map<Qnum, Block>& getBlocks()const;
 		Block getBlock(bool diag = false)const;
 		Block getBlock(const Qnum& qnum, bool diag = false)const;
 		void putBlock(const Block& mat);

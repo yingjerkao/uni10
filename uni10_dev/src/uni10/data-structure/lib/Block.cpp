@@ -36,19 +36,12 @@ Block::Block(): Rnum(0), Cnum(0), m_elemNum(0), diag(false), ongpu(false), m_ele
 Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
 Block::Block(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), m_elemNum(_b.m_elemNum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
 
-size_t Block::row()const{
-	return Rnum;
-}
-
-size_t Block::col()const{
-	return Cnum;
-}
-size_t Block::elemNum()const{
-	return m_elemNum;
-}
-double* Block::getElem()const{
-	return m_elem;
-}
+size_t Block::row()const{return Rnum;}
+size_t Block::col()const{return Cnum;}
+bool Block::isDiag()const{return diag;}
+bool Block::isOngpu()const{return ongpu;}
+size_t Block::elemNum()const{return m_elemNum;}
+double* Block::getElem()const{return m_elem;}
 void Block::save(const std::string& fname)const{
   try{
     FILE *fp = fopen(fname.c_str(), "w");
@@ -275,9 +268,7 @@ Matrix operator*(const Block& Ma, double a){
     return Block();
   }
 }
-Matrix operator*(double a, const Block& Ma){
-  return Ma * a;
-}
+Matrix operator*(double a, const Block& Ma){return Ma * a;}
 Matrix operator+(const Block& Ma, const Block& Mb){
   try{
     Matrix Mc(Ma);

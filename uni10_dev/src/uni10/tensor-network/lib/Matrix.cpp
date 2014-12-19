@@ -664,7 +664,7 @@ double* Matrix::getHostElem(){
 	return m_elem;
 }
 
-/*
+
 double& Matrix::at(size_t r, size_t c){
   try{
     if(!((r < Rnum) && (c < Cnum))){
@@ -688,7 +688,7 @@ double& Matrix::at(size_t r, size_t c){
     propogate_exception(e, "In function Matrix::at(size_t, size_t):");
     return m_elem[0];
   }
-}*/
+}
 
 bool Matrix::toGPU(){
 	if(!ongpu)

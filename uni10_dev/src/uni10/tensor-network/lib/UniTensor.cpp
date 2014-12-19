@@ -92,6 +92,20 @@ UniTensor::UniTensor(const UniTensor& UniT):
     }
   }
 
+UniTensor::UniTensor(const Block& blk): status(0){
+  try{
+    Bond bdi(BD_IN, blk.Rnum);
+    Bond bdo(BD_OUT, blk.Cnum);
+    bonds.push_back(bdi);
+    bonds.push_back(bdo);
+    initUniT();
+    this->putBlock(blk);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(uni10::Block&");
+  }
+}
+
 UniTensor& UniTensor::operator=(const UniTensor& UniT){
   try{
     bonds = UniT.bonds;
@@ -838,20 +852,7 @@ Block UniTensor::getBlock(const Qnum& qnum, bool diag)const{
   }
 }
 
-std::map<Qnum, Block> UniTensor::getBlocks()const{
-  /*
-	std::map<Qnum, Matrix> mats;
-  try{
-    for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
-      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
-      mats.insert(std::pair<Qnum, Matrix>(it->first, mat));
-    }
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::getBlocks():");
-  }
-	return mats;
-  */
+const std::map<Qnum, Block>& UniTensor::getBlocks()const{
   return blocks;
 }
 
