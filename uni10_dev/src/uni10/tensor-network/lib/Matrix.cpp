@@ -33,6 +33,7 @@
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 namespace uni10{
+/*
 std::ostream& operator<< (std::ostream& os, const Matrix& m){
   try{
     os << m.Rnum << " x " << m.Cnum << " = " << m.m_elemNum;
@@ -68,14 +69,24 @@ std::ostream& operator<< (std::ostream& os, const Matrix& m){
   }
   return os;
 }
-
-Matrix::Matrix(): Block(){
-}
+*/
+Matrix::Matrix(): Block(){}
 Matrix::Matrix(const Matrix& _m): Block(_m.Rnum, _m.Cnum, _m.diag){
   try{
     if(m_elemNum){
       m_elem = (double*)elemAlloc(m_elemNum * sizeof(double), ongpu);
       elemCopy(m_elem, _m.m_elem, m_elemNum * sizeof(double), ongpu, _m.ongpu);
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In copy constructor Matrix::Matrix(uni10::Matrix&):");
+  }
+}
+Matrix::Matrix(const Block& _b): Block(_b.Rnum, _b.Cnum, _b.diag){
+  try{
+    if(m_elemNum){
+      m_elem = (double*)elemAlloc(m_elemNum * sizeof(double), ongpu);
+      elemCopy(m_elem, _b.m_elem, m_elemNum * sizeof(double), ongpu, _b.ongpu);
     }
   }
   catch(const std::exception& e){
@@ -146,6 +157,22 @@ Matrix& Matrix::operator=(const Matrix& _m){
   }
 	return *this;
 }
+Matrix& Matrix::operator=(const Block& _b){
+  try{
+    Rnum = _b.Rnum;
+    Cnum = _b.Cnum;
+    m_elemNum = _b.m_elemNum;
+    diag = _b.diag;
+    if(m_elem != NULL)
+      elemFree(m_elem, m_elemNum * sizeof(double), ongpu);
+    m_elem = (double*)elemAlloc(m_elemNum * sizeof(double), ongpu);
+    elemCopy(m_elem, _b.m_elem, m_elemNum * sizeof(double), ongpu, _b.ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::operator=(uni10::Block&):");
+  }
+	return *this;
+}
 
 Matrix::~Matrix(){
   try{
@@ -168,6 +195,7 @@ size_t Matrix::elemNum()const{
 	return m_elemNum;
 }
 */
+/*
 Matrix operator* (const Matrix& Ma, const Matrix& Mb){
   try{
     if(!(Ma.Cnum == Mb.Rnum)){
@@ -203,8 +231,8 @@ Matrix operator* (const Matrix& Ma, const Matrix& Mb){
     propogate_exception(e, "In function operator*(uni10::Matrix&, uni10::Matrix&):");
     return Matrix();
   }
-}
-
+}*/
+/*
 bool operator== (const Matrix& m1, const Matrix& m2){
   try{
     double diff;
@@ -222,10 +250,10 @@ bool operator== (const Matrix& m1, const Matrix& m2){
     propogate_exception(e, "In function operator==(uni10::Matrix&, uni10::Matrix&):");
   }
   return true;
-}
+}*/
 
 
-Matrix& Matrix::operator*= (const Matrix& Mb){
+Matrix& Matrix::operator*= (const Block& Mb){
   try{
     if(!ongpu)
       m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
@@ -279,7 +307,7 @@ std::vector<Matrix> Matrix::eigh()const{
   }
 	return outs;
 }*/
-
+/*
 std::vector<Matrix> Matrix::svd()const{
 	std::vector<Matrix> outs;
   try{
@@ -302,8 +330,8 @@ std::vector<Matrix> Matrix::svd()const{
     propogate_exception(e, "In function Matrix::svd():");
   }
 	return outs;
-}
-
+}*/
+/*
 size_t Matrix::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol)const{
   try{
     if(!(Rnum == Cnum)){
@@ -330,7 +358,7 @@ size_t Matrix::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_
     propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
     return 0;
   }
-}
+}*/
 
 void Matrix::randomize(){
   try{
@@ -383,7 +411,7 @@ void Matrix::set_zero(){
     propogate_exception(e, "In function Matrix::set_zero():");
   }
 }
-
+/*
 Matrix operator*(const Matrix& Ma, double a){
   try{
     Matrix Mb(Ma);
@@ -395,7 +423,7 @@ Matrix operator*(const Matrix& Ma, double a){
     return Matrix();
   }
 }
-
+*/
 Matrix& Matrix::operator*= (double a){
   try{
     if(!ongpu)
@@ -407,7 +435,7 @@ Matrix& Matrix::operator*= (double a){
   }
 	return *this;
 }
-
+/*
 Matrix operator+(const Matrix& Ma, const Matrix& Mb){
   try{
     Matrix Mc(Ma);
@@ -418,9 +446,9 @@ Matrix operator+(const Matrix& Ma, const Matrix& Mb){
     propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");
     return Matrix();
   }
-}
+}*/
 
-Matrix& Matrix::operator+= (const Matrix& Mb){
+Matrix& Matrix::operator+= (const Block& Mb){
   try{
     if(!ongpu)
       m_elem = (double*)mvGPU(m_elem, m_elemNum * sizeof(double), ongpu);
@@ -517,6 +545,7 @@ Matrix& Matrix::resize(size_t row, size_t col){
   return *this;
 }
 
+/*
 double Matrix::norm()const{
   try{
 	  return vectorNorm(m_elem, m_elemNum, 1, ongpu);
@@ -554,6 +583,7 @@ double Matrix::trace()const{
     return 0;
   }
 }
+*/
 /*
 void Matrix::save(const std::string& fname)const{
   try{
@@ -634,6 +664,7 @@ double* Matrix::getHostElem(){
 	return m_elem;
 }
 
+/*
 double& Matrix::at(size_t r, size_t c){
   try{
     if(!((r < Rnum) && (c < Cnum))){
@@ -657,7 +688,7 @@ double& Matrix::at(size_t r, size_t c){
     propogate_exception(e, "In function Matrix::at(size_t, size_t):");
     return m_elem[0];
   }
-}
+}*/
 
 bool Matrix::toGPU(){
 	if(!ongpu)
@@ -665,7 +696,7 @@ bool Matrix::toGPU(){
 	return ongpu;
 }
 
-Matrix takeExp(double a, const Matrix& mat){
+Matrix takeExp(double a, const Block& mat){
   try{
     std::vector<Matrix> rets = mat.eigh();
     Matrix UT(rets[1]);

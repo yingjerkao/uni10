@@ -49,23 +49,28 @@ class Block{
 		bool isDiag()const{return diag;};
 		bool isOngpu()const{return ongpu;};
 		size_t elemNum()const;
-		//double operator[](size_t idx)const;
-		//double at(size_t i, size_t j)const;
+		double operator[](size_t idx)const;
+		double at(size_t i, size_t j)const;
 		double* getElem()const;
 		void save(const std::string& fname)const;
 
 		std::vector<Matrix> eigh()const;
-    /*
 		std::vector<Matrix> svd()const;
     size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
 		double trace()const;
 		double norm()const;
 		double sum()const;
-    */
-
-
+		Block& operator*= (double a);
 		virtual ~Block();
+		friend Matrix operator* (const Block& Ma, const Block& Mb);
+		friend Matrix operator*(const Block& Ma, double a);
+		friend Matrix operator*(double a, const Block& Ma);
+		friend Matrix operator+(const Block& Ma, const Block& Mb);
+		friend bool operator== (const Block& m1, const Block& m2);
+
+
 		friend class UniTensor;
+		friend class Matrix;
 		friend std::ostream& operator<< (std::ostream& os, const Block& b);
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 	protected:

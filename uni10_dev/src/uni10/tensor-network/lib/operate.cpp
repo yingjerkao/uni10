@@ -272,7 +272,7 @@ UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
     return UniTensor();
   }
 }
-Matrix otimes(const Matrix& Ma, const Matrix& Mb){
+Matrix otimes(const Block& Ma, const Block& Mb){
   try{
     std::vector<Bond> bonds;
     Bond bdr_a(BD_IN, Ma.row());

@@ -786,10 +786,9 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
       os << bonds[b];
     }
     os<<"\n===============BLOCKS===============\n";
-    std::map<Qnum, Matrix> blocks = UniT.getBlocks();
-    std::map<Qnum, Matrix>::const_iterator it;
+    std::map<Qnum, Block> blocks = UniT.getBlocks();
     bool printElem = true;
-    for ( it = blocks.begin() ; it != blocks.end(); it++ ){
+    for (std::map<Qnum, Block>::const_iterator  it = blocks.begin() ; it != blocks.end(); it++ ){
       os << "--- " << it->first << ": ";// << Rnum << " x " << Cnum << " = " << Rnum * Cnum << " ---\n\n";
       if((UniT.status & UniT.HAVEELEM) && printElem)
         os<<it->second;
@@ -805,7 +804,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	return os;
 }
 
-Matrix UniTensor::getBlock(bool diag)const{
+Block UniTensor::getBlock(bool diag)const{
   try{
     Qnum q0(0);
     return getBlock(q0, diag);
@@ -815,7 +814,7 @@ Matrix UniTensor::getBlock(bool diag)const{
     return Matrix();
   }
 }
-Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
+Block UniTensor::getBlock(const Qnum& qnum, bool diag)const{
   try{
     std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
     if(it == blocks.end()){
@@ -829,17 +828,18 @@ Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
       return mat;
     }
     else{
-      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
-      return mat;
+      //Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
+      return it->second;
     }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlock(uni10::Qnum&):");
-    return Matrix(0, 0);
+    return Block();
   }
 }
 
-std::map<Qnum, Matrix> UniTensor::getBlocks()const{
+std::map<Qnum, Block> UniTensor::getBlocks()const{
+  /*
 	std::map<Qnum, Matrix> mats;
   try{
     for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
@@ -851,18 +851,20 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
     propogate_exception(e, "In function UniTensor::getBlocks():");
   }
 	return mats;
+  */
+  return blocks;
 }
 
-void UniTensor::putBlock(const Matrix& mat){
+void UniTensor::putBlock(const Block& mat){
   try{
     Qnum q0(0);
     putBlock(q0, mat);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::putBlock(uni10::Matrix&):");
+    propogate_exception(e, "In function UniTensor::putBlock(uni10::Block&):");
   }
 }
-void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
+void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
   try{
     std::map<Qnum, Block>::iterator it;
     if(!((it = blocks.find(qnum)) != blocks.end())){
@@ -876,17 +878,18 @@ void UniTensor::putBlock(const Qnum& qnum, const Matrix& mat){
       err<<"  Hint: Use Matrix::resize(int, int)";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(mat.isDiag()){
-      elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu);
-      setDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
-    }
-    else{
-      elemCopy(it->second.m_elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
+    if(mat.m_elem != it->second.m_elem){
+      if(mat.isDiag()){
+        elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu);
+        setDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+      }
+      else
+        elemCopy(it->second.m_elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
     }
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::putBlock(uni10::Qnum&, uni10::Matrix&):");
+    propogate_exception(e, "In function UniTensor::putBlock(uni10::Qnum&, uni10::Block&):");
   }
 }
 

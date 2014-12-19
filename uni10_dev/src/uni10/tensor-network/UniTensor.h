@@ -80,11 +80,11 @@ class UniTensor{
     size_t blockNum()const;
     std::vector<Qnum> blockQnum()const;
     Qnum blockQnum(size_t idx)const;
-		std::map<Qnum, Matrix> getBlocks()const;
-		Matrix getBlock(bool diag = false)const;
-		Matrix getBlock(const Qnum& qnum, bool diag = false)const;
-		void putBlock(const Matrix& mat);
-		void putBlock(const Qnum& qnum, const Matrix& mat);
+		std::map<Qnum, Block> getBlocks()const;
+		Block getBlock(bool diag = false)const;
+		Block getBlock(const Qnum& qnum, bool diag = false)const;
+		void putBlock(const Block& mat);
+		void putBlock(const Qnum& qnum, const Block& mat);
     double* getElem();
     void setElem(const double* elem, bool _ongpu = false);
     void setElem(const std::vector<double>& elem, bool _ongpu = false);
