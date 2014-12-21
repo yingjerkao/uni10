@@ -59,7 +59,6 @@ class Block{
 		double trace()const;
 		double norm()const;
 		double sum()const;
-		Block& operator*= (double a);
 		friend Matrix operator* (const Block& Ma, const Block& Mb);
 		friend Matrix operator*(const Block& Ma, double a);
 		friend Matrix operator*(double a, const Block& Ma);
@@ -70,14 +69,12 @@ class Block{
 		friend std::ostream& operator<< (std::ostream& os, const Block& b);
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 	protected:
-		//Qnum qnum;
 		double* m_elem;
 		size_t Rnum;		//number of rows of the block
 		size_t Cnum;		//number of columns of the block
 		size_t m_elemNum;
 		bool diag;
 		bool ongpu;
-		//size_t offset;	//index of the first element of a block element in Tensor
 };
 };
 #endif /* BLOCK_H */

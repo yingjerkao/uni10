@@ -14,7 +14,7 @@ int main(){
   const int chi = 20;
   const int N = 20;
 	//UniTensor H0 = theModel(1, 0, 0, 1.5, 0.1, 0);
-	UniTensor H0 = Heisenberg();
+	UniTensor H0 = Heisenberg(1);
   //UniTensor H0 = transverseIsing(0.5, 0);
 
 	vector<Bond> bond2;
@@ -62,7 +62,7 @@ int main(){
     HRs.push_back(newHR);
     Ep = E0;
 	}
- // sweep(N, chi, N-1, 1, H0, HLs, HRs, As, Bs, Ls, HLn, HRn);
+  sweep(N, chi, N-1, 1, H0, HLs, HRs, As, Bs, Ls, HLn, HRn);
 
   Network normL("normL.net");
   Network normR("normR.net");

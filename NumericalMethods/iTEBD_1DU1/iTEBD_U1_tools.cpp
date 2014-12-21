@@ -61,9 +61,13 @@ Bond mkBond(bondType btype, map<Qnum, int>& trunc){
 
 void setTruncation(UniTensor& theta, UniTensor& GA, UniTensor& GB, UniTensor& LA, size_t chi){
   map<Qnum, vector<Matrix> >svds;
+  cout<<theta;
   vector<Qnum> blk_qnums = theta.blockQnum();
-  for(vector<Qnum>::iterator q = blk_qnums.begin(); q != blk_qnums.end(); q++)
+  for(vector<Qnum>::iterator q = blk_qnums.begin(); q != blk_qnums.end(); q++){
+    cout<<theta.getBlock(*q);
     svds[*q] = theta.getBlock(*q).svd();
+    cout<<svds[*q][1].elemNum()<<endl;
+  }
   vector<double> svs;
   vector<size_t> bidxs;
   for(size_t bidx = 0; bidx < blk_qnums.size(); bidx++)
@@ -106,6 +110,9 @@ void setTruncation(UniTensor& theta, UniTensor& GA, UniTensor& GB, UniTensor& LA
     GB.putBlock(it->first, sit->second[2].resize(it->second, sit->second[2].col()));
     LA.putBlock(it->first, sit->second[1].resize(it->second, it->second) * (1/norm));
   }
+  cout<<GA;
+  cout<<GB;
+  exit(0);
 }
 
 void sv_merge(vector<double>& svs, vector<size_t>& bidxs, size_t bidx, Matrix& sv_mat, size_t chi){

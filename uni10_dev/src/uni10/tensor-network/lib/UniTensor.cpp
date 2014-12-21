@@ -841,10 +841,8 @@ Block UniTensor::getBlock(const Qnum& qnum, bool diag)const{
       getDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
       return mat;
     }
-    else{
-      //Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
+    else
       return it->second;
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlock(uni10::Qnum&):");
@@ -969,5 +967,4 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
   }
   return *this;
 }
-
 }; /* namespace uni10 */

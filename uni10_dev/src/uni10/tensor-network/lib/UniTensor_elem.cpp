@@ -287,13 +287,6 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
       throw std::runtime_error(exception_msg(err.str()));
     }
     bool inorder = true;
-    /*
-    for(int i = 1; i < bondNum; i++)
-      if(((rsp_outin[i] + bondNum - i) % bondNum) != rsp_outin[0]){
-        inorder = false;
-        break;
-      }
-    */
     for(int i = 1; i < bondNum; i++)
       if(rsp_outin[i] != i){
         inorder = false;

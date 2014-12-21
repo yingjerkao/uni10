@@ -33,43 +33,6 @@
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 namespace uni10{
-/*
-std::ostream& operator<< (std::ostream& os, const Matrix& m){
-  try{
-    os << m.Rnum << " x " << m.Cnum << " = " << m.m_elemNum;
-    if(m.diag)
-      os << ", Diagonal";
-    if(m.ongpu)
-      os<< ", onGPU";
-    os <<std::endl << std::endl;
-    double* elem;
-    if(m.ongpu){
-      elem = (double*)malloc(m.m_elemNum * sizeof(double));
-      elemCopy(elem, m.m_elem, m.m_elemNum * sizeof(double), false, m.ongpu);
-    }
-    else
-      elem = m.m_elem;
-    for(size_t i = 0; i < m.Rnum; i++){
-      for(size_t j = 0; j < m.Cnum; j++)
-        if(m.diag){
-          if(i == j)
-            os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i];
-          else
-            os << std::setw(7) << std::fixed << std::setprecision(3) << 0.0;
-        }
-        else
-          os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i * m.Cnum + j];
-      os << std::endl << std::endl;
-    }
-    if(m.ongpu)
-      free(elem);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function operator<<(std::ostream&, uni10::Matrix&):");
-  }
-  return os;
-}
-*/
 Matrix::Matrix(): Block(){}
 Matrix::Matrix(const Matrix& _m): Block(_m.Rnum, _m.Cnum, _m.diag){
   try{
@@ -183,75 +146,6 @@ Matrix::~Matrix(){
     propogate_exception(e, "In destructor Matrix::~Matrix():");
   }
 }
-/*
-size_t Matrix::row()const{
-	return Rnum;
-}
-
-size_t Matrix::col()const{
-	return Cnum;
-}
-size_t Matrix::elemNum()const{
-	return m_elemNum;
-}
-*/
-/*
-Matrix operator* (const Matrix& Ma, const Matrix& Mb){
-  try{
-    if(!(Ma.Cnum == Mb.Rnum)){
-      std::ostringstream err;
-      err<<"The dimensions of the two matrices do not match for matrix multiplication.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if((!Ma.diag) && (!Mb.diag)){
-      Matrix Mc(Ma.Rnum, Mb.Cnum);
-      matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
-      return Mc;
-    }
-    else if(Ma.diag && (!Mb.diag)){
-      Matrix Mc(Mb);
-      diagMM(Ma.m_elem, Mc.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
-      return Mc;
-    }
-    else if((!Ma.diag) && Mb.diag){
-      Matrix Mc(Ma.Rnum, Mb.Cnum);
-      for(size_t i = 0; i < Ma.Rnum; i++)
-        for(size_t j = 0; j < Mb.m_elemNum; j++)
-          Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i * Ma.Cnum + j] * Mb.m_elem[j];
-      return Mc;
-    }
-    else{
-      Matrix Mc(Ma.Rnum, Mb.Cnum, true);
-      for(size_t i = 0; i < Ma.Rnum; i++)
-        Mc.m_elem[i] = Ma.m_elem[i] * Mb.m_elem[i];
-      return Mc;
-    }
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function operator*(uni10::Matrix&, uni10::Matrix&):");
-    return Matrix();
-  }
-}*/
-/*
-bool operator== (const Matrix& m1, const Matrix& m2){
-  try{
-    double diff;
-    if(m1.m_elemNum == m2.m_elemNum){
-      for(size_t i = 0; i < m1.m_elemNum; i++){
-        diff = fabs(m1.m_elem[i] - m2.m_elem[i]);
-        if(diff > 1E-6)
-          return false;
-      }
-    }
-    else
-      return false;
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function operator==(uni10::Matrix&, uni10::Matrix&):");
-  }
-  return true;
-}*/
-
 
 Matrix& Matrix::operator*= (const Block& Mb){
   try{
@@ -281,84 +175,6 @@ void Matrix::setElem(const double* elem, bool _ongpu){
     propogate_exception(e, "In function Matrix::setElem(double*, bool=false):");
   }
 }
-
-/*
-std::vector<Matrix> Matrix::eigh()const{
-  std::vector<Matrix> outs;
-  try{
-    if(!(Rnum == Cnum)){
-      std::ostringstream err;
-      err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(diag){
-      std::ostringstream err;
-      err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    Matrix Eig(Rnum, Cnum, true, ongpu);
-    Matrix EigV(Rnum, Cnum, false, ongpu);
-    syDiag(m_elem, Rnum, Eig.m_elem, EigV.m_elem, ongpu);
-    outs.push_back(Eig);
-    outs.push_back(EigV);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::eigh():");
-  }
-	return outs;
-}*/
-/*
-std::vector<Matrix> Matrix::svd()const{
-	std::vector<Matrix> outs;
-  try{
-	if(diag){
-    std::ostringstream err;
-    err<<"Cannot perform singular value decomposition on a diagonal matrix. Need not to do so.";
-    throw std::runtime_error(exception_msg(err.str()));
-  }
-	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
-	Matrix U(Rnum, min, false, ongpu);
-	Matrix S(min, min, true, ongpu);
-	Matrix VT(min, Cnum, false, ongpu);
-	assert(U.isOngpu() == ongpu && VT.isOngpu() == ongpu);
-	matrixSVD(m_elem, Rnum, Cnum, U.m_elem, S.m_elem, VT.m_elem, ongpu);
-	outs.push_back(U);
-	outs.push_back(S);
-	outs.push_back(VT);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::svd():");
-  }
-	return outs;
-}*/
-/*
-size_t Matrix::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol)const{
-  try{
-    if(!(Rnum == Cnum)){
-      std::ostringstream err;
-      err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(!(Rnum == psi.elemNum())){
-      std::ostringstream err;
-      err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(ongpu && !psi.ongpu)
-      psi.m_elem = (double*)mvGPU(psi.m_elem, psi.m_elemNum * sizeof(double), psi.ongpu);
-    size_t iter = max_iter;
-    if(!lanczosEV(m_elem, psi.m_elem, Rnum, iter, err_tol, E0, psi.m_elem, ongpu)){
-      std::ostringstream err;
-      err<<"Lanczos algorithm fails in converging.";;
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    return iter;
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-    return 0;
-  }
-}*/
 
 void Matrix::randomize(){
   try{
@@ -411,19 +227,6 @@ void Matrix::set_zero(){
     propogate_exception(e, "In function Matrix::set_zero():");
   }
 }
-/*
-Matrix operator*(const Matrix& Ma, double a){
-  try{
-    Matrix Mb(Ma);
-    vectorScal(a, Mb.m_elem, Mb.m_elemNum, Mb.ongpu);
-    return Mb;
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
-    return Matrix();
-  }
-}
-*/
 Matrix& Matrix::operator*= (double a){
   try{
     if(!ongpu)
@@ -435,18 +238,6 @@ Matrix& Matrix::operator*= (double a){
   }
 	return *this;
 }
-/*
-Matrix operator+(const Matrix& Ma, const Matrix& Mb){
-  try{
-    Matrix Mc(Ma);
-    vectorAdd(Mc.m_elem, Mb.m_elem, Mc.m_elemNum, Mc.ongpu, Mb.ongpu);
-    return Mc;
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");
-    return Matrix();
-  }
-}*/
 
 Matrix& Matrix::operator+= (const Block& Mb){
   try{
@@ -545,69 +336,6 @@ Matrix& Matrix::resize(size_t row, size_t col){
   return *this;
 }
 
-/*
-double Matrix::norm()const{
-  try{
-	  return vectorNorm(m_elem, m_elemNum, 1, ongpu);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::norm():");
-    return 0;
-  }
-}
-
-double Matrix::sum()const{
-  try{
-	  return vectorSum(m_elem, m_elemNum, 1, ongpu);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::sum():");
-    return 0;
-  }
-}
-
-double Matrix::trace()const{
-  try{
-    if(!(Rnum == Cnum)){
-      std::ostringstream err;
-      err<<"Cannot perform trace on a non-square matrix.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(diag)
-      return vectorSum(m_elem, m_elemNum, 1, ongpu);
-    else
-      return vectorSum(m_elem, Cnum, Cnum + 1, ongpu);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::trace():");
-    return 0;
-  }
-}
-*/
-/*
-void Matrix::save(const std::string& fname)const{
-  try{
-    FILE *fp = fopen(fname.c_str(), "w");
-    if(!(fp != NULL)){
-      std::ostringstream err;
-      err<<"Error in writing to file '"<<fname<<"'.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    double* elem = m_elem;
-    if(ongpu){
-      elem = (double*)malloc(m_elemNum * sizeof(double));
-      elemCopy(elem, m_elem, m_elemNum * sizeof(double), false, ongpu);
-    }
-    fwrite(elem, sizeof(double), m_elemNum, fp);
-    fclose(fp);
-    if(ongpu)
-      free(elem);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::save(std::string&):");
-  }
-}
-*/
 void Matrix::load(const std::string& fname){
   try{
     FILE *fp = fopen(fname.c_str(), "r");
@@ -647,11 +375,6 @@ double& Matrix::operator[](size_t idx){
   }
 }
 
-/*
-double* Matrix::getElem()const{
-	return m_elem;
-}
-*/
 double* Matrix::getHostElem(){
   try{
     if(ongpu){
@@ -709,5 +432,4 @@ Matrix takeExp(double a, const Block& mat){
     return Matrix();
   }
 }
-
 };	/* namespace uni10 */
