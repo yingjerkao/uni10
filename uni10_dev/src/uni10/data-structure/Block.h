@@ -72,7 +72,7 @@ class Block{
 		double* m_elem;
 		size_t Rnum;		//number of rows of the block
 		size_t Cnum;		//number of columns of the block
-		size_t m_elemNum;
+		//size_t m_elemNum;
 		bool diag;
 		bool ongpu;
 };

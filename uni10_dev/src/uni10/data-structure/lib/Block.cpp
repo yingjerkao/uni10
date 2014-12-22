@@ -32,15 +32,20 @@
 #include <uni10/tensor-network/Matrix.h>
 //using namespace uni10::datatype;
 namespace uni10{
-Block::Block(): Rnum(0), Cnum(0), m_elemNum(0), diag(false), ongpu(false), m_elem(NULL){}
-Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), m_elemNum(_Rnum * _Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
-Block::Block(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), m_elemNum(_b.m_elemNum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
+Block::Block(): Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL){}
+Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
+Block::Block(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
 
 size_t Block::row()const{return Rnum;}
 size_t Block::col()const{return Cnum;}
 bool Block::isDiag()const{return diag;}
 bool Block::isOngpu()const{return ongpu;}
-size_t Block::elemNum()const{return m_elemNum;}
+size_t Block::elemNum()const{
+  if(diag)
+    return (Rnum < Cnum ? Rnum : Cnum);
+  else
+    return Rnum * Cnum;
+}
 double* Block::getElem()const{return m_elem;}
 void Block::save(const std::string& fname)const{
   try{
@@ -52,10 +57,10 @@ void Block::save(const std::string& fname)const{
     }
     double* elem = m_elem;
     if(ongpu){
-      elem = (double*)malloc(m_elemNum * sizeof(double));
-      elemCopy(elem, m_elem, m_elemNum * sizeof(double), false, ongpu);
+      elem = (double*)malloc(elemNum() * sizeof(double));
+      elemCopy(elem, m_elem, elemNum() * sizeof(double), false, ongpu);
     }
-    fwrite(elem, sizeof(double), m_elemNum, fp);
+    fwrite(elem, sizeof(double), elemNum(), fp);
     fclose(fp);
     if(ongpu)
       free(elem);
@@ -67,9 +72,9 @@ void Block::save(const std::string& fname)const{
 
 double Block::operator[](size_t idx)const{
   try{
-    if(!(idx < m_elemNum)){
+    if(!(idx < elemNum())){
       std::ostringstream err;
-      err<<"Index exceeds the number of elements("<<m_elemNum<<").";
+      err<<"Index exceeds the number of elements("<<elemNum()<<").";
       throw std::runtime_error(exception_msg(err.str()));
     }
     return getElemAt(idx, m_elem, ongpu);
@@ -88,7 +93,7 @@ double Block::at(size_t r, size_t c)const{
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(diag){
-      if(!(r == c && r < m_elemNum)){
+      if(!(r == c && r < elemNum())){
         std::ostringstream err;
         err<<"The matrix is diagonal, there is no off-diagonal element.";
         throw std::runtime_error(exception_msg(err.str()));
@@ -186,7 +191,7 @@ size_t Block::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_t
 }
 double Block::norm()const{
   try{
-	  return vectorNorm(m_elem, m_elemNum, 1, ongpu);
+	  return vectorNorm(m_elem, elemNum(), 1, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::norm():");
@@ -196,7 +201,7 @@ double Block::norm()const{
 
 double Block::sum()const{
   try{
-	  return vectorSum(m_elem, m_elemNum, 1, ongpu);
+	  return vectorSum(m_elem, elemNum(), 1, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::sum():");
@@ -212,7 +217,7 @@ double Block::trace()const{
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(diag)
-      return vectorSum(m_elem, m_elemNum, 1, ongpu);
+      return vectorSum(m_elem, elemNum(), 1, ongpu);
     else
       return vectorSum(m_elem, Cnum, Cnum + 1, ongpu);
   }
@@ -241,7 +246,7 @@ Matrix operator* (const Block& Ma, const Block& Mb){
     else if((!Ma.diag) && Mb.diag){
       Matrix Mc(Ma.Rnum, Mb.Cnum);
       for(size_t i = 0; i < Ma.Rnum; i++)
-        for(size_t j = 0; j < Mb.m_elemNum; j++)
+        for(size_t j = 0; j < Mb.elemNum(); j++)
           Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i * Ma.Cnum + j] * Mb.m_elem[j];
       return Mc;
     }
@@ -260,7 +265,7 @@ Matrix operator* (const Block& Ma, const Block& Mb){
 Matrix operator*(const Block& Ma, double a){
   try{
     Matrix Mb(Ma);
-    vectorScal(a, Mb.m_elem, Mb.m_elemNum, Mb.ongpu);
+    vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.ongpu);
     return Mb;
   }
   catch(const std::exception& e){
@@ -272,7 +277,7 @@ Matrix operator*(double a, const Block& Ma){return Ma * a;}
 Matrix operator+(const Block& Ma, const Block& Mb){
   try{
     Matrix Mc(Ma);
-    vectorAdd(Mc.m_elem, Mb.m_elem, Mc.m_elemNum, Mc.ongpu, Mb.ongpu);
+    vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
     return Mc;
   }
   catch(const std::exception& e){
@@ -283,8 +288,8 @@ Matrix operator+(const Block& Ma, const Block& Mb){
 bool operator== (const Block& m1, const Block& m2){
   try{
     double diff;
-    if(m1.m_elemNum == m2.m_elemNum){
-      for(size_t i = 0; i < m1.m_elemNum; i++){
+    if(m1.elemNum() == m2.elemNum()){
+      for(size_t i = 0; i < m1.elemNum(); i++){
         diff = fabs(m1.m_elem[i] - m2.m_elem[i]);
         if(diff > 1E-10)
           return false;
@@ -303,7 +308,7 @@ bool operator== (const Block& m1, const Block& m2){
 Block::~Block(){}
 std::ostream& operator<< (std::ostream& os, const Block& b){
   try{
-    os << b.Rnum << " x " << b.Cnum << " = " << b.m_elemNum;
+    os << b.Rnum << " x " << b.Cnum << " = " << b.elemNum();
     if(b.diag)
       os << ", Diagonal";
     if(b.ongpu)
@@ -311,8 +316,8 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
     os <<std::endl << std::endl;
     double* elem;
     if(b.ongpu){
-      elem = (double*)malloc(b.m_elemNum * sizeof(double));
-      elemCopy(elem, b.m_elem, b.m_elemNum * sizeof(double), false, b.ongpu);
+      elem = (double*)malloc(b.elemNum() * sizeof(double));
+      elemCopy(elem, b.m_elem, b.elemNum() * sizeof(double), false, b.ongpu);
     }
     else
       elem = b.m_elem;

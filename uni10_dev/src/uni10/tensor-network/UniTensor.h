@@ -82,9 +82,12 @@ class UniTensor{
     size_t blockNum()const;
     std::vector<Qnum> blockQnum()const;
     Qnum blockQnum(size_t idx)const;
-		const std::map<Qnum, Block>& getBlocks()const;
-		Block getBlock(bool diag = false)const;
-		Block getBlock(const Qnum& qnum, bool diag = false)const;
+		const std::map<Qnum, Block>& const_getBlocks()const;
+		const Block& const_getBlock()const;
+		const Block& const_getBlock(const Qnum& qnum)const;
+		std::map<Qnum, Matrix> getBlocks()const;
+		Matrix getBlock(bool diag = false)const;
+		Matrix getBlock(const Qnum& qnum, bool diag = false)const;
 		void putBlock(const Block& mat);
 		void putBlock(const Qnum& qnum, const Block& mat);
     double* getElem();

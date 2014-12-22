@@ -800,7 +800,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
       os << bonds[b];
     }
     os<<"\n===============BLOCKS===============\n";
-    std::map<Qnum, Block> blocks = UniT.getBlocks();
+    std::map<Qnum, Block> blocks = UniT.const_getBlocks();
     bool printElem = true;
     for (std::map<Qnum, Block>::const_iterator  it = blocks.begin() ; it != blocks.end(); it++ ){
       os << "--- " << it->first << ": ";// << Rnum << " x " << Cnum << " = " << Rnum * Cnum << " ---\n\n";
@@ -818,7 +818,37 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 	return os;
 }
 
-Block UniTensor::getBlock(bool diag)const{
+const Block& UniTensor::const_getBlock()const{
+  try{
+    Qnum q0(0);
+    return const_getBlock(q0);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::getBlock(bool=false):");
+    return blocks.end()->second;
+  }
+}
+const Block& UniTensor::const_getBlock(const Qnum& qnum)const{
+  try{
+    std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
+    if(it == blocks.end()){
+      std::ostringstream err;
+      err<<"There is no block with the given quantum number "<<qnum;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return it->second;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::getBlock(uni10::Qnum&):");
+    return blocks.end()->second;
+  }
+}
+
+const std::map<Qnum, Block>& UniTensor::const_getBlocks()const{
+  return blocks;
+}
+
+Matrix UniTensor::getBlock(bool diag)const{
   try{
     Qnum q0(0);
     return getBlock(q0, diag);
@@ -828,7 +858,8 @@ Block UniTensor::getBlock(bool diag)const{
     return Matrix();
   }
 }
-Block UniTensor::getBlock(const Qnum& qnum, bool diag)const{
+
+Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
   try{
     std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
     if(it == blocks.end()){
@@ -841,17 +872,29 @@ Block UniTensor::getBlock(const Qnum& qnum, bool diag)const{
       getDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
       return mat;
     }
-    else
-      return it->second;
+    else{
+      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
+      return mat;
+    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlock(uni10::Qnum&):");
-    return Block();
+    return Matrix(0, 0);
   }
 }
 
-const std::map<Qnum, Block>& UniTensor::getBlocks()const{
-  return blocks;
+std::map<Qnum, Matrix> UniTensor::getBlocks()const{
+	std::map<Qnum, Matrix> mats;
+  try{
+    for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
+      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
+      mats.insert(std::pair<Qnum, Matrix>(it->first, mat));
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::getBlocks():");
+  }
+	return mats;
 }
 
 void UniTensor::putBlock(const Block& mat){
