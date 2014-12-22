@@ -62,8 +62,9 @@ Bond mkBond(bondType btype, map<Qnum, int>& trunc){
 void setTruncation(UniTensor& theta, UniTensor& GA, UniTensor& GB, UniTensor& LA, size_t chi){
   map<Qnum, vector<Matrix> >svds;
   vector<Qnum> blk_qnums = theta.blockQnum();
-  for(vector<Qnum>::iterator q = blk_qnums.begin(); q != blk_qnums.end(); q++)
+  for(vector<Qnum>::iterator q = blk_qnums.begin(); q != blk_qnums.end(); q++){
     svds[*q] = theta.getBlock(*q).svd();
+  }
   vector<double> svs;
   vector<size_t> bidxs;
   for(size_t bidx = 0; bidx < blk_qnums.size(); bidx++)

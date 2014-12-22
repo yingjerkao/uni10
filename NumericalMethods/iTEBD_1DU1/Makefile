@@ -1,4 +1,4 @@
-UNI10_ROOT := /Users/yunda/myLibrary/guni10
+UNI10_ROOT := /Users/yunda/myLibrary/uni10_dev
 INC := $(UNI10_ROOT)/include
 LIB := $(UNI10_ROOT)/lib
 CC  := g++

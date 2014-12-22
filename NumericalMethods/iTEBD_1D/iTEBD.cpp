@@ -11,10 +11,10 @@ using namespace uni10;
 
 int main(){
   // Define the parameters of the model / simulation
-  int chi = 30;
-  double delta = 0.02;
+  int chi = 20;
+  double delta = 0.1;
   int N = 2000;
-  UniTensor H = Heisenberg(1);
+  UniTensor H = Heisenberg();
 
 	Bond bdi_chi(BD_IN, chi);
 	Bond bdo_chi(BD_OUT, chi);

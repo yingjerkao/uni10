@@ -66,13 +66,13 @@ def bondrm(T, L, bidx):
         invL[i] = 0 if L[i] == 0 else 1.0 / L[i]
     return bondcat(T, invL, bidx)
 
-chi = 30
+chi = 3
 delta = 0.001
 Ns = 1000
 H = transverseIsing(0.8)
 #H=Heisenberg()
 
-z=2
+z=4
 
 bdi_chi = uni10.Bond(uni10.BD_IN, chi);
 bdo_chi = uni10.Bond(uni10.BD_OUT, chi);

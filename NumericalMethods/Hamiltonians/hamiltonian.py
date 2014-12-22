@@ -39,9 +39,10 @@ def Heisenberg_U1():
 	q1 = uni10.Qnum(1);
 	bdi = uni10.Bond(uni10.BD_IN, [q1, -q1]);
 	bdo = uni10.Bond(uni10.BD_OUT, [q1, -q1]);
-	H = uni10.UniTensor([bdi, bdi, bdo, bdo], "Heisenberg")
-	H.setRawElem(Heisenberg().getBlock().getElem());
-	return H
+	H_U1 = uni10.UniTensor([bdi, bdi, bdo, bdo], "Heisenberg")
+	H = Heisenberg()
+	H_U1.setRawElem(H.getBlock());
+	return H_U1;
 
 def transverseIsing(h):
 	spin = 0.5
