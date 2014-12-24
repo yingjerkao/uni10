@@ -11,10 +11,10 @@ using namespace uni10;
 
 int main(){
 	/*** Initialization ***/
-  const int chi = 20;
+  const int chi = 4;
   const int N = 20;
 	//UniTensor H0 = theModel(1, 0, 0, 1.5, 0.1, 0);
-	UniTensor H0 = Heisenberg(1);
+	UniTensor H0 = Heisenberg();
   //UniTensor H0 = transverseIsing(0.5, 0);
 
 	vector<Bond> bond2;
@@ -47,13 +47,22 @@ int main(){
 
     int iter;
     UniTensor GS = findGS(SB, E0, psi, iter);
-
     UniTensor A, B;
     Matrix L;
     int D = updateMPS(GS, chi, A, B, L);
     As.push_back(A);
     Bs.push_back(B);
     Ls.push_back(L);
+
+    if(l == 3){
+      cout<<psi;
+      cout<<GS;
+      vector<Matrix> rets = GS.const_getBlock().svd();
+      cout<<rets[0];
+      cout<<rets[1];
+      cout<<rets[2];
+      cout<<rets[0].resize(2*D, D) * rets[1].resize(D, D) * rets[2].resize(D, 2*D);
+    }
 
     cout<<"N = "<< 2 * (l+1) <<", D = " << D << setprecision(10) << ", E = " << E0  << ", e = " << E0 / (2 * (l + 1)) <<", iter = "<<iter<<", dE = "<<(E0 - Ep)/2<<endl;
     UniTensor newHL, newHR;
@@ -62,7 +71,7 @@ int main(){
     HRs.push_back(newHR);
     Ep = E0;
 	}
-  sweep(N, chi, N-1, 1, H0, HLs, HRs, As, Bs, Ls, HLn, HRn);
+  sweep(N, chi, N-1, 3, H0, HLs, HRs, As, Bs, Ls, HLn, HRn);
 
   Network normL("normL.net");
   Network normR("normR.net");
@@ -71,8 +80,8 @@ int main(){
   cout<<"expH = "<<mpsExp2s(As, Bs, Ls[N - 1], N, H0, normL, normR, expOb)<<endl;
   cout<<"mpsNorm = "<<mpsNorm(As, Bs, Ls[N - 1], normL, normR)<<endl;
 
-  double up_elem[] = {0, 1, 0};
-  double dn_elem[] = {0, 1.0, 0};
+  double up_elem[] = {1.0, 0};
+  double dn_elem[] = {0, 1.0};
   vector<Bond> bond1(1, H0.bond(0));
   UniTensor up_st(bond1);
   UniTensor dn_st(bond1);

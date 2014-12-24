@@ -171,13 +171,17 @@ double sweep(int N, int chi, int range, int times, vector<UniTensor>& H0s, vecto
         if(cursor < 0){
           As[N + cursor - 1] = A;
           As[N + cursor] = B;
+          bondcat(As[N + cursor], L, 0);
           As[N + cursor].permute(2);
+          bondrm(As[N + cursor], Ls[hidx(N, Left, N + cursor)], 2);
           Ls[hidx(N, Left, N + cursor - 1)] = L;
         }
         else if(cursor > 0){
           Bs[N - cursor] = A;
-          Bs[N - cursor].permute(1);
           Bs[N - cursor - 1] = B;
+          Bs[N - cursor].permute(1);
+          bondcat(Bs[N - cursor], L, 2);
+          bondrm(Bs[N - cursor], Ls[hidx(N, Left, N + cursor - 2)], 0);
           Ls[hidx(N, Left, N + cursor - 1)] = L;
         }
         else{
