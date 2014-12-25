@@ -132,6 +132,7 @@ std::map<Qnum, int> Bond::degeneracy()const{
 	}
 	return hst;
 }
+
 std::vector<Qnum> Bond::Qlist()const{
 	std::vector<Qnum>list(m_dim);
 	int cnt = 0;
@@ -142,15 +143,22 @@ std::vector<Qnum> Bond::Qlist()const{
 		}
 	return list;
 }
+
 bool operator== (const Bond& b1, const Bond& b2){
 	return (b1.m_type == b2.m_type) && (b1.Qnums == b2.Qnums) && (b1.Qdegs == b2.Qdegs);
 }
-void Bond::change(bondType tp){
+Bond& Bond::change(bondType tp){
 	if(m_type != tp){
 		for(int q = 0; q < Qnums.size(); q++)
 			Qnums[q] = -Qnums[q];
 		m_type = tp;
 	}
+  return *this;
+}
+Bond& Bond::dummy_change(bondType tp){
+	if(m_type != tp)
+		m_type = tp;
+  return *this;
 }
 Bond& Bond::combine(Bond bd){
   try{

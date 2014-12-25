@@ -101,12 +101,16 @@ class UniTensor{
 		void randomize();
 		void orthoRand();
 		void orthoRand(const Qnum& qnum);
+    void clear();
+    std::vector<UniTensor> hosvd(size_t modeNum)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
 		std::string getName();
-		void setName(const std::string& _name);
-		void save(const std::string& fname);
-                UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
-		UniTensor& permute(int* newLabels, int inBondNum);
-		UniTensor& permute(int inBondNum);
+    void setName(const std::string& _name);
+    void save(const std::string& fname);
+    UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
+    UniTensor& permute(int* newLabels, int inBondNum);
+    UniTensor& permute(int inBondNum);
 		UniTensor& transpose();
 
 		UniTensor& combineBond(const std::vector<int>& combined_labels);
@@ -158,6 +162,7 @@ class UniTensor{
 		//Private Functions
 		size_t grouping();
 		void initUniT();
+    std::vector<UniTensor> _hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
 		static const int HAVEBOND = 1;		  /**< A flag for initialization */
 		static const int HAVEELEM = 2;		  /**< A flag for having element assigned */
 };

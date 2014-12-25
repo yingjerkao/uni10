@@ -57,7 +57,8 @@ class Bond {
 		int dim()const;
 		std::map<Qnum, int> degeneracy()const;
 		std::vector<Qnum> Qlist()const;
-		void change(bondType tp);
+		Bond& change(bondType tp);
+		Bond& dummy_change(bondType tp);
 		Bond& combine(Bond bd);
 		friend bool operator== (const Bond& b1, const Bond& b2);
 		friend Bond combine(bondType tp, const std::vector<Bond>& bds);
