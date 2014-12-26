@@ -742,8 +742,8 @@ bool UniTensor::elemCmp(const UniTensor& UniT)const{
     double diff;
     if(m_elemNum == UniT.m_elemNum){
       for(size_t i = 0; i < m_elemNum; i++){
-        diff = fabs(elem[i] - UniT.elem[i]);
-        if(diff > 1E-6)
+        diff = abs(elem[i] - UniT.elem[i]);
+        if(diff > 1E-12)
           return false;
       }
     }

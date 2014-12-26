@@ -290,8 +290,8 @@ bool operator== (const Block& m1, const Block& m2){
     double diff;
     if(m1.elemNum() == m2.elemNum()){
       for(size_t i = 0; i < m1.elemNum(); i++){
-        diff = fabs(m1.m_elem[i] - m2.m_elem[i]);
-        if(diff > 1E-10)
+        diff = abs(m1.m_elem[i] - m2.m_elem[i]);
+        if(diff > 1E-12)
           return false;
       }
     }
