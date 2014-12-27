@@ -25,7 +25,9 @@ int main(){
   const double delta = 0.05;
   const int N = 10000;
 
-  UniTensor triH = triHamiltonian(Heisenberg());
+  UniTensor triH = periodicHamiltonian(modeNum, Heisenberg());
+
+  cout<<triH;
   UniTensor expH(triH.bond());
   expH.putBlock(takeExp(-delta, triH.const_getBlock()));
 
@@ -47,12 +49,12 @@ int main(){
   for(int i = 0; i < Ls.size(); i++)
     Ls[i].randomize();
 
-  Network simplexUp("simplexUp.net");
-  Network simplexDn("simplexDn.net");
-  Network stateUp("stateUp.net");
-  Network stateDn("stateDn.net");
-  Network measure3("measure3.net");
-  Network measure2("measure2.net");
+  Network simplexUp("simplex3Out.net");
+  Network simplexDn("simplex3In.net");
+  Network stateUp("state3Out.net");
+  Network stateDn("state3In.net");
+  Network measure3("measure3Ob3.net");
+  Network measure2("measure3Ob2.net");
   UniTensor H0 = Heisenberg();
   for(int n = 0; n < N; n++){
     simpleUpdate(true, Us, Cs, Ls, expH, simplexUp);

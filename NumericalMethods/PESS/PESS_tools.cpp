@@ -1,6 +1,6 @@
 void bondcat(UniTensor& T, const Matrix& L, int bidx);
 void bondrm(UniTensor& T, const Matrix& L, int bidx);
-UniTensor triHamiltonian(const UniTensor& H0);
+UniTensor periodicHamiltonian(int N, const UniTensor& H0);
 UniTensor truncateCore(const UniTensor& C, size_t chi);
 double measureObs(bool outC, const UniTensor& Ob, const vector<UniTensor>& _Us, const vector<UniTensor>& Cs, const vector<Matrix>& Ls, Network& state, Network& measure);
 
@@ -24,19 +24,27 @@ void bondrm(UniTensor& T, const Matrix& L, int bidx){
 	bondcat(T, invL, bidx);
 }
 
-UniTensor triHamiltonian(const UniTensor& H0){
+UniTensor periodicHamiltonian(int N, const UniTensor& H0){
   vector<Bond> bondI;
   bondI.push_back(H0.bond(0)), bondI.push_back(H0.bond(2));
   UniTensor I(bondI);
   I.identity();
-  UniTensor H3 = otimes(H0, I) + otimes(I, H0);
-  int labels[] = {0, 1, 2, 3, 4, 5};
-  H3.setLabel(labels);
-  int per_labels[] = {2, 0, 1, 5, 3, 4};
-  H3.permute(per_labels, 3);
-  H3 += otimes(H0, I);
-  H3.setLabel(labels);
-  return H3;
+  UniTensor nH = H0;
+  for(int i = 0; i < N - 2; i++)
+    nH = otimes(nH, I);
+  UniTensor perH = nH;
+  vector<int> labels = perH.label();
+  vector<int> per_labels(labels.size());
+  int bondNum = per_labels.size();
+  for(int l = 0; l < bondNum/2; l++){
+    per_labels[l] = labels[(l + 1) % (bondNum/2)];
+    per_labels[(bondNum/2) + l] = labels[bondNum/2 + ((l + 1) % (bondNum/2))];
+  }
+  for(int h = 0; h < N - 1; h++){
+    nH += perH.permute(per_labels, bondNum / 2);
+    perH.setLabel(labels);
+  }
+  return nH;
 }
 
 UniTensor truncateCore(const UniTensor& C, size_t chi){
@@ -144,5 +152,3 @@ double measureObs(bool outC, const UniTensor& Ob, const vector<UniTensor>& _Us, 
   measure.putTensor("Ob", Ob);
   return measure.launch()[0] / S.getBlock().norm();
 }
-
-

@@ -6,6 +6,8 @@ CC:=g++
 FLAGS:=-O3 -m64
 HAMILTONIAN_INC := ../Hamiltonians
 
+sqr.e: square.cpp PESS_tools.cpp
+	$(CC) -I$(INC) -I$(HAMILTONIAN_INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 kag.e: kagome.cpp PESS_tools.cpp
 	$(CC) -I$(INC) -I$(HAMILTONIAN_INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 
