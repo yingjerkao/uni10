@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+from distutils.core import setup
+dep_lib=['lib*','_pyUni10*']
+setup(name='pyUni10',
+      version='${UNI10_VERSION}',
+      description='Uni10 Python Wapper',
+      author='Yun-Da Hsieh',
+      author_email='support@uni10.org',
+      maintainer='Ying-Jer Kao',
+      maintainer_email='support@uni10.org',
+      url='http://www.uni10.org',
+      license='LGPL',
+      packages=['pyUni10'],
+      package_dir={'pyUni10':''},
+      package_data={'':dep_lib} ,
+     )
