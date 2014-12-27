@@ -55,21 +55,21 @@ UniTensor truncateCore(const UniTensor& C, size_t chi){
     initLabel[i] = i;
     per_label[i] = (i + 1) % modeNum;
   }
-  UniTensor truC = C;
-  truC.setLabel(initLabel);
-  int coreBondNum = truC.bondNum();
+  UniTensor trunC = C;
+  trunC.setLabel(initLabel);
+  int coreBondNum = trunC.bondNum();
   Bond bdi_chi(BD_IN, chi);
-  truC.permute(1);
+  trunC.permute(1);
   for(int i = 0; i < coreBondNum; i++){
-    vector<Bond> bonds = truC.bond();
+    vector<Bond> bonds = trunC.bond();
     bonds[0] = bdi_chi;
     UniTensor newC(bonds);
-    newC.putBlock(truC.getBlock().resize(chi, bonds[1].dim() * bonds[2].dim()));
-    truC = newC;
-    truC.permute(per_label, 1);
+    newC.putBlock(trunC.getBlock().resize(chi, trunC.const_getBlock().col()));
+    trunC = newC;
+    trunC.permute(per_label, 1);
   }
-  truC.setLabel(C.label());
-  return truC;
+  trunC.setLabel(C.label());
+  return trunC;
 }
 
 void simpleUpdate(bool outC, vector<UniTensor>& Us, vector<UniTensor>& Cs, vector<Matrix>& Ls, const UniTensor& expH, Network& simplex){
@@ -83,9 +83,9 @@ void simpleUpdate(bool outC, vector<UniTensor>& Us, vector<UniTensor>& Cs, vecto
   for(int i = 0; i < Us.size(); i++)
     simplex.putTensor(i + 1, Us[i]);  //Core
   if(outC)
-    simplex.putTensor("Cup", Cs[0]);
+    simplex.putTensor("Cout", Cs[0]);
   else
-    simplex.putTensor("Cdn", Cs[1]);
+    simplex.putTensor("Cin", Cs[1]);
   simplex.putTensor("expH", expH);
   UniTensor theta = simplex.launch();
 
@@ -141,9 +141,9 @@ double measureObs(bool outC, const UniTensor& Ob, const vector<UniTensor>& _Us, 
       bondcat(Us[u], Ls[u], 1);
   }
   if(outC)
-    state.putTensor("Cup", Cs[0]);
+    state.putTensor("Cout", Cs[0]);
   else
-    state.putTensor("Cdn", Cs[1]);
+    state.putTensor("Cin", Cs[1]);
   for(int i = 0; i < Us.size(); i++)
     state.putTensor(i+1, Us[i]); // C
   UniTensor S = state.launch();

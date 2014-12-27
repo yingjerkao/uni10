@@ -10,7 +10,7 @@ using namespace uni10;
 #include "hamiltonian.cpp"
 
 int main(){
-  const int chi = 13;
+  const int chi = 10;
   const int modeNum = 4;
   const double delta = 0.05;
   const int N = 10000;
@@ -49,10 +49,10 @@ int main(){
   UniTensor H0 = Heisenberg();
   for(int n = 0; n < N; n++){
     simpleUpdate(true, Us, Cs, Ls, expH, simplexUp);
-    cout<<measureObs(true, squareH, Us, Cs, Ls, stateUp, measure3) * 2 / 3<<", ";
+    cout<<measureObs(true, squareH, Us, Cs, Ls, stateUp, measure3) * 2.0 / 4<<", ";
     cout<<measureObs(true, H0, Us, Cs, Ls, stateUp, measure2) * 2<<", ";
     simpleUpdate(false, Us, Cs, Ls, expH, simplexDn);
-    cout<<measureObs(false, squareH, Us, Cs, Ls, stateDn, measure3) * 2 / 3<<", ";
+    cout<<measureObs(false, squareH, Us, Cs, Ls, stateDn, measure3) * 2.0 / 4<<", ";
     cout<<measureObs(false, H0, Us, Cs, Ls, stateDn, measure2) * 2<<endl;
   }
   return 0;

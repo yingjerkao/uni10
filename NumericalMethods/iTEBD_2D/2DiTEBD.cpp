@@ -9,11 +9,11 @@ using namespace uni10;
 
 int main(){
 	/*** Initialization ***/
-  const int chi = 2;
-  const int N = 200;
-  double tau = 0.01;
-	UniTensor H = transverseIsing(0.5, 0.7);
-  cout<< H;
+  const int chi = 6;
+  const int N = 2000;
+  double tau = 0.05;
+	//UniTensor H = transverseIsing(0.5, 0.7);
+  UniTensor H = Heisenberg();
 
 	Bond bdi_chi(BD_IN, chi);
 	Bond bdo_chi(BD_OUT, chi);
