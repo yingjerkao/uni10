@@ -15,7 +15,8 @@ int main(){
   const double delta = 0.05;
   const int N = 10000;
 
-  UniTensor squareH = periodicHamiltonian(modeNum, Heisenberg());
+  UniTensor squareH = JQmodel(1, 1);//periodicHamiltonian(modeNum, Heisenberg());
+  cout<<squareH;
   UniTensor expH(squareH.bond());
   expH.putBlock(takeExp(-delta, squareH.const_getBlock()));
 
