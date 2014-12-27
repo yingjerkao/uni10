@@ -203,3 +203,29 @@ uni10::UniTensor theModel(float spin, int i, double delta, double Dz, double hz,
   return H;
 }
 
+uni10::UniTensor JQmodel(double J, double Q){
+  float spin = 0.5;
+  uni10::UniTensor H = Heisenberg(spin);
+  vector<uni10::Bond> bond2;
+  bond2.push_back(H.bond(0));
+  bond2.push_back(H.bond(2));
+  uni10::UniTensor Id(bond2);
+  Id.identity();
+  uni10::UniTensor H01 = uni10::otimes(uni10::otimes(H, Id), Id);
+  uni10::UniTensor H30 = H01;
+  int per_lab[] = {1,2,3,0,5,6,7,4};
+  H30.permute(per_lab, 4);
+  uni10::UniTensor H12 = uni10::otimes(Id, uni10::otimes(H, Id));
+  uni10::UniTensor H23 = uni10::otimes(Id, uni10::otimes(Id, H));
+//J-term
+  uni10::UniTensor HJ = H01 + H30 + H12 + H23;
+//Q-term
+  uni10::UniTensor Id2(H.bond());
+  Id2.identity();
+  uni10::UniTensor Sij = (H + (-1.0/4.0) * Id2);
+  uni10::UniTensor H0132 = otimes(Sij, Sij);
+  uni10::UniTensor H0312 = H0132;
+  H0312.permute(per_lab, 4);
+  uni10::UniTensor HQ = H0132 + H0312;
+  return ((-J) * HJ) + ((-Q) * HQ);
+}
