@@ -6,7 +6,7 @@ CC:=g++
 FLAGS:=-O3 -m64
 HAMILTONIAN_INC := ../Hamiltonians
 
-kag.e: kagomeHeisenberg.cpp PESS_tools.cpp
+kag.e: kagome.cpp PESS_tools.cpp
 	$(CC) -I$(INC) -I$(HAMILTONIAN_INC) -L$(LIB) $(FLAGS) -o $@ -lblas -llapack -lm -luni10 $<
 
 clean:

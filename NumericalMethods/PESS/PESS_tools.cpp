@@ -2,7 +2,7 @@ void bondcat(UniTensor& T, const Matrix& L, int bidx);
 void bondrm(UniTensor& T, const Matrix& L, int bidx);
 UniTensor triHamiltonian(const UniTensor& H0);
 UniTensor truncateCore(const UniTensor& C, size_t chi);
-double measureObs(bool upT, const UniTensor& Ob, vector<UniTensor> Us, const vector<UniTensor>& Cs, const vector<Matrix>& Ls, Network& state, Network& measure);
+double measureObs(bool outC, const UniTensor& Ob, const vector<UniTensor>& _Us, const vector<UniTensor>& Cs, const vector<Matrix>& Ls, Network& state, Network& measure);
 
 void bondcat(UniTensor& T, const Matrix& L, int bidx){
   int inBondNum = T.inBondNum();
@@ -29,7 +29,6 @@ UniTensor triHamiltonian(const UniTensor& H0){
   bondI.push_back(H0.bond(0)), bondI.push_back(H0.bond(2));
   UniTensor I(bondI);
   I.identity();
-
   UniTensor H3 = otimes(H0, I) + otimes(I, H0);
   int labels[] = {0, 1, 2, 3, 4, 5};
   H3.setLabel(labels);
@@ -41,8 +40,14 @@ UniTensor triHamiltonian(const UniTensor& H0){
 }
 
 UniTensor truncateCore(const UniTensor& C, size_t chi){
+  int modeNum = C.bondNum();
+  int initLabel[modeNum];
+  int per_label[modeNum];
+  for(int i = 0; i < modeNum; i++){
+    initLabel[i] = i;
+    per_label[i] = (i + 1) % modeNum;
+  }
   UniTensor truC = C;
-  int initLabel[] = {0, 1, 2};
   truC.setLabel(initLabel);
   int coreBondNum = truC.bondNum();
   Bond bdi_chi(BD_IN, chi);
@@ -53,54 +58,52 @@ UniTensor truncateCore(const UniTensor& C, size_t chi){
     UniTensor newC(bonds);
     newC.putBlock(truC.getBlock().resize(chi, bonds[1].dim() * bonds[2].dim()));
     truC = newC;
-    int per_label[3] = {1, 2, 0};
     truC.permute(per_label, 1);
   }
   truC.setLabel(C.label());
   return truC;
 }
 
-void simpleUpdate(bool upT, vector<UniTensor>& Us, vector<UniTensor>& Cs, vector<Matrix>& Ls, const UniTensor& expH, Network& simplex){
+void simpleUpdate(bool outC, vector<UniTensor>& Us, vector<UniTensor>& Cs, vector<Matrix>& Ls, const UniTensor& expH, Network& simplex){
+  assert(Us[0].bondNum() == 3);
+  int modeNum = Cs[0].bondNum();
   for(int u = 0; u < Us.size(); u++)
-    if(upT)
-      bondcat(Us[u], Ls[u + 3], 2);
+    if(outC)
+      bondcat(Us[u], Ls[u + modeNum], 2);
     else
       bondcat(Us[u], Ls[u], 1);
-  simplex.putTensor("UA", Us[0]);
-  simplex.putTensor("UB", Us[1]);
-  simplex.putTensor("UC", Us[2]);
-  simplex.putTensor("expH", expH);
-  if(upT)
+  for(int i = 0; i < Us.size(); i++)
+    simplex.putTensor(i + 1, Us[i]);  //Core
+  if(outC)
     simplex.putTensor("Cup", Cs[0]);
   else
     simplex.putTensor("Cdn", Cs[1]);
+  simplex.putTensor("expH", expH);
   UniTensor theta = simplex.launch();
 
-
   vector<Matrix> svdLs;
-  vector<UniTensor> svdUs = theta.hosvd(3, svdLs);
+  vector<UniTensor> svdUs = theta.hosvd(modeNum, svdLs);
   /*======================= Truncation ======================*/
   int chi = Cs[0].bond(0).dim();
   int d = Us[0].bond(0).dim();
   //Truncate core
-  UniTensor trunC = truncateCore(svdUs[3], chi);
+  UniTensor trunC = truncateCore(svdUs[modeNum], chi);
   double norm = trunC.getBlock().norm();
-  if(upT)
+  if(outC)
     Cs[0] = trunC * (1/norm);
   else
     Cs[1] = trunC * (1/norm);
 
   //Truncate Lamda
   for(int i = 0; i < svdLs.size(); i++){
-    if(upT)
+    if(outC)
       Ls[i] = svdLs[i].resize(chi, chi) * (1/norm);
     else
-      Ls[3 + i] = svdLs[i].resize(chi, chi) * (1/norm);
+      Ls[modeNum + i] = svdLs[i].resize(chi, chi) * (1/norm);
   }
-
   //Truncate Us
-  if(upT){
-    vector<UniTensor> trunUs(3, UniTensor(Us[0].bond()));
+  if(outC){
+    vector<UniTensor> trunUs(modeNum, UniTensor(Us[0].bond()));
     for(int i = 0; i < trunUs.size(); i++)
       trunUs[i].putBlock(svdUs[i].getBlock().resize(d * chi, chi));
     for(int i = 0; i < Us.size(); i++){
@@ -113,27 +116,28 @@ void simpleUpdate(bool upT, vector<UniTensor>& Us, vector<UniTensor>& Cs, vector
       Us[i].putBlock(svdUs[i].getBlock().resize(d * chi, chi));
   /*============End of Truncation ================*/
   for(int u = 0; u < Us.size(); u++)
-    if(upT)
-      bondrm(Us[u], Ls[u + 3], 2);
+    if(outC)
+      bondrm(Us[u], Ls[u + modeNum], 2);
     else
       bondrm(Us[u], Ls[u], 1);
 }
 
-double measureObs(bool upT, const UniTensor& Ob, vector<UniTensor> Us, const vector<UniTensor>& Cs, const vector<Matrix>& Ls, Network& state, Network& measure){
+double measureObs(bool outC, const UniTensor& Ob, const vector<UniTensor>& _Us, const vector<UniTensor>& Cs, const vector<Matrix>& Ls, Network& state, Network& measure){
+  assert(_Us[0].bondNum() == 3);
+  vector<UniTensor> Us = _Us;
+  int modeNum = Cs[0].bondNum();
   for(int u = 0; u < Us.size(); u++){
-    if(upT)
-      bondcat(Us[u], Ls[u + 3], 2);
+    if(outC)
+      bondcat(Us[u], Ls[u + modeNum], 2);
     else
       bondcat(Us[u], Ls[u], 1);
   }
-
-  if(upT)
+  if(outC)
     state.putTensor("Cup", Cs[0]);
   else
     state.putTensor("Cdn", Cs[1]);
-  state.putTensor("UA", Us[0]);
-  state.putTensor("UB", Us[1]);
-  state.putTensor("UC", Us[2]);
+  for(int i = 0; i < Us.size(); i++)
+    state.putTensor(i+1, Us[i]); // C
   UniTensor S = state.launch();
   measure.putTensor("S", S);
   measure.putTensorT("ST", S);
