@@ -61,6 +61,7 @@ void orthoRandomize(double* elem, int M, int N, bool ongpu);
 
 void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu);
 void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, bool ongpu);
+void matrixInv(double* A, int N, bool diag, bool ongpu);
 void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu);
 void setIdentity(double* elem, size_t M, size_t N, bool ongpu);
 void reshapeElem(double* elem, size_t* transOffset);

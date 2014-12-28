@@ -60,6 +60,9 @@ void dsyev_( const char* jobz, const char* uplo, const int32_t* n, double* a,
 void dstev_( const char* jobz, const int32_t* n, const double* d, const double* e, const double* z,
              const int32_t* ldaz, const double* work, int32_t* info );
 
+void dgetrf_( const int32_t *m, const int32_t *n, const double *a,  const int32_t *lda, const int32_t *ipiv, int32_t* info );
+void dgetri_( const int32_t *n, const double *a,  const int32_t *lda, const int32_t *ipiv, const double* work, const int32_t* lwork, int32_t* info );
+
 }
 // Wrappers for BLAS and LAPACK functions used in uni10_lapack.cpp
 inline void dgemm(const char *transa, const char *transb, const int32_t *m, const int32_t *n, const int32_t *k,
@@ -108,4 +111,15 @@ inline void dstev( const char* jobz, const int32_t* n, const double* d, const do
 {
   dstev_( jobz, n, d, e, z, ldaz, work, info );
 }
+
+inline void dgetrf( const int32_t *m, const int32_t *n, const double *a,  const int32_t *lda, const int32_t *ipiv, int32_t* info )
+{
+  dgetrf_( m, n, a,  lda, ipiv, info );
+}
+
+inline void dgetri( const int32_t *n, const double *a,  const int32_t *lda, const int32_t *ipiv, const double* work, const int32_t* lwork, int32_t* info )
+{
+  dgetri_(n, a, lda, ipiv, work, lwork, info);
+}
+
 #endif

@@ -156,6 +156,41 @@ void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, 
 	free(work);
 	free(Mij);
 }
+
+void matrixInv(double* A, int N, bool diag, bool ongpu){
+  if(diag){
+    for(int i = 0; i < N; i++)
+      A[i] = A[i] == 0 ? 0 : 1/A[i];
+    return;
+  }
+  int *ipiv = (int*)malloc(N+1 * sizeof(int));
+  int info;
+  dgetrf(&N, &N, A, &N, ipiv, &info);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dgetrf': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	int lwork = -1;
+	double worktest;
+  dgetri(&N, A, &N, ipiv, &worktest, &lwork, &info);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dgetri': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	lwork = (int)worktest;
+  double *work = (double*)malloc(lwork * sizeof(double));
+  dgetri(&N, A, &N, ipiv, work, &lwork, &info);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dgetri': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  free(ipiv);
+  free(work);
+}
+
 void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu){
 	for(size_t i = 0; i < M; i++)
 		for(size_t j = 0; j < N; j++)
@@ -170,6 +205,7 @@ void setIdentity(double* elem, size_t M, size_t N, bool ongpu){
 	for(size_t i = 0; i < min; i++)
 		elem[i * N + i] = 1;
 }
+
 
 double vectorSum(double* X, size_t N, int inc, bool ongpu){
   double sum = 0;

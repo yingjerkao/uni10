@@ -56,6 +56,7 @@ class Block{
 		std::vector<Matrix> eigh()const;
 		std::vector<Matrix> svd()const;
     size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
+    Matrix inverse()const;
 		double trace()const;
 		double norm()const;
 		double sum()const;

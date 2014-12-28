@@ -156,6 +156,23 @@ std::vector<Matrix> Block::svd()const{
   }
 	return outs;
 }
+Matrix Block::inverse()const{
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform inversion on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    Matrix invM(*this);
+    assert(ongpu == invM.isOngpu());
+    matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
+    return invM;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::inverse():");
+    return Matrix();
+  }
+}
 
 size_t Block::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol)const{
   try{
@@ -341,4 +358,5 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
   }
   return os;
 }
+
 };	/* namespace uni10 */

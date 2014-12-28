@@ -37,5 +37,5 @@ int main(){
   UniTensor H0312 = H0132;
   H0312.permute(per_lab, 4);
   UniTensor HQ = H0132 + H0312;
-  cout<<JQmodel(1, 1);
+  cout<<JQmodel(1, 7);
 }

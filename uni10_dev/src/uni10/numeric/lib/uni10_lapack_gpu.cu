@@ -336,6 +336,46 @@ void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, 
 	}
 }
 
+void matrixInv(double* A, int N, bool diag bool ongpu){
+	if(ongpu){
+    bool = GPU_READY = false;
+    assert(GPU_READY);
+	}
+  else{
+    if(diag){
+      for(int i = 0; i < N; i++)
+        A[i] = A[i] == 0 ? 0 : 1/A[i];
+      return;
+    }
+    int *ipiv = (int*)malloc(N+1 * sizeof(int));
+    int info;
+    dgetrf(&N, &N, A, &N, ipiv, &info);
+    if(info != 0){
+      std::ostringstream err;
+      err<<"Error in Lapack function 'dgetrf': Lapack INFO = "<<info;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    int lwork = -1;
+    double worktest;
+    dgetri(&N, A, &N, ipiv, &worktest, &lwork, &info);
+    if(info != 0){
+      std::ostringstream err;
+      err<<"Error in Lapack function 'dgetri': Lapack INFO = "<<info;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    lwork = (int)worktest;
+    double *work = (double*)malloc(lwork * sizeof(double));
+    dgetri(&N, A, &N, ipiv, work, &lwork, &info);
+    if(info != 0){
+      std::ostringstream err;
+      err<<"Error in Lapack function 'dgetri': Lapack INFO = "<<info;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    free(ipiv);
+    free(work);
+  }
+}
+
 __global__ void _transpose(double* A, size_t M, size_t N, double* AT){
 	size_t y = blockIdx.y * blockDim.y + threadIdx.y;
 	size_t x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -372,6 +412,7 @@ void setIdentity(double* elem, size_t M, size_t N, bool ongpu){
 	dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
 	_identity<<<gridSize, THREADMAX>>>(elem, min, N);
 }
+
 
 double vectorSum(double* X, size_t N, int inc, bool ongpu){
 	if(ongpu){
