@@ -293,8 +293,8 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
         err<<"Error in Lapack function 'dstev': Lapack INFO = "<<info;
         throw std::runtime_error(exception_msg(err.str()));
       }
-      double base = fabs(d[0]) > 1 ? fabs(d[0]) : 1;
-      e_diff = fabs(d[0] - e0_old) / base;
+      double base = std::abs(d[0]) > 1 ? std::abs(d[0]) : 1;
+      e_diff = std::abs(d[0] - e0_old) / base;
       e0_old = d[0];
       if(e_diff <= err_tol)
         converged = true;

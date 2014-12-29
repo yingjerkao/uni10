@@ -520,8 +520,8 @@ void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol
 				assert(info == 0);
 			}
 			double ev = getElemAt(0, d, ongpu);
-			double base = fabs(ev) > 1 ? fabs(ev) : 1;
-			e_diff = fabs(ev - e0_old) / base;
+			double base = std::abs(ev) > 1 ? std::abs(ev) : 1;
+			e_diff = std::abs(ev - e0_old) / base;
 			e0_old = ev;
 		}
 	}
