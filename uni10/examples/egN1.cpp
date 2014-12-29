@@ -10,14 +10,16 @@ int main(){
 	// Create network by reading in network file "egN1_network"
 	uni10::Network net("egN1_network");
 	// Put tensors to the Network net
-	net.putTensor("H", &H_U1);
-	net.putTensor("W", &W);
-	net.putTensor("WT", &WT);
+	net.putTensor("H", H_U1);
+	net.putTensor("W", W);
+	net.putTensor("WT", WT);
 
 	// Perform contractions inside the tensor network
 	std::cout<<net.launch();
 	// Print out the network
 	std::cout<<net;
+  // Print out the memory usage
+  net.profile();
 
 	return 0;
 }

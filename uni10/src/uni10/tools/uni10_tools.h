@@ -28,7 +28,7 @@
 *****************************************************************************/
 #ifndef UNI10_TOOLS_H
 #define UNI10_TOOLS_H
-#include <stdint.h>
+#include <cstdint>
 #include <limits.h>
 #include <string>
 #include <assert.h>
@@ -37,15 +37,34 @@
 #include <functional>
 #include <cctype>
 #include <locale>
+#include <sstream>
 #include <uni10/data-structure/uni10_struct.h>
 namespace uni10{
-void* elemAlloc(void* ptr, size_t memsize, bool& ongpu);
+
+const size_t GPU_GLOBAL_MEM = ((size_t)5) * 1<<30;
+const int THREADMAX = 1024;
+const int BLOCKMAX = 65535;
+void* elemAlloc(size_t memsize, bool& ongpu);
+void* elemAllocForce(size_t memsize, bool ongpu);
 void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool src_ongpu);
 void elemFree(void* ptr, size_t memsize, bool ongpu);
 void elemBzero(void* ptr, size_t memsize, bool ongpu);
 void elemRand(double* elem, size_t N, bool ongpu);
-std::vector<_Swap> recSwap(int* ord, int n, int* ordF);
-std::vector<_Swap> recSwap(int* _ord, int n);	//Given the reshape order out to in.
+std::vector<_Swap> recSwap(std::vector<int>& ord, std::vector<int>& ordF);
+std::vector<_Swap> recSwap(std::vector<int>& ord);	//Given the reshape order out to in.
+void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu);
+void getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu);
+void* mvGPU(void* elem, size_t memsize, bool& ongpu);
+void* mvCPU(void* elem, size_t memsize, bool& ongpu);
+void syncMem(void** elemA, void** elemB, size_t memsizeA, size_t memsizeB, bool& ongpuA, bool& ongpuB);
+void shrinkWithoutFree(size_t memsize, bool ongpu);
+void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, double* newElem);
+double getElemAt(size_t idx, double* elem, bool ongpu);
+void setElemAt(size_t idx, double val, double* elem, bool ongpu);
+void propogate_exception(const std::exception& e, const std::string& func_msg);
+std::string exception_msg(const std::string& msg);
+
+
 
 // trim from start
 static inline std::string &ltrim(std::string &s) {
@@ -63,6 +82,8 @@ static inline std::string &rtrim(std::string &s) {
 static inline std::string &trim(std::string &s) {
 	return ltrim(rtrim(s));
 }
+
+
 };	/* namespace uni10 */
 
 #endif /* UNI10_TOOLS_H */

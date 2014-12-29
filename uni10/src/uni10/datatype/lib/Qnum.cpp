@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -27,36 +27,43 @@
 *
 *****************************************************************************/
 #include <uni10/datatype/Qnum.h>
-//using namespace uni10::datatype;
+#include <uni10/tools/uni10_tools.h>
+
 namespace uni10{
 bool Qnum::Fermionic = false;
-Qnum::Qnum(): m_U1(0), m_prt(PRT_EVEN), m_prtF(PRTF_EVEN){}
-Qnum::Qnum(int _U1): m_U1(_U1), m_prt(PRT_EVEN), m_prtF(PRTF_EVEN){
-	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
-}
 Qnum::Qnum(int _U1, parityType _prt): m_U1(_U1), m_prt(_prt), m_prtF(PRTF_EVEN){
-	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
-}
-Qnum::Qnum(parityFType _prtF): m_prtF(_prtF), m_U1(0), m_prt(PRT_EVEN){
-	if(_prtF == PRTF_ODD)
-		Fermionic = true;
-}
-Qnum::Qnum(parityFType _prtF, int _U1): m_prtF(_prtF), m_U1(_U1), m_prt(PRT_EVEN){
-	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
-	if(_prtF == PRTF_ODD)
-		Fermionic = true;
+  try{
+    if(!(m_U1 < U1_UPB && m_U1 > U1_LOB)){
+      std::ostringstream err;
+      err<<"U1 is out of range. "<<U1_LOB<<" < U1 < "<<U1_UPB<<".";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor Qnum::Qnum(int, parityType):");
+  }
 }
 Qnum::Qnum(parityFType _prtF, int _U1, parityType _prt): m_U1(_U1), m_prt(_prt), m_prtF(_prtF){
-	assert(m_U1 < U1_UPB && m_U1 > U1_LOB);
+  try{
+	if(!(m_U1 < U1_UPB && m_U1 > U1_LOB)){
+    std::ostringstream err;
+    err<<"U1 is out of range. "<<U1_LOB<<" < U1 < "<<U1_UPB<<".";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
 	if(_prtF == PRTF_ODD)
 		Fermionic = true;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor Qnum::Qnum(parityFType, int, parityType):");
+  }
 }
+
 Qnum::Qnum(const Qnum& _q):m_U1(_q.m_U1), m_prt(_q.m_prt), m_prtF(_q.m_prtF){}
 bool operator< (const Qnum& q1, const Qnum& q2){
-	return ((q1.m_U1 * 10) + (q1.m_prt * 2) + q1.m_prtF) < ((q2.m_U1 * 10) + (q2.m_prt * 2) + q2.m_prtF);
+	return q1.hash() < q2.hash();
 }
 bool operator<= (const Qnum& q1, const Qnum& q2){
-	return ((q1.m_U1 * 10) + (q1.m_prt * 2) + q1.m_prtF) <= ((q2.m_U1 * 10) + (q2.m_prt * 2) + q2.m_prtF);
+	return q1.hash() <= q2.hash();
 }
 bool operator== (const Qnum& q1, const Qnum& q2){
 	return (q1.m_U1 == q2.m_U1) && (q1.m_prt == q2.m_prt) && (q1.m_prtF == q2.m_prtF);
@@ -75,12 +82,12 @@ std::ostream& operator<< (std::ostream& os, const Qnum& q){
 	return os;
 }
 void Qnum::assign(int _U1, parityType _prt){
-	m_U1 = _U1;	
+	m_U1 = _U1;
 	m_prt = _prt;
 	m_prtF = PRTF_EVEN;
 }
 void Qnum::assign(parityFType _prtF, int _U1, parityType _prt){
-	m_U1 = _U1;	
+	m_U1 = _U1;
 	m_prt = _prt;
 	m_prtF = _prtF;
 	if(_prtF == PRTF_ODD)
@@ -90,4 +97,5 @@ void Qnum::assign(parityFType _prtF, int _U1, parityType _prt){
 int Qnum::U1()const{return m_U1;}
 parityType Qnum::prt()const{return m_prt;}
 parityFType Qnum::prtF()const{return m_prtF;}
+long int Qnum::hash()const{ return m_U1 * 4 + m_prt * 2 + m_prtF; }
 };

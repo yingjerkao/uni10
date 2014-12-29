@@ -3,7 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -35,6 +35,8 @@
 #include <vector>
 #include <map>
 #include <uni10/datatype.hpp>
+#include <stdexcept>
+#include <sstream>
 
 namespace uni10{
 enum bondType{
@@ -45,24 +47,24 @@ class UniTensor;
 class Bond {
 	public:
 		Bond(){};
-		Bond(bondType _type, int dim);
+		Bond(bondType _type, size_t dim);
 		Bond(bondType, const std::vector<Qnum>& qnums);
 		Bond(const Bond& _b);
-		void assign(bondType, int dim);
+		~Bond();
+		void assign(bondType, size_t dim);
 		void assign(bondType, const std::vector<Qnum>& qnums);
 		bondType type()const;
 		int dim()const;
-		friend class UniTensor;
-		friend class Node;
-		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
-		friend bool operator== (const Bond& b1, const Bond& b2);
-		void change(bondType tp);
-		Bond& combine(const Bond bd);
-		friend Bond combine(bondType tp, const std::vector<Bond>& bds);
-		friend Bond combine(const std::vector<Bond>& bds);
 		std::map<Qnum, int> degeneracy()const;
 		std::vector<Qnum> Qlist()const;
-		~Bond();
+		void change(bondType tp);
+		Bond& combine(Bond bd);
+		friend bool operator== (const Bond& b1, const Bond& b2);
+		friend Bond combine(bondType tp, const std::vector<Bond>& bds);
+		friend Bond combine(const std::vector<Bond>& bds);
+		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
+		friend class UniTensor;
+		friend class Node;
 	private:
 		void setting(const std::vector<Qnum>& qnums);
 		bondType m_type;

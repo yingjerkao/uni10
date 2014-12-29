@@ -44,5 +44,4 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
 bool operator== (const Block& b1, const Block& b2){
 	return (b1.qnum == b2.qnum) && (b1.Rnum == b2.Rnum) && (b1.Cnum == b2.Cnum);
 }
-
 };	/* namespace uni10 */
