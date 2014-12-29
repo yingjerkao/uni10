@@ -1013,13 +1013,7 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
   return *this;
 }
 
-std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
-  int bondNum = bonds.size();
-  if(bondNum % modeNum != 0){
-    std::ostringstream err;
-    err<<"Bond number cannot be divided by the input mode number("<<modeNum<<").";
-    throw std::runtime_error(exception_msg(err.str()));
-  }
+std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
   if((status & HAVEBOND) == 0){
     std::ostringstream err;
     err<<"Cannot perform higher order SVD on a tensor without bonds(scalar).";
@@ -1030,22 +1024,36 @@ std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, std::vector<std::map<Qn
     err<<"Cannot perform higher order SVD on a tensor before setting its elements.";
     throw std::runtime_error(exception_msg(err.str()));
   }
+  int bondNum = bonds.size();
+  if((bondNum - fixedNum) % modeNum != 0){
+    std::ostringstream err;
+    err<<"Bond number cannot be divided by the input mode number("<<modeNum<<").";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  int combNum = (bondNum - fixedNum) / modeNum;
   UniTensor T(*this);
-  int combNum = bondNum / modeNum;
+  for(int t = 0; t < T.labels.size(); t++)
+    T.labels[t] = t;
   std::vector<int>ori_labels = T.labels;
   std::vector<int>rsp_labels = T.labels;
   if(returnL)
     Ls.assign(modeNum, std::map<Qnum, Matrix>());
   std::vector<UniTensor> Us;
   UniTensor S(T);
-  for(int s = 0; s < S.labels.size(); s++)
-    S.labels[s] = s;;
+  std::vector<int>out_labels(S.labels.begin(), S.labels.begin() + fixedNum + modeNum);
   for(int m = 0; m < modeNum; m++){
+    for(int l = 0; l < rsp_labels.size(); l++){
+      if(l < combNum)
+        rsp_labels[l] = ori_labels[fixedNum + (((m) * combNum + l) % (bondNum - fixedNum))];
+      else if(l < combNum + fixedNum)
+        rsp_labels[l] = ori_labels[l - combNum];
+      else
+        rsp_labels[l] = ori_labels[fixedNum + (((m) * combNum + l - fixedNum) % (bondNum - fixedNum))];
+    }
     T.permute(rsp_labels, combNum);
     std::vector<Bond> bonds(T.bonds.begin(), T.bonds.begin() + combNum);
     bonds.push_back(combine(bonds).dummy_change(BD_OUT));
     Us.push_back(UniTensor(bonds));
-
     for(std::map<Qnum, Block>::iterator it = T.blocks.begin(); it != T.blocks.end(); it++){
       std::vector<Matrix> svd = it->second.svd();
       Us[m].putBlock(it->first, svd[0]);
@@ -1053,40 +1061,49 @@ std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, std::vector<std::map<Qn
         Ls[m][it->first] = svd[1];
     }
     for(int c = 0; c < combNum; c++)
-      Us[m].labels[c] = m * combNum + c;;
+      Us[m].labels[c] = fixedNum + m * combNum + c;
     Us[m].labels[combNum] = -m - 1;
+    out_labels[fixedNum + m] = -m -1;
     UniTensor UT = Us[m];
     S *= UT.transpose();
-    for(int l = 0; l < rsp_labels.size(); l++)
-      rsp_labels[l] = ori_labels[((m + 1) * combNum + l) % bondNum];
   }
+  S.permute(out_labels, fixedNum);
   Us.push_back(S);
   return Us;
 }
 
-std::vector<UniTensor> UniTensor::hosvd(size_t modeNum)const{
+std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum)const{
   try{
     std::vector<std::map<Qnum, Matrix> > symLs;
-    return _hosvd(modeNum, symLs, false);
+    return _hosvd(modeNum, fixedNum, symLs, false);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::hosvd(size_t):");
+    propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t = 0):");
+    return std::vector<UniTensor>();
+  }
+}
+
+std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const{
+  try{
+    return _hosvd(modeNum, fixedNum, Ls, true);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t, std::vector<std::map<Qnum, Matrix> >&):");
     return std::vector<UniTensor>();
   }
 }
 
 std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const{
   try{
-    return _hosvd(modeNum, Ls, true);
+    return _hosvd(modeNum, 0, Ls, true);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::hosvd(size_t, std::vector<std::map<Qnum, Matrix> >&):");
     return std::vector<UniTensor>();
   }
-
 }
 
-std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<Matrix>& Ls)const{
+std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const{
   try{
     bool withoutSymmetry = true;
     for(int b = 0; b < bonds.size(); b++){
@@ -1096,16 +1113,25 @@ std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<Matrix>& Ls)
     if(!withoutSymmetry){
       std::ostringstream err;
       err<<"The tensor has symmetry quantum numbers. Cannot use non-symmetry version hosvd(size_t, std::vector<Matrix>&)";
-      err<<"  Hint: Use UniTensor::hosvd(size_t, std::vector<std::map<Qnum, Matrix> >&)";
+      err<<"\n  Hint: Use UniTensor::hosvd(size_t, size_t, std::vector<std::map<Qnum, Matrix> >&)";
       throw std::runtime_error(exception_msg(err.str()));
     }
     std::vector<std::map<Qnum, Matrix> > symLs;
-    const std::vector<UniTensor>& outs = _hosvd(modeNum, symLs, true);
+    const std::vector<UniTensor>& outs = _hosvd(modeNum, fixedNum, symLs, true);
     Ls.clear();
     Qnum q0(0);
     for(int i = 0; i < symLs.size(); i++)
       Ls.push_back(symLs[i][q0]);
     return outs;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t, std::vector<Matrix>&):");
+    return std::vector<UniTensor>();
+  }
+}
+std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<Matrix>& Ls)const{
+  try{
+    return hosvd(modeNum, 0, Ls);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::hosvd(size_t, std::vector<Matrix>&):");

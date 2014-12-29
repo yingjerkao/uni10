@@ -1,5 +1,4 @@
 #include <uni10/tools/uni10_tools.h>
-#include <stdio.h>
 #include <string.h>
 
 namespace uni10{

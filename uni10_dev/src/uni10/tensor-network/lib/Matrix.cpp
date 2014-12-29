@@ -26,8 +26,6 @@
 *  @since 0.1.0
 *
 *****************************************************************************/
-#include <stdlib.h>
-#include <stdio.h>
 #include <cmath>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/numeric/uni10_lapack.h>

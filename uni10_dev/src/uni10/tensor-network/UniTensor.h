@@ -30,14 +30,12 @@
 #define UNITENSOR_H
 #include <iostream>
 #include <iomanip>
-#include <stdio.h>
 #include <cmath>
 #include <vector>
 #include <map>
 #include <set>
 #include <string>
 #include <assert.h>
-#include <stdint.h>
 #include <sstream>
 #include <stdexcept>
 #define DOUBLE double
@@ -102,7 +100,9 @@ class UniTensor{
 		void orthoRand();
 		void orthoRand(const Qnum& qnum);
     void clear();
-    std::vector<UniTensor> hosvd(size_t modeNum)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum = 0)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
     std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
     std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
 		std::string getName();
@@ -162,7 +162,7 @@ class UniTensor{
 		//Private Functions
 		size_t grouping();
 		void initUniT();
-    std::vector<UniTensor> _hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
+    std::vector<UniTensor> _hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
 		static const int HAVEBOND = 1;		  /**< A flag for initialization */
 		static const int HAVEELEM = 2;		  /**< A flag for having element assigned */
 };

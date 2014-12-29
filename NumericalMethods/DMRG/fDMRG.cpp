@@ -11,7 +11,7 @@ using namespace uni10;
 
 int main(){
 	/*** Initialization ***/
-  const int chi = 4;
+  const int chi = 20;
   const int N = 20;
 	//UniTensor H0 = theModel(1, 0, 0, 1.5, 0.1, 0);
 	UniTensor H0 = Heisenberg();

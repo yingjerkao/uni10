@@ -26,14 +26,12 @@
 *  @since 0.1.0
 *
 *****************************************************************************/
-#include "stdlib.h"
 #ifdef MKL
   #include "mkl.h"
 #else
   #include <uni10/numeric/uni10_lapack_wrapper.h>
 #endif
 #include <string.h>
-#include <stdio.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <cula.h>
@@ -522,8 +520,8 @@ void lanczosEV(double* A, double* psi, size_t dim, int& max_iter, double err_tol
 				assert(info == 0);
 			}
 			double ev = getElemAt(0, d, ongpu);
-			double base = abs(ev) > 1 ? abs(ev) : 1;
-			e_diff = abs(ev - e0_old) / base;
+			double base = fabs(ev) > 1 ? fabs(ev) : 1;
+			e_diff = fabs(ev - e0_old) / base;
 			e0_old = ev;
 		}
 	}

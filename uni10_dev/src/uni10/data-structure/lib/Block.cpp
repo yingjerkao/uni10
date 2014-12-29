@@ -30,24 +30,30 @@
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
-//using namespace uni10::datatype;
-namespace uni10{
-Block::Block(): Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL){}
-Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
-Block::Block(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
 
-size_t Block::row()const{return Rnum;}
-size_t Block::col()const{return Cnum;}
-bool Block::isDiag()const{return diag;}
-bool Block::isOngpu()const{return ongpu;}
-size_t Block::elemNum()const{
+#ifndef UNI10_DTYPE
+#define UNI10_DTYPE double
+#endif
+#ifndef UNI10_BLOCK
+#define UNI10_BLOCK Block
+#endif
+namespace uni10{
+UNI10_BLOCK::UNI10_BLOCK(): Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL){}
+UNI10_BLOCK::UNI10_BLOCK(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
+UNI10_BLOCK::UNI10_BLOCK(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
+
+size_t UNI10_BLOCK::row()const{return Rnum;}
+size_t UNI10_BLOCK::col()const{return Cnum;}
+bool UNI10_BLOCK::isDiag()const{return diag;}
+bool UNI10_BLOCK::isOngpu()const{return ongpu;}
+size_t UNI10_BLOCK::elemNum()const{
   if(diag)
     return (Rnum < Cnum ? Rnum : Cnum);
   else
     return Rnum * Cnum;
 }
-double* Block::getElem()const{return m_elem;}
-void Block::save(const std::string& fname)const{
+UNI10_DTYPE* UNI10_BLOCK::getElem()const{return m_elem;}
+void UNI10_BLOCK::save(const std::string& fname)const{
   try{
     FILE *fp = fopen(fname.c_str(), "w");
     if(!(fp != NULL)){
@@ -55,22 +61,22 @@ void Block::save(const std::string& fname)const{
       err<<"Error in writing to file '"<<fname<<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    double* elem = m_elem;
+    UNI10_DTYPE* elem = m_elem;
     if(ongpu){
-      elem = (double*)malloc(elemNum() * sizeof(double));
-      elemCopy(elem, m_elem, elemNum() * sizeof(double), false, ongpu);
+      elem = (UNI10_DTYPE*)malloc(elemNum() * sizeof(UNI10_DTYPE));
+      elemCopy(elem, m_elem, elemNum() * sizeof(UNI10_DTYPE), false, ongpu);
     }
-    fwrite(elem, sizeof(double), elemNum(), fp);
+    fwrite(elem, sizeof(UNI10_DTYPE), elemNum(), fp);
     fclose(fp);
     if(ongpu)
       free(elem);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Block::save(std::string&):");
+    propogate_exception(e, "In function UNI10_BLOCK::save(std::string&):");
   }
 }
 
-double Block::operator[](size_t idx)const{
+UNI10_DTYPE UNI10_BLOCK::operator[](size_t idx)const{
   try{
     if(!(idx < elemNum())){
       std::ostringstream err;
@@ -80,12 +86,12 @@ double Block::operator[](size_t idx)const{
     return getElemAt(idx, m_elem, ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Block::operator[](size_t):");
+    propogate_exception(e, "In function UNI10_BLOCK::operator[](size_t):");
     return 0;
   }
 }
 
-double Block::at(size_t r, size_t c)const{
+UNI10_DTYPE UNI10_BLOCK::at(size_t r, size_t c)const{
   try{
     if(!((r < Rnum) && (c < Cnum))){
       std::ostringstream err;
@@ -104,12 +110,12 @@ double Block::at(size_t r, size_t c)const{
       return getElemAt(r * Cnum + c, m_elem, ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Block::at(size_t, size_t):");
+    propogate_exception(e, "In function UNI10_BLOCK::at(size_t, size_t):");
     return 0;
   }
 }
 
-std::vector<Matrix> Block::eigh()const{
+std::vector<Matrix> UNI10_BLOCK::eigh()const{
   std::vector<Matrix> outs;
   try{
     if(!(Rnum == Cnum)){
@@ -133,7 +139,7 @@ std::vector<Matrix> Block::eigh()const{
   }
 	return outs;
 }
-std::vector<Matrix> Block::svd()const{
+std::vector<Matrix> UNI10_BLOCK::svd()const{
 	std::vector<Matrix> outs;
   try{
 	if(diag){
@@ -156,7 +162,7 @@ std::vector<Matrix> Block::svd()const{
   }
 	return outs;
 }
-Matrix Block::inverse()const{
+Matrix UNI10_BLOCK::inverse()const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -174,7 +180,7 @@ Matrix Block::inverse()const{
   }
 }
 
-size_t Block::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol)const{
+size_t UNI10_BLOCK::lanczosEigh(UNI10_DTYPE& E0, Matrix& psi, size_t max_iter, UNI10_DTYPE err_tol)const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -202,11 +208,11 @@ size_t Block::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_t
     return iter;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+    propogate_exception(e, "In function Matrix::lanczosEigh(UNI10_DTYPE& E0, uni10::Matrix&, size_t=200, UNI10_DTYPE=5E-15):");
     return 0;
   }
 }
-double Block::norm()const{
+UNI10_DTYPE UNI10_BLOCK::norm()const{
   try{
 	  return vectorNorm(m_elem, elemNum(), 1, ongpu);
   }
@@ -216,7 +222,7 @@ double Block::norm()const{
   }
 }
 
-double Block::sum()const{
+UNI10_DTYPE UNI10_BLOCK::sum()const{
   try{
 	  return vectorSum(m_elem, elemNum(), 1, ongpu);
   }
@@ -226,7 +232,7 @@ double Block::sum()const{
   }
 }
 
-double Block::trace()const{
+UNI10_DTYPE UNI10_BLOCK::trace()const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -279,18 +285,18 @@ Matrix operator* (const Block& Ma, const Block& Mb){
     return Block();
   }
 }
-Matrix operator*(const Block& Ma, double a){
+Matrix operator*(const Block& Ma, UNI10_DTYPE a){
   try{
     Matrix Mb(Ma);
     vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.ongpu);
     return Mb;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
+    propogate_exception(e, "In function operator*(uni10::Matrix&, UNI10_DTYPE):");
     return Block();
   }
 }
-Matrix operator*(double a, const Block& Ma){return Ma * a;}
+Matrix operator*(UNI10_DTYPE a, const Block& Ma){return Ma * a;}
 Matrix operator+(const Block& Ma, const Block& Mb){
   try{
     Matrix Mc(Ma);
@@ -304,10 +310,10 @@ Matrix operator+(const Block& Ma, const Block& Mb){
 }
 bool operator== (const Block& m1, const Block& m2){
   try{
-    double diff;
+    UNI10_DTYPE diff;
     if(m1.elemNum() == m2.elemNum()){
       for(size_t i = 0; i < m1.elemNum(); i++){
-        diff = abs(m1.m_elem[i] - m2.m_elem[i]);
+        diff = fabs(m1.m_elem[i] - m2.m_elem[i]);
         if(diff > 1E-12)
           return false;
       }
@@ -322,7 +328,7 @@ bool operator== (const Block& m1, const Block& m2){
 }
 
 
-Block::~Block(){}
+UNI10_BLOCK::~UNI10_BLOCK(){}
 std::ostream& operator<< (std::ostream& os, const Block& b){
   try{
     os << b.Rnum << " x " << b.Cnum << " = " << b.elemNum();
@@ -331,10 +337,10 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
     if(b.ongpu)
       os<< ", onGPU";
     os <<std::endl << std::endl;
-    double* elem;
+    UNI10_DTYPE* elem;
     if(b.ongpu){
-      elem = (double*)malloc(b.elemNum() * sizeof(double));
-      elemCopy(elem, b.m_elem, b.elemNum() * sizeof(double), false, b.ongpu);
+      elem = (UNI10_DTYPE*)malloc(b.elemNum() * sizeof(UNI10_DTYPE));
+      elemCopy(elem, b.m_elem, b.elemNum() * sizeof(UNI10_DTYPE), false, b.ongpu);
     }
     else
       elem = b.m_elem;
@@ -360,3 +366,9 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
 }
 
 };	/* namespace uni10 */
+#ifdef UNI10_BLOCK
+#undef UNI10_BLOCK
+#endif
+#ifdef UNI10_DTYPE
+#undef UNI10_DTYPE
+#endif

@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <cula.h>
 #include <cublas.h>

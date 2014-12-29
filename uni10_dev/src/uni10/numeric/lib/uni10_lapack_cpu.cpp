@@ -26,14 +26,12 @@
 *  @since 0.1.0
 *
 *****************************************************************************/
-#include "stdlib.h"
 #ifdef MKL
   #include "mkl.h"
 #else
   #include <uni10/numeric/uni10_lapack_wrapper.h>
 #endif
 #include <string.h>
-#include <stdio.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 namespace uni10{
@@ -295,8 +293,8 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
         err<<"Error in Lapack function 'dstev': Lapack INFO = "<<info;
         throw std::runtime_error(exception_msg(err.str()));
       }
-      double base = abs(d[0]) > 1 ? abs(d[0]) : 1;
-      e_diff = abs(d[0] - e0_old) / base;
+      double base = fabs(d[0]) > 1 ? fabs(d[0]) : 1;
+      e_diff = fabs(d[0] - e0_old) / base;
       e0_old = d[0];
       if(e_diff <= err_tol)
         converged = true;
