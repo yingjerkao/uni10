@@ -27,6 +27,7 @@
 *
 *****************************************************************************/
 #include <uni10/data-structure/Block.h>
+#include <uni10/data-structure/CBlock.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
@@ -34,13 +35,17 @@
 #ifndef UNI10_DTYPE
 #define UNI10_DTYPE double
 #endif
+#ifndef UNI10_MATRIX
+#define UNI10_MATRIX Matrix
+#endif
 #ifndef UNI10_BLOCK
 #define UNI10_BLOCK Block
 #endif
+
 namespace uni10{
 UNI10_BLOCK::UNI10_BLOCK(): Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL){}
 UNI10_BLOCK::UNI10_BLOCK(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
-UNI10_BLOCK::UNI10_BLOCK(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
+UNI10_BLOCK::UNI10_BLOCK(const UNI10_BLOCK& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
 
 size_t UNI10_BLOCK::row()const{return Rnum;}
 size_t UNI10_BLOCK::col()const{return Cnum;}
@@ -52,7 +57,9 @@ size_t UNI10_BLOCK::elemNum()const{
   else
     return Rnum * Cnum;
 }
+
 UNI10_DTYPE* UNI10_BLOCK::getElem()const{return m_elem;}
+
 void UNI10_BLOCK::save(const std::string& fname)const{
   try{
     FILE *fp = fopen(fname.c_str(), "w");
@@ -72,7 +79,7 @@ void UNI10_BLOCK::save(const std::string& fname)const{
       free(elem);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UNI10_BLOCK::save(std::string&):");
+    propogate_exception(e, "In function Block::save(std::string&):");
   }
 }
 
@@ -86,7 +93,7 @@ UNI10_DTYPE UNI10_BLOCK::operator[](size_t idx)const{
     return getElemAt(idx, m_elem, ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UNI10_BLOCK::operator[](size_t):");
+    propogate_exception(e, "In function Block::operator[](size_t):");
     return 0;
   }
 }
@@ -110,7 +117,7 @@ UNI10_DTYPE UNI10_BLOCK::at(size_t r, size_t c)const{
       return getElemAt(r * Cnum + c, m_elem, ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UNI10_BLOCK::at(size_t, size_t):");
+    propogate_exception(e, "In function Block::at(size_t, size_t):");
     return 0;
   }
 }
@@ -249,7 +256,7 @@ UNI10_DTYPE UNI10_BLOCK::trace()const{
     return 0;
   }
 }
-Matrix operator* (const Block& Ma, const Block& Mb){
+Matrix operator* (const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
   try{
     if(!(Ma.Cnum == Mb.Rnum)){
       std::ostringstream err;
@@ -282,10 +289,10 @@ Matrix operator* (const Block& Ma, const Block& Mb){
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator*(uni10::Matrix&, uni10::Matrix&):");
-    return Block();
+    return UNI10_BLOCK();
   }
 }
-Matrix operator*(const Block& Ma, UNI10_DTYPE a){
+Matrix operator*(const UNI10_BLOCK& Ma, UNI10_DTYPE a){
   try{
     Matrix Mb(Ma);
     vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.ongpu);
@@ -293,11 +300,11 @@ Matrix operator*(const Block& Ma, UNI10_DTYPE a){
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator*(uni10::Matrix&, UNI10_DTYPE):");
-    return Block();
+    return UNI10_BLOCK();
   }
 }
-Matrix operator*(UNI10_DTYPE a, const Block& Ma){return Ma * a;}
-Matrix operator+(const Block& Ma, const Block& Mb){
+Matrix operator*(UNI10_DTYPE a, const UNI10_BLOCK& Ma){return Ma * a;}
+Matrix operator+(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
   try{
     Matrix Mc(Ma);
     vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
@@ -305,10 +312,10 @@ Matrix operator+(const Block& Ma, const Block& Mb){
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");
-    return Block();
+    return UNI10_BLOCK();
   }
 }
-bool operator== (const Block& m1, const Block& m2){
+bool operator== (const UNI10_BLOCK& m1, const UNI10_BLOCK& m2){
   try{
     UNI10_DTYPE diff;
     if(m1.elemNum() == m2.elemNum()){
@@ -329,7 +336,7 @@ bool operator== (const Block& m1, const Block& m2){
 
 
 UNI10_BLOCK::~UNI10_BLOCK(){}
-std::ostream& operator<< (std::ostream& os, const Block& b){
+std::ostream& operator<< (std::ostream& os, const UNI10_BLOCK& b){
   try{
     os << b.Rnum << " x " << b.Cnum << " = " << b.elemNum();
     if(b.diag)
@@ -368,6 +375,9 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
 };	/* namespace uni10 */
 #ifdef UNI10_BLOCK
 #undef UNI10_BLOCK
+#endif
+#ifdef UNI10_MATRIX
+#undef UNI10_MATRIX
 #endif
 #ifdef UNI10_DTYPE
 #undef UNI10_DTYPE

@@ -4,7 +4,7 @@
 namespace uni10{
 size_t MEM_USAGE = 0;
 size_t GPU_MEM_USAGE = 0;
-const size_t GPU_MEM_MAX = GPU_GLOBAL_MEM * 2 / 3;
+const size_t GPU_MEM_MAX = UNI10_GPU_GLOBAL_MEM * 2 / 3;
 void* elemAlloc(size_t memsize, bool& ongpu){
 	void* ptr = NULL;
 	if(GPU_MEM_USAGE + memsize <= GPU_MEM_MAX){
@@ -84,7 +84,7 @@ void elemBzero(void* ptr, size_t memsize, bool ongpu){
 }
 
 __global__ void gpu_rand(double* elem, size_t N){
-	size_t idx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned int r = (1664525 * ((1664525 * idx + 1013904223) % UINT_MAX) + 1013904223) % UINT_MAX;
 	if(idx < N)
 		elem[idx] = double(r) / UINT_MAX;
@@ -92,9 +92,9 @@ __global__ void gpu_rand(double* elem, size_t N){
 
 void elemRand(double* elem, size_t N, bool ongpu){
 	if(ongpu){
-		size_t blockNum = (N + THREADMAX - 1) / THREADMAX;
-		dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
-		gpu_rand<<<gridSize, THREADMAX>>>(elem, N);
+		size_t blockNum = (N + UNI10_THREADMAX - 1) / UNI10_THREADMAX;
+		dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
+		gpu_rand<<<gridSize, UNI10_THREADMAX>>>(elem, N);
 	}
 	else{
 		for(size_t i = 0; i < N; i++)
@@ -103,23 +103,23 @@ void elemRand(double* elem, size_t N, bool ongpu){
 }
 
 __global__ void _setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N){
-	size_t idx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < diag_N && idx < M && idx < N)
 		elem[idx * N + idx] = diag_elem[idx];
 }
 
 __global__ void _getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N){
-	size_t idx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < diag_N && idx < M && idx < N)
 		diag_elem[idx] = elem[idx * N + idx];
 }
 
 void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu){
 	if((ongpu)){
-		size_t blockNum = (N + THREADMAX - 1) / THREADMAX;
-		dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
+		size_t blockNum = (N + UNI10_THREADMAX - 1) / UNI10_THREADMAX;
+		dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
 		if(diag_ongpu){
-			_setDiag<<<gridSize, THREADMAX>>>(elem, diag_elem, M, N, diag_N);
+			_setDiag<<<gridSize, UNI10_THREADMAX>>>(elem, diag_elem, M, N, diag_N);
 		}
 		else{
 			size_t memsize = diag_N * sizeof(double);
@@ -129,7 +129,7 @@ void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 			cuflag = cudaMemcpy(src_elem, diag_elem, memsize, cudaMemcpyHostToDevice);
 			//printf("mvGPU");
 			assert(cuflag == cudaSuccess);
-			_setDiag<<<gridSize, THREADMAX>>>(elem, src_elem, M, N, diag_N);
+			_setDiag<<<gridSize, UNI10_THREADMAX>>>(elem, src_elem, M, N, diag_N);
 			cudaFree(src_elem);
 		}
 	}else{
@@ -152,17 +152,17 @@ void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N,
 
 void getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu){
 	if((ongpu)){
-		size_t blockNum = (N + THREADMAX - 1) / THREADMAX;
-		dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
+		size_t blockNum = (N + UNI10_THREADMAX - 1) / UNI10_THREADMAX;
+		dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
 		if(diag_ongpu){
-			_getDiag<<<gridSize, THREADMAX>>>(elem, diag_elem, M, N, diag_N);
+			_getDiag<<<gridSize, UNI10_THREADMAX>>>(elem, diag_elem, M, N, diag_N);
 		}
 		else{
 			size_t memsize = diag_N * sizeof(double);
 			double* tmp_elem;
 			cudaError_t cuflag = cudaMalloc(&tmp_elem, memsize);
 			assert(cuflag == cudaSuccess);
-			_getDiag<<<gridSize, THREADMAX>>>(elem, tmp_elem, M, N, diag_N);
+			_getDiag<<<gridSize, UNI10_THREADMAX>>>(elem, tmp_elem, M, N, diag_N);
 			cuflag = cudaMemcpy(diag_elem, tmp_elem, memsize, cudaMemcpyHostToDevice);
 			//printf("mvGPU");
 			assert(cuflag == cudaSuccess);
@@ -239,7 +239,7 @@ void shrinkWithoutFree(size_t memsize, bool ongpu){
 }
 
 __global__ void _reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, double* newElem){
-	size_t oldIdx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	size_t oldIdx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	size_t idx = oldIdx;
 	size_t newIdx = 0;
 	if(idx < elemNum){
@@ -254,9 +254,9 @@ void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, d
 	size_t* D_offset;
 	assert(cudaMalloc((void**)&D_offset, 2 * sizeof(size_t) * bondNum) == cudaSuccess);
 	assert(cudaMemcpy(D_offset, offset, 2 * sizeof(size_t) * bondNum, cudaMemcpyHostToDevice) == cudaSuccess);
-	size_t blockNum = (elemNum + THREADMAX - 1) / THREADMAX;
-	dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
-	_reshapeElem<<<gridSize, THREADMAX>>>(oldElem, bondNum, elemNum, D_offset, newElem);
+	size_t blockNum = (elemNum + UNI10_THREADMAX - 1) / UNI10_THREADMAX;
+	dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
+	_reshapeElem<<<gridSize, UNI10_THREADMAX>>>(oldElem, bondNum, elemNum, D_offset, newElem);
 }
 
 

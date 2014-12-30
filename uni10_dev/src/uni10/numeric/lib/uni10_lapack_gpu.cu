@@ -38,7 +38,7 @@
 #include <cublas.h>
 namespace uni10{
 bool CULAINIT = false;
-const size_t GPU_OPERATE_MEM = GPU_GLOBAL_MEM / 3;
+const size_t GPU_OPERATE_MEM = UNI10_GPU_GLOBAL_MEM / 3;
 void culaInit(){
 	if(!CULAINIT)
 		culaInitialize();
@@ -150,7 +150,7 @@ void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA
 }
 
 __global__ void _diagMM(double* diag, double* mat, size_t M, size_t N){
-	size_t idx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	double scalar = diag[idx / N];
 	if(idx < M * N)
 		mat[idx] *= scalar;
@@ -164,9 +164,9 @@ void diagMM(double* diag, double* mat, size_t M, size_t N, bool diag_ongpu, bool
 			d_elem = (double*)elemAllocForce(d_memsize, true);
 			elemCopy(d_elem, diag, d_memsize, true, diag_ongpu);
 		}
-		size_t blockNum = (M * N + THREADMAX - 1) / THREADMAX;
-		dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
-		_diagMM<<<gridSize, THREADMAX>>>(d_elem, mat, M, N);
+		size_t blockNum = (M * N + UNI10_THREADMAX - 1) / UNI10_THREADMAX;
+		dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
+		_diagMM<<<gridSize, UNI10_THREADMAX>>>(d_elem, mat, M, N);
 		if(!diag_ongpu)
 			elemFree(d_elem, d_memsize, true);
 	}
@@ -243,16 +243,16 @@ void vectorScal(double a, double* X, size_t N, bool ongpu){
 }
 
 __global__ void _vectorExp(double a, double* X, size_t N){
-	size_t idx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < N)
 		X[idx] = exp(a * X[idx]);
 }
 
 void vectorExp(double a, double* X, size_t N, bool ongpu){
 	if(ongpu){
-		size_t blockNum = (N + THREADMAX - 1) / THREADMAX;
-		dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
-		_vectorExp<<<gridSize, THREADMAX>>>(a, X, N);
+		size_t blockNum = (N + UNI10_THREADMAX - 1) / UNI10_THREADMAX;
+		dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
+		_vectorExp<<<gridSize, UNI10_THREADMAX>>>(a, X, N);
 	}
 	else
 		for(size_t i = 0; i < N; i++)
@@ -397,7 +397,7 @@ void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu){
 	}
 }
 __global__ void _identity(double* mat, size_t elemNum, size_t col){
-	size_t idx = blockIdx.y * BLOCKMAX * THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < elemNum)
 		mat[idx * col + idx] = 1;
 }
@@ -406,9 +406,9 @@ void setIdentity(double* elem, size_t M, size_t N, bool ongpu){
 	size_t min;
 	if(M < N)	min = M;
 	else		min = N;
-	size_t blockNum = (min + THREADMAX - 1) / THREADMAX;
-	dim3 gridSize(blockNum % BLOCKMAX, (blockNum + BLOCKMAX - 1) / BLOCKMAX);
-	_identity<<<gridSize, THREADMAX>>>(elem, min, N);
+	size_t blockNum = (min + UNI10_THREADMAX - 1) / UNI10_THREADMAX;
+	dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
+	_identity<<<gridSize, UNI10_THREADMAX>>>(elem, min, N);
 }
 
 

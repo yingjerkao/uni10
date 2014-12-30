@@ -1,4 +1,5 @@
 /****************************************************************************
+#define UNI10_DTYPE_STRING "double"
 *  @file uni10_tools.h
 *  @license
 *    Universal Tensor Network Library
@@ -29,7 +30,6 @@
 #ifndef UNI10_TOOLS_H
 #define UNI10_TOOLS_H
 #include <cstdint>
-#include <limits.h>
 #include <string>
 #include <assert.h>
 #include <vector>
@@ -39,11 +39,12 @@
 #include <locale>
 #include <sstream>
 #include <uni10/data-structure/uni10_struct.h>
+#include <complex>
 namespace uni10{
 
-const size_t GPU_GLOBAL_MEM = ((size_t)5) * 1<<30;
-const int THREADMAX = 1024;
-const int BLOCKMAX = 65535;
+const size_t UNI10_GPU_GLOBAL_MEM = ((size_t)5) * 1<<30;
+const int UNI10_THREADMAX = 1024;
+const int UNI10_BLOCKMAX = 65535;
 void* elemAlloc(size_t memsize, bool& ongpu);
 void* elemAllocForce(size_t memsize, bool ongpu);
 void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool src_ongpu);
@@ -63,7 +64,8 @@ double getElemAt(size_t idx, double* elem, bool ongpu);
 void setElemAt(size_t idx, double val, double* elem, bool ongpu);
 void propogate_exception(const std::exception& e, const std::string& func_msg);
 std::string exception_msg(const std::string& msg);
-
+/***** Complex version *****/
+//double getElemAt(size_t idx, double* elem, bool ongpu);
 
 
 // trim from start
