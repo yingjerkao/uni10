@@ -1,25 +1,37 @@
-This file gives simple instructions on how to build uni10
+*****************************
+  Installation Instructions
+*****************************
 
-REQUIREMENTS:
-1. cmake version > 2.8.12
-2. C++ compiler (g++, icpc)
-3. BLAS and LAPACK libraries (Generic, Intel MKL)
-4. CUDA (optional)
+This file gives build instructions for Uni10. 
 
-To build, follow the following steps:
-1. Create a build directory
-2. Use Cmake to generate makefile
-3. Build library and exmamples
-4. Install library and examples (May require root access)
+Requirements
+============
+  * cmake version > 2.8.12
+  * C++ compiler 
+  * BLAS and LAPACK libraries and header files
 
-Examples:
+Build 
+=====
+To build Un10, follow the following steps:
+
+  1. Create a build directory
+  
+  2. Use Cmake to generate makefile
+  
+  3. Build library and exmamples
+
+  4. Install library and examples (May require root access)
+
+Examples
+--------
 
 Using system c++, blas and lapack
-  > mkdir build
-  > cd build
-  > cmake </path/to/uni10/>
-  > make
-  > make install 
+
+    > mkdir build
+    > cd build
+    > cmake </path/to/uni10/>
+    > make
+    > sudo make install 
 
 The installation path defaults to /usr/local/uni10.
 

@@ -1,22 +1,68 @@
-Welcome to Uni10, the Universal Tensor Network Library 
+********************************************
+ Uni10:the Universal Tensor Network Library 
+********************************************
 
-Uni10 is programmed in C++ and geared toward applications to the tensor 
-network algorithms, such TEBD, PEPS and MERA. We hope the availability 
-of Uni10 will make future implementation of tensor network algorithms much 
-easier and less error prone.
+Introduction
+============
 
-Developers:
+Uni10 is an open-source C++ library designed for the development of tensor 
+network algorithms. Programming tensor network algorithms is tedious and  prone to errors. 
+The task of keeping track of tensor indices while performing contraction of a complicated 
+tensor network can be daunting. It is desirable to have a platform that provides bookkeeping 
+capability and optimization.
 
-Yun-Da Hsieh (National Taiwan University)
+This software distinguishes itself from  other available software solutions by providing the 
+following advantages:
 
-Ying-Jer Kao (National Taiwan University)
+ * Fully implemented in C++.
+ 
+ * Aimed toward applications in tensor network algorithms. 
+ 
+ * Provides basic tensor operations with an easy-to-use interface.
+ 
+ * Provides a Network class to process and store the  details of the graphical representations 
+   of the networks.
+ 
+ * Implemented a heuristic algorithm to search for an optimal pairwise contraction order based 
+   on the available computation and memory resources. 
+ 
+ * Provides a collection of Python wrappers which interact with the compiled C++ library to 
+   take advantage of  the Python language for better code readability and faster prototyping, 
+   without sacrificing the speed. 
+ 
+ * Provides behind-the-scene optimization and acceleration.
 
-Pochung Chen (National Tsing-Hua University)
 
-Tama Ma (Singapore National University)
 
-Sukhbinder Singh (Macquarie University)
+Copyright and Changes
+=====================
 
-Known issues:
+  See GPL.txt and LGPL.txt for copyright conditions
+
+  See Release_notes.txt for release notes and changes
+
+  
+Installation
+============
+
+  See Install.txt for build instructions
+
+
+
+Developers
+==========
+
+  * Yun-Da Hsieh (National Taiwan University)
+
+  * Ying-Jer Kao (National Taiwan University)
+
+  * Pochung Chen (National Tsing-Hua University)
+
+  * Tama Ma (Singapore National University)
+
+  * Sukhbinder Singh (Macquarie University)
+
+Known issues
+============
 
 
