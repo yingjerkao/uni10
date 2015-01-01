@@ -31,6 +31,7 @@
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
+#include <uni10/tensor-network/CMatrix.h>
 
 #ifndef UNI10_DTYPE
 #define UNI10_DTYPE double
@@ -122,8 +123,9 @@ UNI10_DTYPE UNI10_BLOCK::at(size_t r, size_t c)const{
   }
 }
 
-std::vector<Matrix> UNI10_BLOCK::eigh()const{
-  std::vector<Matrix> outs;
+#ifndef UNI10_COMPLEX //Only for real version
+std::vector<UNI10_MATRIX> UNI10_BLOCK::eigh()const{
+  std::vector<UNI10_MATRIX> outs;
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -135,8 +137,8 @@ std::vector<Matrix> UNI10_BLOCK::eigh()const{
       err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    Matrix Eig(Rnum, Cnum, true, ongpu);
-    Matrix EigV(Rnum, Cnum, false, ongpu);
+    UNI10_MATRIX Eig(Rnum, Cnum, true, ongpu);
+    UNI10_MATRIX EigV(Rnum, Cnum, false, ongpu);
     syDiag(m_elem, Rnum, Eig.m_elem, EigV.m_elem, ongpu);
     outs.push_back(Eig);
     outs.push_back(EigV);
@@ -146,8 +148,10 @@ std::vector<Matrix> UNI10_BLOCK::eigh()const{
   }
 	return outs;
 }
-std::vector<Matrix> UNI10_BLOCK::svd()const{
-	std::vector<Matrix> outs;
+#endif
+
+std::vector<UNI10_MATRIX> UNI10_BLOCK::svd()const{
+	std::vector<UNI10_MATRIX> outs;
   try{
 	if(diag){
     std::ostringstream err;
@@ -155,9 +159,9 @@ std::vector<Matrix> UNI10_BLOCK::svd()const{
     throw std::runtime_error(exception_msg(err.str()));
   }
 	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
-	Matrix U(Rnum, min, false, ongpu);
-	Matrix S(min, min, true, ongpu);
-	Matrix VT(min, Cnum, false, ongpu);
+	UNI10_MATRIX U(Rnum, min, false, ongpu);
+  UNI10_MATRIX S(min, min, true, ongpu);
+	UNI10_MATRIX VT(min, Cnum, false, ongpu);
 	assert(U.isOngpu() == ongpu && VT.isOngpu() == ongpu);
 	matrixSVD(m_elem, Rnum, Cnum, U.m_elem, S.m_elem, VT.m_elem, ongpu);
 	outs.push_back(U);
@@ -169,25 +173,26 @@ std::vector<Matrix> UNI10_BLOCK::svd()const{
   }
 	return outs;
 }
-Matrix UNI10_BLOCK::inverse()const{
+UNI10_MATRIX UNI10_BLOCK::inverse()const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
       err<<"Cannot perform inversion on a non-square matrix.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    Matrix invM(*this);
+    UNI10_MATRIX invM(*this);
     assert(ongpu == invM.isOngpu());
     matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
     return invM;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::inverse():");
-    return Matrix();
+    return UNI10_MATRIX();
   }
 }
 
-size_t UNI10_BLOCK::lanczosEigh(UNI10_DTYPE& E0, Matrix& psi, size_t max_iter, UNI10_DTYPE err_tol)const{
+#ifndef UNI10_COMPLEX //Only for real version
+size_t UNI10_BLOCK::lanczosEigh(double& E0, UNI10_MATRIX& psi, size_t max_iter, double err_tol)const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -215,11 +220,13 @@ size_t UNI10_BLOCK::lanczosEigh(UNI10_DTYPE& E0, Matrix& psi, size_t max_iter, U
     return iter;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::lanczosEigh(UNI10_DTYPE& E0, uni10::Matrix&, size_t=200, UNI10_DTYPE=5E-15):");
+    propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
     return 0;
   }
 }
-UNI10_DTYPE UNI10_BLOCK::norm()const{
+#endif
+
+double UNI10_BLOCK::norm()const{
   try{
 	  return vectorNorm(m_elem, elemNum(), 1, ongpu);
   }
@@ -256,7 +263,7 @@ UNI10_DTYPE UNI10_BLOCK::trace()const{
     return 0;
   }
 }
-Matrix operator* (const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
+UNI10_MATRIX operator* (const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
   try{
     if(!(Ma.Cnum == Mb.Rnum)){
       std::ostringstream err;
@@ -264,26 +271,28 @@ Matrix operator* (const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
       throw std::runtime_error(exception_msg(err.str()));
     }
     if((!Ma.diag) && (!Mb.diag)){
-      Matrix Mc(Ma.Rnum, Mb.Cnum);
+      UNI10_MATRIX Mc(Ma.Rnum, Mb.Cnum);
       matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
       return Mc;
     }
     else if(Ma.diag && (!Mb.diag)){
-      Matrix Mc(Mb);
-      diagMM(Ma.m_elem, Mc.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
+      UNI10_MATRIX Mc(Mb);
+      Mc.resize(Ma.Rnum, Mb.Cnum);
+      diagRowMul(Mc.m_elem, Ma.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
       return Mc;
     }
     else if((!Ma.diag) && Mb.diag){
-      Matrix Mc(Ma.Rnum, Mb.Cnum);
-      for(size_t i = 0; i < Ma.Rnum; i++)
-        for(size_t j = 0; j < Mb.elemNum(); j++)
-          Mc.m_elem[i * Mb.Cnum + j] = Ma.m_elem[i * Ma.Cnum + j] * Mb.m_elem[j];
+      UNI10_MATRIX Mc(Ma);
+      Mc.resize(Ma.Rnum, Mb.Cnum);
+      diagColMul(Mc.m_elem, Mb.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
       return Mc;
     }
     else{
-      Matrix Mc(Ma.Rnum, Mb.Cnum, true);
-      for(size_t i = 0; i < Ma.Rnum; i++)
-        Mc.m_elem[i] = Ma.m_elem[i] * Mb.m_elem[i];
+      UNI10_MATRIX Mc(Ma.Rnum, Mb.Cnum, true);
+      Mc.set_zero();
+      size_t min = std::min(Ma.elemNum(), Mb.elemNum());
+      elemCopy(Mc.m_elem, Ma.m_elem, min * sizeof(UNI10_DTYPE), Mc.ongpu, Ma.ongpu);
+      vectorMul(Mc.m_elem, Mb.m_elem, min, Mc.ongpu, Mb.ongpu);
       return Mc;
     }
   }
@@ -292,21 +301,21 @@ Matrix operator* (const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
     return UNI10_BLOCK();
   }
 }
-Matrix operator*(const UNI10_BLOCK& Ma, UNI10_DTYPE a){
+UNI10_MATRIX operator*(const UNI10_BLOCK& Ma, double a){
   try{
-    Matrix Mb(Ma);
+    UNI10_MATRIX Mb(Ma);
     vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.ongpu);
     return Mb;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function operator*(uni10::Matrix&, UNI10_DTYPE):");
+    propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
     return UNI10_BLOCK();
   }
 }
-Matrix operator*(UNI10_DTYPE a, const UNI10_BLOCK& Ma){return Ma * a;}
-Matrix operator+(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
+UNI10_MATRIX operator*(double a, const UNI10_BLOCK& Ma){return Ma * a;}
+UNI10_MATRIX operator+(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
   try{
-    Matrix Mc(Ma);
+    UNI10_MATRIX Mc(Ma);
     vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
     return Mc;
   }
@@ -317,7 +326,7 @@ Matrix operator+(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
 }
 bool operator== (const UNI10_BLOCK& m1, const UNI10_BLOCK& m2){
   try{
-    UNI10_DTYPE diff;
+    double diff;
     if(m1.elemNum() == m2.elemNum()){
       for(size_t i = 0; i < m1.elemNum(); i++){
         diff = std::abs(m1.m_elem[i] - m2.m_elem[i]);

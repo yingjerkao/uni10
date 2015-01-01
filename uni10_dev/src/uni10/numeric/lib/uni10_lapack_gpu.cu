@@ -149,14 +149,14 @@ void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA
 	}
 }
 
-__global__ void _diagMM(double* diag, double* mat, size_t M, size_t N){
+__global__ void _diagRowMul(double* mat, double* diag, size_t M, size_t N){
 	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	double scalar = diag[idx / N];
 	if(idx < M * N)
 		mat[idx] *= scalar;
 }
 
-void diagMM(double* diag, double* mat, size_t M, size_t N, bool diag_ongpu, bool mat_ongpu){
+void diagRowMul(double* mat, double* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu){
 	double* d_elem = diag;
 	size_t d_memsize = M * sizeof(double);
 	if(mat_ongpu){
@@ -166,7 +166,7 @@ void diagMM(double* diag, double* mat, size_t M, size_t N, bool diag_ongpu, bool
 		}
 		size_t blockNum = (M * N + UNI10_THREADMAX - 1) / UNI10_THREADMAX;
 		dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
-		_diagMM<<<gridSize, UNI10_THREADMAX>>>(d_elem, mat, M, N);
+		_diagRowMul<<<gridSize, UNI10_THREADMAX>>>(mat, d_elem, M, N);
 		if(!diag_ongpu)
 			elemFree(d_elem, d_memsize, true);
 	}
@@ -180,7 +180,10 @@ void diagMM(double* diag, double* mat, size_t M, size_t N, bool diag_ongpu, bool
 		if(diag_ongpu)
 			free(d_elem);
 	}
-
+}
+void diagColMul(double *mat, double* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu){
+    bool = GPU_READY = false;
+    assert(GPU_READY);
 }
 
 void vectorAdd(double* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu){	// Y = X + Y
@@ -241,11 +244,15 @@ void vectorScal(double a, double* X, size_t N, bool ongpu){
 		}
 	}
 }
+void vectorMul(double* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu){ // Y = Y * X, element-wise multiplication;
+  bool = GPU_READY = false;
+  assert(GPU_READY);
+}
 
 __global__ void _vectorExp(double a, double* X, size_t N){
 	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < N)
-		X[idx] = exp(a * X[idx]);
+		X[idx] = std::exp(a * X[idx]);
 }
 
 void vectorExp(double a, double* X, size_t N, bool ongpu){
@@ -256,7 +263,7 @@ void vectorExp(double a, double* X, size_t N, bool ongpu){
 	}
 	else
 		for(size_t i = 0; i < N; i++)
-			X[i] = exp(a * X[i]);
+			X[i] = std::exp(a * X[i]);
 }
 
 /*Generate a set of row vectors which form a othonormal basis

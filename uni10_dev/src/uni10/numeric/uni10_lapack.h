@@ -34,6 +34,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <cmath>
+//#include <Accelerate/Accelerate.h>
+#include <complex>
 namespace uni10{
 enum mmtype{
 	MM_DDD = 0,
@@ -49,16 +51,16 @@ void uni10Dgemm(int p, int q, int M, int N, int K, double* A, double* B, double*
 void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA, bool ongpuB, bool ongpuC);
 void vectorAdd(double* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
 void vectorScal(double a, double* X, size_t N, bool ongpu);	// X = a * X
+void vectorMul(double* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu); // Y = Y * X, element-wise multiplication;
 double vectorSum(double* X, size_t N, int inc, bool ongpu);
 double vectorNorm(double* X, size_t N, int inc, bool ongpu);
 void vectorExp(double a, double* X, size_t N, bool ongpu);
-void diagMM(double* diag, double* mat, size_t M, size_t N, bool diag_ongpu, bool mat_ongpu);
-
+void diagRowMul(double* mat, double* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
+void diagColMul(double* mat, double* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
 /*Generate a set of row vectors which form a othonormal basis
  *For the incoming matrix "elem", the number of row <= the number of column, M <= N
  */
 void orthoRandomize(double* elem, int M, int N, bool ongpu);
-
 void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu);
 void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, bool ongpu);
 void matrixInv(double* A, int N, bool diag, bool ongpu);
@@ -66,6 +68,21 @@ void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu);
 void setIdentity(double* elem, size_t M, size_t N, bool ongpu);
 void reshapeElem(double* elem, size_t* transOffset);
 bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu);
+
+/***** Complex version *****/
+void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, std::complex<double>* S, std::complex<double>* vT, bool ongpu);
+void matrixInv(std::complex<double>* A, int N, bool diag, bool ongpu);
+std::complex<double> vectorSum(std::complex<double>* X, size_t N, int inc, bool ongpu);
+double vectorNorm(std::complex<double>* X, size_t N, int inc, bool ongpu);
+void matrixMul(std::complex<double>* A, std::complex<double>* B, int M, int N, int K, std::complex<double>* C, bool ongpuA, bool ongpuB, bool ongpuC);
+void vectorAdd(std::complex<double>* Y, std::complex<double>* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
+void vectorScal(double a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
+void vectorScal(std::complex<double> a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
+void vectorMul(std::complex<double>* Y, std::complex<double>* X, size_t N, bool y_ongpu, bool x_ongpu); // Y = Y * X, element-wise multiplication;
+void diagRowMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
+void diagColMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
+void vectorExp(double a, std::complex<double>* X, size_t N, bool ongpu);
+
 
 };	/* namespace uni10 */
 #endif /* UNI10_LAPACK_H */

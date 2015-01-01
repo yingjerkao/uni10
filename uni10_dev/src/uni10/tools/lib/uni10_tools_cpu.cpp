@@ -91,4 +91,9 @@ void setElemAt(size_t idx, double val, double* elem, bool ongpu){
 	elem[idx] = val;
 }
 
+/***** Complex version *****/
+std::complex<double> getElemAt(size_t idx, std::complex<double>* elem, bool ongpu){
+	return elem[idx];
+}
+
 };	/* namespace uni10 */

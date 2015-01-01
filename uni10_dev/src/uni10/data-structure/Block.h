@@ -68,7 +68,9 @@ class Block{
 		friend Matrix operator+(const Block& Ma, const Block& Mb);
 		friend bool operator== (const Block& m1, const Block& m2);
 		friend class UniTensor;
+		friend class CBlock;
 		friend class Matrix;
+		friend class CMatrix;
 		friend std::ostream& operator<< (std::ostream& os, const Block& b);
 		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 	protected:

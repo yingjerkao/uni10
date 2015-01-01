@@ -264,7 +264,6 @@ double getElemAt(size_t idx, double* elem, bool ongpu){
 	if(ongpu){
 		double val;
 		assert(cudaMemcpy(&val, &(elem[idx]), sizeof(double), cudaMemcpyDeviceToHost) == cudaSuccess);
-		//printf("mvCPU");
 		return val;
 	}
 	else
@@ -274,7 +273,6 @@ double getElemAt(size_t idx, double* elem, bool ongpu){
 void setElemAt(size_t idx, double val, double* elem, bool ongpu){
 	if(ongpu){
 		assert(cudaMemcpy(&(elem[idx]), &val, sizeof(double), cudaMemcpyHostToDevice) == cudaSuccess);
-		//printf("mvGPU");
 	}
 	else
 		elem[idx] = val;

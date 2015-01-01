@@ -65,7 +65,8 @@ void setElemAt(size_t idx, double val, double* elem, bool ongpu);
 void propogate_exception(const std::exception& e, const std::string& func_msg);
 std::string exception_msg(const std::string& msg);
 /***** Complex version *****/
-//double getElemAt(size_t idx, double* elem, bool ongpu);
+std::complex<double> getElemAt(size_t idx, std::complex<double>* elem, bool ongpu);
+
 
 
 // trim from start

@@ -52,11 +52,11 @@ UNI10_MATRIX::UNI10_MATRIX(const UNI10_MATRIX& _m): UNI10_BLOCK(_m.Rnum, _m.Cnum
     propogate_exception(e, "In copy constructor Matrix::Matrix(uni10::Matrix&):");
   }
 }
-UNI10_MATRIX::UNI10_MATRIX(const UNI10_BLOCK& _b): UNI10_BLOCK(_b.Rnum, _b.Cnum, _b.diag){
+UNI10_MATRIX::UNI10_MATRIX(const UNI10_BLOCK& _b): UNI10_BLOCK(_b){
   try{
     if(elemNum()){
       m_elem = (UNI10_DTYPE*)elemAlloc(elemNum() * sizeof(UNI10_DTYPE), ongpu);
-      elemCopy(m_elem, _b.m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, _b.ongpu);
+      elemCopy(m_elem, _b.m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, _b.diag);
     }
   }
   catch(const std::exception& e){
@@ -85,7 +85,7 @@ UNI10_MATRIX::UNI10_MATRIX(size_t _Rnum, size_t _Cnum, const UNI10_DTYPE* _elem,
 	  init(_elem, src_ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, UNI10_DTYPE*, bool=false):");
+    propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, double*, bool=false):");
   }
 }
 
@@ -94,7 +94,7 @@ UNI10_MATRIX::UNI10_MATRIX(size_t _Rnum, size_t _Cnum, const std::vector<UNI10_D
 	  init(&_elem[0], src_ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, std::vector<UNI10_DTYPE>&, bool=false):");
+    propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, std::vector<double>&, bool=false):");
   }
 }
 
@@ -167,7 +167,7 @@ void UNI10_MATRIX::setElem(const std::vector<UNI10_DTYPE>& elem, bool _ongpu){
     setElem(&elem[0], _ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::setElem(std::vector<UNI10_DTYPE>&, bool=false):");
+    propogate_exception(e, "In function Matrix::setElem(std::vector<double>&, bool=false):");
   }
 }
 void UNI10_MATRIX::setElem(const UNI10_DTYPE* elem, bool _ongpu){

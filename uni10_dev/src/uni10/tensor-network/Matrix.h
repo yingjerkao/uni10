@@ -67,6 +67,7 @@ class Matrix: public Block {
 		Matrix& operator*= (double a);
 		Matrix& operator*= (const Block& Mb);
 		Matrix& operator+= (const Block& Mb);
+    //friend class CBlock;
 	private:
 		void init(bool togpu);
 		void init(const double* elem, bool _ongpu);
