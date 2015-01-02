@@ -64,6 +64,7 @@ class Matrix: public Block {
 		void orthoRand();
 		bool toGPU();
 		Matrix& transpose();
+		Matrix& cTranspose();
 		Matrix& operator*= (double a);
 		Matrix& operator*= (const Block& Mb);
 		Matrix& operator+= (const Block& Mb);
@@ -73,6 +74,8 @@ class Matrix: public Block {
 		void init(const double* elem, bool _ongpu);
 };
 Matrix takeExp(double a, const Block& mat);
+CMatrix exp(double a, const Block& mat);
+Matrix exph(double a, const Block& mat);
 Matrix otimes(const Block& Ma, const Block& Mb);
 };	/* namespace uni10 */
 #endif /* MATRIX_H */

@@ -724,8 +724,7 @@ UniTensor& UniTensor::transpose(){
         Cnum = it_in->second.Cnum;
         elem_in = it_in->second.m_elem;
         elem_out = it_out->second.m_elem;
-
-        setTranspose(elem_in, Rnum, Cnum, elem_out, ongpu);
+        setTranspose(elem_in, Rnum, Cnum, elem_out, ongpu, UniTout.ongpu);
       }
       UniTout.status |= HAVEELEM;
     }

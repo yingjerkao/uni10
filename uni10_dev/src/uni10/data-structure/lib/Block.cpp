@@ -123,7 +123,6 @@ UNI10_DTYPE UNI10_BLOCK::at(size_t r, size_t c)const{
   }
 }
 
-#ifndef UNI10_COMPLEX //Only for real version
 std::vector<UNI10_MATRIX> UNI10_BLOCK::eigh()const{
   std::vector<UNI10_MATRIX> outs;
   try{
@@ -137,18 +136,40 @@ std::vector<UNI10_MATRIX> UNI10_BLOCK::eigh()const{
       err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    UNI10_MATRIX Eig(Rnum, Cnum, true, ongpu);
-    UNI10_MATRIX EigV(Rnum, Cnum, false, ongpu);
-    syDiag(m_elem, Rnum, Eig.m_elem, EigV.m_elem, ongpu);
-    outs.push_back(Eig);
-    outs.push_back(EigV);
+    //GPU_NOT_READY
+    outs.push_back(UNI10_MATRIX(Rnum, Cnum, true, ongpu));
+    outs.push_back(UNI10_MATRIX(Rnum, Cnum, false, ongpu));
+    eigSyDecompose(m_elem, Rnum, outs[0].m_elem, outs[1].m_elem, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::eigh():");
   }
 	return outs;
 }
-#endif
+
+std::vector<CMatrix> UNI10_BLOCK::eig()const{
+  std::vector<CMatrix> outs;
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(diag){
+      std::ostringstream err;
+      err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    //GPU_NOT_READY
+    outs.push_back(CMatrix(Rnum, Cnum, true, ongpu));
+    outs.push_back(CMatrix(Rnum, Cnum, false, ongpu));
+    eigDecompose(m_elem, Rnum, outs[0].m_elem, outs[1].m_elem, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::eigh():");
+  }
+	return outs;
+}
 
 std::vector<UNI10_MATRIX> UNI10_BLOCK::svd()const{
 	std::vector<UNI10_MATRIX> outs;
@@ -159,14 +180,11 @@ std::vector<UNI10_MATRIX> UNI10_BLOCK::svd()const{
     throw std::runtime_error(exception_msg(err.str()));
   }
 	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
-	UNI10_MATRIX U(Rnum, min, false, ongpu);
-  UNI10_MATRIX S(min, min, true, ongpu);
-	UNI10_MATRIX VT(min, Cnum, false, ongpu);
-	assert(U.isOngpu() == ongpu && VT.isOngpu() == ongpu);
-	matrixSVD(m_elem, Rnum, Cnum, U.m_elem, S.m_elem, VT.m_elem, ongpu);
-	outs.push_back(U);
-	outs.push_back(S);
-	outs.push_back(VT);
+  //GPU_NOT_READY
+	outs.push_back(UNI10_MATRIX(Rnum, min, false, ongpu));
+  outs.push_back(UNI10_MATRIX(min, min, true, ongpu));
+	outs.push_back(UNI10_MATRIX(min, Cnum, false, ongpu));
+	matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::svd():");
@@ -363,6 +381,15 @@ std::ostream& operator<< (std::ostream& os, const UNI10_BLOCK& b){
     for(size_t i = 0; i < b.Rnum; i++){
       for(size_t j = 0; j < b.Cnum; j++)
         if(b.diag){
+#ifdef UNI10_COMPLEX
+          if(i == j)
+            os << std::setw(17) << std::fixed << std::setprecision(3) << elem[i];
+          else
+            os << std::setw(17) << std::fixed << std::setprecision(3) << 0.0;
+        }
+        else
+          os << std::setw(17) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
+#else
           if(i == j)
             os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i];
           else
@@ -370,6 +397,7 @@ std::ostream& operator<< (std::ostream& os, const UNI10_BLOCK& b){
         }
         else
           os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
+#endif
       os << std::endl << std::endl;
     }
     if(b.ongpu)

@@ -289,7 +289,7 @@ void orthoRandomize(double* elem, int M, int N, bool ongpu){
 	elemFree(S, min * sizeof(double), ongpu);
 }
 
-void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu){
+void eighDecompose(double* Kij, int N, double* Eig, double* EigVec, bool ongpu){
 	elemCopy(EigVec, Kij, N * N * sizeof(double), ongpu, ongpu);
 	int ldA = N;
 	if(ongpu){
@@ -388,8 +388,8 @@ __global__ void _transpose(double* A, size_t M, size_t N, double* AT){
 		AT[x * M + y] = A[y * N + x];
 }
 
-void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu){
-	if(ongpu){
+void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu, bool ongpuT){
+	if(ongpu && ongpuT){
 		int thread = 32;
 		size_t blockXNum = (N + thread - 1) / thread;
 		size_t blockYNum = (M + thread - 1) / thread;
@@ -397,12 +397,32 @@ void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu){
 		dim3 gridSize(blockXNum, blockYNum);
 		_transpose<<<gridSize, blockSize>>>(A, M, N, AT);
 	}
-	else{
+	else if((!ongpu) && (!ongpuT)){
 		for(size_t i = 0; i < M; i++)
 			for(size_t j = 0; j < N; j++)
 				AT[j * M + i] = A[i * N + j];
 	}
+  else{
+    bool = GPU_READY = false;
+    assert(GPU_READY);
+  }
 }
+
+void setTranspose(double* A, size_t M, size_t N, bool ongpu){
+  size_t memsize = M * N * sizeof(double);
+	double* AT = (double*)elemAllocForce(memsize, ongpu);
+  setTranspose(A, M, N, AT, ongpu, ongpu);
+	elemCopy(A, AT, memsize, ongpu, ongpu);
+  elemFree(AT, memsize, ongpu);
+}
+
+void setCTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu, bool ongpuT){
+  setTranspose(A, M, N, AT, ongpu, ongpuT);
+}
+void setCTranspose(double* A, size_t M, size_t N, bool ongpu){
+  setTranspose(A, M, N, ongpu);
+}
+
 __global__ void _identity(double* mat, size_t elemNum, size_t col){
 	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < elemNum)

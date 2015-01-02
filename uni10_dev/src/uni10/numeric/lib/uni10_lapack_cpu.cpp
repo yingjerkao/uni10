@@ -34,6 +34,7 @@
 #include <string.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
+#include <iostream>
 namespace uni10{
 void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA, bool ongpuB, bool ongpuC){
 	double alpha = 1, beta = 0;
@@ -118,7 +119,13 @@ void orthoRandomize(double* elem, int M, int N, bool ongpu){
 	free(S);
 }
 
-void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu){
+void eigDecompose(double* Kij_ori, int N, std::complex<double>* Eig, std::complex<double>* EigVec, bool ongpu){
+  std::complex<double> *Kij = (std::complex<double>*) malloc(N * N * sizeof(std::complex<double>));
+  elemCast(Kij, Kij_ori, N * N, ongpu, ongpu);
+  eigDecompose(Kij, N, Eig, EigVec, ongpu);
+}
+
+void eigSyDecompose(double* Kij, int N, double* Eig, double* EigVec, bool ongpu){
 	memcpy(EigVec, Kij, N * N * sizeof(double));
 	int ldA = N;
 	int lwork = -1;
@@ -201,10 +208,25 @@ void matrixInv(double* A, int N, bool diag, bool ongpu){
   free(work);
 }
 
-void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu){
+void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu, bool ongpuT){
 	for(size_t i = 0; i < M; i++)
 		for(size_t j = 0; j < N; j++)
 			AT[j * M + i] = A[i * N + j];
+}
+
+void setTranspose(double* A, size_t M, size_t N, bool ongpu){
+  size_t memsize = M * N * sizeof(double);
+  double *AT = (double*)malloc(memsize);
+  setTranspose(A, M, N, AT, ongpu, ongpu);
+  memcpy(A, AT, memsize);
+  free(AT);
+}
+
+void setCTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu, bool ongpuT){
+  setTranspose(A, M, N, AT, ongpu, ongpuT);
+}
+void setCTranspose(double* A, size_t M, size_t N, bool ongpu){
+  setTranspose(A, M, N, ongpu);
 }
 
 void setIdentity(double* elem, size_t M, size_t N, bool ongpu){
@@ -342,7 +364,7 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
 }
 
 /***** Complex version *****/
-void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, std::complex<double>* S, std::complex<double>* vT, bool ongpu){
+void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, double *S, std::complex<double>* vT, bool ongpu){
 	std::complex<double>* Mij = (std::complex<double>*)malloc(M * N * sizeof(std::complex<double>));
 	memcpy(Mij, Mij_ori, M * N * sizeof(std::complex<double>));
 	int min = std::min(M, N);
@@ -350,9 +372,8 @@ void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>
 	int lwork = -1;
   std::complex<double> worktest;
 	int info;
-  double* _S = (double*)malloc(min * sizeof(double));
   double *rwork = (double*) malloc(std::max(1, 5 * min) * sizeof(double));
-	zgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, _S, vT, &ldu, U, &ldvT, &worktest, &lwork, rwork, &info);
+	zgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, &worktest, &lwork, rwork, &info);
   if(info != 0){
     std::ostringstream err;
     err<<"Error in Lapack function 'dgesvd': Lapack INFO = "<<info;
@@ -360,18 +381,22 @@ void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>
   }
 	lwork = (int)(worktest.real());
 	std::complex<double> *work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
-	zgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, _S, vT, &ldu, U, &ldvT, work, &lwork, rwork, &info);
+	zgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, work, &lwork, rwork, &info);
   if(info != 0){
     std::ostringstream err;
     err<<"Error in Lapack function 'zgesvd': Lapack INFO = "<<info;
     throw std::runtime_error(exception_msg(err.str()));
   }
-  for(int i = 0; i < min; i++)
-    S[i] = _S[i];
   free(rwork);
-  free(_S);
 	free(work);
 	free(Mij);
+}
+void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, std::complex<double>* S_ori, std::complex<double>* vT, bool ongpu){
+	int min = std::min(M, N);
+  double* S = (double*)malloc(min * sizeof(double));
+  matrixSVD(Mij_ori, M, N, U, S, vT, ongpu);
+  elemCast(S_ori, S, min, false, false);
+  free(S);
 }
 
 void matrixInv(std::complex<double>* A, int N, bool diag, bool ongpu){
@@ -510,6 +535,90 @@ void diagColMul(std::complex<double> *mat, std::complex<double>* diag, size_t M,
 void vectorExp(double a, std::complex<double>* X, size_t N, bool ongpu){
 	for(size_t i = 0; i < N; i++)
 		X[i] = std::exp(a * X[i]);
+}
+
+void orthoRandomize(std::complex<double> *elem, int M, int N, bool ongpu){
+	int eleNum = M*N;
+  std::complex<double> *random = (std::complex<double>*)malloc(eleNum * sizeof(std::complex<double>));
+	elemRand(random, M * N, false);
+	int min = M < N ? M : N;
+	double *S = (double*)malloc(min*sizeof(double));
+	if(M <= N){
+    std::complex<double> *U = (std::complex<double>*)malloc(M * min * sizeof(std::complex<double>));
+		matrixSVD(random, M, N, U, S, elem, false);
+		free(U);
+	}
+	else{
+		std::complex<double> *VT = (std::complex<double>*)malloc(min * N * sizeof(std::complex<double>));
+		matrixSVD(random, M, N, elem, S, VT, false);
+		free(VT);
+	}
+	free(random);
+	free(S);
+}
+void setTranspose(std::complex<double>* A, size_t M, size_t N, std::complex<double>* AT, bool ongpu, bool ongpuT){
+	for(size_t i = 0; i < M; i++)
+		for(size_t j = 0; j < N; j++)
+			AT[j * M + i] = A[i * N + j];
+}
+void setTranspose(std::complex<double>* A, size_t M, size_t N, bool ongpu){
+  size_t memsize = M * N * sizeof(std::complex<double>);
+  std::complex<double> *AT = (std::complex<double>*)malloc(memsize);
+  setTranspose(A, M, N, AT, ongpu, ongpu);
+  memcpy(A, AT, memsize);
+  free(AT);
+}
+
+void setCTranspose(std::complex<double>* A, size_t M, size_t N, std::complex<double> *AT, bool ongpu, bool ongpuT){
+	for(size_t i = 0; i < M; i++)
+		for(size_t j = 0; j < N; j++)
+			AT[j * M + i] = std::conj(A[i * N + j]);
+}
+void setCTranspose(std::complex<double>* A, size_t M, size_t N, bool ongpu){
+  size_t memsize = M * N * sizeof(std::complex<double>);
+  std::complex<double> *AT = (std::complex<double>*)malloc(memsize);
+  setCTranspose(A, M, N, AT, ongpu, ongpu);
+  memcpy(A, AT, memsize);
+  free(AT);
+}
+
+void eigDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double>* EigVec, bool ongpu){
+  size_t memsize = N * N * sizeof(std::complex<double>);
+  std::complex<double> *A = (std::complex<double>*) malloc(memsize);
+	memcpy(A, Kij, memsize);
+	int ldA = N;
+  int ldvl = 1;
+  int ldvr = N;
+	int lwork = -1;
+  std::complex<double> *rwork = (std::complex<double>*) malloc(2 * N * sizeof(std::complex<double>));
+  std::complex<double> worktest;
+	int info;
+	zgeev((char*)"N", (char*)"V", &N, A, &ldA, Eig, NULL, &ldvl, EigVec, &ldvr, &worktest, &lwork, rwork, &info);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dgeev': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	lwork = (int)worktest.real();
+  std::complex<double>* work = (std::complex<double>*)malloc(sizeof(std::complex<double>)*lwork);
+	zgeev((char*)"N", (char*)"V", &N, A, &ldA, Eig, NULL, &ldvl, EigVec, &ldvr, work, &lwork, rwork, &info);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dgeev': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	free(work);
+	free(rwork);
+	free(A);
+}
+
+void eigSyDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double>* EigVec, bool ongpu){
+  eigDecompose(Kij, N, Eig, EigVec, ongpu);
+}
+
+void setConjugate(std::complex<double> *A, size_t N, bool ongpu){
+	for(size_t i = 0; i < N; i++)
+    A[i] = std::conj(A[i]);
 }
 
 };	/* namespace uni10 */

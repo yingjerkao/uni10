@@ -61,15 +61,20 @@ void diagColMul(double* mat, double* diag, size_t M, size_t N, bool mat_ongpu, b
  *For the incoming matrix "elem", the number of row <= the number of column, M <= N
  */
 void orthoRandomize(double* elem, int M, int N, bool ongpu);
-void syDiag(double* Kij, int N, double* Eig, double* EigVec, bool ongpu);
+void eigDecompose(double* Kij, int N, std::complex<double>* Eig, std::complex<double> *EigVec, bool ongpu);
+void eigSyDecompose(double* Kij, int N, double* Eig, double* EigVec, bool ongpu);
 void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, bool ongpu);
 void matrixInv(double* A, int N, bool diag, bool ongpu);
-void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu);
+void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu, bool ongpuT);
+void setTranspose(double* A, size_t M, size_t N, bool ongpu);
+void setCTranspose(double* A, size_t M, size_t N, double *AT, bool ongpu, bool ongpuT);
+void setCTranspose(double* A, size_t M, size_t N, bool ongpu);
 void setIdentity(double* elem, size_t M, size_t N, bool ongpu);
 void reshapeElem(double* elem, size_t* transOffset);
 bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu);
 
 /***** Complex version *****/
+void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, double *S, std::complex<double>* vT, bool ongpu);
 void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, std::complex<double>* S, std::complex<double>* vT, bool ongpu);
 void matrixInv(std::complex<double>* A, int N, bool diag, bool ongpu);
 std::complex<double> vectorSum(std::complex<double>* X, size_t N, int inc, bool ongpu);
@@ -82,7 +87,14 @@ void vectorMul(std::complex<double>* Y, std::complex<double>* X, size_t N, bool 
 void diagRowMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
 void diagColMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
 void vectorExp(double a, std::complex<double>* X, size_t N, bool ongpu);
-
+void orthoRandomize(std::complex<double>* elem, int M, int N, bool ongpu);
+void setTranspose(std::complex<double>* A, size_t M, size_t N, std::complex<double>* AT, bool ongpu, bool ongpuT);
+void setTranspose(std::complex<double>* A, size_t M, size_t N, bool ongpu);
+void setCTranspose(std::complex<double>* A, size_t M, size_t N, std::complex<double>* AT, bool ongpu, bool ongpuT);
+void setCTranspose(std::complex<double>* A, size_t M, size_t N, bool ongpu);
+void eigDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double> *EigVec, bool ongpu);
+void eigSyDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double>* EigVec, bool ongpu);
+void setConjugate(std::complex<double> *A, size_t N, bool ongpu);
 
 };	/* namespace uni10 */
 #endif /* UNI10_LAPACK_H */

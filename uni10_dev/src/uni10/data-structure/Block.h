@@ -40,6 +40,7 @@
 namespace uni10{
 class UniTensor;
 class Matrix;
+class CMatrix;
 class Block{
 	public:
 		Block();
@@ -55,6 +56,7 @@ class Block{
 		double at(size_t i, size_t j)const;
 		double* getElem()const;
 		void save(const std::string& fname)const;
+		std::vector<CMatrix> eig()const;
 		std::vector<Matrix> eigh()const;
 		std::vector<Matrix> svd()const;
     size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;

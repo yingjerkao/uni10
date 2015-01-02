@@ -257,15 +257,24 @@ UNI10_MATRIX& UNI10_MATRIX::transpose(){
   try{
     if(!ongpu)
       m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    if(!diag){
-      UNI10_DTYPE* transElem;
-      size_t memsize = elemNum() * sizeof(UNI10_DTYPE);
-      transElem = (UNI10_DTYPE*)elemAllocForce(memsize, ongpu);
-      setTranspose(m_elem, Rnum, Cnum, transElem, ongpu);
-      if(m_elem != NULL)
-        elemFree(m_elem, memsize, ongpu);
-      m_elem = transElem;
-    }
+    if(!diag)
+      setTranspose(m_elem, Rnum, Cnum, ongpu);
+    size_t tmp = Rnum;
+    Rnum = Cnum;
+    Cnum = tmp;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::transpose():");
+  }
+  return *this;
+}
+
+UNI10_MATRIX& UNI10_MATRIX::cTranspose(){
+  try{
+    if(!ongpu)
+      m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+    if(!diag)
+      setCTranspose(m_elem, Rnum, Cnum, ongpu);
     size_t tmp = Rnum;
     Rnum = Cnum;
     Cnum = tmp;
@@ -418,6 +427,7 @@ bool UNI10_MATRIX::toGPU(){
 	return ongpu;
 }
 
+#ifndef UNI10_COMPLEX //Only for real version
 UNI10_MATRIX takeExp(double a, const UNI10_BLOCK& mat){
   try{
     std::vector<UNI10_MATRIX> rets = mat.eigh();
@@ -431,6 +441,15 @@ UNI10_MATRIX takeExp(double a, const UNI10_BLOCK& mat){
     return UNI10_MATRIX();
   }
 }
+#endif
+
+#ifdef UNI10_COMPLEX //Only for complex version
+UNI10_MATRIX& UNI10_MATRIX::conj(){
+  setConjugate(m_elem, elemNum(), ongpu);
+  return *this;
+}
+#endif
+
 };	/* namespace uni10 */
 #ifdef UNI10_BLOCK
 #undef UNI10_BLOCK

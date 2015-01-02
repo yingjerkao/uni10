@@ -66,6 +66,10 @@ void propogate_exception(const std::exception& e, const std::string& func_msg);
 std::string exception_msg(const std::string& msg);
 /***** Complex version *****/
 std::complex<double> getElemAt(size_t idx, std::complex<double>* elem, bool ongpu);
+void setElemAt(size_t idx, std::complex<double> val, std::complex<double>* elem, bool ongpu);
+void elemRand(std::complex<double>* elem, size_t N, bool ongpu);
+void elemCast(std::complex<double>* des, double* src, size_t N, bool des_ongpu, bool src_ongpu);
+void elemCast(double *des, std::complex<double> *src, size_t N, bool des_ongpu, bool src_ongpu);
 
 
 
