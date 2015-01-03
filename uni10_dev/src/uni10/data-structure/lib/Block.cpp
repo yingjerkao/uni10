@@ -322,7 +322,7 @@ UNI10_MATRIX operator* (const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
 UNI10_MATRIX operator*(const UNI10_BLOCK& Ma, double a){
   try{
     UNI10_MATRIX Mb(Ma);
-    vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.ongpu);
+    vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.isOngpu());
     return Mb;
   }
   catch(const std::exception& e){
@@ -331,6 +331,20 @@ UNI10_MATRIX operator*(const UNI10_BLOCK& Ma, double a){
   }
 }
 UNI10_MATRIX operator*(double a, const UNI10_BLOCK& Ma){return Ma * a;}
+
+CMatrix operator*(const UNI10_BLOCK& Ma, const std::complex<double>& a){
+  try{
+    CMatrix Mb(Ma);
+    vectorScal(a, Mb.getElem(), Mb.elemNum(), Mb.isOngpu());
+    return Mb;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
+    return UNI10_BLOCK();
+  }
+}
+CMatrix operator*(const std::complex<double>& a, const UNI10_BLOCK& Ma){return Ma * a;}
+
 UNI10_MATRIX operator+(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
   try{
     UNI10_MATRIX Mc(Ma);
@@ -342,6 +356,7 @@ UNI10_MATRIX operator+(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
     return UNI10_BLOCK();
   }
 }
+
 bool operator== (const UNI10_BLOCK& m1, const UNI10_BLOCK& m2){
   try{
     double diff;
@@ -360,7 +375,6 @@ bool operator== (const UNI10_BLOCK& m1, const UNI10_BLOCK& m2){
   }
   return true;
 }
-
 
 UNI10_BLOCK::~UNI10_BLOCK(){}
 std::ostream& operator<< (std::ostream& os, const UNI10_BLOCK& b){

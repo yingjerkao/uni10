@@ -80,6 +80,7 @@ void matrixInv(std::complex<double>* A, int N, bool diag, bool ongpu);
 std::complex<double> vectorSum(std::complex<double>* X, size_t N, int inc, bool ongpu);
 double vectorNorm(std::complex<double>* X, size_t N, int inc, bool ongpu);
 void matrixMul(std::complex<double>* A, std::complex<double>* B, int M, int N, int K, std::complex<double>* C, bool ongpuA, bool ongpuB, bool ongpuC);
+void vectorAdd(std::complex<double>* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
 void vectorAdd(std::complex<double>* Y, std::complex<double>* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
 void vectorScal(double a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
 void vectorScal(std::complex<double> a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
@@ -87,6 +88,7 @@ void vectorMul(std::complex<double>* Y, std::complex<double>* X, size_t N, bool 
 void diagRowMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
 void diagColMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
 void vectorExp(double a, std::complex<double>* X, size_t N, bool ongpu);
+void vectorExp(const std::complex<double>& a, std::complex<double>* X, size_t N, bool ongpu);
 void orthoRandomize(std::complex<double>* elem, int M, int N, bool ongpu);
 void setTranspose(std::complex<double>* A, size_t M, size_t N, std::complex<double>* AT, bool ongpu, bool ongpuT);
 void setTranspose(std::complex<double>* A, size_t M, size_t N, bool ongpu);

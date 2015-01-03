@@ -221,6 +221,7 @@ void UNI10_MATRIX::set_zero(){
     propogate_exception(e, "In function Matrix::set_zero():");
   }
 }
+
 UNI10_MATRIX& UNI10_MATRIX::operator*= (double a){
   try{
     if(!ongpu)
@@ -232,6 +233,7 @@ UNI10_MATRIX& UNI10_MATRIX::operator*= (double a){
   }
 	return *this;
 }
+
 
 UNI10_MATRIX& UNI10_MATRIX::operator+= (const UNI10_BLOCK& Mb){
   try{
@@ -419,6 +421,19 @@ bool UNI10_MATRIX::toGPU(){
 	return ongpu;
 }
 
+UNI10_MATRIX exp(double a, const UNI10_BLOCK& mat){
+  try{
+    std::vector<CMatrix> rets = mat.eig();
+    CMatrix Uinv = rets[1].inverse();
+    vectorExp(a, rets[0].getElem(), rets[0].row(), rets[0].isOngpu());
+    return Uinv * (rets[0] * rets[1]);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function exp(double, uni10::Matrix&):");
+    return UNI10_MATRIX();
+  }
+}
+
 UNI10_MATRIX exph(double a, const UNI10_BLOCK& mat){
   try{
     std::vector<UNI10_MATRIX> rets = mat.eigh();
@@ -428,9 +443,30 @@ UNI10_MATRIX exph(double a, const UNI10_BLOCK& mat){
     return UT * (rets[0] * rets[1]);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function takeExp(double, uni10::Matrix&):");
+    propogate_exception(e, "In function exph(double, uni10::Matrix&):");
     return UNI10_MATRIX();
   }
+}
+
+CMatrix exp(const std::complex<double>& a, const UNI10_BLOCK& mat){
+  try{
+    std::vector<CMatrix> rets = mat.eig();
+    CMatrix Uinv = rets[1].inverse();
+    vectorExp(a, rets[0].getElem(), rets[0].row(), rets[0].isOngpu());
+    return Uinv * (rets[0] * rets[1]);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function exp(std::complex<double>, uni10::Matrix&):");
+    return UNI10_MATRIX();
+  }
+}
+
+UNI10_MATRIX exp(const UNI10_BLOCK& mat){
+  return exp(1.0, mat);
+}
+
+UNI10_MATRIX exph(const UNI10_BLOCK& mat){
+  return exph(1.0, mat);
 }
 
 };	/* namespace uni10 */

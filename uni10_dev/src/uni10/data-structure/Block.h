@@ -65,8 +65,10 @@ class Block{
 		double norm()const;
 		double sum()const;
 		friend Matrix operator*(const Block& Ma, const Block& Mb);
-		friend Matrix operator*(const Block& Ma, double a);
 		friend Matrix operator*(double a, const Block& Ma);
+		friend Matrix operator*(const Block& Ma, double a);
+		friend CMatrix operator*(const std::complex<double>& a, const Block& Ma);
+		friend CMatrix operator*(const Block& Ma, const std::complex<double>& a);
 		friend Matrix operator+(const Block& Ma, const Block& Mb);
 		friend bool operator==(const Block& m1, const Block& m2);
 		friend class UniTensor;

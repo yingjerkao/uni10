@@ -70,14 +70,16 @@ class Matrix: public Block {
 		Matrix& operator*= (double a);
 		Matrix& operator*= (const Block& Mb);
 		Matrix& operator+= (const Block& Mb);
-    //friend class CBlock;
 	private:
 		void init(bool togpu);
 		void init(const double* elem, bool _ongpu);
 };
 Matrix takeExp(double a, const Block& mat);
-//CMatrix exp(double a, const Block& mat);
+Matrix exp(double a, const Block& mat);
+CMatrix exp(const std::complex<double>& a, const Block& mat);
 Matrix exph(double a, const Block& mat);
+Matrix exp(const Block& mat);
+Matrix exph(const Block& mat);
 Matrix otimes(const Block& Ma, const Block& Mb);
 };	/* namespace uni10 */
 #endif /* MATRIX_H */

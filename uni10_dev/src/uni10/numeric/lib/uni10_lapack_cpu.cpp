@@ -466,6 +466,10 @@ void matrixMul(std::complex<double>* A, std::complex<double>* B, int M, int N, i
 	zgemm((char*)"N", (char*)"N", &N, &M, &K, &alpha, B, &N, A, &K, &beta, C, &N);
 }
 
+void vectorAdd(std::complex<double>* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu){	// Y = Y + X
+  for(size_t i = 0; i < N; i++)
+    Y[i] += X[i];
+}
 void vectorAdd(std::complex<double>* Y, std::complex<double>* X, size_t N, bool y_ongpu, bool x_ongpu){	// Y = Y + X
   std::complex<double> a = 1.0;
 	int inc = 1;
@@ -533,6 +537,11 @@ void diagColMul(std::complex<double> *mat, std::complex<double>* diag, size_t M,
 }
 
 void vectorExp(double a, std::complex<double>* X, size_t N, bool ongpu){
+	for(size_t i = 0; i < N; i++)
+		X[i] = std::exp(a * X[i]);
+}
+
+void vectorExp(const std::complex<double>& a, std::complex<double>* X, size_t N, bool ongpu){
 	for(size_t i = 0; i < N; i++)
 		X[i] = std::exp(a * X[i]);
 }

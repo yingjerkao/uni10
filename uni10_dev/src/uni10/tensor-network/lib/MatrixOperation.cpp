@@ -40,11 +40,7 @@ CMatrix& CMatrix::conj(){
 
 Matrix takeExp(double a, const Block& mat){
   try{
-    std::vector<Matrix> rets = mat.eigh();
-    Matrix UT(rets[1]);
-    UT.transpose();
-    vectorExp(a, rets[0].getElem(), rets[0].row(), rets[0].isOngpu());
-    return UT * (rets[0] * rets[1]);
+    return exph(a, mat);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function takeExp(double, uni10::Matrix&):");
@@ -62,6 +58,73 @@ CMatrix::CMatrix(const Block& _b): CBlock(_b.Rnum, _b.Cnum, _b.diag){
   elemCast(m_elem, _b.m_elem, elemNum(), ongpu, _b.ongpu);
 }
 
+CMatrix& CMatrix::operator*= (const std::complex<double>& a){
+  try{
+    if(!ongpu)
+      m_elem = (std::complex<double>*)mvGPU(m_elem, elemNum() * sizeof(std::complex<double>), ongpu);
+    vectorScal(a, m_elem, elemNum(), ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function CMatrix::operator*=(std::complex<double>):");
+  }
+	return *this;
+}
+
+CMatrix operator*(const CBlock& Ma, const Block& Mb){
+  CMatrix cMb(Mb);
+  return Ma * cMb;
+}
+
+CMatrix operator*(const Block& Ma, const CBlock& Mb){
+  CMatrix cMa(Ma);
+  return cMa * Mb;
+}
+
+bool operator== (const Block& m1, const CBlock& m2){
+  try{
+    double diff;
+    if(m1.elemNum() == m2.elemNum()){
+      for(size_t i = 0; i < m1.elemNum(); i++){
+        if(std::abs(m2[i].imag()) > 1E-12)
+          return false;
+        if((std::abs(m1[i] - m2[i].real()))  > 1E-12)
+          return false;
+      }
+    }
+    else
+      return false;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator==(uni10::Matrix&, uni10::CMatrix&):");
+  }
+  return true;
+}
+
+bool operator== (const CBlock& m1, const Block& m2){
+  return (m2 == m1);
+}
+
+CMatrix operator+(const CBlock& Ma, const Block& Mb){
+  try{
+    CMatrix Mc(Ma);
+    vectorAdd(Mc.getElem(), Mb.getElem(), Mc.elemNum(), Mc.isOngpu(), Mb.isOngpu());
+    return Mc;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator+(uni10::CMatrix&, uni10::Matrix&):");
+    return CMatrix();
+  }
+}
+
+CMatrix operator+(const Block& Ma, const CBlock& Mb){
+  try{
+    return Mb + Ma;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::CMatrix&):");
+    return CMatrix();
+  }
+}
 
 
 };	/* namespace uni10 */
