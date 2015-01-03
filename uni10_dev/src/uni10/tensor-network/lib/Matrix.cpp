@@ -43,10 +43,7 @@ namespace uni10{
 UNI10_MATRIX::UNI10_MATRIX(): UNI10_BLOCK(){}
 UNI10_MATRIX::UNI10_MATRIX(const UNI10_MATRIX& _m): UNI10_BLOCK(_m.Rnum, _m.Cnum, _m.diag){
   try{
-    if(elemNum()){
-      m_elem = (UNI10_DTYPE*)elemAlloc(elemNum() * sizeof(UNI10_DTYPE), ongpu);
-      elemCopy(m_elem, _m.m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, _m.ongpu);
-    }
+      init(_m.m_elem, _m.ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In copy constructor Matrix::Matrix(uni10::Matrix&):");
@@ -54,10 +51,7 @@ UNI10_MATRIX::UNI10_MATRIX(const UNI10_MATRIX& _m): UNI10_BLOCK(_m.Rnum, _m.Cnum
 }
 UNI10_MATRIX::UNI10_MATRIX(const UNI10_BLOCK& _b): UNI10_BLOCK(_b){
   try{
-    if(elemNum()){
-      m_elem = (UNI10_DTYPE*)elemAlloc(elemNum() * sizeof(UNI10_DTYPE), ongpu);
-      elemCopy(m_elem, _b.m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, _b.diag);
-    }
+      init(_b.m_elem, _b.ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In copy constructor Matrix::Matrix(uni10::Block&):");
@@ -116,8 +110,7 @@ UNI10_MATRIX& UNI10_MATRIX::operator=(const UNI10_MATRIX& _m){
     diag = _m.diag;
     if(m_elem != NULL)
       elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    m_elem = (UNI10_DTYPE*)elemAlloc(elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    elemCopy(m_elem, _m.m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, _m.ongpu);
+    init(_m.m_elem, _m.ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::operator=(uni10::Matrix&):");
@@ -131,8 +124,7 @@ UNI10_MATRIX& UNI10_MATRIX::operator=(const UNI10_BLOCK& _b){
     diag = _b.diag;
     if(m_elem != NULL)
       elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    m_elem = (UNI10_DTYPE*)elemAlloc(elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    elemCopy(m_elem, _b.m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, _b.ongpu);
+    init(_b.m_elem, _b.ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::operator=(uni10::Block&):");
@@ -427,12 +419,11 @@ bool UNI10_MATRIX::toGPU(){
 	return ongpu;
 }
 
-#ifndef UNI10_COMPLEX //Only for real version
-UNI10_MATRIX takeExp(double a, const UNI10_BLOCK& mat){
+UNI10_MATRIX exph(double a, const UNI10_BLOCK& mat){
   try{
     std::vector<UNI10_MATRIX> rets = mat.eigh();
     UNI10_MATRIX UT(rets[1]);
-    UT.transpose();
+    UT.cTranspose();
     vectorExp(a, rets[0].getElem(), rets[0].row(), rets[0].isOngpu());
     return UT * (rets[0] * rets[1]);
   }
@@ -441,14 +432,6 @@ UNI10_MATRIX takeExp(double a, const UNI10_BLOCK& mat){
     return UNI10_MATRIX();
   }
 }
-#endif
-
-#ifdef UNI10_COMPLEX //Only for complex version
-UNI10_MATRIX& UNI10_MATRIX::conj(){
-  setConjugate(m_elem, elemNum(), ongpu);
-  return *this;
-}
-#endif
 
 };	/* namespace uni10 */
 #ifdef UNI10_BLOCK

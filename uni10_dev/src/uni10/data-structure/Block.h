@@ -64,11 +64,11 @@ class Block{
 		double trace()const;
 		double norm()const;
 		double sum()const;
-		friend Matrix operator* (const Block& Ma, const Block& Mb);
+		friend Matrix operator*(const Block& Ma, const Block& Mb);
 		friend Matrix operator*(const Block& Ma, double a);
 		friend Matrix operator*(double a, const Block& Ma);
 		friend Matrix operator+(const Block& Ma, const Block& Mb);
-		friend bool operator== (const Block& m1, const Block& m2);
+		friend bool operator==(const Block& m1, const Block& m2);
 		friend class UniTensor;
 		friend class CBlock;
 		friend class Matrix;

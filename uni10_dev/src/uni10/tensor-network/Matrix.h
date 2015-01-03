@@ -37,6 +37,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <uni10/data-structure/Block.h>
+#include <uni10/data-structure/CBlock.h>
 //Type of Matrix
 namespace uni10{
 
@@ -47,6 +48,7 @@ class Matrix: public Block {
 		Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
 		Matrix(const Matrix& _m);
     Matrix(const Block& _b);
+    Matrix(const CBlock& _b);
 		Matrix();
 		~Matrix();
 		Matrix& operator=(const Matrix& _m);
@@ -74,7 +76,7 @@ class Matrix: public Block {
 		void init(const double* elem, bool _ongpu);
 };
 Matrix takeExp(double a, const Block& mat);
-CMatrix exp(double a, const Block& mat);
+//CMatrix exp(double a, const Block& mat);
 Matrix exph(double a, const Block& mat);
 Matrix otimes(const Block& Ma, const Block& Mb);
 };	/* namespace uni10 */
