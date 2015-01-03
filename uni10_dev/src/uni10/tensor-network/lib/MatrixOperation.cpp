@@ -126,5 +126,29 @@ CMatrix operator+(const Block& Ma, const CBlock& Mb){
   }
 }
 
+CMatrix& CMatrix::operator*= (const Block& Mb){
+  try{
+    if(!ongpu)
+      m_elem = (std::complex<double>*)mvGPU(m_elem, elemNum() * sizeof(std::complex<double>), ongpu);
+    *this = *this * Mb;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function CMatrix::operator*=(uni10::Matrix&):");
+  }
+  return *this;
+
+}
+
+CMatrix& CMatrix::operator+= (const Block& Mb){
+  try{
+    if(!ongpu)
+      m_elem = (std::complex<double>*)mvGPU(m_elem, elemNum() * sizeof(std::complex<double>), ongpu);
+    vectorAdd(m_elem, Mb.m_elem, elemNum(), ongpu, Mb.ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function CMatrix::operator+=(uni10::Matrix&):");
+  }
+	return *this;
+}
 
 };	/* namespace uni10 */
