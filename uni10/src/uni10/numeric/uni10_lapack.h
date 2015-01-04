@@ -36,21 +36,21 @@
 #include <sstream>
 #include <stdexcept>
 #include <cmath>
-namespace uni10{
-enum mmtype{
-	MM_DDD = 0,
-	MM_DDH = 1,
-	MM_DHD = 2,
-	MM_DHH = 3,
-	MM_HDD = 4,
-	MM_HDH = 5,
-	MM_HHD = 6,
-	MM_HHH = 7
+namespace uni10 {
+enum mmtype {
+    MM_DDD = 0,
+    MM_DDH = 1,
+    MM_DHD = 2,
+    MM_DHH = 3,
+    MM_HDD = 4,
+    MM_HDH = 5,
+    MM_HHD = 6,
+    MM_HHH = 7
 };
 void uni10Dgemm(int p, int q, int M, int N, int K, double* A, double* B, double* C, mmtype how);
 void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA, bool ongpuB, bool ongpuC);
 void vectorAdd(double* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
-void vectorScal(double a, double* X, size_t N, bool ongpu);	// X = a * X
+void vectorScal(double a, double* X, size_t N, bool ongpu); // X = a * X
 double vectorSum(double* X, size_t N, int inc, bool ongpu);
 double vectorNorm(double* X, size_t N, int inc, bool ongpu);
 void vectorExp(double a, double* X, size_t N, bool ongpu);
@@ -68,5 +68,5 @@ void setIdentity(double* elem, size_t M, size_t N, bool ongpu);
 void reshapeElem(double* elem, size_t* transOffset);
 bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu);
 
-};	/* namespace uni10 */
+};  /* namespace uni10 */
 #endif /* UNI10_LAPACK_H */

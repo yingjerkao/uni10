@@ -40,64 +40,70 @@
 #include <sstream>
 //Type of Matrix
 //#include <uni10/tensor-network/UniTensor.h>
-namespace uni10{
+namespace uni10 {
 
 class Matrix {
-	public:
-		Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=true);
-		Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
-		Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
-		Matrix(const Matrix& _m);
-		Matrix();
-		~Matrix();
-		Matrix& operator=(const Matrix& _m);
-		size_t row()const;
-		size_t col()const;
-		bool isDiag()const{return diag;};
-		bool isOngpu()const{return ongpu;};
-		size_t elemNum()const;
-		double& operator[](size_t idx);
-		double& at(size_t i, size_t j);
-		double* getElem()const;
-		double* getHostElem();
-		void setElem(const double* elem, bool _ongpu = false);
-		void setElem(const std::vector<double>& elem, bool _ongpu = false);
-		Matrix& resize(size_t row, size_t col);
-		void save(const std::string& fname);
-		void load(const std::string& fname);
-		void identity();
-		void set_zero();
-		void randomize();
-		void orthoRand();
-		Matrix& transpose();
-		std::vector<Matrix> eigh()const;
-		std::vector<Matrix> svd()const;
+public:
+    Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=true);
+    Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(const Matrix& _m);
+    Matrix();
+    ~Matrix();
+    Matrix& operator=(const Matrix& _m);
+    size_t row()const;
+    size_t col()const;
+    bool isDiag()const {
+        return diag;
+    };
+    bool isOngpu()const {
+        return ongpu;
+    };
+    size_t elemNum()const;
+    double& operator[](size_t idx);
+    double& at(size_t i, size_t j);
+    double* getElem()const;
+    double* getHostElem();
+    void setElem(const double* elem, bool _ongpu = false);
+    void setElem(const std::vector<double>& elem, bool _ongpu = false);
+    Matrix& resize(size_t row, size_t col);
+    void save(const std::string& fname);
+    void load(const std::string& fname);
+    void identity();
+    void set_zero();
+    void randomize();
+    void orthoRand();
+    Matrix& transpose();
+    std::vector<Matrix> eigh()const;
+    std::vector<Matrix> svd()const;
     size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15);
-		double trace();
-		double norm();
-		double sum();
-		Matrix& operator*= (double a);
-		Matrix& operator*= (const Matrix& Mb);
-		Matrix& operator+= (const Matrix& Mb);
-		friend Matrix takeExp(double a, const Matrix& mat);
-		friend Matrix operator* (const Matrix& Ma, const Matrix& Mb);
-		friend Matrix operator*(const Matrix& Ma, double a);
-		friend Matrix operator*(double a, const Matrix& Ma){return Ma * a;};
-		friend Matrix operator+(const Matrix& Ma, const Matrix& Mb);
-		friend bool operator== (const Matrix& m1, const Matrix& m2);
-		friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
-		bool toGPU();
-	private:
-		void init(bool togpu);
-		void init(const double* elem, bool _ongpu);
-		size_t Rnum;		//number of rows of the block
-		size_t Cnum;		//number of columns of the block
-		double* m_elem;
-		size_t m_elemNum;
-		bool diag;
-		bool ongpu;
+    double trace();
+    double norm();
+    double sum();
+    Matrix& operator*= (double a);
+    Matrix& operator*= (const Matrix& Mb);
+    Matrix& operator+= (const Matrix& Mb);
+    friend Matrix takeExp(double a, const Matrix& mat);
+    friend Matrix operator* (const Matrix& Ma, const Matrix& Mb);
+    friend Matrix operator*(const Matrix& Ma, double a);
+    friend Matrix operator*(double a, const Matrix& Ma) {
+        return Ma * a;
+    };
+    friend Matrix operator+(const Matrix& Ma, const Matrix& Mb);
+    friend bool operator== (const Matrix& m1, const Matrix& m2);
+    friend std::ostream& operator<< (std::ostream& os, const Matrix& b);
+    bool toGPU();
+private:
+    void init(bool togpu);
+    void init(const double* elem, bool _ongpu);
+    size_t Rnum;        //number of rows of the block
+    size_t Cnum;        //number of columns of the block
+    double* m_elem;
+    size_t m_elemNum;
+    bool diag;
+    bool ongpu;
 };
 Matrix takeExp(double a, const Matrix& mat);
 Matrix otimes(const Matrix& Ma, const Matrix& Mb);
-};	/* namespace uni10 */
+};  /* namespace uni10 */
 #endif /* MATRIX_H */

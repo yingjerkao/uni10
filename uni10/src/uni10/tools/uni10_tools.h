@@ -41,7 +41,7 @@
 #include <locale>
 #include <sstream>
 #include <uni10/data-structure/uni10_struct.h>
-namespace uni10{
+namespace uni10 {
 
 const size_t GPU_GLOBAL_MEM = ((size_t)5) * 1<<30;
 const int THREADMAX = 1024;
@@ -53,7 +53,7 @@ void elemFree(void* ptr, size_t memsize, bool ongpu);
 void elemBzero(void* ptr, size_t memsize, bool ongpu);
 void elemRand(double* elem, size_t N, bool ongpu);
 std::vector<_Swap> recSwap(std::vector<int>& ord, std::vector<int>& ordF);
-std::vector<_Swap> recSwap(std::vector<int>& ord);	//Given the reshape order out to in.
+std::vector<_Swap> recSwap(std::vector<int>& ord);  //Given the reshape order out to in.
 void setDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu);
 void getDiag(double* elem, double* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu);
 void* mvGPU(void* elem, size_t memsize, bool& ongpu);
@@ -70,22 +70,22 @@ std::string exception_msg(const std::string& msg);
 
 // trim from start
 static inline std::string &ltrim(std::string &s) {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-	return s;
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+    return s;
 }
 
 // trim from end
 static inline std::string &rtrim(std::string &s) {
-	s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	return s;
+    s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    return s;
 }
 
 // trim from both ends
 static inline std::string &trim(std::string &s) {
-	return ltrim(rtrim(s));
+    return ltrim(rtrim(s));
 }
 
 
-};	/* namespace uni10 */
+};  /* namespace uni10 */
 
 #endif /* UNI10_TOOLS_H */
