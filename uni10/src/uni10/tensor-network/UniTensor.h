@@ -56,6 +56,15 @@ namespace uni10 {
     ///@class UniTensor
     ///@brief The UniTensor class defines the symmetric tensors
     ///
+    /// A UniTensor consists of Bond's carrying quantum numbers Qnum's. The tensor elements are organized as
+    /// quantum number blocks. The Qnum's on the Bonds defines the size of the Qnum blocks and the rank of
+    /// UniTensor is defined by the number of Bond's.\par
+    /// Each Bond carries a label. Labels are used to manipulate tensors, such as in permute, partialTrace and
+    /// contraction. \par
+    /// Operations on tensor elements is pefromed through  getBlock and putBlock functions to take out/put in
+    /// block elements out as a Matrix.
+    /// @see Qnum, Bond, Matrix
+
     class UniTensor {
     public:
         
@@ -176,7 +185,7 @@ namespace uni10 {
         /// The raw elements are organized in the basis given in the bonds.
         ///
         /// This function will reorganize the raw elements into the block-diagonal form.
-        /// @param array of raw elements
+        /// @param rawElem array of raw elements
         void setRawElem(const std::vector<double>& rawElem);
         /// @overload
         void setRawElem(const double* rawElem);
@@ -208,17 +217,54 @@ namespace uni10 {
         /// Returns the quantum number for block \c idx in UniTensor.
         /// Blocks are orderd in the ascending order of Qnum
         /// @param idx Block index
-        /// @return A Qnum
+        /// @return Quantum number of block \c idx
         Qnum blockQnum(size_t idx)const;
+        
+        /// @brief Access block elements
+        ///
+        /// Returns the tensor element blocks of Qnums as
+        ///  a map from a composite Qnum to a corresponding element block as Matrix
+        ///
+        /// @return   Map from Qnum to Matrix
         std::map<Qnum, Matrix> getBlocks()const;
+        
+        /// @brief Get elements in a block
+        ///
+        /// Returns a Matrix of Qnum(0) block elements. If the \c diag flag is set,
+        /// only  diagonal elements in the block will be copied to a diagonal Matrix.
+        /// @param diag Set \c true to save only the diagonal elements
+        /// @return A Matrix of Qnum(0) block
         Matrix getBlock(bool diag = false)const;
+        
+        /// @brief Get elements in a block
+        ///
+        /// Returns the block elements of a quantum number \c qnum as a Matrix. If the \c diag flag is set,
+        /// only  diagonal elements in the block will be copied to a diagonal Matrix.
+        /// @param diag Set \c true to save only the diagonal elements
+        /// @return A Matrix of \c qnum block
         Matrix getBlock(const Qnum& qnum, bool diag = false)const;
+        
+        /// @brief Assign elements to a block
+        /// Assigns elements of the  matrix \c mat to the  block of quantum number \c qnum, replacing the origin
+        /// elements. \par
+        /// If \c mat is diagonal,  all the off-diagonal elements are set to zero.
+        /// @param mat The matrix elements to be assigned
         void putBlock(const Matrix& mat);
+            
+        /// @brief Assign elements to a block
+        ///
+        /// Assigns elements of the  matrix \c mat to the  Qnum(0) block, for non-symmetry tensors.
+        ///
+        /// If \c mat is diagonal,  all the off-diagonal elements are set to zero.
+        /// @param qnum quantum number of the block
+        /// @param mat The matrix elements to be assigned
         void putBlock(const Qnum& qnum, const Matrix& mat);
+        
         double* getElem();
         void setElem(const double* elem, bool _ongpu = false);
         void setElem(const std::vector<double>& elem, bool _ongpu = false);
         double operator[](size_t idx);
+        
         void set_zero();
         void set_zero(const Qnum& qnum);
         void identity();

@@ -60,9 +60,7 @@ class UniTensor;
 ///  For example, For a spin system with \f$U(1)\f$ symmetry which conserves the total \f$S_z\f$, we can
 /// define a bond with three distinct Qnum with \f$S_z= -1, 0, 1\f$.
 ///
-/// @see \ref bondType
-/// @see Qnum
-/// @see UniTensor
+/// @see \ref bondType, Qnum, UniTensor
 class Bond {
 public:
 
@@ -136,7 +134,7 @@ public:
     /// Changes the type of Bond and the Qnum's of the bond when necssary.
     /// If bond is changed from incoming to outgoing or vice versa,
     /// the Qnum's are changed to - Qnum's
-    /// @param tp Bond type to change to
+    /// @param tp %Bond type to change to
     void change(bondType tp);
     
     /// @brief Combine bonds

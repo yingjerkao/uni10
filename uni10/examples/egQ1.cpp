@@ -53,4 +53,17 @@ int main(){
 
 	return 0;
 }
+/* OUTPUT
 
+q10: (U1 = 1, P = 0, 0)
+q_11: (U1 = -1, P = 1, 0)
+q_11: U1 = -1, parity = 1
+q_11(after assign): (U1 = -2, P = 0, 0)
+isFermioinc: 0
+----- Fermionic -----
+f0_q10: (U1 = 1, P = 0, 0)
+f1_q10: (U1 = 1, P = 0, 1)
+f1_q10: fermionic parity = 1
+isFermioinc: 1
+
+*/

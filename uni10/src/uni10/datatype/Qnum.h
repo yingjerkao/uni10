@@ -53,7 +53,7 @@ enum parityFType {
     
     
 /// @class Qnum
-/// @brief The class Qnum defines the quantum number
+/// @brief The Qnum class defines the quantum number
 ///
 ///  A Qnum is comprised of one or more eigenvalues of following three symmetry operators,
 ///
