@@ -64,6 +64,7 @@ namespace uni10 {
     /// Operations on tensor elements is pefromed through  getBlock and putBlock functions to take out/put in
     /// block elements out as a Matrix.
     /// @see Qnum, Bond, Matrix
+    /// @example egQ1.cpp
 
     class UniTensor {
     public:
@@ -107,14 +108,14 @@ namespace uni10 {
         ~UniTensor();
     
 
-        /// @brief Copy UniTensor content
+        /// @brief Copy content
         ///
         /// Assigns new content to the UniTensor from \c UniT, replacing the original contents
-        /// @param UniT tensor to be copied
+        /// @param UniT Tensor to be copied
         ///
         UniTensor& operator=(const UniTensor& UniT);
         
-        /// @brief Assign bonds to UniTensor
+        /// @brief Assign bonds
         ///
         /// Reconstructs the tensor with given bonds, replacing the original ones and clear the content of
         /// UniTensor
@@ -137,8 +138,9 @@ namespace uni10 {
         /// @return List of labels
         std::vector<int> label()const;
         
-        /// @brief Access the label of Bond \c idx
+        /// @brief Access label
         ///
+        /// Access the label of Bond \c idx
         /// @param idx Bond index
         /// @return Label of Bond \c idx
         int label(size_t idx)const;
@@ -245,6 +247,7 @@ namespace uni10 {
         Matrix getBlock(const Qnum& qnum, bool diag = false)const;
         
         /// @brief Assign elements to a block
+        ///
         /// Assigns elements of the  matrix \c mat to the  block of quantum number \c qnum, replacing the origin
         /// elements. \par
         /// If \c mat is diagonal,  all the off-diagonal elements are set to zero.
@@ -260,48 +263,312 @@ namespace uni10 {
         /// @param mat The matrix elements to be assigned
         void putBlock(const Qnum& qnum, const Matrix& mat);
         
+        /// @brief Access elements
+        ///
+        /// Returns a pointer  to  UniTensor elements.
+        /// @return Pointer to UniTensor elements
         double* getElem();
+        
+        
+        /// @brief Copy elements
+        ///
+        /// Copies the first elemNum() elements from \c elem, replacing the original ones.
+        /// @param elem elements to be copied.
         void setElem(const double* elem, bool _ongpu = false);
+        /// @overload
         void setElem(const std::vector<double>& elem, bool _ongpu = false);
+        
+        /// @brief Access individual element
+        ///
+        /// Returns the element at linear position \c idx. The first bond’s dimension is the most significant
+        ////dimension.
+        ///
+        /// @param    idx linear position of element
+        /// @return Element at index \c idx.
         double operator[](size_t idx);
         
+        /// @brief Assign elements
+        ///
+        /// Set all  elements to zero.
         void set_zero();
+        
+        /// @brief Assign elements
+        ///
+        /// Set all  elements in the block with quantum number \c qnum to zero.
+        /// @param qnum Block quantum number
         void set_zero(const Qnum& qnum);
+        
+        /// @brief Assign elements
+        ///
+        /// Set diagonal elements of blocks to one.
         void identity();
+        /// @brief Assign elements
+        ///
+        /// Set diagonal elements of block with \c qnum to one.
+        /// @param qnum Block quantum number
         void identity(const Qnum& qnum);
+        
+        /// @brief Assign elements
+        ///
+        /// Assigns random numbers in [0, 1) to the elements.
         void randomize();
+        
+        /// @brief Assign elements
+        ///
+        /// Assigns randomly generated orthogonal bases to the elements of UniTensor.
+        ///
+        ///  \c Nr = row() and \c Nc = col().
+        ///
+        /// If the <tt> Nr < Nc </tt>, randomly generates \c Nr orthogonal basis row vectors of dimension \c Nc.
+        /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of
+        /// dimension \c Nr.
         void orthoRand();
+        
+        /// @brief Assign elements
+        ///
+        /// Assigns randomly generated orthogonal bases to the elements of \c qnum block.
+        /// @param qnum Block quantum number
         void orthoRand(const Qnum& qnum);
+        
+        /// @brief Access name
+        ///
+        /// Return the name of the UniTensor.
         std::string getName();
+        
+        /// @brief Assign name
+        ///
+        /// Assigns name to the UniTensor.
+        /// @param name Name to be assigned
         void setName(const std::string& _name);
+        
+        /// @brief Save UniTensor to file
+        ///
+        /// Saves UniTensor to a file named \c fname.
+        /// @param fname filename
         void save(const std::string& fname);
+        
+        /// @brief Permute the order of bonds
+        ///
+        /// Permutes the order of bonds to the order according to \c newLabels with \c inBondNum incoming bonds.
+        /// @param newLabels list of new labels
+        /// @param inBondNum Number of incoming bonds after permutation
         UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
+        /// @overload
         UniTensor& permute(int* newLabels, int inBondNum);
+        /// @brief Permute the order of bonds
+        ///
+        /// Rearranges the number of incoming and outgoing bonds without changing the order of the bonds.
+        /// It assigns the first \c inBondNum bonds as incoming bonds and leaving the remaining bonds as
+        /// outgoing bonds
+        /// @param inBondNum Number of incoming bonds after permutation
         UniTensor& permute(int inBondNum);
+        
+        /// @brief Transpose  block elements
+        ///
+        /// Transpose each quantum number block. The bonds are changed from incoming to outcoming and vice versa
+        /// without changing the quantum numbers on the bonds.
         UniTensor& transpose();
         
+        /// @brief Combine bonds
+        ///
+        /// Combines  bonds with labels in \c combined_labels.
+        /// The resulting bond has the same label and bondType as the bond with the first label.
+        /// @param combined_labels labels to be combined
         UniTensor& combineBond(const std::vector<int>& combined_labels);
+        
+        /// @brief Partial trace
+        ///
+        /// Traces out  two bond with labels \c la and \c lb.
+        /// @param la,lb Labels of the bonds to be traced out
         UniTensor& partialTrace(int la, int lb);
+        
+        /// @brief Trace
+        /// Traces all bonds and returns the trace value.
+        /// @return Trace of UniTensor
         double trace()const;
         std::vector<_Swap> exSwap(const UniTensor& Tb)const;
         void addGate(const std::vector<_Swap>& swaps);
+        
+        /// @brief Multiply UniTensor by a scalar and assign
+        ///
+        /// Performs element-wise multiplication with a scalar \c a.
+        /// @param a A scalar
         UniTensor& operator*= (double a);
+        
+        /// @brief   Contract UniTensor with a second tensor and assign
+        ///
+        /// Performs tensor contraction with another UniTensor \c Tb. It contracts out the bonds of the same
+        /// labels in the UniTensor and \c Tb
+        /// @param Tb A second UniTensor
         UniTensor& operator*= (const UniTensor& Tb);
+        
+        /// @brief   Perform  element-wise addition and assign
+        ///
+        /// Performs element-wise addition. The tensor \c Tb to be added must be \ref{similar} to  UniTensor.
+        /// @see UniTensor::similar()
+        /// @param Tb A second UniTensor
         UniTensor& operator+= (const UniTensor& Tb);
+        
+        /// @brief Test if two tensors are similar
+        ///
+        /// Two UniTensor's are  similar if the bonds of two tensors are the same.
+        /// @param Tb A second UniTensor
+        /// @return \c True if  UniTensor is similar to \c Tb, \c false otherwise.
         bool similar(const UniTensor& Tb)const;
+        
+        /// @brief Test if the elements of two tensors are the same
+        ///
+        /// Performs the element-wise comparison of UniTensor and \c Tb. Returns \c true if all the elements are
+        ///the same.
+        /// @param uT  UniTensor to be compared
+        /// @return \c True if the elements of  UniTensor is the same as in \c Tb, \c false otherwise.
         bool elemCmp(const UniTensor& UniT)const;
+        
+        /// @brief Print out raw elements
+        /// Prints out raw elements of UniTensor as the following example,
+        /// @code
+        ///     2,0    1,0    0,0    1,0    0,0   -1,0    0,0   -1,0   -2,0
+        ///    -----------------------------------------------------------------
+        ///    |
+        /// 2,0|  0.142  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.000
+        ///    |
+        /// 1,0|  0.000  0.952  0.000  0.916  0.000  0.000  0.000  0.000  0.000
+        ///    |
+        /// 0,0|  0.000  0.000  0.198  0.000  0.335  0.000  0.768  0.000  0.000
+        ///    |
+        /// 1,0|  0.000  0.636  0.000  0.717  0.000  0.000  0.000  0.000  0.000
+        ///    |
+        /// 0,0|  0.000  0.000  0.278  0.000  0.554  0.000  0.477  0.000  0.000
+        ///    |
+        ///-1,0|  0.000  0.000  0.000  0.000  0.000  0.394  0.000  0.783  0.000
+        ///    |
+        /// 0,0|  0.000  0.000  0.629  0.000  0.365  0.000  0.513  0.000  0.000
+        ///    |
+        ///-1,0|  0.000  0.000  0.000  0.000  0.000  0.798  0.000  0.912  0.000
+        ///    |
+        ///-2,0|  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.840
+        ///@endcode
+        ///
+        ///In the above example,  UniTensor has two incoming  and two outgoing bonds, with each bond having
+        /// states with Qnum's <tt>[q(1), q(0), q(-1)]</tt>. The raw elements form a 9 by 9 Matrix.
+        /// The first row shows the Qnum's, \c U1 and \c parity, in the columns below and the first column
+        /// shows the quantum numbers of the rows on the right.
         std::string printRawElem(bool print=true)const;
+        
+        /// @brief Print out  memory usage of the existing UniTensor's
+        /// 
+        /// Prints out the memory usage as (for example):
+        ///
+        /// @code{.mat}
+        /// Existing Tensors: 30
+        /// Allocated Elem: 2240
+        /// Max Allocated Elem: 4295
+        /// Max Allocated Elem for a Tensor: 924
+        /// @endcode
+        ///
+        /// In the above example, currently there are 30 tensors and total number of existing elements is 2240.
+        /// The maximum element number for now is 4295 and the maximum element number of a tensor is 924.
+
         static std::string profile(bool print = true);
         
+        
+        /// @brief Perform contraction of UniTensor
+        ///
+        /// Performs tensor contraction of \c Ta and \c Tb. It contracts out the bonds of the same labels
+        /// in \c Ta and \c Tb.
+        
+        /// @note  In contrast to \ref{ operator*} as in <tt>Ta * Tb </tt>,  this function performs
+        /// contraction without copying \c Ta and \c Tb. Thus it uses less memory. When the flag \c fast is set
+        /// \c true, the two tensors \c Ta and \c Tb are contracted without permuting back to origin labels.
+        /// @return Ta,Tb Tensors to be contracted.
+        /// @param fast A flag to set if permuted back to origin labels.  If \c true, two tensor are not
+        /// permuted back. Defaults to \c false
         friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+        
+        /// @brief Tensor product of two tensors
+        ///
+        /// Performs tensor product of \c Ta and \c Tb.
+        /// @param Ta,Tb Tensors to perform tensor product.
         friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
+        
+        /// @brief Tensor contraction
+        ///
+        /// Performs tensor contraction, <tt> Ta * Tb </t>. It contracts  the bonds of the same labels in \c Ta
+        /// and \c Tb by making copies and then call function \ref{contract}.
         friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
+        /// @brief Muliplication
+        ///
+        /// Performs element-wise multiplication with a scalar \c a
+        /// @param a Scalar to be multiplied to UniTensor
         friend UniTensor operator* (const UniTensor& Ta, double a);
+        /// @overload
         friend UniTensor operator* (double a, const UniTensor& Ta) {
             return Ta * a;
         };
+        
+        /// @brief Perform  element-wise addition
+        /// Performs element-wise addition.
+        /// @param Ta,Tb Tensors to be added
         friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
+        
+        /// @brief Print out UniTensor
+        ///
+        /// Prints out a UniTensor \c uT as(for example):
+        /// @code
+        ///**************** Demo ****************
+        ///     ____________
+        ///    |            |
+        ///0___|3          3|___2
+        ///    |            |
+        ///1___|3          3|___3
+        ///    |            |
+        ///    |____________|
+        ///
+        ///================BONDS===============
+        ///IN : (U1 = 1, P = 0, 0)|1, (U1 = 0, P = 0, 0)|1, (U1 = -1, P = 0, 0)|1, Dim = 3
+        ///IN : (U1 = 1, P = 0, 0)|1, (U1 = 0, P = 0, 0)|1, (U1 = -1, P = 0, 0)|1, Dim = 3
+        ///OUT: (U1 = 1, P = 0, 0)|1, (U1 = 0, P = 0, 0)|1, (U1 = -1, P = 0, 0)|1, Dim = 3
+        ///OUT: (U1 = 1, P = 0, 0)|1, (U1 = 0, P = 0, 0)|1, (U1 = -1, P = 0, 0)|1, Dim = 3
+        ///
+        ///===============BLOCKS===============
+        ///--- (U1 = -2, P = 0, 0): 1 x 1 = 1
+        ///
+        ///0.840
+        ///
+        ///--- (U1 = -1, P = 0, 0): 2 x 2 = 4
+        ///
+        ///0.394  0.783
+        ///
+        ///0.798  0.912
+        ///
+        ///--- (U1 = 0, P = 0, 0): 3 x 3 = 9
+        ///
+        ///0.198  0.335  0.768
+        ///
+        ///0.278  0.554  0.477
+        ///
+        ///0.629  0.365  0.513
+        ///
+        ///--- (U1 = 1, P = 0, 0): 2 x 2 = 4
+        ///
+        ///0.952  0.916
+        ///
+        ///0.636  0.717
+        ///
+        ///--- (U1 = 2, P = 0, 0): 1 x 1 = 1
+        ///
+        ///0.142
+        ///
+        ///Total elemNum: 19
+        ///***************** END ****************
+        /// @endcode
+        ///  In the above example, \c uT has four bonds with default labels [0, 1, 2, 3]. The bonds 0 and 1 are
+        /// incoming bonds, and  2, 3 are out-going bonds. Each bond has three states
+        /// corresponding to three U1 quantum number [-1, 0, 1]. The block elements of the
+        /// tensor are als shown. There are five blocks of various <tt>U1= [-2, -1, 0, 1, 2]</tt> and
+        /// various sizes. The total element number is 19.
         friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
+        
         friend class Node;
         friend class Network;
         
