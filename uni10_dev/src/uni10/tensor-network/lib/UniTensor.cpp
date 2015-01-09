@@ -163,7 +163,7 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::s
 }
 
 UniTensor::UniTensor(const UniTensor& UniT): //GPU
-  status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels),
+  status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels), name(UniT.name),
   RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL),
   QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), RQidx2Blk(UniT.RQidx2Blk), CQidx2Dim(UniT.CQidx2Dim){
     try{
@@ -218,6 +218,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     bonds = UniT.bonds;
     blocks = UniT.blocks;
     labels = UniT.labels;
+    name = UniT.name;
     RBondNum = UniT.RBondNum;
     RQdim = UniT.RQdim;
     CQdim = UniT.CQdim;

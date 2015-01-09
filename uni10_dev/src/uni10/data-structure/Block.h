@@ -28,7 +28,7 @@
 *****************************************************************************/
 #ifndef BLOCK_H
 #define BLOCK_H
-#define UNI10_PURE_REAL 1
+//#define UNI10_PURE_REAL 1
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
