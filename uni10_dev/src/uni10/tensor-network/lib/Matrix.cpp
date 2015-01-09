@@ -26,10 +26,13 @@
 *  @since 0.1.0
 *
 *****************************************************************************/
-#include <uni10/tensor-network/Matrix.h>
-#include <uni10/tensor-network/CMatrix.h>
-#include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
+#include <uni10/numeric/uni10_lapack.h>
+#include <uni10/tensor-network/Matrix.h>
+#ifndef UNI10_PURE_REAL
+#include <uni10/tensor-network/CMatrix.h>
+#endif
+
 #ifndef UNI10_DTYPE
 #define UNI10_DTYPE double
 #endif
@@ -39,6 +42,7 @@
 #ifndef UNI10_BLOCK
 #define UNI10_BLOCK Block
 #endif
+
 namespace uni10{
 UNI10_MATRIX::UNI10_MATRIX(): UNI10_BLOCK(){}
 UNI10_MATRIX::UNI10_MATRIX(const UNI10_MATRIX& _m): UNI10_BLOCK(_m.Rnum, _m.Cnum, _m.diag){
@@ -421,6 +425,7 @@ bool UNI10_MATRIX::toGPU(){
 	return ongpu;
 }
 
+#ifndef UNI10_PURE_REAL
 UNI10_MATRIX exp(double a, const UNI10_BLOCK& mat){
   try{
     std::vector<CMatrix> rets = mat.eig();
@@ -433,6 +438,7 @@ UNI10_MATRIX exp(double a, const UNI10_BLOCK& mat){
     return UNI10_MATRIX();
   }
 }
+#endif
 
 UNI10_MATRIX exph(double a, const UNI10_BLOCK& mat){
   try{
@@ -448,6 +454,7 @@ UNI10_MATRIX exph(double a, const UNI10_BLOCK& mat){
   }
 }
 
+#ifndef UNI10_PURE_REAL
 CMatrix exp(const std::complex<double>& a, const UNI10_BLOCK& mat){
   try{
     std::vector<CMatrix> rets = mat.eig();
@@ -464,6 +471,7 @@ CMatrix exp(const std::complex<double>& a, const UNI10_BLOCK& mat){
 UNI10_MATRIX exp(const UNI10_BLOCK& mat){
   return exp(1.0, mat);
 }
+#endif
 
 UNI10_MATRIX exph(const UNI10_BLOCK& mat){
   return exph(1.0, mat);

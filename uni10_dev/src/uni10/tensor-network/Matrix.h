@@ -48,7 +48,9 @@ class Matrix: public Block {
 		Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
 		Matrix(const Matrix& _m);
     Matrix(const Block& _b);
+#ifndef UNI10_PURE_REAL
     Matrix(const CBlock& _b);
+#endif
 		Matrix();
 		~Matrix();
 		Matrix& operator=(const Matrix& _m);
@@ -75,10 +77,14 @@ class Matrix: public Block {
 		void init(const double* elem, bool _ongpu);
 };
 Matrix takeExp(double a, const Block& mat);
+#ifndef UNI10_PURE_REAL
 Matrix exp(double a, const Block& mat);
 CMatrix exp(const std::complex<double>& a, const Block& mat);
+#endif
 Matrix exph(double a, const Block& mat);
+#ifndef UNI10_PURE_REAL
 Matrix exp(const Block& mat);
+#endif
 Matrix exph(const Block& mat);
 Matrix otimes(const Block& Ma, const Block& Mb);
 };	/* namespace uni10 */

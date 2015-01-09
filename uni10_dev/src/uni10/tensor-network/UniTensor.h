@@ -38,17 +38,18 @@
 #include <assert.h>
 #include <sstream>
 #include <stdexcept>
-#define DOUBLE double
-
+#include <uni10/datatype.hpp>
 #include <uni10/data-structure/uni10_struct.h>
-#include <uni10/data-structure/Bond.h>
-#include <uni10/data-structure/Block.h>
-#include <uni10/tensor-network/Matrix.h>
+#define DOUBLE double
 
 /**
  * @brief Class of the symmetry tensor.
  */
 namespace uni10{
+class Block;
+class CBlock;
+class Matrix;
+class CMatrix;
 class UniTensor{
 	public:
 		UniTensor();
@@ -57,15 +58,17 @@ class UniTensor{
 		UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
 		UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
 		UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
-		UniTensor(const UniTensor& UniT);
+		UniTensor(const UniTensor& UniT); //CHECK
 		UniTensor(const Block& UniT);
 		~UniTensor();
-		UniTensor& operator=(const UniTensor& UniT);
+		UniTensor& operator=(const UniTensor& UniT); //CHECK
 		UniTensor& assign(const std::vector<Bond>& _bond);
 		void setLabel(const std::vector<int>& newLabels);
     void setLabel(int* newLabels);
 		std::vector<int> label()const;
 		int label(size_t idx)const;
+		std::string getName();
+    void setName(const std::string& _name);
 		size_t bondNum()const;
 		size_t inBondNum()const;
 		std::vector<Bond> bond()const;
@@ -85,7 +88,7 @@ class UniTensor{
 		const Block& const_getBlock(const Qnum& qnum)const;
 		std::map<Qnum, Matrix> getBlocks()const;
 		Matrix getBlock(bool diag = false)const;
-		Matrix getBlock(const Qnum& qnum, bool diag = false)const;
+		Matrix getBlock(const Qnum& qnum, bool diag = false)const; //CHECK
 		void putBlock(const Block& mat);
 		void putBlock(const Qnum& qnum, const Block& mat);
     double* getElem();
@@ -100,41 +103,37 @@ class UniTensor{
 		void orthoRand();
 		void orthoRand(const Qnum& qnum);
     void clear();
-    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum = 0)const;
-    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
-    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
-    std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
-    std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
-		std::string getName();
-    void setName(const std::string& _name);
     void save(const std::string& fname);
     UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
     UniTensor& permute(int* newLabels, int inBondNum);
     UniTensor& permute(int inBondNum);
 		UniTensor& transpose();
-
 		UniTensor& combineBond(const std::vector<int>& combined_labels);
-		UniTensor& partialTrace(int la, int lb);
-		double trace()const;
-		std::vector<_Swap> exSwap(const UniTensor& Tb)const;
-		void addGate(const std::vector<_Swap>& swaps);
-		UniTensor& operator*= (double a);
-		UniTensor& operator*= (const UniTensor& Tb);
-		UniTensor& operator+= (const UniTensor& Tb);
-                bool similar(const UniTensor& Tb)const;
-		bool elemCmp(const UniTensor& UniT)const;
-                std::string printRawElem(bool print=true)const;
-		static std::string profile(bool print = true);
-
-		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
-		friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
-		friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
-		friend UniTensor operator* (const UniTensor& Ta, double a);
-		friend UniTensor operator* (double a, const UniTensor& Ta){return Ta * a;};
-		friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
-		friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
-		friend class Node;
-		friend class Network;
+    UniTensor& partialTrace(int la, int lb); //CHECK
+    double trace()const;
+    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum = 0)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
+    std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+    bool similar(const UniTensor& Tb)const;
+    bool elemCmp(const UniTensor& UniT)const;
+    std::string printRawElem(bool print=true)const;
+    static std::string profile(bool print = true);
+    UniTensor& operator*= (double a);
+    UniTensor& operator*= (const UniTensor& Tb);
+    UniTensor& operator+= (const UniTensor& Tb);
+    std::vector<_Swap> exSwap(const UniTensor& Tb)const;
+    void addGate(const std::vector<_Swap>& swaps);
+    friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+    friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
+    friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
+    friend UniTensor operator*(const UniTensor& Ta, double a);
+    friend UniTensor operator*(double a, const UniTensor& Ta);
+    friend UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb);
+    friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
+    friend class Node;
+    friend class Network;
 
 	private:
 		std::string name;
@@ -160,8 +159,8 @@ class UniTensor{
 		static size_t MAXELEMNUM;
 		static size_t MAXELEMTEN;	//Max number of element of a tensor
 		//Private Functions
-		size_t grouping();
 		void initUniT();
+		size_t grouping();
     std::vector<UniTensor> _hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
 		static const int HAVEBOND = 1;		  /**< A flag for initialization */
 		static const int HAVEELEM = 2;		  /**< A flag for having element assigned */

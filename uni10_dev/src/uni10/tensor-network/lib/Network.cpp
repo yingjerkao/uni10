@@ -27,9 +27,9 @@
 *
 *****************************************************************************/
 #include <algorithm>
-#include <uni10/tensor-network/Network.h>
-#include <uni10/tensor-network/UniTensor.h>
 #include <uni10/tools/uni10_tools.h>
+#include <uni10/tensor-network/UniTensor.h>
+#include <uni10/tensor-network/Network.h>
 namespace uni10{
 Node::Node(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }

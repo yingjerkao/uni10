@@ -27,16 +27,13 @@
 *
 *****************************************************************************/
 #include <uni10/tensor-network/Matrix.h>
+#ifndef UNI10_PURE_REAL
 #include <uni10/tensor-network/CMatrix.h>
+#endif
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 
 namespace uni10{
-
-CMatrix& CMatrix::conj(){
-  setConjugate(m_elem, elemNum(), ongpu);
-  return *this;
-}
 
 Matrix takeExp(double a, const Block& mat){
   try{
@@ -48,11 +45,18 @@ Matrix takeExp(double a, const Block& mat){
   }
 }
 
+
+#ifndef UNI10_PURE_REAL
+
+CMatrix& CMatrix::conj(){
+  setConjugate(m_elem, elemNum(), ongpu);
+  return *this;
+}
+
 Matrix::Matrix(const CBlock& _cb): Block(_cb.Rnum, _cb.Cnum, _cb.diag){
   init(true);
   elemCast(m_elem, _cb.m_elem, elemNum(), ongpu, _cb.ongpu);
 }
-
 CMatrix::CMatrix(const Block& _b): CBlock(_b.Rnum, _b.Cnum, _b.diag){
   init(true);
   elemCast(m_elem, _b.m_elem, elemNum(), ongpu, _b.ongpu);
@@ -149,6 +153,39 @@ CMatrix& CMatrix::operator+= (const Block& Mb){
     propogate_exception(e, "In function CMatrix::operator+=(uni10::Matrix&):");
   }
 	return *this;
+}
+#endif
+size_t Block::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol)const{
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(!(Rnum == psi.elemNum())){
+      std::ostringstream err;
+      err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(ongpu && !psi.ongpu){
+      if(!psi.toGPU()){
+        std::ostringstream err;
+        err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+    }
+    size_t iter = max_iter;
+    if(!lanczosEV(m_elem, psi.m_elem, Rnum, iter, err_tol, E0, psi.m_elem, ongpu)){
+      std::ostringstream err;
+      err<<"Lanczos algorithm fails in converging.";;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return iter;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+    return 0;
+  }
 }
 
 };	/* namespace uni10 */
