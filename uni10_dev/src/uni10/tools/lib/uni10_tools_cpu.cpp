@@ -45,7 +45,7 @@ void elemBzero(void* ptr, size_t memsize, bool ongpu){
 
 void elemRand(double* elem, size_t N, bool ongpu){
 	for(size_t i = 0; i < N; i++)
-		elem[i] = (std::pow((-1), (rand() % 2)) * ((double)rand())) / RAND_MAX; //lapack_uni01_sampler();
+		elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
 }
 
 void setDiag(double* elem, double* diag_elem, size_t m, size_t n, size_t diag_n, bool ongpu, bool diag_ongpu){
