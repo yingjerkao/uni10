@@ -65,7 +65,10 @@ namespace uni10 {
     /// block elements out as a Matrix.
     /// @see Qnum, Bond, Matrix
     /// @example egQ1.cpp
-
+    /// @example egU1.cpp
+    /// @example egU2.cpp
+    /// @example egU3.cpp
+    
     class UniTensor {
     public:
         
@@ -426,29 +429,28 @@ namespace uni10 {
         
         /// @brief Print out raw elements
         /// Prints out raw elements of UniTensor as the following example,
-        /// @code
-        ///     2,0    1,0    0,0    1,0    0,0   -1,0    0,0   -1,0   -2,0
-        ///    -----------------------------------------------------------------
-        ///    |
-        /// 2,0|  0.142  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.000
-        ///    |
-        /// 1,0|  0.000  0.952  0.000  0.916  0.000  0.000  0.000  0.000  0.000
-        ///    |
-        /// 0,0|  0.000  0.000  0.198  0.000  0.335  0.000  0.768  0.000  0.000
-        ///    |
-        /// 1,0|  0.000  0.636  0.000  0.717  0.000  0.000  0.000  0.000  0.000
-        ///    |
-        /// 0,0|  0.000  0.000  0.278  0.000  0.554  0.000  0.477  0.000  0.000
-        ///    |
-        ///-1,0|  0.000  0.000  0.000  0.000  0.000  0.394  0.000  0.783  0.000
-        ///    |
-        /// 0,0|  0.000  0.000  0.629  0.000  0.365  0.000  0.513  0.000  0.000
-        ///    |
-        ///-1,0|  0.000  0.000  0.000  0.000  0.000  0.798  0.000  0.912  0.000
-        ///    |
-        ///-2,0|  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.840
+        ///@code
+        ///         2,0    1,0    0,0    1,0    0,0   -1,0    0,0   -1,0   -2,0
+        ///        -----------------------------------------------------------------
+        ///        |
+        ///     2,0|  0.142  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.000
+        ///        |
+        ///     1,0|  0.000  0.952  0.000  0.916  0.000  0.000  0.000  0.000  0.000
+        ///        |
+        ///     0,0|  0.000  0.000  0.198  0.000  0.335  0.000  0.768  0.000  0.000
+        ///        |
+        ///     1,0|  0.000  0.636  0.000  0.717  0.000  0.000  0.000  0.000  0.000
+        ///        |
+        ///     0,0|  0.000  0.000  0.278  0.000  0.554  0.000  0.477  0.000  0.000
+        ///        |
+        ///    -1,0|  0.000  0.000  0.000  0.000  0.000  0.394  0.000  0.783  0.000
+        ///        |
+        ///     0,0|  0.000  0.000  0.629  0.000  0.365  0.000  0.513  0.000  0.000
+        ///        |
+        ///    -1,0|  0.000  0.000  0.000  0.000  0.000  0.798  0.000  0.912  0.000
+        ///        |
+        ///    -2,0|  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.000  0.840
         ///@endcode
-        ///
         ///In the above example,  UniTensor has two incoming  and two outgoing bonds, with each bond having
         /// states with Qnum's <tt>[q(1), q(0), q(-1)]</tt>. The raw elements form a 9 by 9 Matrix.
         /// The first row shows the Qnum's, \c U1 and \c parity, in the columns below and the first column
@@ -459,12 +461,11 @@ namespace uni10 {
         /// 
         /// Prints out the memory usage as (for example):
         ///
-        /// @code{.mat}
-        /// Existing Tensors: 30
-        /// Allocated Elem: 2240
-        /// Max Allocated Elem: 4295
-        /// Max Allocated Elem for a Tensor: 924
-        /// @endcode
+        ///
+        ///     Existing Tensors: 30
+        ///     Allocated Elem: 2240
+        ///     Max Allocated Elem: 4295
+        ///     Max Allocated Elem for a Tensor: 924
         ///
         /// In the above example, currently there are 30 tensors and total number of existing elements is 2240.
         /// The maximum element number for now is 4295 and the maximum element number of a tensor is 924.

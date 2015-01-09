@@ -2,7 +2,8 @@
 #  @file CMakeLists.txt
 #  @license
 #    Copyright (c) 2013-2014
-#    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+#    Natioanl Taiwan University
+#    Natioanl Tsing-Hua University
 #
 #    This file is part of Uni10.
 #

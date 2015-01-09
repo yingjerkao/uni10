@@ -262,15 +262,16 @@ public:
     /// @return Sum
     double sum();
     
-    /// @brief Multiply Matrix by a scalar
+    /// @brief Multiply Matrix by a scalar and assign
+    ///
     /// Performs element-wise multiplication with a scalar \c a .
     Matrix& operator*= (double a);
     
-    /// @brief   Multiply Matrix by a second matrix
+    /// @brief   Multiply Matrix by a second matrix and assign
     ///
     /// Performs matrix multiplication of Matrix with another Matrix \c Mb and store the results in Matrix
     Matrix& operator*= (const Matrix& Mb);
-    /// @brief Perform addition of elements
+    /// @brief Perform addition of elements and assign
     ///
     /// Performs element by element addition and store the results in Matrix
     Matrix& operator+= (const Matrix& Mb);
