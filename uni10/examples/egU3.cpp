@@ -1,3 +1,27 @@
+/*
+*
+*  Universal Tensor Network Library (Uni10)
+*  @file
+*  egU3.cpp
+* 
+*  @license
+*  Copyright (C) 2013-2014 
+*  This file is part of Uni10
+*  
+*  Uni10 is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU Lesser General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Lesser General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 #include <iostream>
 #include <uni10.hpp>
 
@@ -33,14 +57,14 @@ int main(){
 	W.orthoRand();
 	uni10::UniTensor WT = W;
 	WT.transpose();
-	
+
 	// Operate W and WT on H_U1, see the contraction labels in the documentation.
 	int label_H[] = {1, 2, 3, 4};
 	int label_W[] = {-1, 1, 2};
 	int label_WT[] = {3, 4, -2};
-	H_U1.addLabel(label_H);
-	W.addLabel(label_W);
-	WT.addLabel(label_WT);
+	H_U1.setLabel(label_H);
+	W.setLabel(label_W);
+	WT.setLabel(label_WT);
 	//std::cout<<W;
 	std::cout<<W * H_U1 * WT;
 
@@ -49,8 +73,8 @@ int main(){
 	WT.save("egU3_WT");
 
 	// Check the memory usage.
-	uni10::UniTensor::check();
-	
+	uni10::UniTensor::profile();
+
 	return 0;
 }
 

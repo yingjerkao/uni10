@@ -1,0 +1,48 @@
+*****************************
+  Installation Instructions
+*****************************
+
+This file gives build instructions for Uni10. 
+
+Requirements
+============
+  * cmake version > 2.8.12
+  * C++ compiler 
+  * BLAS and LAPACK libraries and header files
+
+Build 
+=====
+To build Un10, follow the following steps:
+
+  1. Create a build directory
+  
+  2. Use Cmake to generate makefile
+  
+  3. Build library and exmamples
+
+  4. Install library and examples (May require root access)
+Examples
+--------
+
+Using system c++, blas and lapack
+
+    > mkdir build
+    > cd build
+    > cmake </path/to/uni10/>
+    > make
+    > sudo make install
+
+The installation path defaults to `/usr/local/uni10`.
+
+To override the default path, use `CMAKE_INSTALL_PREFIX` :
+
+    > cmake -DCMAKE_INSTALL_PREFIX=</installation_path> </path/to/uni10/>
+
+To use MKL and Intel compiler:
+
+    > cmake -DBUILD_WITH_MKL=on -DBUILD_WITH_INTEL_COMPILER=on </path/to/uni10/>
+
+If cmake failes to find blas and lapack, specify the libraries by
+
+    > cmake -DBLAS_LIBRARIES=</path/to/blas> -DLAPACK_LIBRARIES=</path/to/lapack> </path/to/uni10/>
+

@@ -3,9 +3,9 @@
 #
 # Options:
 #
-#   MKL_STATAIC       :   use static linking
-#   MKL_MULTI_THREADED:   use multi-threading
-#   MKL_SDL           :   Single Dynamic Library interface
+#   MKL_STA       :   use static linking
+#   MKL_MLT       :   use multi-threading
+#   MKL_SDL       :   Single Dynamic Library interface
 #
 # This module defines the following variables:
 #
@@ -30,6 +30,10 @@ else()
 #message("INTEL_ROOT:" ${INTEL_ROOT})
 #message("MKLROOT:" $ENV{MKLROOT})
 # Find include dir
+#message("MKL_STA:" ${MKL_STA})
+#message("MKL_MLT:" ${MKL_MLT})
+#message("MKL_SDL:" ${MKL_SDL})
+#message("CMAKE_SYSTEM_PROCESSOR:" ${CMAKE_SYSTEM_PROCESSOR})
 find_path(MKL_INCLUDE_DIR mkl.h
     PATHS ${MKL_ROOT}/include)
 
@@ -51,13 +55,13 @@ endif()
 set(_MKL_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
 if(WIN32)
-    if(MKL_STATAIC)
+    if(MKL_STA)
         set(CMAKE_FIND_LIBRARY_SUFFIXES .lib)
     else()
         set(CMAKE_FIND_LIBRARY_SUFFIXES _dll.lib)
     endif()
 else()
-    if(MKL_STATAIC)
+    if(MKL_STA)
         set(CMAKE_FIND_LIBRARY_SUFFIXES .a)
     else()
         set(CMAKE_FIND_LIBRARY_SUFFIXES .so)
@@ -86,7 +90,7 @@ else()
         PATHS ${MKL_LIB_PATH})
 
     ######################## Threading layer ########################
-    if(MKL_MULTI_THREADED)
+    if (MKL_MLT)
         set(MKL_THREADING_LIBNAME mkl_intel_thread)
     else()
         set(MKL_THREADING_LIBNAME mkl_sequential)
@@ -114,6 +118,7 @@ else()
     else()
         set(MKL_RTL_LIBNAME iomp5)
     endif()
+    set(CMAKE_FIND_LIBRARY_SUFFIXES .so) # Link openmp runtime dynamically
     if( CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" )
       find_library(MKL_RTL_LIBRARY ${MKL_RTL_LIBNAME}
           PATHS ${INTEL_ROOT}/lib/intel64)

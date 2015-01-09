@@ -1,3 +1,27 @@
+/*
+*
+*  Universal Tensor Network Library (Uni10)
+*  @file
+*  egN1.cpp
+* 
+*  @license
+*  Copyright (C) 2013-2014 
+*  This file is part of Uni10
+*  
+*  Uni10 is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU Lesser General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Lesser General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 #include <iostream>
 #include <uni10.hpp>
 
@@ -10,14 +34,16 @@ int main(){
 	// Create network by reading in network file "egN1_network"
 	uni10::Network net("egN1_network");
 	// Put tensors to the Network net
-	net.putTensor("H", &H_U1);
-	net.putTensor("W", &W);
-	net.putTensor("WT", &WT);
+	net.putTensor("H", H_U1);
+	net.putTensor("W", W);
+	net.putTensor("WT", WT);
 
 	// Perform contractions inside the tensor network
 	std::cout<<net.launch();
 	// Print out the network
 	std::cout<<net;
+  // Print out the memory usage
+  net.profile();
 
 	return 0;
 }

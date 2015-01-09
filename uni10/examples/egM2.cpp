@@ -1,3 +1,27 @@
+/*
+*
+*  Universal Tensor Network Library (Uni10)
+*  @file
+*  egM2.cpp
+* 
+*  @license
+*  Copyright (C) 2013-2014 
+*  This file is part of Uni10
+*  
+*  Uni10 is free software: you can redistribute it and/or modify
+*  it under the terms of the GNU Lesser General Public License as published by
+*  the Free Software Foundation, either version 3 of the License, or
+*  (at your option) any later version.
+*
+*  This program is distributed in the hope that it will be useful,
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*  GNU Lesser General Public License for more details.
+*
+*  You should have received a copy of the GNU General Public License
+*  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*
+*/
 #include <iostream>
 #include <uni10.hpp>
 
@@ -24,3 +48,34 @@ int main(){
 	std::cout<< S;
 	std::cout<< U * S * VT;
 }
+/* Output:
+4 x 5 = 20
+
+  0.840  0.394  0.783  0.798  0.912
+
+  0.198  0.335  0.768  0.278  0.554
+
+  0.477  0.629  0.365  0.513  0.952
+
+  0.916  0.636  0.717  0.142  0.607
+
+4 x 4 = 4, Diagonal
+
+  2.736  0.000  0.000  0.000
+
+  0.000  0.555  0.000  0.000
+
+  0.000  0.000  0.449  0.000
+
+  0.000  0.000  0.000  0.382
+
+4 x 5 = 20
+
+  0.840  0.394  0.783  0.798  0.912
+
+  0.198  0.335  0.768  0.278  0.554
+
+  0.477  0.629  0.365  0.513  0.952
+
+  0.916  0.636  0.717  0.142  0.607
+*/
