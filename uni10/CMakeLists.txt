@@ -281,7 +281,7 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 FIND_PACKAGE(Doxygen)
 if(DOXYGEN_FOUND)
 configure_file(Uni10_Doxyfile.in Uni10Doxyfile)
-add_custom_target(doc
+add_custom_target(doc ALL
 ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Uni10Doxyfile
 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 COMMENT "Generating API documentation with Doxygen" VERBATIM
@@ -329,8 +329,7 @@ endif()
 ######################################################################
 ### INSTALL DOCUMENTATION
 ######################################################################
-
-install(DIRECTORY doc/
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
 	DESTINATION doc 
         COMPONENT documentation
 )
