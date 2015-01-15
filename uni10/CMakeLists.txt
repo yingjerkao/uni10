@@ -376,5 +376,5 @@ message(STATUS "")
 
 if (BUILD_PACKAGES)
 include("Package.cmake")
-include(CPACK)
+include(CPack)
 endif()
