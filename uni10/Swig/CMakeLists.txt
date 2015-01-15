@@ -37,7 +37,7 @@ set(_CURRENT_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
 
 if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
   if(UNIX)
-    if (NOT ${PYTHON_EXECUTABLE} STREQUAL "/usr/bin/python")
+      if (NOT ${PYTHON_EXECUTABLE} MATCHES "^(/usr)?/bin/python")
         ### Homebrew work around 
         if(APPLE)
           if (${PYTHON_EXECUTABLE} STREQUAL "/usr/local/bin/python") 
