@@ -329,10 +329,12 @@ endif()
 ######################################################################
 ### INSTALL DOCUMENTATION
 ######################################################################
+if(DOXYGEN_FOUND)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
 	DESTINATION doc 
         COMPONENT documentation
 )
+endif()
 install(FILES INSTALL README GPL LGPL ChangeLog 
         DESTINATION .
         COMPONENT common)
