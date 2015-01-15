@@ -3,7 +3,8 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Tama Ma, Pochung Chen,  and Ying-Jer Kao 
+*    Natioanl Taiwan University
+*    National Tsing-Hua University
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *

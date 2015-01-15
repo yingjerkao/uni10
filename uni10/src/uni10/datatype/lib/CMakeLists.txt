@@ -2,7 +2,9 @@
 #  @file CMakeLists.txt
 #  @license
 #    Copyright (c) 2013-2014
-#    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+#    National Taiwan University
+#    National Tsing-Hua University
+ 
 #
 #    This file is part of Uni10, the Universal Tensor Network Library.
 #
