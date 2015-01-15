@@ -197,8 +197,6 @@ install(FILES ${CMAKE_SWIG_OUTDIR}/__init__.py
 install(FILES ${CMAKE_SWIG_OUTDIR}/setup.py 
         DESTINATION pyUni10 COMPONENT pyUni10)
 
-install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} setup.py install
-                              WORKING_DIRECTORY pyUni10)" COMPONENT post-script)
 
 
 
