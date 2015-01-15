@@ -61,8 +61,8 @@ endif()
 ######################################################################
 set(UNI10_VERSION_MAJOR 0)
 set(UNI10_VERSION_MINOR 9)
-set(UNI10_VERSION_PATCH 0)
-set(UNI10_VERSION COUNT 3)
+set(UNI10_VERSION_PATCH 1)
+set(UNI10_VERSION COUNT 4)
 set(UNI10_VERSION
   ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
 )
@@ -329,10 +329,12 @@ endif()
 ######################################################################
 ### INSTALL DOCUMENTATION
 ######################################################################
+if(DOXYGEN_FOUND)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
 	DESTINATION doc 
         COMPONENT documentation
 )
+endif()
 install(FILES INSTALL README GPL LGPL ChangeLog 
         DESTINATION .
         COMPONENT common)
