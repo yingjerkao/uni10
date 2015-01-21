@@ -38,6 +38,7 @@
 #include <cmath>
 #include <stdexcept>
 #include <sstream>
+#include <cstdio>
 #include <uni10/data-structure/Block.h>
 #include <uni10/data-structure/CBlock.h>
 //Type of Matrix

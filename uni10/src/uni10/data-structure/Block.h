@@ -35,6 +35,7 @@
 #include <iomanip>
 #include <assert.h>
 #include <cstdint>
+#include <cstdio>
 #include <vector>
 #include <uni10/datatype.hpp>
 #include <stdexcept>
