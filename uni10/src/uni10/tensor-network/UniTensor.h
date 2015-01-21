@@ -1,26 +1,25 @@
 /****************************************************************************
  *  @file CMakeLists.txt
  *  @license
- *    Universal Tensor Network Library
- *    Copyright (c) 2013-2014
- *    National Taiwan University
- *    National Tsing-Hua University
- 
+ *   Universal Tensor Network Library
+ *   Copyright (c) 2013-2014
+ *   National Taiwan University
+ *   National Tsing-Hua University
  *
- *    This file is part of Uni10, the Universal Tensor Network Library.
+ *   This file is part of Uni10, the Universal Tensor Network Library.
  *
- *    Uni10 is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU Lesser General Public License as published by
- *    the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
+ *   Uni10 is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Lesser General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
  *
- *    Uni10 is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU Lesser General Public License for more details.
+ *   Uni10 is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Lesser General Public License for more details.
  *
- *    You should have received a copy of the GNU Lesser General Public License
- *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+ *   You should have received a copy of the GNU Lesser General Public License
+ *   along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
  *  @endlicense
  *  @brief Header file for UniTensor class
  *  @author Yun-Da Hsieh
@@ -34,6 +33,7 @@
 #include <iomanip>
 #include <stdio.h>
 #include <cmath>
+#include <cstdio>
 #include <vector>
 #include <map>
 #include <set>
