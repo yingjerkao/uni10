@@ -1,2 +1,0 @@
-SyT2 = SyT * SyT;
-H1 = W1 * W1T * U;

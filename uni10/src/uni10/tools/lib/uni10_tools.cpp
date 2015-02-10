@@ -3,7 +3,9 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
+*    National Taiwan University
+*    National Tsing-Hua University
+
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -28,63 +30,47 @@
 *****************************************************************************/
 #include <uni10/tools/uni10_tools.h>
 #include <string.h>
-//using namespace boost;
+namespace uni10 {
 
-namespace uni10{
-//mt19937 lapack_rng(777);
-//uniform_01<mt19937> lapack_uni01_sampler(lapack_rng);
-
-size_t MEM_USAGE = 0;
-
-void* elemAlloc(void* ptr, size_t memsize, bool& ongpu){
-	ptr = malloc(memsize);
-	assert(ptr != NULL);
-	MEM_USAGE += memsize;
-	return ptr;
+std::vector<_Swap> recSwap(std::vector<int>& _ord) { //Given the reshape order out to in.
+    //int ordF[n];
+    int n = _ord.size();
+    std::vector<int> ordF(n);
+    for(int i = 0; i < n; i++)
+        ordF[i] = i;
+    return recSwap(_ord, ordF);
+}
+std::vector<_Swap> recSwap(std::vector<int>& _ord, std::vector<int>& ordF) { //Given the reshape order out to in.
+    int n = _ord.size();
+    std::vector<int> ord = _ord;
+    std::vector<_Swap> swaps;
+    _Swap sg;
+    int tmp;
+    for(int i = 0; i < n - 1; i++)
+        for(int j = 0; j < n - i - 1; j++)
+            if(ord[j] > ord[j + 1]) {
+                sg.b1 = ordF[ord[j + 1]];
+                sg.b2 = ordF[ord[j]];
+                tmp = ord[j];
+                ord[j] = ord[j + 1];
+                ord[j + 1] = tmp;
+                swaps.push_back(sg);
+            }
+    return swaps;
 }
 
-void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool src_ongpu){
-	return memcpy(des, src, memsize);
+void propogate_exception(const std::exception& e, const std::string& msg) {
+    std::string except_str("\n");
+    except_str.append(msg);
+    except_str.append(e.what());
+    throw std::logic_error(except_str);
 }
 
-void elemFree(void* ptr, size_t memsize, bool ongpu){
-	free(ptr);
-	MEM_USAGE -= memsize;
-	ptr = NULL;
-}
-void elemBzero(void* ptr, size_t memsize, bool ongpu){
-	memset(ptr, 0, memsize);
+std::string exception_msg(const std::string& msg) {
+    std::string except_str("\n  ");
+    except_str.append(msg);
+    except_str.append("\n");
+    return except_str;
 }
 
-void elemRand(double* elem, size_t N, bool ongpu){
-	for(size_t i = 0; i < N; i++)
-		elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
-}
-
-std::vector<_Swap> recSwap(int* _ord, int n){	//Given the reshape order out to in.
-	int ordF[n];
-	for(int i = 0; i < n; i++)
-		ordF[i] = i;
-	return recSwap(_ord, n, ordF);
-}
-std::vector<_Swap> recSwap(int* _ord, int n, int* ordF){	//Given the reshape order out to in.
-	int* ord = (int*)malloc(sizeof(int) * n);
-	memcpy(ord, _ord, sizeof(int) * n);
-	std::vector<_Swap> swaps;
-	_Swap sg;
-	int tmp;
-	for(int i = 0; i < n - 1; i++)
-		for(int j = 0; j < n - i - 1; j++)
-			if(ord[j] > ord[j + 1]){
-				sg.b1 = ordF[ord[j + 1]];
-				sg.b2 = ordF[ord[j]];
-				tmp = ord[j];
-				ord[j] = ord[j + 1];
-				ord[j + 1] = tmp;
-				swaps.push_back(sg);
-			}
-	free(ord);
-	return swaps;
-}
-
-};	/* namespace uni10 */
+};  /* namespace uni10 */

@@ -3,7 +3,9 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
+*    National Taiwan University
+*    National Tsing-Hua University
+
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -26,23 +28,380 @@
 *  @since 0.1.0
 *
 *****************************************************************************/
-#include <uni10/data-structure/Block.h>
-//using namespace uni10::datatype;
+#include <uni10/numeric/uni10_lapack.h>
+#include <uni10/tools/uni10_tools.h>
+#include <uni10/tensor-network/Matrix.h>
+#ifndef UNI10_PURE_REAL
+#include <uni10/tensor-network/CMatrix.h>
+#endif
+
+
+#ifndef UNI10_DTYPE
+#define UNI10_DTYPE double
+#endif
+#ifndef UNI10_MATRIX
+#define UNI10_MATRIX Matrix
+#endif
+#ifndef UNI10_BLOCK
+#define UNI10_BLOCK Block
+#endif
+
 namespace uni10{
-Block::Block(): Rnum(0), Cnum(0), offset(0), elem(NULL){}
-Block::Block(const Block& _b): qnum(_b.qnum), Rnum(_b.Rnum), Cnum(_b.Cnum), offset(_b.offset), elem(_b.elem){}
-Block::~Block(){}
-std::ostream& operator<< (std::ostream& os, const Block& b){
-	os << "--- " << b.qnum<< ": " << b.Rnum << " x " << b.Cnum << " = " << b.Rnum * b.Cnum << " ---\n\n";
-	for(size_t r = 0; r < b.Rnum; r++){
-		for(size_t c = 0; c < b.Cnum; c++)
-			os<< std::setw(7) << std::setprecision(3) << b.elem[r * b.Cnum + c];
-		os << "\n\n";
-	}
-	return os;
+UNI10_BLOCK::UNI10_BLOCK(): Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL){}
+UNI10_BLOCK::UNI10_BLOCK(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
+UNI10_BLOCK::UNI10_BLOCK(const UNI10_BLOCK& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
+
+size_t UNI10_BLOCK::row()const{return Rnum;}
+size_t UNI10_BLOCK::col()const{return Cnum;}
+bool UNI10_BLOCK::isDiag()const{return diag;}
+bool UNI10_BLOCK::isOngpu()const{return ongpu;}
+size_t UNI10_BLOCK::elemNum()const{
+  if(diag)
+    return (Rnum < Cnum ? Rnum : Cnum);
+  else
+    return Rnum * Cnum;
 }
-bool operator== (const Block& b1, const Block& b2){
-	return (b1.qnum == b2.qnum) && (b1.Rnum == b2.Rnum) && (b1.Cnum == b2.Cnum);
+
+UNI10_DTYPE* UNI10_BLOCK::getElem()const{return m_elem;}
+
+void UNI10_BLOCK::save(const std::string& fname)const{
+  try{
+    FILE *fp = fopen(fname.c_str(), "w");
+    if(!(fp != NULL)){
+      std::ostringstream err;
+      err<<"Error in writing to file '"<<fname<<"'.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    UNI10_DTYPE* elem = m_elem;
+    if(ongpu){
+      elem = (UNI10_DTYPE*)malloc(elemNum() * sizeof(UNI10_DTYPE));
+      elemCopy(elem, m_elem, elemNum() * sizeof(UNI10_DTYPE), false, ongpu);
+    }
+    fwrite(elem, sizeof(UNI10_DTYPE), elemNum(), fp);
+    fclose(fp);
+    if(ongpu)
+      free(elem);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Block::save(std::string&):");
+  }
+}
+
+UNI10_DTYPE UNI10_BLOCK::operator[](size_t idx)const{
+  try{
+    if(!(idx < elemNum())){
+      std::ostringstream err;
+      err<<"Index exceeds the number of elements("<<elemNum()<<").";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return getElemAt(idx, m_elem, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Block::operator[](size_t):");
+    return 0;
+  }
+}
+
+UNI10_DTYPE UNI10_BLOCK::at(size_t r, size_t c)const{
+  try{
+    if(!((r < Rnum) && (c < Cnum))){
+      std::ostringstream err;
+      err<<"The input indices are out of range.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(diag){
+      if(!(r == c && r < elemNum())){
+        std::ostringstream err;
+        err<<"The matrix is diagonal, there is no off-diagonal element.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      return getElemAt(r, m_elem, ongpu);
+    }
+    else
+      return getElemAt(r * Cnum + c, m_elem, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Block::at(size_t, size_t):");
+    return 0;
+  }
+}
+
+std::vector<UNI10_MATRIX> UNI10_BLOCK::eigh()const{
+  std::vector<UNI10_MATRIX> outs;
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(diag){
+      std::ostringstream err;
+      err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    //GPU_NOT_READY
+    outs.push_back(UNI10_MATRIX(Rnum, Cnum, true, ongpu));
+    outs.push_back(UNI10_MATRIX(Rnum, Cnum, false, ongpu));
+    eigSyDecompose(m_elem, Rnum, outs[0].m_elem, outs[1].m_elem, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::eigh():");
+  }
+	return outs;
+}
+
+#ifndef UNI10_PURE_REAL
+std::vector<CMatrix> UNI10_BLOCK::eig()const{
+  std::vector<CMatrix> outs;
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(diag){
+      std::ostringstream err;
+      err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    //GPU_NOT_READY
+    outs.push_back(CMatrix(Rnum, Cnum, true, ongpu));
+    outs.push_back(CMatrix(Rnum, Cnum, false, ongpu));
+    eigDecompose(m_elem, Rnum, outs[0].m_elem, outs[1].m_elem, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::eigh():");
+  }
+	return outs;
+}
+#endif
+
+std::vector<UNI10_MATRIX> UNI10_BLOCK::svd()const{
+	std::vector<UNI10_MATRIX> outs;
+  try{
+	if(diag){
+    std::ostringstream err;
+    err<<"Cannot perform singular value decomposition on a diagonal matrix. Need not to do so.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
+  //GPU_NOT_READY
+	outs.push_back(UNI10_MATRIX(Rnum, min, false, ongpu));
+  outs.push_back(UNI10_MATRIX(min, min, true, ongpu));
+	outs.push_back(UNI10_MATRIX(min, Cnum, false, ongpu));
+	matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::svd():");
+  }
+	return outs;
+}
+UNI10_MATRIX UNI10_BLOCK::inverse()const{
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform inversion on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    UNI10_MATRIX invM(*this);
+    assert(ongpu == invM.isOngpu());
+    matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
+    return invM;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::inverse():");
+    return UNI10_MATRIX();
+  }
+}
+
+double UNI10_BLOCK::norm()const{
+  try{
+	  return vectorNorm(m_elem, elemNum(), 1, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::norm():");
+    return 0;
+  }
+}
+
+UNI10_DTYPE UNI10_BLOCK::sum()const{
+  try{
+	  return vectorSum(m_elem, elemNum(), 1, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::sum():");
+    return 0;
+  }
+}
+
+UNI10_DTYPE UNI10_BLOCK::trace()const{
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform trace on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(diag)
+      return vectorSum(m_elem, elemNum(), 1, ongpu);
+    else
+      return vectorSum(m_elem, Cnum, Cnum + 1, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::trace():");
+    return 0;
+  }
+}
+UNI10_MATRIX operator* (const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
+  try{
+    if(!(Ma.Cnum == Mb.Rnum)){
+      std::ostringstream err;
+      err<<"The dimensions of the two matrices do not match for matrix multiplication.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if((!Ma.diag) && (!Mb.diag)){
+      UNI10_MATRIX Mc(Ma.Rnum, Mb.Cnum);
+      matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
+      return Mc;
+    }
+    else if(Ma.diag && (!Mb.diag)){
+      UNI10_MATRIX Mc(Mb);
+      Mc.resize(Ma.Rnum, Mb.Cnum);
+      diagRowMul(Mc.m_elem, Ma.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
+      return Mc;
+    }
+    else if((!Ma.diag) && Mb.diag){
+      UNI10_MATRIX Mc(Ma);
+      Mc.resize(Ma.Rnum, Mb.Cnum);
+      diagColMul(Mc.m_elem, Mb.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
+      return Mc;
+    }
+    else{
+      UNI10_MATRIX Mc(Ma.Rnum, Mb.Cnum, true);
+      Mc.set_zero();
+      size_t min = std::min(Ma.elemNum(), Mb.elemNum());
+      elemCopy(Mc.m_elem, Ma.m_elem, min * sizeof(UNI10_DTYPE), Mc.ongpu, Ma.ongpu);
+      vectorMul(Mc.m_elem, Mb.m_elem, min, Mc.ongpu, Mb.ongpu);
+      return Mc;
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator*(uni10::Matrix&, uni10::Matrix&):");
+    return UNI10_BLOCK();
+  }
+}
+UNI10_MATRIX operator*(const UNI10_BLOCK& Ma, double a){
+  try{
+    UNI10_MATRIX Mb(Ma);
+    vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.isOngpu());
+    return Mb;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
+    return UNI10_BLOCK();
+  }
+}
+UNI10_MATRIX operator*(double a, const UNI10_BLOCK& Ma){return Ma * a;}
+
+#ifndef UNI10_PURE_REAL
+CMatrix operator*(const UNI10_BLOCK& Ma, const std::complex<double>& a){
+  try{
+    CMatrix Mb(Ma);
+    vectorScal(a, Mb.getElem(), Mb.elemNum(), Mb.isOngpu());
+    return Mb;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
+    return UNI10_BLOCK();
+  }
+}
+CMatrix operator*(const std::complex<double>& a, const UNI10_BLOCK& Ma){return Ma * a;}
+#endif
+
+UNI10_MATRIX operator+(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
+  try{
+    UNI10_MATRIX Mc(Ma);
+    vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
+    return Mc;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");
+    return UNI10_BLOCK();
+  }
+}
+
+bool operator== (const UNI10_BLOCK& m1, const UNI10_BLOCK& m2){
+  try{
+    double diff;
+    if(m1.elemNum() == m2.elemNum()){
+      for(size_t i = 0; i < m1.elemNum(); i++){
+        diff = std::abs(m1.m_elem[i] - m2.m_elem[i]);
+        if(diff > 1E-12)
+          return false;
+      }
+    }
+    else
+      return false;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator==(uni10::Matrix&, uni10::Matrix&):");
+  }
+  return true;
+}
+
+UNI10_BLOCK::~UNI10_BLOCK(){}
+std::ostream& operator<< (std::ostream& os, const UNI10_BLOCK& b){
+  try{
+    os << b.Rnum << " x " << b.Cnum << " = " << b.elemNum();
+    if(b.diag)
+      os << ", Diagonal";
+    if(b.ongpu)
+      os<< ", onGPU";
+    os <<std::endl << std::endl;
+    UNI10_DTYPE* elem;
+    if(b.ongpu){
+      elem = (UNI10_DTYPE*)malloc(b.elemNum() * sizeof(UNI10_DTYPE));
+      elemCopy(elem, b.m_elem, b.elemNum() * sizeof(UNI10_DTYPE), false, b.ongpu);
+    }
+    else
+      elem = b.m_elem;
+    for(size_t i = 0; i < b.Rnum; i++){
+      for(size_t j = 0; j < b.Cnum; j++)
+        if(b.diag){
+#ifdef UNI10_COMPLEX
+          if(i == j)
+            os << std::setw(17) << std::fixed << std::setprecision(3) << elem[i];
+          else
+            os << std::setw(17) << std::fixed << std::setprecision(3) << 0.0;
+        }
+        else
+          os << std::setw(17) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
+#else
+          if(i == j)
+            os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i];
+          else
+            os << std::setw(7) << std::fixed << std::setprecision(3) << 0.0;
+        }
+        else
+          os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
+#endif
+      os << std::endl << std::endl;
+    }
+    if(b.ongpu)
+      free(elem);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator<<(std::ostream&, uni10::Matrix&):");
+  }
+  return os;
 }
 
 };	/* namespace uni10 */
+#ifdef UNI10_BLOCK
+#undef UNI10_BLOCK
+#endif
+#ifdef UNI10_MATRIX
+#undef UNI10_MATRIX
+#endif
+#ifdef UNI10_DTYPE
+#undef UNI10_DTYPE
+#endif

@@ -2,7 +2,9 @@
 #  @file CMakeLists.txt
 #  @license
 #    Copyright (c) 2013-2014
-#    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao 
+#    National Taiwan University
+#    National Tsing-Hua University
+ 
 #
 #    This file is part of Uni10, the Universal Tensor Network Library.
 #
@@ -31,12 +33,12 @@ cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 ### LIST OF FILES
 ######################################################################
 
-set(tensor_network_lib_sources 
+set(tensor_network_lib_sources
   Network.cpp
   UniTensor.cpp
-  UniTensor_elem.cpp
   Matrix.cpp
-  operate.cpp 
+  MatrixOperation.cpp
+  Operation.cpp
 )
 
 
