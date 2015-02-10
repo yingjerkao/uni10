@@ -69,6 +69,7 @@ class Matrix: public Block {
 		bool toGPU();
 		Matrix& transpose();
 		Matrix& cTranspose();
+    Matrix& conj(){return *this;};
 		Matrix& operator*= (double a);
 		Matrix& operator*= (const Block& Mb);
 		Matrix& operator+= (const Block& Mb);

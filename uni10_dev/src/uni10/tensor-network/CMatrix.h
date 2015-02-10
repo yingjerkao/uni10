@@ -1,5 +1,5 @@
 /****************************************************************************
-*  @file Matrix.h
+*  @file CMatrix.h
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014

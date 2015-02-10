@@ -83,7 +83,7 @@ void matrixMul(std::complex<double>* A, std::complex<double>* B, int M, int N, i
 void vectorAdd(std::complex<double>* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
 void vectorAdd(std::complex<double>* Y, std::complex<double>* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
 void vectorScal(double a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
-void vectorScal(std::complex<double> a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
+void vectorScal(const std::complex<double>& a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
 void vectorMul(std::complex<double>* Y, std::complex<double>* X, size_t N, bool y_ongpu, bool x_ongpu); // Y = Y * X, element-wise multiplication;
 void diagRowMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
 void diagColMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
@@ -97,6 +97,8 @@ void setCTranspose(std::complex<double>* A, size_t M, size_t N, bool ongpu);
 void eigDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double> *EigVec, bool ongpu);
 void eigSyDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double>* EigVec, bool ongpu);
 void setConjugate(std::complex<double> *A, size_t N, bool ongpu);
+void setIdentity(std::complex<double>* elem, size_t M, size_t N, bool ongpu);
+bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, std::complex<double>* eigVec, bool ongpu);
 
 };	/* namespace uni10 */
 #endif /* UNI10_LAPACK_H */

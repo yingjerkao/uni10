@@ -65,6 +65,7 @@ class Bond {
 		friend Bond combine(const std::vector<Bond>& bds);
 		friend std::ostream& operator<< (std::ostream& os, const Bond& b);
 		friend class UniTensor;
+		friend class CUniTensor;
 		friend class Node;
 	private:
 		void setting(const std::vector<Qnum>& qnums);

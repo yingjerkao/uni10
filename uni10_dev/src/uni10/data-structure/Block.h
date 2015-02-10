@@ -56,6 +56,7 @@ class Block{
 		double operator[](size_t idx)const;
 		double at(size_t i, size_t j)const;
 		double* getElem()const;
+    Matrix getDiag()const;
 		void save(const std::string& fname)const;
 #ifndef UNI10_PURE_REAL
 		std::vector<CMatrix> eig()const;
@@ -81,7 +82,7 @@ class Block{
 		friend class Matrix;
 		friend class CMatrix;
 		friend std::ostream& operator<< (std::ostream& os, const Block& b);
-		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+		//friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 	protected:
 		double* m_elem;
 		size_t Rnum;		//number of rows of the block

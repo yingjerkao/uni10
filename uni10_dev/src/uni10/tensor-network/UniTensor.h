@@ -40,7 +40,6 @@
 #include <stdexcept>
 #include <uni10/datatype.hpp>
 #include <uni10/data-structure/uni10_struct.h>
-#define DOUBLE double
 
 /**
  * @brief Class of the symmetry tensor.
@@ -88,7 +87,7 @@ class UniTensor{
 		const Block& const_getBlock(const Qnum& qnum)const;
 		std::map<Qnum, Matrix> getBlocks()const;
 		Matrix getBlock(bool diag = false)const;
-		Matrix getBlock(const Qnum& qnum, bool diag = false)const; //CHECK
+		Matrix getBlock(const Qnum& qnum, bool diag = false)const;
 		void putBlock(const Block& mat);
 		void putBlock(const Qnum& qnum, const Block& mat);
     double* getElem();
@@ -137,7 +136,7 @@ class UniTensor{
 
 	private:
 		std::string name;
-		DOUBLE *elem;		//Array of elements
+		double *elem;		//Array of elements
 		int status;	//Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
 		std::vector<Bond> bonds;
 		std::map<Qnum, Block> blocks;

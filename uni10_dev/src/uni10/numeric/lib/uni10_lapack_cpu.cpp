@@ -238,7 +238,6 @@ void setIdentity(double* elem, size_t M, size_t N, bool ongpu){
 		elem[i * N + i] = 1;
 }
 
-
 double vectorSum(double* X, size_t N, int inc, bool ongpu){
   double sum = 0;
   size_t idx = 0;
@@ -316,8 +315,8 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
       converged = true;
     it++;
     if(it > 1){
-      double* z = (double*)malloc(it * it * sizeof(double));
-      double* work = (double*)malloc(4 * it * sizeof(double));
+      double* z = NULL;//(double*)malloc(it * it * sizeof(double));
+      double* work = NULL;//(double*)malloc(4 * it * sizeof(double));
       int info;
       memcpy(d, As, it * sizeof(double));
       memcpy(e, Bs, it * sizeof(double));
@@ -503,7 +502,7 @@ void vectorScal(double a, std::complex<double>* X, size_t N, bool ongpu){
 	}
 }
 
-void vectorScal(std::complex<double> a, std::complex<double>* X, size_t N, bool ongpu){
+void vectorScal(const std::complex<double>& a, std::complex<double>* X, size_t N, bool ongpu){
 	int inc = 1;
 	int64_t left = N;
 	size_t offset = 0;
@@ -630,4 +629,107 @@ void setConjugate(std::complex<double> *A, size_t N, bool ongpu){
     A[i] = std::conj(A[i]);
 }
 
+void setIdentity(std::complex<double>* elem, size_t M, size_t N, bool ongpu){
+	size_t min;
+	if(M < N)	min = M;
+	else		min = N;
+	memset(elem, 0, M * N * sizeof(std::complex<double>));
+	for(size_t i = 0; i < min; i++)
+		elem[i * N + i] = 1.0;
+}
+
+bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, std::complex<double>* eigVec, bool ongpu){
+  int N = dim;
+  const int min_iter = 2;
+  const double beta_err = 1E-15;
+  if(!(max_iter > min_iter)){
+    std::ostringstream err;
+    err<<"Maximum iteration number should be set greater than 2.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  std::complex<double> a = 1.0;
+  double alpha;
+  double beta = 1;
+  int inc = 1;
+  size_t M = max_iter;
+  std::complex<double> *Vm = (std::complex<double>*)malloc((M + 1) * N * sizeof(std::complex<double>));
+  double *As = (double*)malloc(M * sizeof(double));
+  double *Bs = (double*)malloc(M * sizeof(double));
+  double *d = (double*)malloc(M * sizeof(double));
+  double *e = (double*)malloc(M * sizeof(double));
+  int it = 0;
+  memcpy(Vm, psi, N * sizeof(std::complex<double>));
+  vectorScal(1 / vectorNorm(psi, N, 1, false), Vm, N, false);
+  memset(&Vm[(it+1) * N], 0, N * sizeof(std::complex<double>));
+  memset(As, 0, M * sizeof(double));
+  memset(Bs, 0, M * sizeof(double));
+  double e_diff = 1;
+  double e0_old = 0;
+  bool converged = false;
+  while((((e_diff > err_tol) && it < max_iter) || it < min_iter) && beta > beta_err){
+    std::complex<double> minus_beta = -beta;
+	  zgemv((char*)"T", &N, &N, &a, A, &N, &Vm[it * N], &inc, &minus_beta, &Vm[(it+1) * N], &inc);
+    alpha = zdotc(&N, &Vm[it*N], &inc, &Vm[(it+1) * N], &inc).real();
+    std::complex<double> minus_alpha = -alpha;
+    zaxpy(&N, &minus_alpha, &Vm[it * N], &inc, &Vm[(it+1) * N], &inc);
+    beta = vectorNorm(&Vm[(it+1) * N], N, 1, false);
+		if(it < max_iter - 1)
+			memcpy(&Vm[(it + 2) * N], &Vm[it * N], N * sizeof(std::complex<double>));
+    As[it] = alpha;
+    if(beta > beta_err){
+      vectorScal(1/beta, &Vm[(it+1) * N], N, false);
+      if(it < max_iter - 1)
+        Bs[it] = beta;
+    }
+    else
+      converged = true;
+    it++;
+    if(it > 1){
+      double* z = NULL;//(double*)malloc(it * it * sizeof(double));
+      double* work = NULL;//(double*)malloc(4 * it * sizeof(double));
+      int info;
+      memcpy(d, As, it * sizeof(double));
+      memcpy(e, Bs, it * sizeof(double));
+      dstev((char*)"N", &it, d, e, z, &it, work, &info);
+      if(info != 0){
+        std::ostringstream err;
+        err<<"Error in Lapack function 'dstev': Lapack INFO = "<<info;
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      double base = std::abs(d[0]) > 1 ? std::abs(d[0]) : 1;
+      e_diff = std::abs(d[0] - e0_old) / base;
+      e0_old = d[0];
+      if(e_diff <= err_tol)
+        converged = true;
+    }
+  }
+  if(it > 1){
+    memcpy(d, As, it * sizeof(double));
+    memcpy(e, Bs, it * sizeof(double));
+    double* z = (double*)malloc(it * it * sizeof(double));
+    double* work = (double*)malloc(4 * it * sizeof(double));
+    int info;
+    dstev((char*)"V", &it, d, e, z, &it, work, &info);
+    if(info != 0){
+      std::ostringstream err;
+      err<<"Error in Lapack function 'dstev': Lapack INFO = "<<info;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    memset(eigVec, 0, N * sizeof(std::complex<double>));
+    std::complex<double> cz;
+    for(int k = 0; k < it; k++){
+      cz = z[k];
+      zaxpy(&N, &cz, &Vm[k * N], &inc, eigVec, &inc);
+    }
+    max_iter = it;
+    eigVal = d[0];
+    free(z), free(work);
+  }
+  else{
+    max_iter = 1;
+    eigVal = 0;
+  }
+  free(Vm), free(As), free(Bs), free(d), free(e);
+  return converged;
+}
 };	/* namespace uni10 */

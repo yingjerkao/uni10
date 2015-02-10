@@ -49,13 +49,13 @@ void elemRand(double* elem, size_t N, bool ongpu){
 }
 
 void setDiag(double* elem, double* diag_elem, size_t m, size_t n, size_t diag_n, bool ongpu, bool diag_ongpu){
-	int min = m < n ? m : n;
+	size_t min = m < n ? m : n;
 	min = min < diag_n ? min : diag_n;
 	for(size_t i = 0; i < min; i++)
 		elem[i * n + i] = diag_elem[i];
 }
 void getDiag(double* elem, double* diag_elem, size_t m, size_t n, size_t diag_n, bool ongpu, bool diag_ongpu){
-	int min = m < n ? m : n;
+	size_t min = m < n ? m : n;
 	min = min < diag_n ? min : diag_n;
 	for(size_t i = 0; i < min; i++)
 		diag_elem[i] = elem[i * n + i];
@@ -113,5 +113,24 @@ void elemCast(double* des, std::complex<double>* src, size_t N, bool des_ongpu, 
   for(size_t i = 0; i < N; i++)
     des[i] = src[i].real();
 }
+void setDiag(std::complex<double>* elem, std::complex<double>* diag_elem, size_t m, size_t n, size_t diag_n, bool ongpu, bool diag_ongpu){
+	size_t min = m < n ? m : n;
+	min = min < diag_n ? min : diag_n;
+	for(size_t i = 0; i < min; i++)
+		elem[i * n + i] = diag_elem[i];
+}
+void getDiag(std::complex<double>* elem, std::complex<double>* diag_elem, size_t m, size_t n, size_t diag_n, bool ongpu, bool diag_ongpu){
+	size_t min = m < n ? m : n;
+	min = min < diag_n ? min : diag_n;
+	for(size_t i = 0; i < min; i++)
+		diag_elem[i] = elem[i * n + i];
+}
+
+void reshapeElem(std::complex<double>* oldElem, int bondNum, size_t elemNum, size_t* offset, std::complex<double>* newElem){
+  std::ostringstream err;
+  err<<"Fatal error(code = T1). Please contact the developer of the uni10 library.";
+  throw std::runtime_error(exception_msg(err.str()));
+}
+
 
 };	/* namespace uni10 */

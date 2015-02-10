@@ -11,7 +11,7 @@ __global__ void VecAdd(float* A, float* B, float* C, int N)
     if (i < N)
         C[i] = A[i] + B[i];
 }
-            
+
 // Host code
 int main()
 {
@@ -44,7 +44,7 @@ int main()
     cudaMemcpy(d_B, h_B, size, cudaMemcpyHostToDevice);
 	cudaError_t cuflag;
 	assert(cuflag == cudaSuccess);
-	
+
 
     // Invoke kernel
     int threadsPerBlock = 256;
@@ -62,7 +62,7 @@ int main()
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
-            
+
     // Free host memory
 
 }

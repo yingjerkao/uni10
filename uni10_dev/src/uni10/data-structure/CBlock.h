@@ -55,11 +55,12 @@ class CBlock{
 		std::complex<double> operator[](size_t idx)const;
 		std::complex<double> at(size_t i, size_t j)const;
 		std::complex<double>* getElem()const;
+		CMatrix getDiag()const;
 		void save(const std::string& fname)const;
 		std::vector<CMatrix> eig()const;
 		std::vector<CMatrix> eigh()const;
 		std::vector<CMatrix> svd()const;
-    //size_t lanczosEigh(double& E0, CMatrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
+    size_t lanczosEigh(double& E0, CMatrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
     CMatrix inverse()const;
 		std::complex<double> trace()const;
 		double norm()const;
@@ -78,11 +79,12 @@ class CBlock{
 		friend bool operator== (const Block& m1, const CBlock& m2);
 		friend bool operator== (const CBlock& m1, const Block& m2);
 		friend class UniTensor;
+		friend class CUniTensor;
 		friend class Block;
 		friend class Matrix;
 		friend class CMatrix;
 		friend std::ostream& operator<< (std::ostream& os, const CBlock& b);
-		friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+		//friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 	protected:
 		std::complex<double>* m_elem;
 		size_t Rnum;		//number of rows of the block
