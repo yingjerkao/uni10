@@ -85,7 +85,7 @@ void matrixMul(std::complex<double>* A, std::complex<double>* B, int M, int N, i
 void vectorAdd(std::complex<double>* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
 void vectorAdd(std::complex<double>* Y, std::complex<double>* X, size_t N, bool y_ongpu, bool x_ongpu);// Y = Y + X
 void vectorScal(double a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
-void vectorScal(std::complex<double> a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
+void vectorScal(const std::complex<double>& a, std::complex<double>* X, size_t N, bool ongpu);	// X = a * X
 void vectorMul(std::complex<double>* Y, std::complex<double>* X, size_t N, bool y_ongpu, bool x_ongpu); // Y = Y * X, element-wise multiplication;
 void diagRowMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);
 void diagColMul(std::complex<double>* mat, std::complex<double>* diag, size_t M, size_t N, bool mat_ongpu, bool diag_ongpu);

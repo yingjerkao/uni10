@@ -56,9 +56,11 @@ double dznrm2_(const int32_t *n, const std::complex<double> *x, const int32_t *i
 
 void dgemv_(const char *trans, const int32_t *m, const int32_t *n, const double *alpha, const double *a, const int32_t *lda, const double *x,
            const int32_t *incx, const double *beta, const double *y, const int32_t *incy);
+void zgemv_(const char *trans, const int32_t *m, const int32_t *n, const std::complex<double> *alpha, const std::complex<double> *a, const int32_t *lda,
+            const std::complex<double> *x,const int32_t *incx, const std::complex<double> *beta, const std::complex<double> *y, const int32_t *incy);
 
 double ddot_(const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy);
-
+double _Complex zdotc_(const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy);
 // LAPACK functions
 void dgesvd_( const char* jobu, const char* jobvt, const int32_t* m,
               const int32_t* n, double* a, const int32_t* lda, double* s,
@@ -169,9 +171,24 @@ inline void dgemv(const char *trans, const int32_t *m, const int32_t *n, const d
   dgemv_(trans, m, n, alpha, a, lda, x, incx, beta, y, incy);
 }
 
+inline void zgemv(const char *trans, const int32_t *m, const int32_t *n, const std::complex<double> *alpha, const std::complex<double> *a, const int32_t *lda,
+                  const std::complex<double> *x,const int32_t *incx, const std::complex<double> *beta, const std::complex<double> *y, const int32_t *incy)
+{
+    zgemv_(trans, m, n, alpha, a, lda, x, incx, beta, y, incy);
+}
+// void zgemv(const char *trans, const MKL_INT *m, const MKL_INT *n, const MKL_Complex16 *alpha,
+// const MKL_Complex16 *a, const MKL_INT *lda, const MKL_Complex16 *x, const MKL_INT *incx,
+// const MKL_Complex16 *beta, MKL_Complex16 *y, const MKL_INT *incy);
+
+
 inline double ddot(const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy)
 {
   return ddot_(n, x, incx, y, incy);
+}
+
+inline std::complex<double> zdotc(const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy)
+{
+    return zdotc_(n, x, incx, y, incy);
 }
 
 inline void dstev( const char* jobz, const int32_t* n, const double* d, const double* e, const double* z,
