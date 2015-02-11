@@ -59,8 +59,8 @@ void dgemv_(const char *trans, const int32_t *m, const int32_t *n, const double 
 void zgemv_(const char *trans, const int32_t *m, const int32_t *n, const std::complex<double> *alpha, const std::complex<double> *a, const int32_t *lda,
             const std::complex<double> *x,const int32_t *incx, const std::complex<double> *beta, const std::complex<double> *y, const int32_t *incy);
 
-double ddot_(const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy);
-double _Complex zdotc_(const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy);
+void ddot_(double* res,const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy);
+void zdotc_(std::complex<double>* res, const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy);
 // LAPACK functions
 void dgesvd_( const char* jobu, const char* jobvt, const int32_t* m,
               const int32_t* n, double* a, const int32_t* lda, double* s,
@@ -181,14 +181,16 @@ inline void zgemv(const char *trans, const int32_t *m, const int32_t *n, const s
 // const MKL_Complex16 *beta, MKL_Complex16 *y, const MKL_INT *incy);
 
 
-inline double ddot(const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy)
-{
-  return ddot_(n, x, incx, y, incy);
+inline double ddot( const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy)
+{ double* res;
+  ddot_(res, n, x, incx, y, incy);
+    return res;
 }
 
 inline std::complex<double> zdotc(const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy)
-{
-    return zdotc_(n, x, incx, y, incy);
+{   std::compleX<double>* res;
+    zdotc_(res, n, x, incx, y, incy);
+    return res;
 }
 
 inline void dstev( const char* jobz, const int32_t* n, const double* d, const double* e, const double* z,
