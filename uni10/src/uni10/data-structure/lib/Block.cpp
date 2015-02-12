@@ -64,6 +64,22 @@ size_t UNI10_BLOCK::elemNum()const{
 
 UNI10_DTYPE* UNI10_BLOCK::getElem()const{return m_elem;}
 
+UNI10_MATRIX UNI10_BLOCK::getDiag()const{
+  try{
+    if(diag)
+      return *this;
+    else{
+      UNI10_MATRIX D(Rnum, Cnum, true, ongpu);
+      ::uni10::getDiag(m_elem, D.getElem(), Rnum, Cnum, D.elemNum(), ongpu, D.isOngpu());
+      return D;
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Block::getDiag():");
+    return Matrix();
+  }
+}
+
 void UNI10_BLOCK::save(const std::string& fname)const{
   try{
     FILE *fp = fopen(fname.c_str(), "w");
@@ -211,6 +227,39 @@ UNI10_MATRIX UNI10_BLOCK::inverse()const{
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::inverse():");
     return UNI10_MATRIX();
+  }
+}
+
+size_t UNI10_BLOCK::lanczosEigh(double& E0, UNI10_MATRIX& psi, size_t max_iter, double err_tol)const{
+  try{
+    if(!(Rnum == Cnum)){
+      std::ostringstream err;
+      err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(!(Rnum == psi.elemNum())){
+      std::ostringstream err;
+      err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(ongpu && !psi.ongpu){
+      if(!psi.toGPU()){
+        std::ostringstream err;
+        err<<"Error when allocating GPU global memory.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+    }
+    size_t iter = max_iter;
+    if(!lanczosEV(m_elem, psi.m_elem, Rnum, iter, err_tol, E0, psi.m_elem, ongpu)){
+      std::ostringstream err;
+      err<<"Lanczos algorithm fails in converging.";;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return iter;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+    return 0;
   }
 }
 

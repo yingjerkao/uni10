@@ -35,17 +35,31 @@
 #include <uni10/tensor-network/Matrix.h>
 #ifndef UNI10_PURE_REAL
 #include <uni10/tensor-network/CMatrix.h>
+#include <uni10/tensor-network/CUniTensor.h>
 #endif
 #include <uni10/tensor-network/UniTensor.h>
 
+#ifndef UNI10_DTYPE
+#define UNI10_DTYPE double
+#endif
+#ifndef UNI10_TENSOR
+#define UNI10_TENSOR UniTensor
+#endif
+#ifndef UNI10_MATRIX
+#define UNI10_MATRIX Matrix
+#endif
+#ifndef UNI10_BLOCK
+#define UNI10_BLOCK Block
+#endif
+
 namespace uni10{
 
-int64_t UniTensor::ELEMNUM = 0;
-int UniTensor::COUNTER = 0;
-size_t UniTensor::MAXELEMNUM = 0;
-size_t UniTensor::MAXELEMTEN = 0;
+int64_t UNI10_TENSOR::ELEMNUM = 0;
+int UNI10_TENSOR::COUNTER = 0;
+size_t UNI10_TENSOR::MAXELEMNUM = 0;
+size_t UNI10_TENSOR::MAXELEMTEN = 0;
 
-UniTensor::UniTensor(): status(0){
+UNI10_TENSOR::UNI10_TENSOR(): status(0){
   try{
     initUniT();
   }
@@ -54,7 +68,7 @@ UniTensor::UniTensor(): status(0){
   }
 }
 
-UniTensor::UniTensor(double val): status(0){ //GPU
+UNI10_TENSOR::UNI10_TENSOR(UNI10_DTYPE val): status(0){ //GPU
   try{
     initUniT();
     setElemAt(0, val, elem, ongpu);
@@ -64,7 +78,7 @@ UniTensor::UniTensor(double val): status(0){ //GPU
   }
 }
 
-UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
+UNI10_TENSOR::UNI10_TENSOR(const std::string& fname): status(0){ //GPU
   try{
     int namemax = 32;
     if(fname.size() > namemax)
@@ -116,13 +130,13 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
     labels.assign(num_l, 0);
     fread(&(labels[0]), num_l, sizeof(int), fp);
     if(st & HAVEELEM){
-      double *tmp_elem = elem;
-      size_t memsize = m_elemNum * sizeof(double);
+      UNI10_DTYPE *tmp_elem = elem;
+      size_t memsize = m_elemNum * sizeof(UNI10_DTYPE);
       if(ongpu)
-        tmp_elem = (double*)malloc(memsize);
+        tmp_elem = (UNI10_DTYPE*)malloc(memsize);
       size_t num_el;
       fread(&num_el, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
-      fread(tmp_elem, m_elemNum, sizeof(DOUBLE), fp);
+      fread(tmp_elem, m_elemNum, sizeof(UNI10_DTYPE), fp);
       if(ongpu){
         elemCopy(elem, tmp_elem, memsize, ongpu, false);
         free(tmp_elem);
@@ -136,7 +150,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
   }
 }
 
-UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UNI10_TENSOR::UNI10_TENSOR(const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT();
   }
@@ -145,7 +159,7 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name):
   }
 }
 
-UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UNI10_TENSOR::UNI10_TENSOR(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT();
     setLabel(_labels);
@@ -154,7 +168,7 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels,
     propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::vector<int>&, std::string& = \"\"):");
   }
 }
-UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UNI10_TENSOR::UNI10_TENSOR(const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT();
     setLabel(_labels);
@@ -164,22 +178,22 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::s
   }
 }
 
-UniTensor::UniTensor(const UniTensor& UniT): //GPU
-  status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels),
+UNI10_TENSOR::UNI10_TENSOR(const UNI10_TENSOR& UniT): //GPU
+  status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels), name(UniT.name),
   RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL),
   QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), RQidx2Blk(UniT.RQidx2Blk), CQidx2Dim(UniT.CQidx2Dim){
     try{
-      elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
-      std::map<Qnum,Block>::const_iterator it2;
-      std::map<const Block* , Block*> blkmap;
-      for (std::map<Qnum,Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+      elem = (UNI10_DTYPE*)elemAlloc(sizeof(UNI10_DTYPE) * m_elemNum, ongpu);
+      std::map<Qnum, UNI10_BLOCK>::const_iterator it2;
+      std::map<const UNI10_BLOCK* , UNI10_BLOCK*> blkmap;
+      for (std::map<Qnum, UNI10_BLOCK>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
         it->second.m_elem = &(elem[(it->second.m_elem - UniT.elem)]);
 
         it2 = UniT.blocks.find(it->first);
         blkmap[(&(it2->second))] = &(it->second);
       }
       if(UniT.status & HAVEBOND){
-        for(std::map<int, Block*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
+        for(std::map<int, UNI10_BLOCK*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
           it->second = blkmap[it->second];
       }
       ELEMNUM += m_elemNum;
@@ -188,14 +202,14 @@ UniTensor::UniTensor(const UniTensor& UniT): //GPU
         MAXELEMNUM = ELEMNUM;
       if(m_elemNum > MAXELEMTEN)
         MAXELEMTEN = m_elemNum;
-      elemCopy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, ongpu, UniT.ongpu);
+      elemCopy(elem, UniT.elem, sizeof(UNI10_DTYPE) * UniT.m_elemNum, ongpu, UniT.ongpu);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In copy constructor UniTensor::UniTensor(uni10::UniTensor&):");
     }
   }
 
-UniTensor::UniTensor(const Block& blk): status(0){
+UNI10_TENSOR::UNI10_TENSOR(const UNI10_BLOCK& blk): status(0){
   try{
     Bond bdi(BD_IN, blk.Rnum);
     Bond bdo(BD_OUT, blk.Cnum);
@@ -209,17 +223,18 @@ UniTensor::UniTensor(const Block& blk): status(0){
   }
 }
 
-UniTensor::~UniTensor(){
-	elemFree(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
+UNI10_TENSOR::~UNI10_TENSOR(){
+	elemFree(elem, sizeof(UNI10_DTYPE) * m_elemNum, ongpu);
 	ELEMNUM -= m_elemNum;
 	COUNTER--;
 }
 
-UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
+UNI10_TENSOR& UNI10_TENSOR::operator=(const UNI10_TENSOR& UniT){ //GPU
   try{
     bonds = UniT.bonds;
     blocks = UniT.blocks;
     labels = UniT.labels;
+    name = UniT.name;
     RBondNum = UniT.RBondNum;
     RQdim = UniT.RQdim;
     CQdim = UniT.CQdim;
@@ -232,13 +247,13 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
 
     ELEMNUM -= m_elemNum;	//free original memory
     if(elem != NULL)
-      elemFree(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
+      elemFree(elem, sizeof(UNI10_DTYPE) * m_elemNum, ongpu);
     status = UniT.status;
     m_elemNum = UniT.m_elemNum;
-    elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
-    std::map<Qnum,Block>::const_iterator it2;
-    std::map< const Block* , Block*> blkmap;
-    for (std::map<Qnum,Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
+    elem = (UNI10_DTYPE*)elemAlloc(sizeof(UNI10_DTYPE) * m_elemNum, ongpu);
+    std::map<Qnum, UNI10_BLOCK>::const_iterator it2;
+    std::map< const UNI10_BLOCK* , UNI10_BLOCK*> blkmap;
+    for (std::map<Qnum, UNI10_BLOCK>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
       it->second.m_elem = &(elem[it->second.m_elem - UniT.elem]);
 
       it2 = UniT.blocks.find(it->first);
@@ -246,7 +261,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     }
 
     if(UniT.status & HAVEBOND){
-      for(std::map<int, Block*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
+      for(std::map<int, UNI10_BLOCK*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
         it->second = blkmap[it->second];
     }
 
@@ -255,7 +270,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
       MAXELEMNUM = ELEMNUM;
     if(m_elemNum > MAXELEMTEN)
       MAXELEMTEN = m_elemNum;
-    elemCopy(elem, UniT.elem, sizeof(DOUBLE) * UniT.m_elemNum, ongpu, UniT.ongpu);
+    elemCopy(elem, UniT.elem, sizeof(UNI10_DTYPE) * UniT.m_elemNum, ongpu, UniT.ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::operator=(uni10::UniTensor&):");
@@ -263,9 +278,9 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
   return *this;
 }
 
-UniTensor& UniTensor::assign(const std::vector<Bond>& _bond){
+UNI10_TENSOR& UNI10_TENSOR::assign(const std::vector<Bond>& _bond){
   try{
-    UniTensor T(_bond);
+    UNI10_TENSOR T(_bond);
 	  *this = T;
   }
   catch(const std::exception& e){
@@ -274,7 +289,7 @@ UniTensor& UniTensor::assign(const std::vector<Bond>& _bond){
   return *this;
 }
 
-void UniTensor::setLabel(const std::vector<int>& newLabels){
+void UNI10_TENSOR::setLabel(const std::vector<int>& newLabels){
   try{
     std::set<int> labelS(newLabels.begin(), newLabels.end());
     if(!(bonds.size() == labelS.size())){
@@ -287,7 +302,7 @@ void UniTensor::setLabel(const std::vector<int>& newLabels){
   }
 }
 
-void UniTensor::setLabel(int* newLabels){
+void UNI10_TENSOR::setLabel(int* newLabels){
   try{
     std::vector<int> labels(newLabels, newLabels + bonds.size());
     setLabel(labels);
@@ -297,11 +312,11 @@ void UniTensor::setLabel(int* newLabels){
   }
 }
 
-std::vector<int> UniTensor::label()const{
+std::vector<int> UNI10_TENSOR::label()const{
 	return labels;
 }
 
-int UniTensor::label(size_t idx)const{
+int UNI10_TENSOR::label(size_t idx)const{
   try{
     if(!(idx < labels.size())){
       std::ostringstream err;
@@ -315,24 +330,24 @@ int UniTensor::label(size_t idx)const{
 	return labels[idx];
 }
 
-std::string UniTensor::getName(){
+std::string UNI10_TENSOR::getName(){
 	return name;
 }
 
-void UniTensor::setName(const std::string& _name){
+void UNI10_TENSOR::setName(const std::string& _name){
 	name = _name;
 }
 
 
-size_t UniTensor::bondNum()const{return bonds.size();}
+size_t UNI10_TENSOR::bondNum()const{return bonds.size();}
 
-size_t UniTensor::inBondNum()const{return RBondNum;}
+size_t UNI10_TENSOR::inBondNum()const{return RBondNum;}
 
-std::vector<Bond> UniTensor::bond()const{
+std::vector<Bond> UNI10_TENSOR::bond()const{
 	return bonds;
 }
 
-Bond UniTensor::bond(size_t idx)const{
+Bond UNI10_TENSOR::bond(size_t idx)const{
   try{
     if(!(idx < bonds.size())){
       std::ostringstream err;
@@ -346,9 +361,9 @@ Bond UniTensor::bond(size_t idx)const{
   return bonds[idx];
 }
 
-size_t UniTensor::elemNum()const{return m_elemNum;}
+size_t UNI10_TENSOR::elemNum()const{return m_elemNum;}
 
-Matrix UniTensor::getRawElem()const{
+UNI10_MATRIX UNI10_TENSOR::getRawElem()const{
   try{
     if(status & HAVEBOND && status & HAVEELEM){
       int bondNum = bonds.size();
@@ -362,7 +377,7 @@ Matrix UniTensor::getRawElem()const{
       }
       std::vector<size_t> idxs(bondNum, 0);
       int bend;
-      std::vector<double> rawElem;
+      std::vector<UNI10_DTYPE > rawElem;
       while(1){
         rawElem.push_back(at(idxs));
         for(bend = bondNum - 1; bend >= 0; bend--){
@@ -375,37 +390,37 @@ Matrix UniTensor::getRawElem()const{
         if(bend < 0)
           break;
       }
-      return Matrix(rowNum, colNum, &rawElem[0]);
+      return UNI10_MATRIX(rowNum, colNum, &rawElem[0]);
     }
     else if(status & HAVEELEM)
-      return Matrix(1, 1, elem);
+      return UNI10_MATRIX(1, 1, elem);
     else
-      return Matrix();
+      return UNI10_MATRIX();
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getRawElem():");
-    return Matrix();
+    return UNI10_MATRIX();
   }
 }
 
-void UniTensor::setRawElem(const Block& blk){
+void UNI10_TENSOR::setRawElem(const UNI10_BLOCK& blk){
   try{
     setRawElem(blk.getElem());
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::setRawElem(std::vector<DOUBLE>&):");
+    propogate_exception(e, "In function UniTensor::setRawElem(uni10::Block&):");
   }
 }
 
-void UniTensor::setRawElem(const std::vector<DOUBLE>& rawElem){
+void UNI10_TENSOR::setRawElem(const std::vector<UNI10_DTYPE >& rawElem){
   try{
     setRawElem(&rawElem[0]);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::setRawElem(std::vector<DOUBLE>&):");
+    propogate_exception(e, "In function UniTensor::setRawElem(std::vector<double>&):");
   }
 }
-void UniTensor::setRawElem(const DOUBLE* rawElem){
+void UNI10_TENSOR::setRawElem(const UNI10_DTYPE* rawElem){
   try{
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
@@ -430,9 +445,9 @@ void UniTensor::setRawElem(const DOUBLE* rawElem){
     size_t B_cDim;
     size_t E_off;
     int R_off;
-    double* work = elem;
+    UNI10_DTYPE* work = elem;
     if(ongpu){
-      work = (double*)malloc(m_elemNum * sizeof(double));
+      work = (UNI10_DTYPE*)malloc(m_elemNum * sizeof(UNI10_DTYPE));
     }
     for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
       Q_off = it->first;
@@ -470,7 +485,7 @@ void UniTensor::setRawElem(const DOUBLE* rawElem){
         }
     }
     if(ongpu){
-      elemCopy(elem, work, m_elemNum * sizeof(double), ongpu, false);
+      elemCopy(elem, work, m_elemNum * sizeof(UNI10_DTYPE), ongpu, false);
       free(work);
     }
     status |= HAVEELEM;
@@ -480,7 +495,7 @@ void UniTensor::setRawElem(const DOUBLE* rawElem){
   }
 }
 
-double UniTensor::at(const std::vector<int>& idxs)const{
+UNI10_DTYPE UNI10_TENSOR::at(const std::vector<int>& idxs)const{
   try{
     std::vector<size_t> _idxs(idxs.size());
     for(int i = 0; i < idxs.size(); i++)
@@ -492,7 +507,7 @@ double UniTensor::at(const std::vector<int>& idxs)const{
     return 0;
   }
 }
-double UniTensor::at(const std::vector<size_t>& idxs)const{
+UNI10_DTYPE UNI10_TENSOR::at(const std::vector<size_t>& idxs)const{
   try{
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
@@ -529,12 +544,12 @@ double UniTensor::at(const std::vector<size_t>& idxs)const{
     if(QidxEnc.find(Qoff) != QidxEnc.end()){
       int Q_RQoff = Qoff / CQdim;
       int Q_CQoff = Qoff % CQdim;
-      Block* blk = RQidx2Blk.find(Q_RQoff)->second;
+      UNI10_BLOCK* blk = RQidx2Blk.find(Q_RQoff)->second;
       size_t B_cDim = blk->Cnum;
       size_t sB_cDim = CQidx2Dim.find(Q_CQoff)->second;
       size_t blkRoff = RQidx2Off.find(Q_RQoff)->second;
       size_t blkCoff = CQidx2Off.find(Q_CQoff)->second;
-      double* boff = blk->m_elem + (blkRoff * B_cDim) + blkCoff;
+      UNI10_DTYPE* boff = blk->m_elem + (blkRoff * B_cDim) + blkCoff;
       int cnt = 0;
       std::vector<int> D_acc(bondNum, 1);
       for(int b = bondNum	- 1; b > 0; b--)
@@ -553,25 +568,25 @@ double UniTensor::at(const std::vector<size_t>& idxs)const{
   }
 }
 
-size_t UniTensor::blockNum()const{
+size_t UNI10_TENSOR::blockNum()const{
 	return blocks.size();
 }
 
-std::vector<Qnum> UniTensor::blockQnum()const{
+std::vector<Qnum> UNI10_TENSOR::blockQnum()const{
 	std::vector<Qnum> keys;
-	for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++)
+	for(std::map<Qnum, UNI10_BLOCK>::const_iterator it = blocks.begin(); it != blocks.end(); it++)
 		keys.push_back(it->first);
 	return keys;
 }
 
-Qnum UniTensor::blockQnum(size_t idx)const{
+Qnum UNI10_TENSOR::blockQnum(size_t idx)const{
   try{
     if(!(idx < blocks.size())){
       std::ostringstream err;
       err<<"Index exceeds the number of the blocks("<<blocks.size()<<").";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
+    for(std::map<Qnum, UNI10_BLOCK>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
       if(idx == 0)
         return it->first;
       idx--;
@@ -583,11 +598,11 @@ Qnum UniTensor::blockQnum(size_t idx)const{
   return Qnum(0);
 }
 
-const std::map<Qnum, Block>& UniTensor::const_getBlocks()const{
+const std::map<Qnum, UNI10_BLOCK>& UNI10_TENSOR::const_getBlocks()const{
   return blocks;
 }
 
-const Block& UniTensor::const_getBlock()const{
+const UNI10_BLOCK& UNI10_TENSOR::const_getBlock()const{
   try{
     Qnum q0(0);
     return const_getBlock(q0);
@@ -598,9 +613,9 @@ const Block& UniTensor::const_getBlock()const{
   }
 }
 
-const Block& UniTensor::const_getBlock(const Qnum& qnum)const{
+const UNI10_BLOCK& UNI10_TENSOR::const_getBlock(const Qnum& qnum)const{
   try{
-    std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
+    std::map<Qnum, UNI10_BLOCK>::const_iterator it = blocks.find(qnum);
     if(it == blocks.end()){
       std::ostringstream err;
       err<<"There is no block with the given quantum number "<<qnum;
@@ -614,12 +629,12 @@ const Block& UniTensor::const_getBlock(const Qnum& qnum)const{
   }
 }
 
-std::map<Qnum, Matrix> UniTensor::getBlocks()const{
-	std::map<Qnum, Matrix> mats;
+std::map<Qnum, UNI10_MATRIX> UNI10_TENSOR::getBlocks()const{
+	std::map<Qnum, UNI10_MATRIX> mats;
   try{
-    for(std::map<Qnum,Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
-      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
-      mats.insert(std::pair<Qnum, Matrix>(it->first, mat));
+    for(std::map<Qnum, UNI10_BLOCK>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
+      UNI10_MATRIX mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
+      mats.insert(std::pair<Qnum, UNI10_MATRIX>(it->first, mat));
     }
   }
   catch(const std::exception& e){
@@ -628,42 +643,40 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
 	return mats;
 }
 
-Matrix UniTensor::getBlock(bool diag)const{
+UNI10_MATRIX UNI10_TENSOR::getBlock(bool diag)const{
   try{
     Qnum q0(0);
     return getBlock(q0, diag);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlock(bool=false):");
-    return Matrix();
+    return UNI10_MATRIX();
   }
 }
 
-Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
+UNI10_MATRIX UNI10_TENSOR::getBlock(const Qnum& qnum, bool diag)const{
   try{
-    std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
+    std::map<Qnum, UNI10_BLOCK>::const_iterator it = blocks.find(qnum);
     if(it == blocks.end()){
       std::ostringstream err;
       err<<"There is no block with the given quantum number "<<qnum;
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(diag){
-      Matrix mat(it->second.Rnum, it->second.Cnum, true, ongpu);
-      getDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
-      return mat;
+      return it->second.getDiag();
     }
     else{
-      Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
+      UNI10_MATRIX mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
       return mat;
     }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlock(uni10::Qnum&):");
-    return Matrix(0, 0);
+    return UNI10_MATRIX(0, 0);
   }
 }
 
-void UniTensor::putBlock(const Block& mat){
+void UNI10_TENSOR::putBlock(const UNI10_BLOCK& mat){
   try{
     Qnum q0(0);
     putBlock(q0, mat);
@@ -673,9 +686,9 @@ void UniTensor::putBlock(const Block& mat){
   }
 }
 
-void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
+void UNI10_TENSOR::putBlock(const Qnum& qnum, const UNI10_BLOCK& mat){
   try{
-    std::map<Qnum, Block>::iterator it;
+    std::map<Qnum, UNI10_BLOCK>::iterator it;
     if(!((it = blocks.find(qnum)) != blocks.end())){
       std::ostringstream err;
       err<<"There is no block with the given quantum number "<<qnum;
@@ -689,11 +702,11 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
     }
     if(mat.m_elem != it->second.m_elem){
       if(mat.isDiag()){
-        elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu);
+        elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(UNI10_DTYPE), ongpu);
         setDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
       }
       else
-        elemCopy(it->second.m_elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(DOUBLE), ongpu, mat.isOngpu());
+        elemCopy(it->second.m_elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(UNI10_DTYPE), ongpu, mat.isOngpu());
     }
     status |= HAVEELEM;
   }
@@ -702,13 +715,13 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
   }
 }
 
-double* UniTensor::getElem(){
+UNI10_DTYPE* UNI10_TENSOR::getElem(){
   return elem;
 }
 
-void UniTensor::setElem(const double* _elem, bool _ongpu){
+void UNI10_TENSOR::setElem(const UNI10_DTYPE* _elem, bool _ongpu){
   try{
-    elemCopy(elem, _elem, m_elemNum * sizeof(double), ongpu, _ongpu);
+    elemCopy(elem, _elem, m_elemNum * sizeof(UNI10_DTYPE), ongpu, _ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -716,7 +729,7 @@ void UniTensor::setElem(const double* _elem, bool _ongpu){
   }
 }
 
-void UniTensor::setElem(const std::vector<double>& _elem, bool _ongpu){
+void UNI10_TENSOR::setElem(const std::vector<UNI10_DTYPE >& _elem, bool _ongpu){
   try{
     setElem(&_elem[0], _ongpu);
   }
@@ -725,7 +738,7 @@ void UniTensor::setElem(const std::vector<double>& _elem, bool _ongpu){
   }
 }
 
-double UniTensor::operator[](size_t idx)const{
+UNI10_DTYPE UNI10_TENSOR::operator[](size_t idx)const{
   try{
     if(!(idx < m_elemNum)){
       std::ostringstream err;
@@ -740,9 +753,9 @@ double UniTensor::operator[](size_t idx)const{
   }
 }
 
-void UniTensor::set_zero(){
+void UNI10_TENSOR::set_zero(){
   try{
-    elemBzero(elem, m_elemNum * sizeof(DOUBLE), ongpu);
+    elemBzero(elem, m_elemNum * sizeof(UNI10_DTYPE), ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -750,16 +763,16 @@ void UniTensor::set_zero(){
   }
 }
 
-void UniTensor::set_zero(const Qnum& qnum){
+void UNI10_TENSOR::set_zero(const Qnum& qnum){
   try{
-    std::map<Qnum, Block>::iterator it = blocks.find(qnum);
+    std::map<Qnum, UNI10_BLOCK>::iterator it = blocks.find(qnum);
     if(it == blocks.end()){
       std::ostringstream err;
       err<<"There is no block with the given quantum number "<<qnum;
       throw std::runtime_error(exception_msg(err.str()));
     }
-    Block& block = it->second;
-    elemBzero(block.m_elem, block.Rnum * block.Cnum * sizeof(DOUBLE), ongpu);
+    UNI10_BLOCK& block = it->second;
+    elemBzero(block.m_elem, block.Rnum * block.Cnum * sizeof(UNI10_DTYPE), ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -767,15 +780,15 @@ void UniTensor::set_zero(const Qnum& qnum){
   }
 }
 
-void UniTensor::identity(const Qnum& qnum){
+void UNI10_TENSOR::identity(const Qnum& qnum){
   try{
-    std::map<Qnum, Block>::iterator it = blocks.find(qnum);
+    std::map<Qnum, UNI10_BLOCK>::iterator it = blocks.find(qnum);
     if(it == blocks.end()){
       std::ostringstream err;
       err<<"There is no block with the given quantum number "<<qnum;
       throw std::runtime_error(exception_msg(err.str()));
     }
-    Block& block = it->second;
+    UNI10_BLOCK& block = it->second;
     setIdentity(block.m_elem, block.Rnum, block.Cnum, ongpu);
     status |= HAVEELEM;
   }
@@ -784,27 +797,27 @@ void UniTensor::identity(const Qnum& qnum){
   }
 }
 
-void UniTensor::identity(){
-	std::map<Qnum,Block>::iterator it;
+void UNI10_TENSOR::identity(){
+	std::map<Qnum, UNI10_BLOCK>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		setIdentity(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
 	status |= HAVEELEM;
 }
 
-void UniTensor::randomize(){
+void UNI10_TENSOR::randomize(){
 	elemRand(elem, m_elemNum, ongpu);
 	status |= HAVEELEM;
 }
 
-void UniTensor::orthoRand(const Qnum& qnum){
+void UNI10_TENSOR::orthoRand(const Qnum& qnum){
   try{
-  std::map<Qnum, Block>::iterator it = blocks.find(qnum);
+  std::map<Qnum, UNI10_BLOCK>::iterator it = blocks.find(qnum);
   if(it == blocks.end()){
     std::ostringstream err;
     err<<"There is no block with the given quantum number "<<qnum;
     throw std::runtime_error(exception_msg(err.str()));
   }
-  Block& block = it->second;
+  UNI10_BLOCK& block = it->second;
 	orthoRandomize(block.m_elem, block.Rnum, block.Cnum, ongpu);
 	status |= HAVEELEM;
   }
@@ -813,18 +826,18 @@ void UniTensor::orthoRand(const Qnum& qnum){
   }
 }
 
-void UniTensor::orthoRand(){
-	std::map<Qnum,Block>::iterator it;
+void UNI10_TENSOR::orthoRand(){
+	std::map<Qnum, UNI10_BLOCK>::iterator it;
 	for ( it = blocks.begin() ; it != blocks.end(); it++ )
 		orthoRandomize(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
 	status |= HAVEELEM;
 }
 
-void UniTensor::clear(){
+void UNI10_TENSOR::clear(){
 	status &= ~HAVEELEM;
 }
 
-void UniTensor::save(const std::string& fname){
+void UNI10_TENSOR::save(const std::string& fname){
   try{
     if((status & HAVEBOND) == 0){   //If not INIT, NO NEED to write out to file
       throw std::runtime_error(exception_msg("Saving a tensor without bonds(scalar) is not supported."));
@@ -852,13 +865,13 @@ void UniTensor::save(const std::string& fname){
     fwrite(&(labels[0]), num_l, sizeof(int), fp);
     if(status & HAVEELEM){
       fwrite(&m_elemNum, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
-      size_t memsize = m_elemNum * sizeof(DOUBLE);
-      double* tmp_elem = elem;
+      size_t memsize = m_elemNum * sizeof(UNI10_DTYPE);
+      UNI10_DTYPE* tmp_elem = elem;
       if(ongpu){
-        tmp_elem = (double*)malloc(memsize);
+        tmp_elem = (UNI10_DTYPE*)malloc(memsize);
         elemCopy(tmp_elem, elem, memsize, false, ongpu);
       }
-      fwrite(tmp_elem, m_elemNum, sizeof(DOUBLE), fp);
+      fwrite(tmp_elem, m_elemNum, sizeof(UNI10_DTYPE), fp);
       if(ongpu)
         free(tmp_elem);
     }
@@ -869,7 +882,7 @@ void UniTensor::save(const std::string& fname){
   }
 }
 
-UniTensor& UniTensor::permute(int rowBondNum){
+UNI10_TENSOR& UNI10_TENSOR::permute(int rowBondNum){
   try{
     std::vector<int> ori_labels = labels;
 	  this->permute(ori_labels, rowBondNum);
@@ -879,7 +892,7 @@ UniTensor& UniTensor::permute(int rowBondNum){
   }
 	return *this;
 }
-UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
+UNI10_TENSOR& UNI10_TENSOR::permute(int* newLabels, int rowBondNum){
   try{
     std::vector<int> _labels(newLabels, newLabels + bonds.size());
     this->permute(_labels, rowBondNum);
@@ -890,7 +903,7 @@ UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
 	return *this;
 }
 
-UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum){
+UNI10_TENSOR& UNI10_TENSOR::permute(const std::vector<int>& newLabels, int rowBondNum){
   try{
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
@@ -938,7 +951,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
         else
           outBonds[b].change(BD_OUT);
       }
-      UniTensor UniTout(outBonds, name);
+      UNI10_TENSOR UniTout(outBonds, name);
       if(status & HAVEELEM){
         if(withoutSymmetry){
           if(!inorder){
@@ -953,21 +966,21 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
               }
               for(int b = 0; b < bondNum; b++)
                 perInfo[bondNum + rsp_outin[b]] = newAcc[b];
-              double* des_elem = UniTout.elem;
-              double* src_elem = elem;
+              UNI10_DTYPE* des_elem = UniTout.elem;
+              UNI10_DTYPE* src_elem = elem;
               reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
               free(perInfo);
             }
             else{
-              double* des_elem = UniTout.elem;
-              double* src_elem = elem;
-              size_t memsize = m_elemNum * sizeof(DOUBLE);
+              UNI10_DTYPE* des_elem = UniTout.elem;
+              UNI10_DTYPE* src_elem = elem;
+              size_t memsize = m_elemNum * sizeof(UNI10_DTYPE);
               if(ongpu){
-                src_elem = (double*)elemAllocForce(memsize, false);
+                src_elem = (UNI10_DTYPE*)elemAllocForce(memsize, false);
                 elemCopy(src_elem, elem, memsize, false, ongpu);
               }
               if(UniTout.ongpu)
-                des_elem = (double*)elemAllocForce(memsize, false);
+                des_elem = (UNI10_DTYPE*)elemAllocForce(memsize, false);
 
               std::vector<size_t> transAcc(bondNum);
               std::vector<size_t> newAcc(bondNum);
@@ -1006,12 +1019,12 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
             }
           }
           else{  //non-symmetry inorder
-            size_t memsize = m_elemNum * sizeof(DOUBLE);
+            size_t memsize = m_elemNum * sizeof(UNI10_DTYPE);
             elemCopy(UniTout.elem, elem, memsize, UniTout.ongpu, ongpu);
           }
         }
         else{
-          int sign = 1;
+          double sign = 1.0;
           //For Fermionic system
           std::vector<_Swap> swaps;
           if(Qnum::isFermionic()){
@@ -1051,8 +1064,8 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
           size_t sBot_cDim;	//sub-block of a Qidx
           size_t sBot_r, sBot_c;
           size_t Bin_cDim, Bot_cDim;
-          double* Ein_ptr;
-          double* Eot_ptr;
+          UNI10_DTYPE* Ein_ptr;
+          UNI10_DTYPE* Eot_ptr;
           std::vector<int> sBin_idxs(bondNum, 0);
           std::vector<int> sBin_sBdims(bondNum, 0);
           std::vector<int> Qot_acc(bondNum, 1);
@@ -1094,7 +1107,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
               int sign01 = 0;
               for(int i = 0; i < swaps.size(); i++)
                 sign01 ^= (bonds[swaps[i].b1].Qnums[Qin_idxs[swaps[i].b1]].prtF() & bonds[swaps[i].b2].Qnums[Qin_idxs[swaps[i].b2]].prtF());
-              sign = sign01 ? -1 : 1;
+              sign = sign01 ? -1.0 : 1.0;
             }
             for(sBin_r = 0; sBin_r < sBin_rDim; sBin_r++)
               for(sBin_c = 0; sBin_c < sBin_cDim; sBin_c++){
@@ -1127,7 +1140,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
   return *this;
 }
 
-UniTensor& UniTensor::transpose(){
+UNI10_TENSOR& UNI10_TENSOR::transpose(){
   try{
     if(!(status & HAVEBOND)){
       std::ostringstream err;
@@ -1160,13 +1173,13 @@ UniTensor& UniTensor::transpose(){
       else
         outBonds[b].m_type = BD_OUT;
     }
-    UniTensor UniTout(outBonds, name);
+    UNI10_TENSOR UniTout(outBonds, name);
     UniTout.setLabel(outLabels);
     if(status & HAVEELEM){
-      std::map<Qnum,Block>::iterator it_in;
-      std::map<Qnum,Block>::iterator it_out;
-      double* elem_in;
-      double* elem_out;
+      std::map<Qnum, UNI10_BLOCK>::iterator it_in;
+      std::map<Qnum, UNI10_BLOCK>::iterator it_out;
+      UNI10_DTYPE* elem_in;
+      UNI10_DTYPE* elem_out;
       size_t Rnum, Cnum;
       for ( it_in = blocks.begin() ; it_in != blocks.end(); it_in++ ){
         it_out = UniTout.blocks.find((it_in->first));
@@ -1186,7 +1199,7 @@ UniTensor& UniTensor::transpose(){
   return *this;
 }
 
-UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
+UNI10_TENSOR& UNI10_TENSOR::combineBond(const std::vector<int>&cmbLabels){
   try{
 	if((status & HAVEBOND) == 0){
     std::ostringstream err;
@@ -1249,7 +1262,7 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
 		}
 	}
 	this->permute(rsp_labels, RBnum);
-	UniTensor Tout(newBonds, reduced_labels);
+	UNI10_TENSOR Tout(newBonds, reduced_labels);
   if(status & HAVEELEM)
     Tout.setElem(elem, ongpu);
 	*this = Tout;
@@ -1260,7 +1273,7 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
   return *this;
 }
 
-UniTensor& UniTensor::partialTrace(int la, int lb){
+UNI10_TENSOR& UNI10_TENSOR::partialTrace(int la, int lb){
   try{
     if(!(status & HAVEELEM)){
       std::ostringstream err;
@@ -1296,7 +1309,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
       throw std::runtime_error(exception_msg(err.str()));
     }
 
-    UniTensor Tt(newBonds, newLabels);
+    UNI10_TENSOR Tt(newBonds, newLabels);
     rsp_labels[bondNum - 2] = labels[ia];
     rsp_labels[bondNum - 1] = labels[ib];
     ia = bondNum - 2;
@@ -1333,14 +1346,13 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
     size_t sBt_rDim, sBt_cDim;	//sub-block of a Qidx of Tt
     size_t sB_rDim, sB_cDim;	//sub-block of a Qidx
     size_t Bt_cDim;
-    double* Et_ptr;
-    std::vector<double*> E_offs(tQdim);
+    UNI10_DTYPE* Et_ptr;
+    std::vector<UNI10_DTYPE*> E_offs(tQdim);
     std::vector<size_t> B_cDims(tQdim);
     int tQdim2 = tQdim * tQdim;
     int Qenc = Q_acc[ia] + Q_acc[ib];
     for(std::map<int, size_t>::iterator it = Tt.QidxEnc.begin(); it != Tt.QidxEnc.end(); it++){
       Qt_off = it->first;
-
       Qt_RQoff = Qt_off / Tt.CQdim;
       Qt_CQoff = Qt_off % Tt.CQdim;
       Bt_cDim = Tt.RQidx2Blk[Qt_RQoff]->Cnum;
@@ -1356,7 +1368,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
         E_offs[q] = RQidx2Blk[Q_RQoff]->m_elem + (RQidx2Off[Q_RQoff] * B_cDims[q]) + CQidx2Off[Q_CQoff];
       }
       int tQdeg, sB_c_off;
-      DOUBLE trVal;
+      UNI10_DTYPE trVal;
       for(size_t sB_r = 0; sB_r < sBt_rDim; sB_r++)
         for(size_t sB_c = 0; sB_c < sBt_cDim; sB_c++){
           trVal = 0;
@@ -1379,7 +1391,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 	return *this;
 }
 
-double UniTensor::trace()const{
+UNI10_DTYPE UNI10_TENSOR::trace()const{
   try{
     if(!(status & HAVEELEM)){
       std::ostringstream err;
@@ -1388,8 +1400,8 @@ double UniTensor::trace()const{
     }
     if(status & HAVEBOND){
       size_t Rnum;
-      DOUBLE trVal = 0;
-      for(std::map<Qnum, Block>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+      UNI10_DTYPE trVal = 0;
+      for(std::map<Qnum, UNI10_BLOCK>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
         if(!(it->second.Rnum == it->second.Cnum)){
           std::ostringstream err;
           err<<"Cannot trace a non-square block.";
@@ -1408,38 +1420,38 @@ double UniTensor::trace()const{
   }
 }
 
-std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum)const{
+std::vector<UNI10_TENSOR> UNI10_TENSOR::hosvd(size_t modeNum, size_t fixedNum)const{
   try{
-    std::vector<std::map<Qnum, Matrix> > symLs;
+    std::vector<std::map<Qnum, UNI10_MATRIX> > symLs;
     return _hosvd(modeNum, fixedNum, symLs, false);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t = 0):");
-    return std::vector<UniTensor>();
+    return std::vector<UNI10_TENSOR>();
   }
 }
 
-std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const{
+std::vector<UNI10_TENSOR> UNI10_TENSOR::hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, UNI10_MATRIX> >& Ls)const{
   try{
     return _hosvd(modeNum, fixedNum, Ls, true);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t, std::vector<std::map<Qnum, Matrix> >&):");
-    return std::vector<UniTensor>();
+    propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t, std::vector<std::map<uni10::Qnum, uni10::Matrix> >&):");
+    return std::vector<UNI10_TENSOR>();
   }
 }
 
-std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const{
+std::vector<UNI10_TENSOR> UNI10_TENSOR::hosvd(size_t modeNum, std::vector<std::map<Qnum, UNI10_MATRIX> >& Ls)const{
   try{
     return _hosvd(modeNum, 0, Ls, true);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::hosvd(size_t, std::vector<std::map<Qnum, Matrix> >&):");
-    return std::vector<UniTensor>();
+    propogate_exception(e, "In function UniTensor::hosvd(size_t, std::vector<std::map<uni10::Qnum, uni10::Matrix> >&):");
+    return std::vector<UNI10_TENSOR>();
   }
 }
 
-std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const{
+std::vector<UNI10_TENSOR> UNI10_TENSOR::hosvd(size_t modeNum, size_t fixedNum, std::vector<UNI10_MATRIX>& Ls)const{
   try{
     bool withoutSymmetry = true;
     for(int b = 0; b < bonds.size(); b++){
@@ -1448,12 +1460,12 @@ std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum, std::ve
     }
     if(!withoutSymmetry){
       std::ostringstream err;
-      err<<"The tensor has symmetry quantum numbers. Cannot use non-symmetry version hosvd(size_t, std::vector<Matrix>&)";
-      err<<"\n  Hint: Use UniTensor::hosvd(size_t, size_t, std::vector<std::map<Qnum, Matrix> >&)";
+      err<<"The tensor has symmetry quantum numbers. Cannot use non-symmetry version hosvd(size_t, std::vector<uni10::Matrix>&)";
+      err<<"\n  Hint: Use UniTensor::hosvd(size_t, size_t, std::vector<std::map<uni10::Qnum, uni10::Matrix> >&)";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    std::vector<std::map<Qnum, Matrix> > symLs;
-    const std::vector<UniTensor>& outs = _hosvd(modeNum, fixedNum, symLs, true);
+    std::vector<std::map<Qnum, UNI10_MATRIX> > symLs;
+    const std::vector<UNI10_TENSOR>& outs = _hosvd(modeNum, fixedNum, symLs, true);
     Ls.clear();
     Qnum q0(0);
     for(int i = 0; i < symLs.size(); i++)
@@ -1462,20 +1474,20 @@ std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum, std::ve
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t, std::vector<Matrix>&):");
-    return std::vector<UniTensor>();
+    return std::vector<UNI10_TENSOR>();
   }
 }
-std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<Matrix>& Ls)const{
+std::vector<UNI10_TENSOR> UNI10_TENSOR::hosvd(size_t modeNum, std::vector<UNI10_MATRIX>& Ls)const{
   try{
     return hosvd(modeNum, 0, Ls);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::hosvd(size_t, std::vector<Matrix>&):");
-    return std::vector<UniTensor>();
+    return std::vector<UNI10_TENSOR>();
   }
 }
 
-bool UniTensor::similar(const UniTensor& Tb)const{
+bool UNI10_TENSOR::similar(const UNI10_TENSOR& Tb)const{
   try{
     if(bonds.size() != Tb.bonds.size())
       return false;
@@ -1490,7 +1502,7 @@ bool UniTensor::similar(const UniTensor& Tb)const{
 	return true;
 }
 
-bool UniTensor::elemCmp(const UniTensor& UniT)const{
+bool UNI10_TENSOR::elemCmp(const UNI10_TENSOR& UniT)const{
   try{
     double diff;
     if(m_elemNum == UniT.m_elemNum){
@@ -1509,7 +1521,7 @@ bool UniTensor::elemCmp(const UniTensor& UniT)const{
 	return true;
 }
 
-std::string UniTensor::printRawElem(bool print)const{
+std::string UNI10_TENSOR::printRawElem(bool print)const{
   try{
     std::ostringstream os;
     if(status & HAVEBOND && status & HAVEELEM){
@@ -1579,7 +1591,7 @@ std::string UniTensor::printRawElem(bool print)const{
   }
 }
 
-std::string UniTensor::profile(bool print){
+std::string UNI10_TENSOR::profile(bool print){
   std::ostringstream os;
   os<<"\n===== Tensor profile =====\n";
 	os<<"Existing Tensors: " << COUNTER << std::endl;
@@ -1594,7 +1606,7 @@ std::string UniTensor::profile(bool print){
   return os.str();
 }
 
-UniTensor& UniTensor::operator*= (double a){
+UNI10_TENSOR& UNI10_TENSOR::operator*= (double a){
   try{
     if(!(status & HAVEELEM)){
       std::ostringstream err;
@@ -1609,7 +1621,7 @@ UniTensor& UniTensor::operator*= (double a){
 	return *this;
 }
 
-UniTensor& UniTensor::operator*=(const UniTensor& uT){
+UNI10_TENSOR& UNI10_TENSOR::operator*=(const UNI10_TENSOR& uT){
   try{
 	  *this = *this * uT;
   }
@@ -1619,7 +1631,7 @@ UniTensor& UniTensor::operator*=(const UniTensor& uT){
   return *this;
 }
 
-UniTensor& UniTensor::operator+= (const UniTensor& Tb){
+UNI10_TENSOR& UNI10_TENSOR::operator+= (const UNI10_TENSOR& Tb){
   try{
     if(!(status & Tb.status & HAVEELEM)){
       std::ostringstream err;
@@ -1638,7 +1650,7 @@ UniTensor& UniTensor::operator+= (const UniTensor& Tb){
   }
   return *this;
 }
-std::vector<_Swap> UniTensor::exSwap(const UniTensor& Tb) const{
+std::vector<_Swap> UNI10_TENSOR::exSwap(const UNI10_TENSOR& Tb) const{
 	std::vector<_Swap> swaps;
   try{
     if(status & Tb.status & HAVEBOND){
@@ -1671,7 +1683,7 @@ std::vector<_Swap> UniTensor::exSwap(const UniTensor& Tb) const{
 	return swaps;
 }
 
-void UniTensor::addGate(const std::vector<_Swap>& swaps){
+void UNI10_TENSOR::addGate(const std::vector<_Swap>& swaps){
   try{
   if((status & HAVEBOND) == 0){
     std::ostringstream err;
@@ -1695,7 +1707,7 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
 	size_t sB_r, sB_c;	//sub-block of a Qidx
 	size_t sB_rDim, sB_cDim;	//sub-block of a Qidx
 	size_t B_cDim;
-	double* Eptr;
+	UNI10_DTYPE* Eptr;
 	for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
 		Q_off = it->first;
 		tmp = Q_off;
@@ -1725,7 +1737,7 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
   }
 }
 
-UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
+UNI10_TENSOR contract(UNI10_TENSOR& Ta, UNI10_TENSOR& Tb, bool fast){
   try{
     if(!(Ta.status & Tb.status & Ta.HAVEELEM)){
       std::ostringstream err;
@@ -1733,7 +1745,7 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(&Ta == &Tb){
-      UniTensor Ttmp = Tb;
+      UNI10_TENSOR Ttmp = Tb;
       return contract(Ta, Ttmp, fast);
     }
     if(Ta.status & Ta.HAVEBOND && Tb.status & Ta.HAVEBOND){
@@ -1784,23 +1796,23 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
         cBonds.push_back(Ta.bonds[i]);
       for(int i = conBond; i < BbondNum; i++)
         cBonds.push_back(Tb.bonds[i]);
-      UniTensor Tc(cBonds);
+      UNI10_TENSOR Tc(cBonds);
       if(cBonds.size())
         Tc.setLabel(newLabelC);
-      Block blockA, blockB, blockC;
-      std::map<Qnum, Block>::iterator it;
-      std::map<Qnum, Block>::iterator it2;
+      UNI10_BLOCK blockA, blockB, blockC;
+      std::map<Qnum, UNI10_BLOCK>::iterator it;
+      std::map<Qnum, UNI10_BLOCK>::iterator it2;
       for(it = Ta.blocks.begin() ; it != Ta.blocks.end(); it++){
         if((it2 = Tb.blocks.find(it->first)) != Tb.blocks.end()){
           blockA = it->second;
           blockB = it2->second;
           blockC = Tc.blocks[it->first];
-          if(!(blockA.Rnum == blockC.Rnum && blockB.Cnum == blockC.Cnum && blockA.Cnum == blockB.Rnum)){
+          if(!(blockA.row() == blockC.row() && blockB.col() == blockC.col() && blockA.col() == blockB.row())){
             std::ostringstream err;
             err<<"The dimensions the bonds to be contracted out are different.";
             throw std::runtime_error(exception_msg(err.str()));
           }
-          matrixMul(blockA.m_elem, blockB.m_elem, blockA.Rnum, blockB.Cnum, blockA.Cnum, blockC.m_elem, Ta.ongpu, Tb.ongpu, Tc.ongpu);
+          matrixMul(blockA.getElem(), blockB.getElem(), blockA.row(), blockB.col(), blockA.col(), blockC.getElem(), Ta.ongpu, Tb.ongpu, Tc.ongpu);
         }
       }
       Tc.status |= Tc.HAVEELEM;
@@ -1837,18 +1849,18 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
     else if(Tb.status & Tb.HAVEBOND)
       return Ta[0] * Tb;
     else
-      return UniTensor(Ta[0] * Tb[0]);
+      return UNI10_TENSOR(Ta[0] * Tb[0]);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function contract(uni10::UniTensor&, uni10::UniTensor, bool):");
-    return UniTensor();
+    return UNI10_TENSOR();
   }
 }
 
-UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
+UNI10_TENSOR otimes(const UNI10_TENSOR & Ta, const UNI10_TENSOR& Tb){
   try{
-    UniTensor T1 = Ta;
-    UniTensor T2 = Tb;
+    UNI10_TENSOR T1 = Ta;
+    UNI10_TENSOR T2 = Tb;
     std::vector<int> label1(T1.bondNum());
     std::vector<int> label2(T2.bondNum());
     for(int i = 0; i < T1.bondNum(); i++){
@@ -1869,42 +1881,42 @@ UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function otimes(uni10::UniTensor&, uni10::UniTensor&):");
-    return UniTensor();
+    return UNI10_TENSOR();
   }
 }
 
-UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
+UNI10_TENSOR operator*(const UNI10_TENSOR& Ta, const UNI10_TENSOR& Tb){
   try{
-    UniTensor cTa = Ta;
-    UniTensor cTb = Tb;
+    UNI10_TENSOR cTa = Ta;
+    UNI10_TENSOR cTb = Tb;
     return contract(cTa, cTb, true);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator*(uni10::UniTensor&, uni10::UniTensor&):");
-    return UniTensor();
+    return UNI10_TENSOR();
   }
 }
 
-UniTensor operator*(const UniTensor& Ta, double a){
+UNI10_TENSOR operator*(const UNI10_TENSOR& Ta, double a){
   try{
     if(!(Ta.status & Ta.HAVEELEM)){
       std::ostringstream err;
       err<<"Cannot perform scalar multiplication on a tensor before setting its elements.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    UniTensor Tb(Ta);
+    UNI10_TENSOR Tb(Ta);
     vectorScal(a, Tb.elem, Tb.m_elemNum, Tb.ongpu);
     return Tb;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator*(uni10::UniTensor&, double):");
-    return UniTensor();
+    return UNI10_TENSOR();
   }
 }
 
-UniTensor operator*(double a, const UniTensor& Ta){return Ta * a;};
+UNI10_TENSOR operator*(double a, const UNI10_TENSOR& Ta){return Ta * a;};
 
-UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
+UNI10_TENSOR operator+(const UNI10_TENSOR& Ta, const UNI10_TENSOR& Tb){
   try{
     if(!(Ta.status & Tb.status & Ta.HAVEELEM)){
       std::ostringstream err;
@@ -1916,17 +1928,17 @@ UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
       err<<"Cannot perform addition of two tensors having diffirent bonds.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    UniTensor Tc(Ta);
+    UNI10_TENSOR Tc(Ta);
     vectorAdd(Tc.elem, Tb.elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu);
     return Tc;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator+(uni10::UniTensor&, uni10::UniTensor&):");
-    return UniTensor();
+    return UNI10_TENSOR();
   }
 }
 
-std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
+std::ostream& operator<< (std::ostream& os, const UNI10_TENSOR& UniT){
   try{
     if(!(UniT.status & UniT.HAVEBOND)){
       if(UniT.ongpu){
@@ -1989,9 +2001,9 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
       os << bonds[b];
     }
     os<<"\n===============BLOCKS===============\n";
-    std::map<Qnum, Block> blocks = UniT.const_getBlocks();
+    std::map<Qnum, UNI10_BLOCK> blocks = UniT.const_getBlocks();
     bool printElem = true;
-    for (std::map<Qnum, Block>::const_iterator  it = blocks.begin() ; it != blocks.end(); it++ ){
+    for (std::map<Qnum, UNI10_BLOCK>::const_iterator  it = blocks.begin() ; it != blocks.end(); it++ ){
       os << "--- " << it->first << ": ";// << Rnum << " x " << Cnum << " = " << Rnum * Cnum << " ---\n\n";
       if((UniT.status & UniT.HAVEELEM) && printElem)
         os<<it->second;
@@ -2010,7 +2022,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 
 /**************** Private Functions ***********************/
 
-void UniTensor::initUniT(){ //GPU
+void UNI10_TENSOR::initUniT(){ //GPU
 	if(bonds.size()){
 		m_elemNum = grouping();
 		if(!(blocks.size() > 0)){ //No block in Tensor, Error!
@@ -2027,7 +2039,7 @@ void UniTensor::initUniT(){ //GPU
 	}
 	else{
 		Qnum q0(0);
-		blocks[q0] = Block(1, 1);
+		blocks[q0] = UNI10_BLOCK(1, 1);
 		RBondNum = 0;
 		RQdim = 0;
 		CQdim = 0;
@@ -2035,14 +2047,14 @@ void UniTensor::initUniT(){ //GPU
 		status |= HAVEELEM;
 	}
 	elem = NULL;
-	elem = (DOUBLE*)elemAlloc(sizeof(DOUBLE) * m_elemNum, ongpu);
+	elem = (UNI10_DTYPE*)elemAlloc(sizeof(UNI10_DTYPE) * m_elemNum, ongpu);
   size_t offset = 0;
-	for (std::map<Qnum,Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+	for (std::map<Qnum, UNI10_BLOCK>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
 		it->second.m_elem = &(elem[offset]);
     it->second.ongpu = ongpu;
     offset += it->second.Rnum * it->second.Cnum;
   }
-	elemBzero(elem, sizeof(DOUBLE) * m_elemNum, ongpu);
+	elemBzero(elem, sizeof(UNI10_DTYPE) * m_elemNum, ongpu);
 	ELEMNUM += m_elemNum;
 	COUNTER++;
 	if(ELEMNUM > MAXELEMNUM)
@@ -2051,7 +2063,7 @@ void UniTensor::initUniT(){ //GPU
 		MAXELEMTEN = m_elemNum;
 }
 
-size_t UniTensor::grouping(){
+size_t UNI10_TENSOR::grouping(){
 	blocks.clear();
 	int row_bondNum = 0;
 	int col_bondNum = 0;
@@ -2175,10 +2187,10 @@ size_t UniTensor::grouping(){
 	size_t off = 0;
 	for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
 		it = row_QnumMdim.find(it2->first);
-    Block blk(it->second, it2->second); // blk(Rnum, Cnum);
+    UNI10_BLOCK blk(it->second, it2->second); // blk(Rnum, Cnum);
 		off += blk.Rnum * blk.Cnum;
 		blocks[it->first] = blk;
-		Block* blkptr = &(blocks[it->first]);
+	  UNI10_BLOCK* blkptr = &(blocks[it->first]);
 		std::vector<int>& tmpRQidx = row_Qnum2Qidx[it->first];
 		std::vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];
 		for(int i = 0; i < tmpRQidx.size(); i++){
@@ -2205,7 +2217,7 @@ size_t UniTensor::grouping(){
   return off;
 }
 
-std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
+std::vector<UNI10_TENSOR> UNI10_TENSOR::_hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, UNI10_MATRIX> >& Ls, bool returnL)const{
   if((status & HAVEBOND) == 0){
     std::ostringstream err;
     err<<"Cannot perform higher order SVD on a tensor without bonds(scalar).";
@@ -2223,15 +2235,15 @@ std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::v
     throw std::runtime_error(exception_msg(err.str()));
   }
   int combNum = (bondNum - fixedNum) / modeNum;
-  UniTensor T(*this);
+  UNI10_TENSOR T(*this);
   for(int t = 0; t < T.labels.size(); t++)
     T.labels[t] = t;
   std::vector<int>ori_labels = T.labels;
   std::vector<int>rsp_labels = T.labels;
   if(returnL)
-    Ls.assign(modeNum, std::map<Qnum, Matrix>());
-  std::vector<UniTensor> Us;
-  UniTensor S(T);
+    Ls.assign(modeNum, std::map<Qnum, UNI10_MATRIX>());
+  std::vector<UNI10_TENSOR> Us;
+  UNI10_TENSOR S(T);
   std::vector<int>out_labels(S.labels.begin(), S.labels.begin() + fixedNum + modeNum);
   for(int m = 0; m < modeNum; m++){
     for(int l = 0; l < rsp_labels.size(); l++){
@@ -2245,9 +2257,9 @@ std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::v
     T.permute(rsp_labels, combNum);
     std::vector<Bond> bonds(T.bonds.begin(), T.bonds.begin() + combNum);
     bonds.push_back(combine(bonds).dummy_change(BD_OUT));
-    Us.push_back(UniTensor(bonds));
-    for(std::map<Qnum, Block>::iterator it = T.blocks.begin(); it != T.blocks.end(); it++){
-      std::vector<Matrix> svd = it->second.svd();
+    Us.push_back(UNI10_TENSOR(bonds));
+    for(std::map<Qnum, UNI10_BLOCK>::iterator it = T.blocks.begin(); it != T.blocks.end(); it++){
+      std::vector<UNI10_MATRIX> svd = it->second.svd();
       Us[m].putBlock(it->first, svd[0]);
       if(returnL)
         Ls[m][it->first] = svd[1];
@@ -2256,7 +2268,7 @@ std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::v
       Us[m].labels[c] = fixedNum + m * combNum + c;
     Us[m].labels[combNum] = -m - 1;
     out_labels[fixedNum + m] = -m -1;
-    UniTensor UT = Us[m];
+    UNI10_TENSOR UT = Us[m];
     S *= UT.transpose();
   }
   S.permute(out_labels, fixedNum);
@@ -2264,3 +2276,15 @@ std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::v
   return Us;
 }
 }; /* namespace uni10 */
+#ifdef UNI10_TENSOR
+#undef UNI10_TENSOR
+#endif
+#ifdef UNI10_BLOCK
+#undef UNI10_BLOCK
+#endif
+#ifdef UNI10_MATRIX
+#undef UNI10_MATRIX
+#endif
+#ifdef UNI10_DTYPE
+#undef UNI10_DTYPE
+#endif

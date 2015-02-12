@@ -41,8 +41,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <uni10/datatype.hpp>
-#define DOUBLE double
-
 #include <uni10/data-structure/uni10_struct.h>
 #include <uni10/data-structure/Bond.h>
 #include <uni10/data-structure/Block.h>
@@ -621,7 +619,7 @@ namespace uni10 {
 
     private:
         std::string name;
-        DOUBLE *elem;       //Array of elements
+        double *elem;       //Array of elements
         int status; //Check initialization, 1 initialized, 3 initialized with label, 5 initialized with elements
         std::vector<Bond> bonds;
         std::map<Qnum, Block> blocks;
