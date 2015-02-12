@@ -3,9 +3,7 @@
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
-*    National Taiwan University
-*    National Tsing-Hua University
-
+*    Yun-Da Hsieh, Pochung Chen and Ying-Jer Kao
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -33,6 +31,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <complex>
+#include <iostream>
 extern "C" {
 // BLAS functions
 void dgemm_(const char *transa, const char *transb, const int32_t *m, const int32_t *n, const int32_t *k,
@@ -57,7 +56,11 @@ double dznrm2_(const int32_t *n, const std::complex<double> *x, const int32_t *i
 void dgemv_(const char *trans, const int32_t *m, const int32_t *n, const double *alpha, const double *a, const int32_t *lda, const double *x,
            const int32_t *incx, const double *beta, const double *y, const int32_t *incy);
 
+void zgemv_(const char *trans, const int32_t *m, const int32_t *n, const std::complex<double> *alpha, const std::complex<double> *a, const int32_t *lda, const std::complex<double> *x,
+           const int32_t *incx, const std::complex<double> *beta, const std::complex<double> *y, const int32_t *incy);
+
 double ddot_(const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy);
+std::complex<double> zdotc_(const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy);
 
 // LAPACK functions
 void dgesvd_( const char* jobu, const char* jobvt, const int32_t* m,
@@ -83,7 +86,6 @@ void dgetrf_( const int32_t *m, const int32_t *n, const double *a,  const int32_
 void zgetrf_( const int32_t *m, const int32_t *n, const std::complex<double> *a,  const int32_t *lda, const int32_t *ipiv, int32_t* info );
 void dgetri_( const int32_t *n, const double *a,  const int32_t *lda, const int32_t *ipiv, const double* work, const int32_t* lwork, int32_t* info );
 void zgetri_( const int32_t *n, const std::complex<double> *a, const int32_t *lda, const int32_t *ipiv, const std::complex<double> *work, const int32_t *lwork, int32_t *info );
-
 }
 // Wrappers for BLAS and LAPACK functions used in uni10_lapack.cpp
 inline void dgemm(const char *transa, const char *transb, const int32_t *m, const int32_t *n, const int32_t *k,
@@ -169,9 +171,23 @@ inline void dgemv(const char *trans, const int32_t *m, const int32_t *n, const d
   dgemv_(trans, m, n, alpha, a, lda, x, incx, beta, y, incy);
 }
 
+inline void zgemv(const char *trans, const int32_t *m, const int32_t *n, const std::complex<double> *alpha, const std::complex<double> *a, const int32_t *lda, const std::complex<double> *x,
+           const int32_t *incx, const std::complex<double> *beta, const std::complex<double> *y, const int32_t *incy)
+{
+  zgemv_(trans, m, n, alpha, a, lda, x, incx, beta, y, incy);
+}
+
 inline double ddot(const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy)
 {
   return ddot_(n, x, incx, y, incy);
+}
+
+inline std::complex<double> zdotc(const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy)
+{
+  std::complex<double> c = 0.0;
+  for(int i = 0; i < *n; i++)
+    c += conj(x[i]) * y[i];
+  return c;
 }
 
 inline void dstev( const char* jobz, const int32_t* n, const double* d, const double* e, const double* z,
