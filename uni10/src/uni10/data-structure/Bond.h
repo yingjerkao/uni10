@@ -47,9 +47,9 @@ enum bondType {
     BD_IN = 1, ///<Defines an incoming Bond
     BD_OUT = -1  ///<Defines an outgoing Bond
 };
-    
+
 class UniTensor;
-    
+
 /// @brief The Bond class holds the information of a bond.
 ///
 /// A bond is defined from the quantum states specified by quantum numbers defined by the Qnum class.
@@ -68,7 +68,7 @@ public:
     /// @brief Default constuctor
     ///
     Bond() {};
-    
+
     ///
     /// @brief Create a Bond of type \c tp and dimension \c dim
     /// @param tp  Type of bond
@@ -82,16 +82,16 @@ public:
 
     /// @brief Copy constructor
     /// @param bd Reference to a second Bond
-    
+
     Bond(const Bond& bd);
-    
+
     /// @brief Destructor
     ///
     ~Bond();
 
     /*!
      @brief Assign bond content
-     
+
      Assigns type tp and dimension dim to Bond, replacing the current content.
      @param tp Type of bond,  either \ref BD_IN or \ref BD_OUT
      @param dim Dimension
@@ -99,36 +99,36 @@ public:
     void assign(bondType tp, size_t dim);
     /*!
      @brief Assign bond content
-     
+
      Assigns type \c tp with list of Qnum \c qnums to Bond, replacing the current content.
      @param tp Type of bond
      @param qnums  Vector of Qnum
      */
     void assign(bondType tp, const std::vector<Qnum>& qnums);
- 
+
     /// @brief Access bond type
     ///
     /// Returns the bond type of Bond
     /// @return Type of bond
     bondType type()const;
-    
+
     /// @brief Access bond dimension
     ///
     /// Returns the dimension of Bond
     /// @return Dimension of Bond
     int dim()const;
-    
+
     /// @brief Returns the degeneracies for quantum numbers
     /// @return  Map of Qnum's to their degeneracies
     std::map<Qnum, int> degeneracy()const;
-    
+
     /// @brief Access quantum numbers
     ///
     /// Returns a vector of Qnum's for states in Bond. The size of the vector is the same
     /// as the dimension of Bond.
     /// @return Vector of Qnum
     std::vector<Qnum> Qlist()const;
-    
+
     /// @brief Change the type of Bond
     ///
     /// Changes the type of Bond and the Qnum's of the bond when necssary.
@@ -148,7 +148,7 @@ public:
     /// @param bd Bond to be combined
     /// @return \c *this
     Bond& combine(Bond bd);
-    
+
     /// @brief Compare two bonds
     ///
     /// The equality condition is such that
@@ -156,18 +156,18 @@ public:
     /// @param b1, b2 the bonds to compare
     /// @return \c True if two bonds are equal; \c False otherwise
     friend bool operator== (const Bond& b1, const Bond& b2);
-    
+
     /// @brief Combines a list of bonds
     ///
     /// Combines a list of bonds by successively combining the bonds in the order in the given list \c bds.
     ///
     /// @return A bond with type \c tp
     friend Bond combine(bondType tp, const std::vector<Bond>& bds);
-    
+
     /// @brief Combines a list of bonds
     /// @return A bond with bond type of the first bond in \c bds
     friend Bond combine(const std::vector<Bond>& bds);
-    
+
     /// @brief Print out Qnum
     ///
     /// Prints out a bond  as:
@@ -178,8 +178,9 @@ public:
     /// The bond is an incoming bond with three Qnum's: one \c U1 =1, two \c U1 =0 and one \c U1= -1.
     /// The dimension of the bond is 4.
     friend std::ostream& operator<< (std::ostream& os, const Bond& b);
-    
+
     friend class UniTensor;
+    friend class CUniTensor;
     friend class Node;
 private:
     void setting(const std::vector<Qnum>& qnums);
@@ -194,7 +195,7 @@ Bond combine(bondType tp, const std::vector<Bond>& bds);
 
 Bond combine(const std::vector<Bond>& bds);
 
-    
+
 /// @example egB1.cpp
 
 };

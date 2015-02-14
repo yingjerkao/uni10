@@ -169,7 +169,7 @@ public:
     /// If the <tt> Nr < Nc </tt>, randomly generates \c Nr orthogonal basis row vectors of dimension \c Nc.
     /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand();
-    
+
     bool toGPU();
     /// @brief Transpose Matrix
     ///
@@ -180,6 +180,8 @@ public:
     ///
     /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& cTranspose();
+
+    Matrix& conj(){return *this;};
 
     /// @brief Multiply Matrix by a scalar and assign
     ///

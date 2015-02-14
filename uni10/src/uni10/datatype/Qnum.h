@@ -38,7 +38,7 @@
 #include <exception>
 
 namespace uni10 {
-    
+
 //! Parity/Z2 types
 enum parityType {
     PRT_EVEN = 0, ///< Parity/Z2 even
@@ -50,8 +50,8 @@ enum parityFType {
     PRTF_ODD = 1   ///< Fermion parity odd
 };
 
-    
-    
+
+
 /// @class Qnum
 /// @brief The Qnum class defines the quantum number
 ///
@@ -73,7 +73,7 @@ public:
     /// @param _U1 U1 quantum number, defaults to 0
     /// @param _prt Particle parity/Z2, defaults to \c PRT_EVEN
     Qnum(int _U1=0, parityType _prt=PRT_EVEN);
-    
+
     /// @brief Creates a fermionic quantum number
     ///
     /// Creates a Qnum with fermionic parity
@@ -81,40 +81,40 @@ public:
     /// @param _U1 U1 quantum number, defaults to 0
     /// @param _prt Particle parity/Z2, defaults to \c PRT_EVEN
     Qnum(parityFType _prtF, int _U1 = 0, parityType _prt = PRT_EVEN);
-    
+
     /// @brief Copy constructor
     ///
     Qnum(const Qnum& _q);
-    
+
     /// @brief Default destructor
     ///
     ~Qnum() {};
-    
+
     /// @brief Access U1
     ///
     /// Returns the value of U1 quantum number, bounded by (Qnum::U1_UPB, Qnum::U1_LOB)
     /// @return U1 quantum number
     int U1()const;
-    
+
     /// @brief Access paritcle parity/Z2
     ///
     /// Returns the value of parity/Z2 quantum number.
     /// @return Parity/Z2 quantum number
     parityType prt()const;
-    
+
     /// @brief Access fermionic number parity
     ///
     /// Returns the value of fermionic number parity.
     /// @return Fermionic number parity
     parityFType prtF()const;
-    
+
     /// @brief Assign Qnum content
     ///
     /// Assigns new content to Qnum, replacing its current content.
     /// @param _U1 U1 quantum number, defaults to 0
     /// @param _prt parity/Z2, defaults to \c PRT_EVEN
     void assign(int _U1 = 0, parityType _prt = PRT_EVEN);
-    
+
     /// @brief Assign fermionic content
     ///
     /// Assigns new fermionic quantum number to Qnum, replacing its current content.
@@ -133,13 +133,13 @@ public:
         return Fermionic;
     }
     long int hash()const;
-    
+
     /// @brief Define less than operator
     ///
     /// Defines \c q1 < \c q2
     /// @return \c True if \c q1 < \c q2; \c False otherwise
     friend bool operator< (const Qnum& q1, const Qnum& q2);
-    
+
     /// @brief Define less than or equal to operator
     ///
     /// Defines \c q1 <= \c q2
@@ -151,14 +151,14 @@ public:
     /// Defines \c q1 == \c q2
     /// @return \c True if \c q1 == \c q2; \c False otherwise
     friend bool operator== (const Qnum& q1, const Qnum& q2);
-    
+
     /// @brief Define negation operator
     ///
     /// Negation is defined as the operation on the quantum number when an incoming bond is permuted to an
     /// outcoming bond, or vice versa.
     /// For U(1) quantum number \c U1,  negation give \c -U1. No effects on the parity/fermionic parity.
     friend Qnum operator- (const Qnum& q1);
-    
+
     /// @brief Define multiplication operator
     ///
     /// Defines the fusion rules for quantum numbers.

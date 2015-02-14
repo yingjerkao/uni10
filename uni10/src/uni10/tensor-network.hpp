@@ -31,6 +31,7 @@
 
 #include <uni10/tensor-network/CMatrix.h>
 #include <uni10/tensor-network/Matrix.h>
+#include <uni10/tensor-network/CUniTensor.h>
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/tensor-network/Network.h>
 
