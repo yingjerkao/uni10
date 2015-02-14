@@ -102,8 +102,7 @@ void setElemAt(size_t idx, std::complex<double> val, std::complex<double> *elem,
 
 void elemRand(std::complex<double>* elem, size_t N, bool ongpu){
 	for(size_t i = 0; i < N; i++)
-		elem[i] = std::complex<double>(((double)rand()) / RAND_MAX, ((double)rand()) / RAND_MAX);
-		//elem[i] = std::complex<double>((std::pow((-1.), (rand() % 2)) * (double)rand()) / RAND_MAX, (std::pow((-1.), (rand() % 2))*(double)rand()) / RAND_MAX);
+		elem[i] = std::complex<double>(((double)rand()) / RAND_MAX, ((double)rand()) / RAND_MAX); //lapack_uni01_sampler();
 }
 
 void elemCast(std::complex<double>* des, double* src, size_t N, bool des_ongpu, bool src_ongpu){

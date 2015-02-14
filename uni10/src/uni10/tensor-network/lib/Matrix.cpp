@@ -257,7 +257,7 @@ UNI10_MATRIX& UNI10_MATRIX::transpose(){
   try{
     if(!ongpu)
       m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    if(!diag)
+    if(!(diag || Rnum == 1 || Cnum == 1))
       setTranspose(m_elem, Rnum, Cnum, ongpu);
     size_t tmp = Rnum;
     Rnum = Cnum;
@@ -273,7 +273,9 @@ UNI10_MATRIX& UNI10_MATRIX::cTranspose(){
   try{
     if(!ongpu)
       m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    if(!diag)
+    if(diag || Rnum == 1 || Cnum == 1)
+      this->conj();
+    else
       setCTranspose(m_elem, Rnum, Cnum, ongpu);
     size_t tmp = Rnum;
     Rnum = Cnum;

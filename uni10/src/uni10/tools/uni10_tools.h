@@ -72,8 +72,9 @@ void setElemAt(size_t idx, std::complex<double> val, std::complex<double>* elem,
 void elemRand(std::complex<double>* elem, size_t N, bool ongpu);
 void elemCast(std::complex<double>* des, double* src, size_t N, bool des_ongpu, bool src_ongpu);
 void elemCast(double *des, std::complex<double> *src, size_t N, bool des_ongpu, bool src_ongpu);
-
-
+void setDiag(std::complex<double>* elem, std::complex<double>* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu);
+void getDiag(std::complex<double>* elem, std::complex<double>* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu);
+void reshapeElem(std::complex<double>* oldElem, int bondNum, size_t elemNum, size_t* offset, std::complex<double>* newElem);
 
 // trim from start
 static inline std::string &ltrim(std::string &s) {

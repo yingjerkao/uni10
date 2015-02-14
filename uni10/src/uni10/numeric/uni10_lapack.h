@@ -99,6 +99,8 @@ void setCTranspose(std::complex<double>* A, size_t M, size_t N, bool ongpu);
 void eigDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double> *EigVec, bool ongpu);
 void eigSyDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double>* EigVec, bool ongpu);
 void setConjugate(std::complex<double> *A, size_t N, bool ongpu);
+void setIdentity(std::complex<double>* elem, size_t M, size_t N, bool ongpu);
+bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, std::complex<double>* eigVec, bool ongpu);
 
 };	/* namespace uni10 */
 #endif /* UNI10_LAPACK_H */
