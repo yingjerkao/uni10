@@ -158,7 +158,9 @@ std::vector<UNI10_MATRIX> UNI10_BLOCK::eigh()const{
     //GPU_NOT_READY
     outs.push_back(UNI10_MATRIX(Rnum, Cnum, true, ongpu));
     outs.push_back(UNI10_MATRIX(Rnum, Cnum, false, ongpu));
-    eigSyDecompose(m_elem, Rnum, outs[0].m_elem, outs[1].m_elem, ongpu);
+    Matrix Eig(Rnum, Cnum, true, ongpu);
+    eigSyDecompose(m_elem, Rnum, Eig.m_elem, outs[1].m_elem, ongpu);
+    outs[0] = Eig;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::eigh():");
@@ -186,7 +188,7 @@ std::vector<CMatrix> UNI10_BLOCK::eig()const{
     eigDecompose(m_elem, Rnum, outs[0].m_elem, outs[1].m_elem, ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::eigh():");
+    propogate_exception(e, "In function Matrix::eig():");
   }
 	return outs;
 }

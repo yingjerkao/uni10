@@ -69,6 +69,7 @@ namespace uni10 {
     class CBlock;
     class Matrix;
     class CMatrix;
+    class CUniTensor;
     class UniTensor {
     public:
 
@@ -104,8 +105,10 @@ namespace uni10 {
         UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
         /// @brief Create a UniTensor from a Block
         UniTensor(const Block& UniT);
+        UniTensor(const CBlock& UniT);
         /// @brief Copy constructor
         UniTensor(const UniTensor& UniT);
+        UniTensor(const CUniTensor& UniT);
         /// @brief Destructor
         ///
         /// Destroys the UniTensor and freeing all allocated memory
@@ -197,6 +200,7 @@ namespace uni10 {
         void setRawElem(const double* rawElem);
         /// @overload
         void setRawElem(const Block& blk);
+        void setRawElem(const CBlock& blk);
 
         /// @brief Access single element
         ///
@@ -279,6 +283,7 @@ namespace uni10 {
         /// If \c mat is diagonal,  all the off-diagonal elements are set to zero.
         /// @param mat The matrix elements to be assigned
         void putBlock(const Block& mat);
+        void putBlock(const CBlock& mat);
 
         /// @brief Assign elements to a block
         ///
@@ -288,6 +293,7 @@ namespace uni10 {
         /// @param qnum quantum number of the block
         /// @param mat The matrix elements to be assigned
         void putBlock(const Qnum& qnum, const Block& mat);
+        void putBlock(const Qnum& qnum, const CBlock& mat);
 
         /// @brief Access elements
         ///
@@ -543,6 +549,8 @@ namespace uni10 {
         /// Performs tensor contraction, <tt> Ta * Tb </t>. It contracts  the bonds of the same labels in \c Ta
         /// and \c Tb by making copies and then call function \ref{contract}.
         friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
+        friend CUniTensor operator*(const UniTensor& Ta, const std::complex<double>& a);
+        friend CUniTensor operator*(const std::complex<double>& a, const UniTensor& Ta);
         /// @brief Muliplication
         ///
         /// Performs element-wise multiplication with a scalar \c a
@@ -614,6 +622,7 @@ namespace uni10 {
         /// various sizes. The total element number is 19.
         friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
 
+        friend class CUniTensor;
         friend class Node;
         friend class Network;
 

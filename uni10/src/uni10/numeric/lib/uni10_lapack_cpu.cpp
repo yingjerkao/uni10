@@ -622,8 +622,30 @@ void eigDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, s
 	free(A);
 }
 
-void eigSyDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, std::complex<double>* EigVec, bool ongpu){
-  eigDecompose(Kij, N, Eig, EigVec, ongpu);
+void eigSyDecompose(std::complex<double>* Kij, int N, double* Eig, std::complex<double>* EigVec, bool ongpu){
+  //eigDecompose(Kij, N, Eig, EigVec, ongpu);
+	memcpy(EigVec, Kij, N * N * sizeof(std::complex<double>));
+	int ldA = N;
+	int lwork = -1;
+  std::complex<double> worktest;
+  double* rwork = (double*) malloc((3*N+1) * sizeof(double));
+	int info;
+	zheev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, &worktest, &lwork, rwork, &info);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dsyev': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	lwork = (int)worktest.real();
+  std::complex<double>* work= (std::complex<double>*)malloc(sizeof(std::complex<double>)*lwork);
+	zheev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, work, &lwork, rwork, &info);
+  if(info != 0){
+    std::ostringstream err;
+    err<<"Error in Lapack function 'dsyev': Lapack INFO = "<<info;
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+	free(work);
+  free(rwork);
 }
 
 void setConjugate(std::complex<double> *A, size_t N, bool ongpu){

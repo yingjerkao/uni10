@@ -49,6 +49,7 @@ class Block;
 class CBlock;
 class Matrix;
 class CMatrix;
+class UniTensor;
 class CUniTensor{
 	public:
 		CUniTensor();
@@ -58,7 +59,9 @@ class CUniTensor{
 		CUniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
 		CUniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
 		CUniTensor(const CUniTensor& UniT);
-		CUniTensor(const CBlock& UniT);
+		CUniTensor(const UniTensor& UniT);
+		CUniTensor(const CBlock& cblk);
+		CUniTensor(const Block& blk);
 		~CUniTensor();
 		CUniTensor& operator=(const CUniTensor& UniT);
 		CUniTensor& assign(const std::vector<Bond>& _bond);
@@ -75,6 +78,7 @@ class CUniTensor{
 		size_t elemNum()const;
 		CMatrix getRawElem()const;
     void setRawElem(const CBlock& blk);
+    void setRawElem(const Block& blk);
     void setRawElem(const std::vector<std::complex<double> >& rawElem);
     void setRawElem(const std::complex<double>* rawElem);
     std::complex<double> at(const std::vector<int>& idxs)const;
@@ -89,7 +93,9 @@ class CUniTensor{
 		CMatrix getBlock(bool diag = false)const;
 		CMatrix getBlock(const Qnum& qnum, bool diag = false)const;
 		void putBlock(const CBlock& mat);
+		void putBlock(const Block& mat);
 		void putBlock(const Qnum& qnum, const CBlock& mat);
+		void putBlock(const Qnum& qnum, const Block& mat);
     std::complex<double>* getElem();
     void setElem(const std::complex<double>* elem, bool _ongpu = false);
     void setElem(const std::vector<std::complex<double> >& elem, bool _ongpu = false);
@@ -101,12 +107,14 @@ class CUniTensor{
 		void randomize();
 		void orthoRand();
 		void orthoRand(const Qnum& qnum);
+    CUniTensor& conj();
     void clear();
     void save(const std::string& fname);
     CUniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
     CUniTensor& permute(int* newLabels, int inBondNum);
     CUniTensor& permute(int inBondNum);
 		CUniTensor& transpose();
+    CUniTensor& cTranspose();
 		CUniTensor& combineBond(const std::vector<int>& combined_labels);
     CUniTensor& partialTrace(int la, int lb); //CHECK
     std::complex<double> trace()const;
@@ -120,17 +128,29 @@ class CUniTensor{
     std::string printRawElem(bool print=true)const;
     static std::string profile(bool print = true);
     CUniTensor& operator*= (double a);
+    CUniTensor& operator*= (const std::complex<double>& a);
     CUniTensor& operator*= (const CUniTensor& Tb);
+    CUniTensor& operator*= (const UniTensor& Tb);
     CUniTensor& operator+= (const CUniTensor& Tb);
+    CUniTensor& operator+= (const UniTensor& Tb);
     std::vector<_Swap> exSwap(const CUniTensor& Tb)const;
     void addGate(const std::vector<_Swap>& swaps);
     friend CUniTensor contract(CUniTensor& Ta, CUniTensor& Tb, bool fast);
     friend CUniTensor otimes(const CUniTensor& Ta, const CUniTensor& Tb);
     friend CUniTensor operator*(const CUniTensor& Ta, const CUniTensor& Tb);
+    friend CUniTensor operator*(const CUniTensor& Ta, const UniTensor& Tb);
+    friend CUniTensor operator*(const UniTensor& Ta, const CUniTensor& Tb);
     friend CUniTensor operator*(const CUniTensor& Ta, double a);
+    friend CUniTensor operator*(const CUniTensor& Ta, const std::complex<double>& a);
+    friend CUniTensor operator*(const UniTensor& Ta, const std::complex<double>& a);
     friend CUniTensor operator*(double a, const CUniTensor& Ta);
+    friend CUniTensor operator*(const std::complex<double>& a, const CUniTensor& Ta);
+    friend CUniTensor operator*(const std::complex<double>& a, const UniTensor& Ta);
     friend CUniTensor operator+(const CUniTensor& Ta, const CUniTensor& Tb);
+    friend CUniTensor operator+(const UniTensor& Ta, const CUniTensor& Tb);
+    friend CUniTensor operator+(const CUniTensor& Ta, const UniTensor& Tb);
     friend std::ostream& operator<< (std::ostream& os, const CUniTensor& UniT);
+    friend class UniTensor;
     friend class Node;
     friend class Network;
 

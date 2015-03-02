@@ -1883,6 +1883,18 @@ UNI10_TENSOR otimes(const UNI10_TENSOR & Ta, const UNI10_TENSOR& Tb){
   }
 }
 
+UNI10_MATRIX otimes(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
+  try{
+    UNI10_TENSOR Ta(Ma);
+    UNI10_TENSOR Tb(Mb);
+    return otimes(Ta, Tb).getBlock();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function otimes(uni10::Matrix&, uni10::Matrix&):");
+    return UNI10_MATRIX();
+  }
+}
+
 UNI10_TENSOR operator*(const UNI10_TENSOR& Ta, const UNI10_TENSOR& Tb){
   try{
     UNI10_TENSOR cTa = Ta;

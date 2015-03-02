@@ -657,13 +657,13 @@ void Network::matching(Node* sbj, Node* tar){
 				else
 					matching(sbj, tar->right);
 			}
-			else	//contract!!!
+			else	//contract
 				branch(sbj, tar);
 		}
-		else	//contract!!!
+		else	//contract
 			branch(sbj, tar);
 	}
-	else{	//contract!!!
+	else{	//contract
 		branch(sbj, tar);
 	}
 }

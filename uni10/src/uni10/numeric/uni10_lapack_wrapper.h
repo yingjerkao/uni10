@@ -73,6 +73,9 @@ void zgesvd_( const char* jobu, const char* jobvt, const int32_t* m,
 void dsyev_( const char* jobz, const char* uplo, const int32_t* n, double* a,
              const int32_t* lda, double* w, double* work, const int32_t* lwork,
              int32_t* info );
+void zheev_( const char* jobz, const char* uplo, const int32_t* n, std::complex<double>* a,
+             const int32_t* lda, double* w, std::complex<double>* work, const int32_t* lwork,
+             const double* rwork, int32_t* info );
 void zgeev_( const char* jobvl, const char* jobvr, const int32_t* n, const std::complex<double>* a,
     const int32_t* lda, const std::complex<double>* w, const std::complex<double> *vl, const int32_t *ldvl,
     const std::complex<double> *vr, const int32_t *ldvr, const std::complex<double> *work, const int32_t* lwork,
@@ -140,6 +143,11 @@ inline void dsyev( const char* jobz, const char* uplo, const int32_t* n, double*
              int32_t* info )
 { dsyev_(  jobz,  uplo,  n,  a, lda, w,  work,  lwork, info ); }
 
+inline void zheev( const char* jobz, const char* uplo, const int32_t* n, std::complex<double>* a,
+             const int32_t* lda, double* w, std::complex<double>* work, const int32_t* lwork,
+             const double* rwork, int32_t* info )
+{ zheev_(  jobz,  uplo,  n,  a, lda, w,  work,  lwork, rwork, info ); }
+
 inline void zgeev( const char* jobvl, const char* jobvr, const int32_t* n, const std::complex<double>* a,
     const int32_t* lda, const std::complex<double>* w, const std::complex<double> *vl, const int32_t *ldvl,
     const std::complex<double> *vr, const int32_t *ldvr, const std::complex<double> *work, const int32_t* lwork,
@@ -187,15 +195,6 @@ inline std::complex<double> zdotc(const int32_t *n, const std::complex<double> *
     zdotc_(&res, n, x, incx, y, incy);
     return res;
 }
-
-/*
-inline std::complex<double> zdotc(const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy)
-{
-  std::complex<double> c = 0.0;
-  for(int i = 0; i < *n; i++)
-    c += conj(x[i]) * y[i];
-  return c;
-}*/
 
 inline void dstev( const char* jobz, const int32_t* n, const double* d, const double* e, const double* z,
              const int32_t* ldaz, const double* work, int32_t* info )
