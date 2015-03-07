@@ -1,5 +1,5 @@
 /****************************************************************************
-*  @file Block.cpp
+*  @file CBlock.cpp
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
@@ -31,45 +31,45 @@
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
+#include <uni10/tensor-network/CMatrix.h>
 
-typedef double Real;
 
-
+typedef std::complex<double> Complex;
 namespace uni10{
-Block::Block(): Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL){}
-Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
-Block::Block(const Block& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
+CBlock::CBlock(): Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL){}
+CBlock::CBlock(size_t _Rnum, size_t _Cnum, bool _diag): Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL){}
+CBlock::CBlock(const CBlock& _b): Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem){}
 
-size_t Block::row()const{return Rnum;}
-size_t Block::col()const{return Cnum;}
-bool Block::isDiag()const{return diag;}
-bool Block::isOngpu()const{return ongpu;}
-size_t Block::elemNum()const{
+size_t CBlock::row()const{return Rnum;}
+size_t CBlock::col()const{return Cnum;}
+bool CBlock::isDiag()const{return diag;}
+bool CBlock::isOngpu()const{return ongpu;}
+size_t CBlock::elemNum()const{
   if(diag)
     return (Rnum < Cnum ? Rnum : Cnum);
   else
     return Rnum * Cnum;
 }
 
-Real* Block::getElem()const{return m_elem;}
+Complex* CBlock::getElem()const{return m_elem;}
 
-Matrix Block::getDiag()const{
+UNI10_MATRIX CBlock::getDiag()const{
   try{
     if(diag)
       return *this;
     else{
-      Matrix D(Rnum, Cnum, true, ongpu);
+      UNI10_MATRIX D(Rnum, Cnum, true, ongpu);
       ::uni10::getDiag(m_elem, D.getElem(), Rnum, Cnum, D.elemNum(), ongpu, D.isOngpu());
       return D;
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Block::getDiag():");
+    propogate_exception(e, "In function CBlock::getDiag():");
     return Matrix();
   }
 }
 
-void Block::save(const std::string& fname)const{
+void CBlock::save(const std::string& fname)const{
   try{
     FILE *fp = fopen(fname.c_str(), "w");
     if(!(fp != NULL)){
@@ -77,22 +77,22 @@ void Block::save(const std::string& fname)const{
       err<<"Error in writing to file '"<<fname<<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    Real* elem = m_elem;
+    Complex* elem = m_elem;
     if(ongpu){
-      elem = (Real*)malloc(elemNum() * sizeof(Real));
-      elemCopy(elem, m_elem, elemNum() * sizeof(Real), false, ongpu);
+      elem = (Complex*)malloc(elemNum() * sizeof(Complex));
+      elemCopy(elem, m_elem, elemNum() * sizeof(Complex), false, ongpu);
     }
-    fwrite(elem, sizeof(Real), elemNum(), fp);
+    fwrite(elem, sizeof(Complex), elemNum(), fp);
     fclose(fp);
     if(ongpu)
       free(elem);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Block::save(std::string&):");
+    propogate_exception(e, "In function CBlock::save(std::string&):");
   }
 }
 
-Real Block::operator[](size_t idx)const{
+Complex CBlock::operator[](size_t idx)const{
   try{
     if(!(idx < elemNum())){
       std::ostringstream err;
@@ -107,7 +107,7 @@ Real Block::operator[](size_t idx)const{
   }
 }
 
-Real Block::at(size_t r, size_t c)const{
+Complex CBlock::at(size_t r, size_t c)const{
   try{
     if(!((r < Rnum) && (c < Cnum))){
       std::ostringstream err;
@@ -131,8 +131,8 @@ Real Block::at(size_t r, size_t c)const{
   }
 }
 
-std::vector<Matrix> Block::eigh()const{
-  std::vector<Matrix> outs;
+std::vector<UNI10_MATRIX> CBlock::eigh()const{
+  std::vector<UNI10_MATRIX> outs;
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -145,8 +145,8 @@ std::vector<Matrix> Block::eigh()const{
       throw std::runtime_error(exception_msg(err.str()));
     }
     //GPU_NOT_READY
-    outs.push_back(Matrix(Rnum, Cnum, true, ongpu));
-    outs.push_back(Matrix(Rnum, Cnum, false, ongpu));
+    outs.push_back(UNI10_MATRIX(Rnum, Cnum, true, ongpu));
+    outs.push_back(UNI10_MATRIX(Rnum, Cnum, false, ongpu));
     Matrix Eig(Rnum, Cnum, true, ongpu);
     eigSyDecompose(m_elem, Rnum, Eig.m_elem, outs[1].m_elem, ongpu);
     outs[0] = Eig;
@@ -157,7 +157,7 @@ std::vector<Matrix> Block::eigh()const{
 	return outs;
 }
 
-std::vector<CMatrix> Block::eig()const{
+std::vector<CMatrix> CBlock::eig()const{
   std::vector<CMatrix> outs;
   try{
     if(!(Rnum == Cnum)){
@@ -167,7 +167,7 @@ std::vector<CMatrix> Block::eig()const{
     }
     if(diag){
       std::ostringstream err;
-      err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Nothing to do.";
+      err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
       throw std::runtime_error(exception_msg(err.str()));
     }
     //GPU_NOT_READY
@@ -182,19 +182,19 @@ std::vector<CMatrix> Block::eig()const{
 }
 
 
-std::vector<Matrix> Block::svd()const{
-	std::vector<Matrix> outs;
+std::vector<UNI10_MATRIX> CBlock::svd()const{
+	std::vector<UNI10_MATRIX> outs;
   try{
 	if(diag){
     std::ostringstream err;
-    err<<"Cannot perform singular value decomposition on a diagonal matrix. Nothing to do.";
+    err<<"Cannot perform singular value decomposition on a diagonal matrix. Need not to do so.";
     throw std::runtime_error(exception_msg(err.str()));
   }
 	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
   //GPU_NOT_READY
-	outs.push_back(Matrix(Rnum, min, false, ongpu));
-  outs.push_back(Matrix(min, min, true, ongpu));
-	outs.push_back(Matrix(min, Cnum, false, ongpu));
+	outs.push_back(UNI10_MATRIX(Rnum, min, false, ongpu));
+  outs.push_back(UNI10_MATRIX(min, min, true, ongpu));
+	outs.push_back(UNI10_MATRIX(min, Cnum, false, ongpu));
 	matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
   }
   catch(const std::exception& e){
@@ -202,25 +202,25 @@ std::vector<Matrix> Block::svd()const{
   }
 	return outs;
 }
-Matrix Block::inverse()const{
+UNI10_MATRIX CBlock::inverse()const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
       err<<"Cannot perform inversion on a non-square matrix.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    Matrix invM(*this);
+    UNI10_MATRIX invM(*this);
     assert(ongpu == invM.isOngpu());
     matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
     return invM;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::inverse():");
-    return Matrix();
+    return UNI10_MATRIX();
   }
 }
 
-size_t Block::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol)const{
+size_t CBlock::lanczosEigh(double& E0, UNI10_MATRIX& psi, size_t max_iter, double err_tol)const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -253,7 +253,7 @@ size_t Block::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_t
   }
 }
 
-double Block::norm()const{
+double CBlock::norm()const{
   try{
 	  return vectorNorm(m_elem, elemNum(), 1, ongpu);
   }
@@ -263,7 +263,7 @@ double Block::norm()const{
   }
 }
 
-Real Block::sum()const{
+Complex CBlock::sum()const{
   try{
 	  return vectorSum(m_elem, elemNum(), 1, ongpu);
   }
@@ -273,7 +273,7 @@ Real Block::sum()const{
   }
 }
 
-Real Block::trace()const{
+Complex CBlock::trace()const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -290,7 +290,7 @@ Real Block::trace()const{
     return 0;
   }
 }
-Matrix operator* (const Block& Ma, const Block& Mb){
+UNI10_MATRIX operator* (const CBlock& Ma, const CBlock& Mb){
   try{
     if(!(Ma.Cnum == Mb.Rnum)){
       std::ostringstream err;
@@ -298,51 +298,51 @@ Matrix operator* (const Block& Ma, const Block& Mb){
       throw std::runtime_error(exception_msg(err.str()));
     }
     if((!Ma.diag) && (!Mb.diag)){
-      Matrix Mc(Ma.Rnum, Mb.Cnum);
+      UNI10_MATRIX Mc(Ma.Rnum, Mb.Cnum);
       matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
       return Mc;
     }
     else if(Ma.diag && (!Mb.diag)){
-      Matrix Mc(Mb);
+      UNI10_MATRIX Mc(Mb);
       Mc.resize(Ma.Rnum, Mb.Cnum);
       diagRowMul(Mc.m_elem, Ma.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
       return Mc;
     }
     else if((!Ma.diag) && Mb.diag){
-      Matrix Mc(Ma);
+      UNI10_MATRIX Mc(Ma);
       Mc.resize(Ma.Rnum, Mb.Cnum);
       diagColMul(Mc.m_elem, Mb.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
       return Mc;
     }
     else{
-      Matrix Mc(Ma.Rnum, Mb.Cnum, true);
+      UNI10_MATRIX Mc(Ma.Rnum, Mb.Cnum, true);
       Mc.set_zero();
       size_t min = std::min(Ma.elemNum(), Mb.elemNum());
-      elemCopy(Mc.m_elem, Ma.m_elem, min * sizeof(Real), Mc.ongpu, Ma.ongpu);
+      elemCopy(Mc.m_elem, Ma.m_elem, min * sizeof(Complex), Mc.ongpu, Ma.ongpu);
       vectorMul(Mc.m_elem, Mb.m_elem, min, Mc.ongpu, Mb.ongpu);
       return Mc;
     }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator*(uni10::Matrix&, uni10::Matrix&):");
-    return Block();
+    return CBlock();
   }
 }
-Matrix operator*(const Block& Ma, double a){
+UNI10_MATRIX operator*(const CBlock& Ma, double a){
   try{
-    Matrix Mb(Ma);
+    UNI10_MATRIX Mb(Ma);
     vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.isOngpu());
     return Mb;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
-    return Block();
+    return CBlock();
   }
 }
-Matrix operator*(double a, const Block& Ma){return Ma * a;}
+UNI10_MATRIX operator*(double a, const CBlock& Ma){return Ma * a;}
 
 #ifndef UNI10_PURE_REAL
-CMatrix operator*(const Block& Ma, const std::complex<double>& a){
+CMatrix operator*(const CBlock& Ma, const std::complex<double>& a){
   try{
     CMatrix Mb(Ma);
     vectorScal(a, Mb.getElem(), Mb.elemNum(), Mb.isOngpu());
@@ -350,25 +350,25 @@ CMatrix operator*(const Block& Ma, const std::complex<double>& a){
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
-    return Block();
+    return CBlock();
   }
 }
-CMatrix operator*(const std::complex<double>& a, const Block& Ma){return Ma * a;}
+CMatrix operator*(const std::complex<double>& a, const CBlock& Ma){return Ma * a;}
 #endif
 
-Matrix operator+(const Block& Ma, const Block& Mb){
+UNI10_MATRIX operator+(const CBlock& Ma, const CBlock& Mb){
   try{
-    Matrix Mc(Ma);
+    UNI10_MATRIX Mc(Ma);
     vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
     return Mc;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");
-    return Block();
+    return CBlock();
   }
 }
 
-bool operator== (const Block& m1, const Block& m2){
+bool operator== (const CBlock& m1, const CBlock& m2){
   try{
     double diff;
     if(m1.elemNum() == m2.elemNum()){
@@ -387,8 +387,8 @@ bool operator== (const Block& m1, const Block& m2){
   return true;
 }
 
-Block::~Block(){}
-std::ostream& operator<< (std::ostream& os, const Block& b){
+CBlock::~CBlock(){}
+std::ostream& operator<< (std::ostream& os, const CBlock& b){
   try{
     os << b.Rnum << " x " << b.Cnum << " = " << b.elemNum();
     if(b.diag)
@@ -396,10 +396,10 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
     if(b.ongpu)
       os<< ", onGPU";
     os <<std::endl << std::endl;
-    Real* elem;
+    Complex* elem;
     if(b.ongpu){
-      elem = (Real*)malloc(b.elemNum() * sizeof(Real));
-      elemCopy(elem, b.m_elem, b.elemNum() * sizeof(Real), false, b.ongpu);
+      elem = (Complex*)malloc(b.elemNum() * sizeof(Complex));
+      elemCopy(elem, b.m_elem, b.elemNum() * sizeof(Complex), false, b.ongpu);
     }
     else
       elem = b.m_elem;
@@ -435,12 +435,12 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
 }
 
 };	/* namespace uni10 */
-#ifdef Block
-#undef Block
+#ifdef CBlock
+#undef CBlock
 #endif
-#ifdef Matrix
-#undef Matrix
+#ifdef UNI10_MATRIX
+#undef UNI10_MATRIX
 #endif
-#ifdef Real
-#undef Real
+#ifdef Complex
+#undef Complex
 #endif
