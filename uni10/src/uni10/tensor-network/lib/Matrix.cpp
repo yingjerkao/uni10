@@ -22,7 +22,7 @@
 *    You should have received a copy of the GNU Lesser General Public License
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
-*  @brief Main specification file for CMake
+*  @brief Implementation file for Matrix class
 *  @author Ying-Jer Kao
 *  @date 2014-05-06
 *  @since 0.1.0
@@ -31,23 +31,11 @@
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tensor-network/Matrix.h>
-#ifndef UNI10_PURE_REAL
 #include <uni10/tensor-network/CMatrix.h>
-#endif
-
-#ifndef UNI10_DTYPE
-#define UNI10_DTYPE double
-#endif
-#ifndef UNI10_MATRIX
-#define UNI10_MATRIX Matrix
-#endif
-#ifndef UNI10_BLOCK
-#define UNI10_BLOCK Block
-#endif
 
 namespace uni10{
-UNI10_MATRIX::UNI10_MATRIX(): UNI10_BLOCK(){}
-UNI10_MATRIX::UNI10_MATRIX(const UNI10_MATRIX& _m): UNI10_BLOCK(_m.Rnum, _m.Cnum, _m.diag){
+Matrix::Matrix(): Block(){}
+Matrix::Matrix(const Matrix& _m): Block(_m.Rnum, _m.Cnum, _m.diag){
   try{
       init(_m.m_elem, _m.ongpu);
   }
@@ -55,7 +43,7 @@ UNI10_MATRIX::UNI10_MATRIX(const UNI10_MATRIX& _m): UNI10_BLOCK(_m.Rnum, _m.Cnum
     propogate_exception(e, "In copy constructor Matrix::Matrix(uni10::Matrix&):");
   }
 }
-UNI10_MATRIX::UNI10_MATRIX(const UNI10_BLOCK& _b): UNI10_BLOCK(_b){
+Matrix::Matrix(const Block& _b): Block(_b){
   try{
       init(_b.m_elem, _b.ongpu);
   }
@@ -64,23 +52,23 @@ UNI10_MATRIX::UNI10_MATRIX(const UNI10_BLOCK& _b): UNI10_BLOCK(_b){
   }
 }
 
-void UNI10_MATRIX::init(bool _ongpu){
+void Matrix::init(bool _ongpu){
 	if(elemNum()){
 		if(_ongpu)	// Try to allocate GPU memory
-			m_elem = (UNI10_DTYPE*)elemAlloc(elemNum() * sizeof(UNI10_DTYPE), ongpu);
+			m_elem = (double*)elemAlloc(elemNum() * sizeof(double), ongpu);
 		else{
-			m_elem = (UNI10_DTYPE*)elemAllocForce(elemNum() * sizeof(UNI10_DTYPE), false);
+			m_elem = (double*)elemAllocForce(elemNum() * sizeof(double), false);
 			ongpu = false;
 		}
 	}
 }
 
-void UNI10_MATRIX::init(const UNI10_DTYPE* _elem, bool src_ongpu){
+void Matrix::init(const double* _elem, bool src_ongpu){
 	init(true);
-	elemCopy(m_elem, _elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, src_ongpu);
+	elemCopy(m_elem, _elem, elemNum() * sizeof(double), ongpu, src_ongpu);
 }
 
-UNI10_MATRIX::UNI10_MATRIX(size_t _Rnum, size_t _Cnum, const UNI10_DTYPE* _elem, bool _diag, bool src_ongpu): UNI10_BLOCK(_Rnum, _Cnum, _diag){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag, bool src_ongpu): Block(_Rnum, _Cnum, _diag){
   try{
 	  init(_elem, src_ongpu);
   }
@@ -89,7 +77,7 @@ UNI10_MATRIX::UNI10_MATRIX(size_t _Rnum, size_t _Cnum, const UNI10_DTYPE* _elem,
   }
 }
 
-UNI10_MATRIX::UNI10_MATRIX(size_t _Rnum, size_t _Cnum, const std::vector<UNI10_DTYPE>& _elem, bool _diag, bool src_ongpu): UNI10_BLOCK(_Rnum, _Cnum, _diag){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag, bool src_ongpu): Block(_Rnum, _Cnum, _diag){
   try{
 	  init(&_elem[0], src_ongpu);
   }
@@ -98,24 +86,24 @@ UNI10_MATRIX::UNI10_MATRIX(size_t _Rnum, size_t _Cnum, const std::vector<UNI10_D
   }
 }
 
-UNI10_MATRIX::UNI10_MATRIX(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): UNI10_BLOCK(_Rnum, _Cnum, _diag){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Block(_Rnum, _Cnum, _diag){
   try{
     init(_ongpu);
     if(elemNum())
-      elemBzero(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      elemBzero(m_elem, elemNum() * sizeof(double), ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, bool=false):");
   }
 }
 
-UNI10_MATRIX& UNI10_MATRIX::operator=(const UNI10_MATRIX& _m){
+Matrix& Matrix::operator=(const Matrix& _m){
   try{
     Rnum = _m.Rnum;
     Cnum = _m.Cnum;
     diag = _m.diag;
     if(m_elem != NULL)
-      elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      elemFree(m_elem, elemNum() * sizeof(double), ongpu);
     init(_m.m_elem, _m.ongpu);
   }
   catch(const std::exception& e){
@@ -123,13 +111,13 @@ UNI10_MATRIX& UNI10_MATRIX::operator=(const UNI10_MATRIX& _m){
   }
 	return *this;
 }
-UNI10_MATRIX& UNI10_MATRIX::operator=(const UNI10_BLOCK& _b){
+Matrix& Matrix::operator=(const Block& _b){
   try{
     Rnum = _b.Rnum;
     Cnum = _b.Cnum;
     diag = _b.diag;
     if(m_elem != NULL)
-      elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      elemFree(m_elem, elemNum() * sizeof(double), ongpu);
     init(_b.m_elem, _b.ongpu);
   }
   catch(const std::exception& e){
@@ -138,20 +126,20 @@ UNI10_MATRIX& UNI10_MATRIX::operator=(const UNI10_BLOCK& _b){
 	return *this;
 }
 
-UNI10_MATRIX::~UNI10_MATRIX(){
+Matrix::~Matrix(){
   try{
     if(m_elem != NULL)
-      elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      elemFree(m_elem, elemNum() * sizeof(double), ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In destructor Matrix::~Matrix():");
   }
 }
 
-UNI10_MATRIX& UNI10_MATRIX::operator*= (const UNI10_BLOCK& Mb){
+Matrix& Matrix::operator*= (const Block& Mb){
   try{
     if(!ongpu)
-      m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
     *this = *this * Mb;
   }
   catch(const std::exception& e){
@@ -160,7 +148,7 @@ UNI10_MATRIX& UNI10_MATRIX::operator*= (const UNI10_BLOCK& Mb){
   return *this;
 }
 
-void UNI10_MATRIX::setElem(const std::vector<UNI10_DTYPE>& elem, bool _ongpu){
+void Matrix::setElem(const std::vector<double>& elem, bool _ongpu){
   try{
     setElem(&elem[0], _ongpu);
   }
@@ -168,19 +156,19 @@ void UNI10_MATRIX::setElem(const std::vector<UNI10_DTYPE>& elem, bool _ongpu){
     propogate_exception(e, "In function Matrix::setElem(std::vector<double>&, bool=false):");
   }
 }
-void UNI10_MATRIX::setElem(const UNI10_DTYPE* elem, bool _ongpu){
+void Matrix::setElem(const double* elem, bool _ongpu){
   try{
-	  elemCopy(m_elem, elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, _ongpu);
+	  elemCopy(m_elem, elem, elemNum() * sizeof(double), ongpu, _ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::setElem(double*, bool=false):");
   }
 }
 
-void UNI10_MATRIX::randomize(){
+void Matrix::randomize(){
   try{
     if(!ongpu)
-      m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
     elemRand(m_elem, elemNum(), ongpu);
   }
   catch(const std::exception& e){
@@ -189,10 +177,10 @@ void UNI10_MATRIX::randomize(){
 }
 
 
-void UNI10_MATRIX::orthoRand(){
+void Matrix::orthoRand(){
   try{
     if(!ongpu)
-      m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
     if(!diag){
       orthoRandomize(m_elem, Rnum, Cnum, ongpu);
     }
@@ -202,13 +190,13 @@ void UNI10_MATRIX::orthoRand(){
   }
 }
 
-void UNI10_MATRIX::identity(){
+void Matrix::identity(){
   try{
     diag = true;
     if(m_elem != NULL)
-      elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    m_elem = (UNI10_DTYPE*)elemAlloc(elemNum() * sizeof(UNI10_DTYPE), ongpu);
-    UNI10_DTYPE* elemI = (UNI10_DTYPE*)malloc(elemNum() * sizeof(UNI10_DTYPE));
+      elemFree(m_elem, elemNum() * sizeof(double), ongpu);
+    m_elem = (double*)elemAlloc(elemNum() * sizeof(double), ongpu);
+    double* elemI = (double*)malloc(elemNum() * sizeof(double));
     for(int i = 0; i < elemNum(); i++)
       elemI[i] = 1;
     this->setElem(elemI, false);
@@ -218,20 +206,20 @@ void UNI10_MATRIX::identity(){
   }
 }
 
-void UNI10_MATRIX::set_zero(){
+void Matrix::set_zero(){
   try{
 	if(elemNum())
-		elemBzero(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+		elemBzero(m_elem, elemNum() * sizeof(double), ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::set_zero():");
   }
 }
 
-UNI10_MATRIX& UNI10_MATRIX::operator*= (double a){
+Matrix& Matrix::operator*= (double a){
   try{
     if(!ongpu)
-      m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
     vectorScal(a, m_elem, elemNum(), ongpu);
   }
   catch(const std::exception& e){
@@ -241,10 +229,10 @@ UNI10_MATRIX& UNI10_MATRIX::operator*= (double a){
 }
 
 
-UNI10_MATRIX& UNI10_MATRIX::operator+= (const UNI10_BLOCK& Mb){
+Matrix& Matrix::operator+= (const Block& Mb){
   try{
     if(!ongpu)
-      m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
     vectorAdd(m_elem, Mb.m_elem, elemNum(), ongpu, Mb.ongpu);
   }
   catch(const std::exception& e){
@@ -253,10 +241,10 @@ UNI10_MATRIX& UNI10_MATRIX::operator+= (const UNI10_BLOCK& Mb){
 	return *this;
 }
 
-UNI10_MATRIX& UNI10_MATRIX::transpose(){
+Matrix& Matrix::transpose(){
   try{
     if(!ongpu)
-      m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
     if(!(diag || Rnum == 1 || Cnum == 1))
       setTranspose(m_elem, Rnum, Cnum, ongpu);
     size_t tmp = Rnum;
@@ -269,10 +257,10 @@ UNI10_MATRIX& UNI10_MATRIX::transpose(){
   return *this;
 }
 
-UNI10_MATRIX& UNI10_MATRIX::cTranspose(){
+Matrix& Matrix::cTranspose(){
   try{
     if(!ongpu)
-      m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
     if(diag || Rnum == 1 || Cnum == 1)
       this->conj();
     else
@@ -287,22 +275,22 @@ UNI10_MATRIX& UNI10_MATRIX::cTranspose(){
   return *this;
 }
 
-UNI10_MATRIX& UNI10_MATRIX::resize(size_t row, size_t col){
+Matrix& Matrix::resize(size_t row, size_t col){
   try{
     if(diag){
       size_t _elemNum = row < col ? row : col;
       if(_elemNum > elemNum()){
         bool des_ongpu;
-        UNI10_DTYPE* elem = (UNI10_DTYPE*)elemAlloc(_elemNum * sizeof(UNI10_DTYPE), des_ongpu);
-        elemBzero(elem, _elemNum * sizeof(UNI10_DTYPE), des_ongpu);
-        elemCopy(elem, m_elem, elemNum() * sizeof(UNI10_DTYPE), des_ongpu, ongpu);
+        double* elem = (double*)elemAlloc(_elemNum * sizeof(double), des_ongpu);
+        elemBzero(elem, _elemNum * sizeof(double), des_ongpu);
+        elemCopy(elem, m_elem, elemNum() * sizeof(double), des_ongpu, ongpu);
         if(m_elem != NULL)
-          elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+          elemFree(m_elem, elemNum() * sizeof(double), ongpu);
         m_elem = elem;
         ongpu = des_ongpu;
       }
       else
-        shrinkWithoutFree((elemNum() - _elemNum) * sizeof(UNI10_DTYPE), ongpu);
+        shrinkWithoutFree((elemNum() - _elemNum) * sizeof(double), ongpu);
       Rnum = row;
       Cnum = col;
     }
@@ -311,28 +299,28 @@ UNI10_MATRIX& UNI10_MATRIX::resize(size_t row, size_t col){
         size_t _elemNum = row * col;
         if(row > Rnum){
           bool des_ongpu;
-          UNI10_DTYPE* elem = (UNI10_DTYPE*)elemAlloc(_elemNum * sizeof(UNI10_DTYPE), des_ongpu);
-          elemBzero(elem, _elemNum * sizeof(UNI10_DTYPE), des_ongpu);
-          elemCopy(elem, m_elem, elemNum() * sizeof(UNI10_DTYPE), des_ongpu, ongpu);
+          double* elem = (double*)elemAlloc(_elemNum * sizeof(double), des_ongpu);
+          elemBzero(elem, _elemNum * sizeof(double), des_ongpu);
+          elemCopy(elem, m_elem, elemNum() * sizeof(double), des_ongpu, ongpu);
           if(m_elem != NULL)
-            elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+            elemFree(m_elem, elemNum() * sizeof(double), ongpu);
           m_elem = elem;
           ongpu = des_ongpu;
         }
         else
-          shrinkWithoutFree((elemNum() - _elemNum) * sizeof(UNI10_DTYPE), ongpu);
+          shrinkWithoutFree((elemNum() - _elemNum) * sizeof(double), ongpu);
         Rnum = row;
       }
       else{
         size_t data_row = row < Rnum ? row : Rnum;
         size_t data_col = col < Cnum ? col : Cnum;
         bool des_ongpu;
-        UNI10_DTYPE* elem = (UNI10_DTYPE*)elemAlloc(row * col * sizeof(UNI10_DTYPE), des_ongpu);
-        elemBzero(elem, row * col * sizeof(UNI10_DTYPE), des_ongpu);
+        double* elem = (double*)elemAlloc(row * col * sizeof(double), des_ongpu);
+        elemBzero(elem, row * col * sizeof(double), des_ongpu);
         for(size_t r = 0; r < data_row; r++)
-          elemCopy(&(elem[r * col]), &(m_elem[r * Cnum]), data_col * sizeof(UNI10_DTYPE), des_ongpu, ongpu);
+          elemCopy(&(elem[r * col]), &(m_elem[r * Cnum]), data_col * sizeof(double), des_ongpu, ongpu);
         if(m_elem != NULL)
-          elemFree(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+          elemFree(m_elem, elemNum() * sizeof(double), ongpu);
         m_elem = elem;
         ongpu = des_ongpu;
         Rnum = row;
@@ -346,7 +334,7 @@ UNI10_MATRIX& UNI10_MATRIX::resize(size_t row, size_t col){
   return *this;
 }
 
-void UNI10_MATRIX::load(const std::string& fname){
+void Matrix::load(const std::string& fname){
   try{
     FILE *fp = fopen(fname.c_str(), "r");
     if(!(fp != NULL)){
@@ -354,13 +342,13 @@ void UNI10_MATRIX::load(const std::string& fname){
       err<<"Error in opening file '" << fname <<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    UNI10_DTYPE* elem = m_elem;
+    double* elem = m_elem;
     if(ongpu)
-      elem = (UNI10_DTYPE*)malloc(elemNum() * sizeof(UNI10_DTYPE));
-    fread(elem, sizeof(UNI10_DTYPE), elemNum(), fp);
+      elem = (double*)malloc(elemNum() * sizeof(double));
+    fread(elem, sizeof(double), elemNum(), fp);
     fclose(fp);
     if(ongpu){
-      elemCopy(m_elem, elem, elemNum() * sizeof(UNI10_DTYPE), ongpu, false);
+      elemCopy(m_elem, elem, elemNum() * sizeof(double), ongpu, false);
       free(elem);
     }
   }
@@ -369,14 +357,14 @@ void UNI10_MATRIX::load(const std::string& fname){
   }
 }
 
-UNI10_DTYPE& UNI10_MATRIX::operator[](size_t idx){
+double& Matrix::operator[](size_t idx){
   try{
     if(!(idx < elemNum())){
       std::ostringstream err;
       err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    m_elem = (UNI10_DTYPE*)mvCPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+    m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
     return m_elem[idx];
   }
   catch(const std::exception& e){
@@ -385,10 +373,10 @@ UNI10_DTYPE& UNI10_MATRIX::operator[](size_t idx){
   }
 }
 
-UNI10_DTYPE* UNI10_MATRIX::getHostElem(){
+double* Matrix::getHostElem(){
   try{
     if(ongpu){
-      m_elem = (UNI10_DTYPE*)mvCPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+      m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
     }
   }
   catch(const std::exception& e){
@@ -398,14 +386,14 @@ UNI10_DTYPE* UNI10_MATRIX::getHostElem(){
 }
 
 
-UNI10_DTYPE& UNI10_MATRIX::at(size_t r, size_t c){
+double& Matrix::at(size_t r, size_t c){
   try{
     if(!((r < Rnum) && (c < Cnum))){
       std::ostringstream err;
       err<<"The input indices are out of range.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    m_elem = (UNI10_DTYPE*)mvCPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+    m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
     if(diag){
       if(!(r == c && r < elemNum())){
         std::ostringstream err;
@@ -423,14 +411,13 @@ UNI10_DTYPE& UNI10_MATRIX::at(size_t r, size_t c){
   }
 }
 
-bool UNI10_MATRIX::toGPU(){
+bool Matrix::toGPU(){
 	if(!ongpu)
-		m_elem = (UNI10_DTYPE*)mvGPU(m_elem, elemNum() * sizeof(UNI10_DTYPE), ongpu);
+		m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
 	return ongpu;
 }
 
-#ifndef UNI10_PURE_REAL
-UNI10_MATRIX exp(double a, const UNI10_BLOCK& mat){
+Matrix exp(double a, const Block& mat){
   try{
     std::vector<CMatrix> rets = mat.eig();
     CMatrix Uinv = rets[1].inverse();
@@ -439,27 +426,25 @@ UNI10_MATRIX exp(double a, const UNI10_BLOCK& mat){
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function exp(double, uni10::Matrix&):");
-    return UNI10_MATRIX();
+    return Matrix();
   }
 }
-#endif
 
-UNI10_MATRIX exph(double a, const UNI10_BLOCK& mat){
+Matrix exph(double a, const Block& mat){
   try{
-    std::vector<UNI10_MATRIX> rets = mat.eigh();
-    UNI10_MATRIX UT(rets[1]);
+    std::vector<Matrix> rets = mat.eigh();
+    Matrix UT(rets[1]);
     UT.cTranspose();
     vectorExp(a, rets[0].getElem(), rets[0].row(), rets[0].isOngpu());
     return UT * (rets[0] * rets[1]);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function exph(double, uni10::Matrix&):");
-    return UNI10_MATRIX();
+    return Matrix();
   }
 }
 
-#ifndef UNI10_PURE_REAL
-CMatrix exp(const std::complex<double>& a, const UNI10_BLOCK& mat){
+CMatrix exp(const std::complex<double>& a, const Block& mat){
   try{
     std::vector<CMatrix> rets = mat.eig();
     CMatrix Uinv = rets[1].inverse();
@@ -468,26 +453,16 @@ CMatrix exp(const std::complex<double>& a, const UNI10_BLOCK& mat){
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function exp(std::complex<double>, uni10::Matrix&):");
-    return UNI10_MATRIX();
+    return Matrix();
   }
 }
 
-UNI10_MATRIX exp(const UNI10_BLOCK& mat){
+Matrix exp(const Block& mat){
   return exp(1.0, mat);
 }
-#endif
 
-UNI10_MATRIX exph(const UNI10_BLOCK& mat){
+Matrix exph(const Block& mat){
   return exph(1.0, mat);
 }
 
 };	/* namespace uni10 */
-#ifdef UNI10_BLOCK
-#undef UNI10_BLOCK
-#endif
-#ifdef UNI10_MATRIX
-#undef UNI10_MATRIX
-#endif
-#ifdef UNI10_DTYPE
-#undef UNI10_DTYPE
-#endif
