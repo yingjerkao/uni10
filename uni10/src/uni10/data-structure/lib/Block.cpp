@@ -31,6 +31,7 @@
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
+#include <uni10/tensor-network/CMatrix.h>
 
 typedef double Real;
 
