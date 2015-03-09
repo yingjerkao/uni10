@@ -36,7 +36,7 @@
 #include <uni10/tensor-network/CUniTensor.h>
 #include <uni10/tensor-network/UniTensor.h>
 
-typedef std:complex<double> Complex;
+typedef std::complex<double> Complex;
 
 namespace uni10{
 
