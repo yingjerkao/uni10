@@ -53,12 +53,12 @@ size_t CBlock::elemNum()const{
 
 Complex* CBlock::getElem()const{return m_elem;}
 
-UNI10_MATRIX CBlock::getDiag()const{
+CMatrix CBlock::getDiag()const{
   try{
     if(diag)
       return *this;
     else{
-      UNI10_MATRIX D(Rnum, Cnum, true, ongpu);
+      CMatrix D(Rnum, Cnum, true, ongpu);
       ::uni10::getDiag(m_elem, D.getElem(), Rnum, Cnum, D.elemNum(), ongpu, D.isOngpu());
       return D;
     }
@@ -131,8 +131,8 @@ Complex CBlock::at(size_t r, size_t c)const{
   }
 }
 
-std::vector<UNI10_MATRIX> CBlock::eigh()const{
-  std::vector<UNI10_MATRIX> outs;
+std::vector<CMatrix> CBlock::eigh()const{
+  std::vector<CMatrix> outs;
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -145,8 +145,8 @@ std::vector<UNI10_MATRIX> CBlock::eigh()const{
       throw std::runtime_error(exception_msg(err.str()));
     }
     //GPU_NOT_READY
-    outs.push_back(UNI10_MATRIX(Rnum, Cnum, true, ongpu));
-    outs.push_back(UNI10_MATRIX(Rnum, Cnum, false, ongpu));
+    outs.push_back(CMatrix(Rnum, Cnum, true, ongpu));
+    outs.push_back(CMatrix(Rnum, Cnum, false, ongpu));
     Matrix Eig(Rnum, Cnum, true, ongpu);
     eigSyDecompose(m_elem, Rnum, Eig.m_elem, outs[1].m_elem, ongpu);
     outs[0] = Eig;
@@ -182,8 +182,8 @@ std::vector<CMatrix> CBlock::eig()const{
 }
 
 
-std::vector<UNI10_MATRIX> CBlock::svd()const{
-	std::vector<UNI10_MATRIX> outs;
+std::vector<CMatrix> CBlock::svd()const{
+	std::vector<CMatrix> outs;
   try{
 	if(diag){
     std::ostringstream err;
@@ -192,9 +192,9 @@ std::vector<UNI10_MATRIX> CBlock::svd()const{
   }
 	size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
   //GPU_NOT_READY
-	outs.push_back(UNI10_MATRIX(Rnum, min, false, ongpu));
-  outs.push_back(UNI10_MATRIX(min, min, true, ongpu));
-	outs.push_back(UNI10_MATRIX(min, Cnum, false, ongpu));
+	outs.push_back(CMatrix(Rnum, min, false, ongpu));
+  outs.push_back(CMatrix(min, min, true, ongpu));
+	outs.push_back(CMatrix(min, Cnum, false, ongpu));
 	matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
   }
   catch(const std::exception& e){
@@ -202,25 +202,25 @@ std::vector<UNI10_MATRIX> CBlock::svd()const{
   }
 	return outs;
 }
-UNI10_MATRIX CBlock::inverse()const{
+CMatrix CBlock::inverse()const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
       err<<"Cannot perform inversion on a non-square matrix.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    UNI10_MATRIX invM(*this);
+    CMatrix invM(*this);
     assert(ongpu == invM.isOngpu());
     matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
     return invM;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::inverse():");
-    return UNI10_MATRIX();
+    return CMatrix();
   }
 }
 
-size_t CBlock::lanczosEigh(double& E0, UNI10_MATRIX& psi, size_t max_iter, double err_tol)const{
+size_t CBlock::lanczosEigh(double& E0, CMatrix& psi, size_t max_iter, double err_tol)const{
   try{
     if(!(Rnum == Cnum)){
       std::ostringstream err;
@@ -290,7 +290,7 @@ Complex CBlock::trace()const{
     return 0;
   }
 }
-UNI10_MATRIX operator* (const CBlock& Ma, const CBlock& Mb){
+CMatrix operator* (const CBlock& Ma, const CBlock& Mb){
   try{
     if(!(Ma.Cnum == Mb.Rnum)){
       std::ostringstream err;
@@ -298,24 +298,24 @@ UNI10_MATRIX operator* (const CBlock& Ma, const CBlock& Mb){
       throw std::runtime_error(exception_msg(err.str()));
     }
     if((!Ma.diag) && (!Mb.diag)){
-      UNI10_MATRIX Mc(Ma.Rnum, Mb.Cnum);
+      CMatrix Mc(Ma.Rnum, Mb.Cnum);
       matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
       return Mc;
     }
     else if(Ma.diag && (!Mb.diag)){
-      UNI10_MATRIX Mc(Mb);
+      CMatrix Mc(Mb);
       Mc.resize(Ma.Rnum, Mb.Cnum);
       diagRowMul(Mc.m_elem, Ma.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
       return Mc;
     }
     else if((!Ma.diag) && Mb.diag){
-      UNI10_MATRIX Mc(Ma);
+      CMatrix Mc(Ma);
       Mc.resize(Ma.Rnum, Mb.Cnum);
       diagColMul(Mc.m_elem, Mb.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
       return Mc;
     }
     else{
-      UNI10_MATRIX Mc(Ma.Rnum, Mb.Cnum, true);
+      CMatrix Mc(Ma.Rnum, Mb.Cnum, true);
       Mc.set_zero();
       size_t min = std::min(Ma.elemNum(), Mb.elemNum());
       elemCopy(Mc.m_elem, Ma.m_elem, min * sizeof(Complex), Mc.ongpu, Ma.ongpu);
@@ -328,9 +328,9 @@ UNI10_MATRIX operator* (const CBlock& Ma, const CBlock& Mb){
     return CBlock();
   }
 }
-UNI10_MATRIX operator*(const CBlock& Ma, double a){
+CMatrix operator*(const CBlock& Ma, double a){
   try{
-    UNI10_MATRIX Mb(Ma);
+    CMatrix Mb(Ma);
     vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.isOngpu());
     return Mb;
   }
@@ -339,7 +339,7 @@ UNI10_MATRIX operator*(const CBlock& Ma, double a){
     return CBlock();
   }
 }
-UNI10_MATRIX operator*(double a, const CBlock& Ma){return Ma * a;}
+CMatrix operator*(double a, const CBlock& Ma){return Ma * a;}
 
 #ifndef UNI10_PURE_REAL
 CMatrix operator*(const CBlock& Ma, const std::complex<double>& a){
@@ -356,9 +356,9 @@ CMatrix operator*(const CBlock& Ma, const std::complex<double>& a){
 CMatrix operator*(const std::complex<double>& a, const CBlock& Ma){return Ma * a;}
 #endif
 
-UNI10_MATRIX operator+(const CBlock& Ma, const CBlock& Mb){
+CMatrix operator+(const CBlock& Ma, const CBlock& Mb){
   try{
-    UNI10_MATRIX Mc(Ma);
+    CMatrix Mc(Ma);
     vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
     return Mc;
   }
@@ -406,7 +406,6 @@ std::ostream& operator<< (std::ostream& os, const CBlock& b){
     for(size_t i = 0; i < b.Rnum; i++){
       for(size_t j = 0; j < b.Cnum; j++)
         if(b.diag){
-#ifdef UNI10_COMPLEX
           if(i == j)
             os << std::setw(17) << std::fixed << std::setprecision(3) << elem[i];
           else
@@ -414,15 +413,13 @@ std::ostream& operator<< (std::ostream& os, const CBlock& b){
         }
         else
           os << std::setw(17) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
-#else
-          if(i == j)
-            os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i];
-          else
-            os << std::setw(7) << std::fixed << std::setprecision(3) << 0.0;
-        }
-        else
-          os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
-#endif
+          //if(i == j)
+          // os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i];
+         // else
+         //   os << std::setw(7) << std::fixed << std::setprecision(3) << 0.0;
+        //}
+        //else
+        //  os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
       os << std::endl << std::endl;
     }
     if(b.ongpu)
@@ -435,12 +432,3 @@ std::ostream& operator<< (std::ostream& os, const CBlock& b){
 }
 
 };	/* namespace uni10 */
-#ifdef CBlock
-#undef CBlock
-#endif
-#ifdef UNI10_MATRIX
-#undef UNI10_MATRIX
-#endif
-#ifdef Complex
-#undef Complex
-#endif
