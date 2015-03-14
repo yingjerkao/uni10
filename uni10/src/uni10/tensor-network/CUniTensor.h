@@ -151,8 +151,8 @@ class CUniTensor{
     friend CUniTensor operator+(const CUniTensor& Ta, const UniTensor& Tb);
     friend std::ostream& operator<< (std::ostream& os, const CUniTensor& UniT);
     friend class UniTensor;
-    friend class Node;
-    friend class Network;
+    friend class CNode;
+    friend class CNetwork;
 
 	private:
 		std::string name;
