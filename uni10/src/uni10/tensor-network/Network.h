@@ -41,9 +41,8 @@
 #include <sstream>
 //Bond property
 #include <uni10/data-structure/uni10_struct.h>
-#include <uni10/data-structure/Bond.h>
 namespace uni10 {
-    
+
     ///@class Network
     ///@brief The Network class defines the tensor networks
     ///
@@ -81,8 +80,8 @@ public:
     /// tensors in the network.
     /// @param fname %Network filename
     Network(const std::string& fname);
-    
-    
+
+
     /// @brief Construct Network
     ///
     /// Constructs with the file fname and put the UniTensor's \c tens into the network.
@@ -90,12 +89,12 @@ public:
     /// @param fname %Network filename
     /// @param tens Array of tensors
     Network(const std::string& fname, const std::vector<UniTensor*>& tens);
- 
+
     /// @brief Destructor
     ///
     /// Destroys Network and frees all the intermediate tensors.
     ~Network();
-    
+
     /// @brief Assign tensor to Network
     ///
     /// Assigns UniTensor \c uT to position \c idx in Network
@@ -106,7 +105,7 @@ public:
     void putTensor(size_t idx, const UniTensor& UniT, bool force=true);
     ///@overload
     void putTensor(size_t idx, const UniTensor* UniT, bool force=true);
-    
+
     /// @brief Assign tensor to Network
     ///
     /// Assigns UniTensor \c uT to the position labeled by \c name in Network
@@ -117,7 +116,7 @@ public:
     void putTensor(const std::string& name, const UniTensor& UniT, bool force=true);
     /// @overload
     void putTensor(const std::string& name, const UniTensor* UniT, bool force=true);
-    
+
     /// @brief Assign tensor to  Network
     ///
     /// Assigns the transpose of \c uT  to the position labeled by \c nameT in Network.
@@ -128,14 +127,14 @@ public:
     void putTensorT(const std::string& nameT, const UniTensor& UniT, bool force=true);
     /// @overload
     void putTensorT(const std::string& nameT, const UniTensor* UniT, bool force=true);
-    
+
     /// @brief Contract Network
     ///
     /// Performs contraction of tensors in Network, returns a UniTensor named \c name.
     /// @param name Name of the result tensor
     /// @return A UniTensor
     UniTensor launch(const std::string& name="");
-    
+
     /// @brief Print out the memory usage
     /// Prints out the memory usage and requirement to contract  Network as:
 /** @code
@@ -151,7 +150,7 @@ elemNum: 19
     /// In the above example, to contract Network, the memory requirement is 1032 bytes.
     /// The maximum tensor in Network has 19 elements and has four bonds with labels 1, 2, 3, 4.
     std::string profile(bool print=true);
-    
+
     /// @brief Print out Network
     ///
     /// For a newtork described in the following network file,

@@ -1,4 +1,4 @@
-CPU_OBJ := qnum.o bond.o block.o cblock.o uni10_tools.o uni10_tools_cpu.o uni10_lapack_cpu.o matrix.o cmatrix.o matrixop.o operate.o UniTensor.o cUniTensor.o network.o
+CPU_OBJ := qnum.o bond.o block.o cblock.o uni10_tools.o uni10_tools_cpu.o uni10_lapack_cpu.o matrix.o cmatrix.o matrixop.o operate.o UniTensor.o cUniTensor.o network.o cNetwork.o
 GPU_OBJ := qnum.o bond.o block.o uni10_tools.o uni10_tools_gpu.o uni10_dgemm.o uni10_lapack_gpu.o matrix.o operate.o UniTensor_elem.o UniTensor.o network.o
 LINK := -mkl=parallel
 CC := g++
@@ -75,6 +75,9 @@ cUniTensor.o: $(UNI10_ROOT)/tensor-network/lib/UniTensor.cpp $(UNI10_ROOT)/tenso
 
 network.o: $(UNI10_ROOT)/tensor-network/lib/Network.cpp $(UNI10_ROOT)/tensor-network/Network.h
 	$(CC) -c $(OPT) -I $(SRC) $< -o $@
+
+cNetwork.o: $(UNI10_ROOT)/tensor-network/lib/Network.cpp $(UNI10_ROOT)/tensor-network/CNetwork.h
+	$(CC) -D UNI10_COMPLEX -D "UNI10_DTYPE=std::complex<double>" -D UNI10_TENSOR=CUniTensor -D UNI10_NODE=CNode -D UNI10_NETWORK=CNetwork -c $(OPT) -I $(SRC) $< -o $@
 
 vecadd.o: $(UNI10_ROOT)/tensor-network/lib/vecadd.cu $(UNI10_ROOT)/tensor-network/Network.h
 	$(NVCC) -c $(NVCCOPT) -I $(SRC) $< -o $@
