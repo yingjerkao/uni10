@@ -182,6 +182,7 @@ public:
     friend class UniTensor;
     friend class CUniTensor;
     friend class Node;
+    friend class CNode;
 private:
     void setting(const std::vector<Qnum>& qnums);
     bondType m_type;
