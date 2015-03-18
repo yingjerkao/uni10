@@ -407,7 +407,7 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
     for(size_t i = 0; i < b.Rnum; i++){
       for(size_t j = 0; j < b.Cnum; j++)
         if(b.diag){
-#ifdef UNI10_COMPLEX
+//#ifdef UNI10_COMPLEX
           if(i == j)
             os << std::setw(17) << std::fixed << std::setprecision(3) << elem[i];
           else
@@ -415,15 +415,15 @@ std::ostream& operator<< (std::ostream& os, const Block& b){
         }
         else
           os << std::setw(17) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
-#else
-          if(i == j)
-            os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i];
-          else
-            os << std::setw(7) << std::fixed << std::setprecision(3) << 0.0;
-        }
-        else
-          os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
-#endif
+//#else
+//          if(i == j)
+//            os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i];
+//          else
+//            os << std::setw(7) << std::fixed << std::setprecision(3) << 0.0;
+//        }
+//        else
+//          os << std::setw(7) << std::fixed << std::setprecision(3) << elem[i * b.Cnum + j];
+//#endif
       os << std::endl << std::endl;
     }
     if(b.ongpu)

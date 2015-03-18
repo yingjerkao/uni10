@@ -27,9 +27,7 @@
 *
 *****************************************************************************/
 #include <uni10/tensor-network/Matrix.h>
-#ifndef UNI10_PURE_REAL
 #include <uni10/tensor-network/CMatrix.h>
-#endif
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 
@@ -46,7 +44,6 @@ Matrix takeExp(double a, const Block& mat){
 }
 
 
-#ifndef UNI10_PURE_REAL
 
 CMatrix& CMatrix::conj(){
   setConjugate(m_elem, elemNum(), ongpu);
@@ -154,6 +151,5 @@ CMatrix& CMatrix::operator+= (const Block& Mb){
   }
 	return *this;
 }
-#endif
 
 };	/* namespace uni10 */
