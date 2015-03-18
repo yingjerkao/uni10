@@ -31,10 +31,8 @@
 #include <uni10/data-structure/uni10_struct.h>
 #include <uni10/data-structure/Bond.h>
 #include <uni10/tensor-network/Matrix.h>
-#ifndef UNI10_PURE_REAL
 #include <uni10/tensor-network/CMatrix.h>
 #include <uni10/tensor-network/CUniTensor.h>
-#endif
 #include <uni10/tensor-network/UniTensor.h>
 
 #ifndef UNI10_DTYPE

@@ -31,9 +31,7 @@
 #include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
-#ifndef UNI10_PURE_REAL
 #include <uni10/tensor-network/CMatrix.h>
-#endif
 
 
 #ifndef UNI10_DTYPE
@@ -168,7 +166,6 @@ std::vector<UNI10_MATRIX> UNI10_BLOCK::eigh()const{
 	return outs;
 }
 
-#ifndef UNI10_PURE_REAL
 std::vector<CMatrix> UNI10_BLOCK::eig()const{
   std::vector<CMatrix> outs;
   try{
@@ -192,7 +189,6 @@ std::vector<CMatrix> UNI10_BLOCK::eig()const{
   }
 	return outs;
 }
-#endif
 
 std::vector<UNI10_MATRIX> UNI10_BLOCK::svd()const{
 	std::vector<UNI10_MATRIX> outs;
@@ -353,7 +349,6 @@ UNI10_MATRIX operator*(const UNI10_BLOCK& Ma, double a){
 }
 UNI10_MATRIX operator*(double a, const UNI10_BLOCK& Ma){return Ma * a;}
 
-#ifndef UNI10_PURE_REAL
 CMatrix operator*(const UNI10_BLOCK& Ma, const std::complex<double>& a){
   try{
     CMatrix Mb(Ma);
@@ -366,7 +361,6 @@ CMatrix operator*(const UNI10_BLOCK& Ma, const std::complex<double>& a){
   }
 }
 CMatrix operator*(const std::complex<double>& a, const UNI10_BLOCK& Ma){return Ma * a;}
-#endif
 
 UNI10_MATRIX operator+(const UNI10_BLOCK& Ma, const UNI10_BLOCK& Mb){
   try{

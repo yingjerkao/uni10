@@ -79,10 +79,8 @@ public:
     Matrix(const Matrix& _m);
     /// @overload
     Matrix(const Block& _b);
-#ifndef UNI10_PURE_REAL
     /// @overload
     Matrix(const CBlock& _b);
-#endif
 
     /// @brief Destructor
     ///
@@ -204,14 +202,10 @@ private:
 
 };
 Matrix takeExp(double a, const Block& mat);
-#ifndef UNI10_PURE_REAL
 Matrix exp(double a, const Block& mat);
 CMatrix exp(const std::complex<double>& a, const Block& mat);
-#endif
 Matrix exph(double a, const Block& mat);
-#ifndef UNI10_PURE_REAL
 Matrix exp(const Block& mat);
-#endif
 Matrix exph(const Block& mat);
 Matrix otimes(const Block& Ma, const Block& Mb);
 

@@ -30,7 +30,6 @@
 *****************************************************************************/
 #ifndef BLOCK_H
 #define BLOCK_H
-//#define UNI10_PURE_REAL 1
 #include <iostream>
 #include <iomanip>
 #include <assert.h>
@@ -61,9 +60,7 @@ class Block{
 		double* getElem()const;
     Matrix getDiag()const;
 		void save(const std::string& fname)const;
-#ifndef UNI10_PURE_REAL
 		std::vector<CMatrix> eig()const;
-#endif
 		std::vector<Matrix> eigh()const;
 		std::vector<Matrix> svd()const;
     size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
@@ -74,10 +71,8 @@ class Block{
 		friend Matrix operator*(const Block& Ma, const Block& Mb);
 		friend Matrix operator*(double a, const Block& Ma);
 		friend Matrix operator*(const Block& Ma, double a);
-#ifndef UNI10_PURE_REAL
 		friend CMatrix operator*(const std::complex<double>& a, const Block& Ma);
 		friend CMatrix operator*(const Block& Ma, const std::complex<double>& a);
-#endif
 		friend Matrix operator+(const Block& Ma, const Block& Mb);
 		friend bool operator==(const Block& m1, const Block& m2);
 		friend class UniTensor;
