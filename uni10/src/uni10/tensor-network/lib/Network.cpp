@@ -35,24 +35,12 @@
 #include <uni10/tensor-network/Network.h>
 #include <uni10/tensor-network/CNetwork.h>
 
-#ifndef UNI10_DTYPE
-#define UNI10_DTYPE double
-#endif
-#ifndef UNI10_TENSOR
-#define UNI10_TENSOR UniTensor
-#endif
-#ifndef UNI10_NODE
-#define UNI10_NODE Node
-#endif
-#ifndef UNI10_NETWORK
-#define UNI10_NETWORK Network
-#endif
-
+typedef double Real;
 namespace uni10{
-UNI10_NODE::UNI10_NODE(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
+Node::Node(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }
 
-UNI10_NODE::UNI10_NODE(UNI10_TENSOR* Tp): T(Tp), elemNum(Tp->m_elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){
+Node::Node(UniTensor* Tp): T(Tp), elemNum(Tp->m_elemNum), labels(Tp->labels), bonds(Tp->bonds), name(Tp->name), parent(NULL), left(NULL), right(NULL), point(0){
   if(!(Tp->status & Tp->HAVEBOND)){
     std::ostringstream err;
     err<<"Cannot create node of a network from tensor without bond.";
@@ -60,24 +48,24 @@ UNI10_NODE::UNI10_NODE(UNI10_TENSOR* Tp): T(Tp), elemNum(Tp->m_elemNum), labels(
   }
 }
 
-UNI10_NODE::UNI10_NODE(const UNI10_NODE& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){
+Node::Node(const Node& nd): T(nd.T), elemNum(nd.elemNum), labels(nd.labels), bonds(nd.bonds), parent(nd.parent), left(nd.left), right(nd.right), point(nd.point){
 }
 
-UNI10_NODE::UNI10_NODE(std::vector<Bond>& _bonds, std::vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL), point(0){
+Node::Node(std::vector<Bond>& _bonds, std::vector<int>& _labels): T(NULL), labels(_labels), bonds(_bonds), parent(NULL), left(NULL), right(NULL), point(0){
 	elemNum = cal_elemNum(bonds);
 }
 
-UNI10_NODE::~UNI10_NODE(){
+Node::~Node(){
 }
 
-void UNI10_NODE::delink(){
+void Node::delink(){
 	parent = NULL;
 	left = NULL;
 	right = NULL;
 	point = 0;
 }
 
-UNI10_NODE UNI10_NODE::contract(UNI10_NODE* nd){
+Node Node::contract(Node* nd){
 	int AbondNum = bonds.size();
 	int BbondNum = nd->bonds.size();
 	std::vector<Bond> cBonds;
@@ -111,11 +99,11 @@ UNI10_NODE UNI10_NODE::contract(UNI10_NODE* nd){
 	for(int a = 0; a < cBondNum; a++)
 		cBonds[rBondNum + a].change(BD_OUT);
 
-	//UNI10_NODE par(cBonds, newLabelC);
-	return UNI10_NODE(cBonds, newLabelC);
+	//Node par(cBonds, newLabelC);
+	return Node(cBonds, newLabelC);
 }
 
-float UNI10_NODE::metric(UNI10_NODE* nd){	//Bigger is better
+float Node::metric(Node* nd){	//Bigger is better
 	int AbondNum = bonds.size();
 	int BbondNum = nd->bonds.size();
 	std::vector<Bond> cBonds;
@@ -149,7 +137,7 @@ float UNI10_NODE::metric(UNI10_NODE* nd){	//Bigger is better
 	return float(elemNum + nd->elemNum) / newElemNum;
 }
 
-int64_t UNI10_NODE::cal_elemNum(std::vector<Bond>& _bonds){
+int64_t Node::cal_elemNum(std::vector<Bond>& _bonds){
 	int rBondNum = 0;
 	int cBondNum = 0;
 	for(int b = 0; b < _bonds.size(); b++)
@@ -234,22 +222,22 @@ int64_t UNI10_NODE::cal_elemNum(std::vector<Bond>& _bonds){
 }
 
 
-UNI10_NETWORK::UNI10_NETWORK(const std::string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
+Network::Network(const std::string& fname): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
   try{
     fromfile(fname);
     int Tnum = label_arr.size() - 1;
     swapflags.assign(Tnum, false);
     std::vector<_Swap> swaps;
     swaps_arr.assign(Tnum, swaps);
-    leafs.assign(Tnum, (UNI10_NODE*)NULL);
-    tensors.assign(Tnum, (UNI10_TENSOR*)NULL);
+    leafs.assign(Tnum, (Node*)NULL);
+    tensors.assign(Tnum, (UniTensor*)NULL);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In constructor Network::Network(std::string&):");
   }
 }
 
-UNI10_NETWORK::UNI10_NETWORK(const std::string& fname, const std::vector<UNI10_TENSOR*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
+Network::Network(const std::string& fname, const std::vector<UniTensor*>& tens): root(NULL), load(false), times(0), tot_elem(0), max_elem(0){
   try{
     fromfile(fname);
     if(!((label_arr.size() - 1) == tens.size())){
@@ -261,19 +249,19 @@ UNI10_NETWORK::UNI10_NETWORK(const std::string& fname, const std::vector<UNI10_T
     swapflags.assign(Tnum, false);
     std::vector<_Swap> swaps;
     swaps_arr.assign(Tnum, swaps);
-    leafs.assign(Tnum, (UNI10_NODE*)NULL);
-    tensors.assign(Tnum, (UNI10_TENSOR*)NULL);
+    leafs.assign(Tnum, (Node*)NULL);
+    tensors.assign(Tnum, (UniTensor*)NULL);
     for(int i = 0; i < Tnum; i++){
       if(!(tens[i]->RBondNum == Rnums[i])){
         std::ostringstream err;
         err<<"The number of in-coming bonds does not match with the tensor '"<<names[i]<<"' specified in network file '"<<fname<<"'.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      UNI10_TENSOR* ten = new UNI10_TENSOR(*(tens[i]));
+      UniTensor* ten = new UniTensor(*(tens[i]));
       ten->setName(names[i]);
       ten->setLabel(label_arr[i]);
       tensors[i] = ten;
-      UNI10_NODE* ndp = new UNI10_NODE(ten);
+      Node* ndp = new Node(ten);
       leafs[i] = ndp;
     }
     construct();
@@ -283,7 +271,7 @@ UNI10_NETWORK::UNI10_NETWORK(const std::string& fname, const std::vector<UNI10_T
   }
 }
 
-void UNI10_NETWORK::fromfile(const std::string& fname){//names, name2pos, label_arr, Rnums, order, brakets
+void Network::fromfile(const std::string& fname){//names, name2pos, label_arr, Rnums, order, brakets
 	std::string str;
 	std::ifstream infile;
 	infile.open (fname.c_str());
@@ -440,15 +428,15 @@ void UNI10_NETWORK::fromfile(const std::string& fname){//names, name2pos, label_
 	infile.close();
 }
 
-void UNI10_NETWORK::construct(){
+void Network::construct(){
 	if(brakets.size()){
-		std::vector<UNI10_NODE*> stack(leafs.size(), NULL);
+		std::vector<Node*> stack(leafs.size(), NULL);
 		int cursor = 0;
 		int cnt = 0;
 		for(int i = 0; i < brakets.size(); i++){
 			if(brakets[i] < 0){
 				for(int c = 0; c < -brakets[i]; c++){
-					UNI10_NODE* par = new UNI10_NODE(stack[cursor - 2]->contract(stack[cursor - 1]));
+					Node* par = new Node(stack[cursor - 2]->contract(stack[cursor - 1]));
 					par->left = stack[cursor - 2];
 					par->right = stack[cursor - 1];
 					par->left->parent = par;
@@ -471,7 +459,7 @@ void UNI10_NETWORK::construct(){
 			}
 		}
 		while(cursor > 1){//for imcomplete brakets
-			UNI10_NODE* par = new UNI10_NODE(stack[cursor - 2]->contract(stack[cursor - 1]));
+			Node* par = new Node(stack[cursor - 2]->contract(stack[cursor - 1]));
 			par->left = stack[cursor - 2];
 			par->right = stack[cursor - 1];
 			par->left->parent = par;
@@ -520,7 +508,7 @@ void UNI10_NETWORK::construct(){
 	load = true;
 }
 
-void UNI10_NETWORK::putTensor(size_t idx, const UNI10_TENSOR* UniT, bool force){
+void Network::putTensor(size_t idx, const UniTensor* UniT, bool force){
   try{
     if(!(idx < (label_arr.size()-1))){
       std::ostringstream err;
@@ -542,11 +530,11 @@ void UNI10_NETWORK::putTensor(size_t idx, const UNI10_TENSOR* UniT, bool force){
       swapflags[idx] = false;
     }
     else{
-      UNI10_TENSOR* ten = new UNI10_TENSOR(*UniT);
+      UniTensor* ten = new UniTensor(*UniT);
       ten->setName(names[idx]);
       ten->setLabel(label_arr[idx]);
       tensors[idx] = ten;
-      UNI10_NODE* ndp = new UNI10_NODE(ten);
+      Node* ndp = new Node(ten);
       leafs[idx] = ndp;
     }
   }
@@ -555,7 +543,7 @@ void UNI10_NETWORK::putTensor(size_t idx, const UNI10_TENSOR* UniT, bool force){
   }
 }
 
-void UNI10_NETWORK::putTensor(size_t idx, const UNI10_TENSOR& UniT, bool force){
+void Network::putTensor(size_t idx, const UniTensor& UniT, bool force){
   try{
     putTensor(idx, &UniT, force);
   }
@@ -564,7 +552,7 @@ void UNI10_NETWORK::putTensor(size_t idx, const UNI10_TENSOR& UniT, bool force){
   }
 }
 
-void UNI10_NETWORK::putTensor(const std::string& name, const UNI10_TENSOR* UniT, bool force){
+void Network::putTensor(const std::string& name, const UniTensor* UniT, bool force){
   try{
     std::map<std::string, size_t>::const_iterator it = name2pos.find(name);
     if(!(it != name2pos.end())){
@@ -579,7 +567,7 @@ void UNI10_NETWORK::putTensor(const std::string& name, const UNI10_TENSOR* UniT,
   }
 }
 
-void UNI10_NETWORK::putTensor(const std::string& name, const UNI10_TENSOR& UniT, bool force){
+void Network::putTensor(const std::string& name, const UniTensor& UniT, bool force){
   try{
     putTensor(name, &UniT, force);
   }
@@ -588,7 +576,7 @@ void UNI10_NETWORK::putTensor(const std::string& name, const UNI10_TENSOR& UniT,
   }
 }
 
-void UNI10_NETWORK::putTensorT(const std::string& nameT, const UNI10_TENSOR* UniT, bool force){
+void Network::putTensorT(const std::string& nameT, const UniTensor* UniT, bool force){
   try{
     std::map<std::string, size_t>::const_iterator itT = name2pos.find(nameT);
     if(!(itT != name2pos.end())){
@@ -596,7 +584,7 @@ void UNI10_NETWORK::putTensorT(const std::string& nameT, const UNI10_TENSOR* Uni
       err<<"There is no tensor named '"<<nameT<<"' in the network file";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    UNI10_TENSOR transT = *UniT;
+    UniTensor transT = *UniT;
     transT.transpose();
     putTensor(itT->second, &transT, force);
   }
@@ -605,7 +593,7 @@ void UNI10_NETWORK::putTensorT(const std::string& nameT, const UNI10_TENSOR* Uni
   }
 }
 
-void UNI10_NETWORK::putTensorT(const std::string& nameT, const UNI10_TENSOR& UniT, bool force){
+void Network::putTensorT(const std::string& nameT, const UniTensor& UniT, bool force){
   try{
     putTensorT(nameT, &UniT, force);
   }
@@ -614,8 +602,8 @@ void UNI10_NETWORK::putTensorT(const std::string& nameT, const UNI10_TENSOR& Uni
   }
 }
 
-void UNI10_NETWORK::branch(UNI10_NODE* sbj, UNI10_NODE* tar){
-	UNI10_NODE* par = new UNI10_NODE(tar->contract(sbj));
+void Network::branch(Node* sbj, Node* tar){
+	Node* par = new Node(tar->contract(sbj));
 	if(sbj->parent == NULL){	//create a parent node
 		if(tar->parent != NULL){	//tar is not root
 			if(tar->parent->left == tar)	// tar on the left side of its parent
@@ -654,7 +642,7 @@ void UNI10_NETWORK::branch(UNI10_NODE* sbj, UNI10_NODE* tar){
 	}
 }
 
-void UNI10_NETWORK::matching(UNI10_NODE* sbj, UNI10_NODE* tar){
+void Network::matching(Node* sbj, Node* tar){
 	if(tar == NULL){	//tar is root
 		root = sbj;
 	}
@@ -684,7 +672,7 @@ void UNI10_NETWORK::matching(UNI10_NODE* sbj, UNI10_NODE* tar){
 	}
 }
 
-void UNI10_NETWORK::clean(UNI10_NODE* nd){
+void Network::clean(Node* nd){
 	if(nd->T != NULL)	//leaf
 		return;
 	clean(nd->left);
@@ -692,7 +680,7 @@ void UNI10_NETWORK::clean(UNI10_NODE* nd){
 	delete nd;
 }
 
-void UNI10_NETWORK::destruct(){
+void Network::destruct(){
 	clean(root);
 	root = NULL;
 	for(int i = 0; i < leafs.size(); i++)
@@ -709,7 +697,7 @@ void UNI10_NETWORK::destruct(){
 }
 
 
-UNI10_TENSOR UNI10_NETWORK::launch(const std::string& _name){
+UniTensor Network::launch(const std::string& _name){
   try{
     if(!load)
       construct();
@@ -718,7 +706,7 @@ UNI10_TENSOR UNI10_NETWORK::launch(const std::string& _name){
         tensors[t]->addGate(swaps_arr[t]);
         swapflags[t] = true;
       }
-    UNI10_TENSOR UniT = merge(root);
+    UniTensor UniT = merge(root);
     int idx = label_arr.size() - 1;
     if(label_arr.size() > 0 && label_arr[idx].size() > 1)
       UniT.permute(label_arr[idx], Rnums[idx]);
@@ -727,15 +715,15 @@ UNI10_TENSOR UNI10_NETWORK::launch(const std::string& _name){
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Network::launch(std::string&):");
-    return UNI10_TENSOR();
+    return UniTensor();
   }
 }
 
-UNI10_TENSOR UNI10_NETWORK::merge(UNI10_NODE* nd){
+UniTensor Network::merge(Node* nd){
 	if(nd->left->T == NULL){
-		UNI10_TENSOR lftT = merge(nd->left);
+		UniTensor lftT = merge(nd->left);
 		if(nd->right->T == NULL){
-			UNI10_TENSOR rhtT = merge(nd->right);
+			UniTensor rhtT = merge(nd->right);
 			return contract(lftT, rhtT, true);
 		}
 		else{
@@ -744,7 +732,7 @@ UNI10_TENSOR UNI10_NETWORK::merge(UNI10_NODE* nd){
 	}
 	else{
 		if(nd->right->T == NULL){
-			UNI10_TENSOR rhtT = merge(nd->right);
+			UniTensor rhtT = merge(nd->right);
 			return contract(*(nd->left->T), rhtT, true);
 		}
 		else{
@@ -753,7 +741,7 @@ UNI10_TENSOR UNI10_NETWORK::merge(UNI10_NODE* nd){
 	}
 }
 
-UNI10_NETWORK::~UNI10_NETWORK(){
+Network::~Network(){
   try{
 	if(load)
 		destruct();
@@ -767,7 +755,7 @@ UNI10_NETWORK::~UNI10_NETWORK(){
   }
 }
 
-int UNI10_NETWORK::rollcall(){
+int Network::rollcall(){
   if(!load){
     for(int i = 0; i < leafs.size(); i++)
       if(leafs[i] == NULL){
@@ -778,19 +766,19 @@ int UNI10_NETWORK::rollcall(){
   return -1;
 }
 
-size_t UNI10_NETWORK::sum_of_memory_usage(){
+size_t Network::sum_of_memory_usage(){
   if(rollcall() >= 0)
     return 0;
-  return _sum_of_tensor_elem(root) * sizeof(UNI10_DTYPE);
+  return _sum_of_tensor_elem(root) * sizeof(Real);
 }
 
-size_t UNI10_NETWORK::_sum_of_tensor_elem(UNI10_NODE* nd) const{
+size_t Network::_sum_of_tensor_elem(Node* nd) const{
   if(nd == NULL)
     return 0;
   return nd->elemNum + _sum_of_tensor_elem(nd->left) + _sum_of_tensor_elem(nd->right);
 }
 
-size_t UNI10_NETWORK::memory_requirement(){
+size_t Network::memory_requirement(){
   if(rollcall() >= 0)
     return 0;
   size_t usage = 0;
@@ -799,10 +787,10 @@ size_t UNI10_NETWORK::memory_requirement(){
   usage *= 2;
   size_t max_usage = 0;
   _elem_usage(root, usage, max_usage);
-  return max_usage * sizeof(UNI10_DTYPE);
+  return max_usage * sizeof(Real);
 }
 
-size_t UNI10_NETWORK::_elem_usage(UNI10_NODE* nd, size_t& usage, size_t& max_usage)const{
+size_t Network::_elem_usage(Node* nd, size_t& usage, size_t& max_usage)const{
   if(nd == NULL)
     return 0;
   size_t child_usage = _elem_usage(nd->left, usage, max_usage) + _elem_usage(nd->right, usage, max_usage);
@@ -812,16 +800,16 @@ size_t UNI10_NETWORK::_elem_usage(UNI10_NODE* nd, size_t& usage, size_t& max_usa
   return nd->elemNum;
 }
 
-size_t UNI10_NETWORK::max_tensor_elemNum(){
+size_t Network::max_tensor_elemNum(){
   if(rollcall() >= 0)
     return 0;
   size_t max_num = 0;
-  UNI10_NODE max_nd;
+  Node max_nd;
   _max_tensor_elemNum(root, max_num, max_nd);
   return max_num;
 }
 
-void UNI10_NETWORK::_max_tensor_elemNum(UNI10_NODE* nd, size_t& max_num, UNI10_NODE& max_nd) const{
+void Network::_max_tensor_elemNum(Node* nd, size_t& max_num, Node& max_nd) const{
   if(nd == NULL)
     return;
   _max_tensor_elemNum(nd->left, max_num, max_nd);
@@ -832,7 +820,7 @@ void UNI10_NETWORK::_max_tensor_elemNum(UNI10_NODE* nd, size_t& max_num, UNI10_N
   }
 }
 
-std::string UNI10_NETWORK::profile(bool print){
+std::string Network::profile(bool print){
   try{
     std::ostringstream os;
     int miss;
@@ -848,7 +836,7 @@ std::string UNI10_NETWORK::profile(bool print){
     os<<"Memory Requirement: "<<memory_requirement()<<std::endl;
     //os<<"Sum of memory usage: "<<sum_of_memory_usage()<<std::endl;
     size_t max_num = 0;
-    UNI10_NODE max_nd;
+    Node max_nd;
     _max_tensor_elemNum(root, max_num, max_nd);
     os<<"Maximun tensor: \n";
     os<<"  elemNum: "<<max_num<<"\n  "<<max_nd.labels.size()<<" bonds and labels: ";
@@ -868,7 +856,7 @@ std::string UNI10_NETWORK::profile(bool print){
   }
 }
 
-void UNI10_NETWORK::preprint(std::ostream& os, UNI10_NODE* nd, int layer)const{
+void Network::preprint(std::ostream& os, Node* nd, int layer)const{
 	if(nd == NULL)
 		return;
 	for(int i = 0; i < layer; i++)
@@ -884,7 +872,7 @@ void UNI10_NETWORK::preprint(std::ostream& os, UNI10_NODE* nd, int layer)const{
 	preprint(os, nd->right, layer+1);
 }
 
-std::ostream& operator<< (std::ostream& os, UNI10_NETWORK& net){
+std::ostream& operator<< (std::ostream& os, Network& net){
   try{
     os<<std::endl;
     for(int i = 0; i < net.names.size(); i++){
@@ -920,7 +908,7 @@ std::ostream& operator<< (std::ostream& os, UNI10_NETWORK& net){
   }
 	return os;
 }
-std::ostream& operator<< (std::ostream& os, const UNI10_NODE& nd){
+std::ostream& operator<< (std::ostream& os, const Node& nd){
 	os << "Tensor: " << nd.T<<std::endl;
 	os << "elemNum: " << nd.elemNum<<std::endl;
 	os << "parent: " << nd.parent<<std::endl;
@@ -935,7 +923,7 @@ std::ostream& operator<< (std::ostream& os, const UNI10_NODE& nd){
 	return os;
 }
 
-void UNI10_NETWORK::findConOrd(UNI10_NODE* nd){
+void Network::findConOrd(Node* nd){
 	if(nd == NULL || conOrder.size() == tensors.size())
 		return;
 	if(nd->T){
@@ -956,7 +944,7 @@ void UNI10_NETWORK::findConOrd(UNI10_NODE* nd){
 	findConOrd(nd->right);
 }
 
-void UNI10_NETWORK::addSwap(){
+void Network::addSwap(){
 	int Tnum = leafs.size();
 	findConOrd(root);
 	if(!(Tnum == conOrder.size())){
@@ -1007,15 +995,3 @@ void UNI10_NETWORK::addSwap(){
 	}
 }
 }; /* namespace uni10 */
-#ifdef UNI10_NETWORK
-#undef UNI10_NETWORK
-#endif
-#ifdef UNI10_NODE
-#undef UNI10_NODE
-#endif
-#ifdef UNI10_TENSOR
-#undef UNI10_TENSOR
-#endif
-#ifdef UNI10_DTYPE
-#undef UNI10_DTYPE
-#endif
