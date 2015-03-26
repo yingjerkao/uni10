@@ -28,6 +28,7 @@
 *  @since 0.1.0
 *
 *****************************************************************************/
+#include <complex>
 #ifdef MKL
   #define MKL_Complex8 std::complex<float>
   #define MKL_Complex16 std::complex<double>
@@ -602,7 +603,7 @@ void eigDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, s
   int ldvl = 1;
   int ldvr = N;
 	int lwork = -1;
-  std::complex<double> *rwork = (std::complex<double>*) malloc(2 * N * sizeof(std::complex<double>));
+  double *rwork = (double*) malloc(2 * N * sizeof(double));
   std::complex<double> worktest;
 	int info;
 	zgeev((char*)"N", (char*)"V", &N, A, &ldA, Eig, NULL, &ldvl, EigVec, &ldvr, &worktest, &lwork, rwork, &info);
@@ -674,6 +675,7 @@ bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, s
     throw std::runtime_error(exception_msg(err.str()));
   }
   std::complex<double> a = 1.0;
+  std::complex<double> alpha_tmp=0.;
   double alpha;
   double beta = 1;
   int inc = 1;
@@ -695,7 +697,8 @@ bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, s
   while((((e_diff > err_tol) && it < max_iter) || it < min_iter) && beta > beta_err){
     std::complex<double> minus_beta = -beta;
 	  zgemv((char*)"T", &N, &N, &a, A, &N, &Vm[it * N], &inc, &minus_beta, &Vm[(it+1) * N], &inc);
-    alpha = zdotc(&N, &Vm[it*N], &inc, &Vm[(it+1) * N], &inc).real();
+    zdotc(&alpha_tmp, &N, &Vm[it*N], &inc, &Vm[(it+1) * N], &inc);
+    alpha=alpha_tmp.real();
     std::complex<double> minus_alpha = -alpha;
     zaxpy(&N, &minus_alpha, &Vm[it * N], &inc, &Vm[(it+1) * N], &inc);
     beta = vectorNorm(&Vm[(it+1) * N], N, 1, false);
