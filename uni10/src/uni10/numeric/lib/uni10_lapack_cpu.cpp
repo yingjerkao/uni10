@@ -29,6 +29,8 @@
 *
 *****************************************************************************/
 #ifdef MKL
+  #define MKL_Complex8 std::complex<float>
+  #define MKL_Complex16 std::complex<double>
   #include "mkl.h"
 #else
   #include <uni10/numeric/uni10_lapack_wrapper.h>
