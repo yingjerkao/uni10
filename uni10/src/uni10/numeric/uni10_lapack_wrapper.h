@@ -79,7 +79,7 @@ void zheev_( const char* jobz, const char* uplo, const int32_t* n, std::complex<
 void zgeev_( const char* jobvl, const char* jobvr, const int32_t* n, const std::complex<double>* a,
     const int32_t* lda, const std::complex<double>* w, const std::complex<double> *vl, const int32_t *ldvl,
     const std::complex<double> *vr, const int32_t *ldvr, const std::complex<double> *work, const int32_t* lwork,
-    const std::complex<double> *rwork, int32_t* info );
+    const double *rwork, int32_t* info );
 
 void dstev_( const char* jobz, const int32_t* n, const double* d, const double* e, const double* z,
              const int32_t* ldaz, const double* work, int32_t* info );
@@ -151,7 +151,7 @@ inline void zheev( const char* jobz, const char* uplo, const int32_t* n, std::co
 inline void zgeev( const char* jobvl, const char* jobvr, const int32_t* n, const std::complex<double>* a,
     const int32_t* lda, const std::complex<double>* w, const std::complex<double> *vl, const int32_t *ldvl,
     const std::complex<double> *vr, const int32_t *ldvr, const std::complex<double> *work, const int32_t* lwork,
-    const std::complex<double> *rwork, int32_t* info )
+    const double *rwork, int32_t* info )
 {
   zgeev_(jobvl, jobvr, n, a, lda, w, vl, ldvl, vr, ldvr, work, lwork, rwork, info);
 }
@@ -190,10 +190,9 @@ inline double ddot( const int32_t *n, const double *x, const int32_t *incx, cons
   return res;
 }
 
-inline std::complex<double> zdotc(const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy)
-{   std::complex<double> res;
-    zdotc_(&res, n, x, incx, y, incy);
-    return res;
+inline void zdotc(std::complex<double>* res, const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy)
+{   
+    zdotc_(res, n, x, incx, y, incy);
 }
 
 inline void dstev( const char* jobz, const int32_t* n, const double* d, const double* e, const double* z,

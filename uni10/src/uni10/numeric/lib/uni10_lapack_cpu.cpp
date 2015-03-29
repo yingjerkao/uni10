@@ -5,7 +5,6 @@
 *    Copyright (c) 2013-2014
 *    National Taiwan University
 *    National Tsing-Hua University
-
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
