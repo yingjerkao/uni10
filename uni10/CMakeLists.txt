@@ -61,8 +61,8 @@ endif()
 ######################################################################
 set(UNI10_VERSION_MAJOR 0)
 set(UNI10_VERSION_MINOR 9)
-set(UNI10_VERSION_PATCH 1)
-set(UNI10_VERSION COUNT 4)
+set(UNI10_VERSION_PATCH 2)
+set(UNI10_VERSION COUNT 5)
 set(UNI10_VERSION
   ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
 )
@@ -228,6 +228,8 @@ if (BUILD_PYTHON_WRAPPER)
   add_subdirectory(Swig pyUni10 )
 endif()
 
+add_subdirectory(gtest-1.7.0)
+add_subdirectory(test)
 ######################################################################
 ### ADD LIBRARY
 ######################################################################
@@ -287,6 +289,10 @@ WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 COMMENT "Generating API documentation with Doxygen" VERBATIM
 )
 endif(DOXYGEN_FOUND) 
+
+
+
+
 ######################################################################
 ### INSTALL
 ######################################################################

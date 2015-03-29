@@ -1,0 +1,1 @@
+/usr/bin/c++    -Wl,-search_paths_first -Wl,-headerpad_max_install_names   CMakeFiles/sample10_unittest.dir/samples/sample10_unittest.cc.o  -o sample10_unittest  -L/Users/yjkao/gtest-1.7.0/src  libgtest.a -Wl,-rpath,/Users/yjkao/gtest-1.7.0/src 
