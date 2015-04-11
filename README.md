@@ -9,34 +9,9 @@ easier and less error prone.
 
 Developers:
 
-Yun-Da Hsieh (National Taiwan University)
-Ying-Jer Kao (National Taiwan University)
-Pochung Chen (National Tsing-Hua University)
-Tama Ma (Singapore National University)
-Sukhbinder Singh (Macquarie University)
+* Yun-Da Hsieh (National Taiwan University)
+* Ying-Jer Kao (National Taiwan University)
+* Pochung Chen (National Tsing-Hua University)
+* Tama Ma (Singapore National University)
+* Sukhbinder Singh (Macquarie University)
 
-### What is this repository for? ###
-
-* Quick summary
-* Version
-*
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
