@@ -1,5 +1,5 @@
 /****************************************************************************
-*  @file uni10_lapack_wrapper.cpp
+*  @file uni10_lapack_cpu.cpp
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
