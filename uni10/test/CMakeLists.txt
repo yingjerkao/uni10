@@ -33,12 +33,11 @@ cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 ######################################################################
 enable_testing()
 include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-# ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 ################################
 # Unit Tests
 ################################
-set( test_sources testQnum.cpp)
+set(test_sources testQnum.cpp)
 # Add test cpp file
 add_executable( runUnitTests ${test_sources})
 # Link test executable against gtest & gtest_main
