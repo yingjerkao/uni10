@@ -58,7 +58,7 @@ void dgemv_(const char *trans, const int32_t *m, const int32_t *n, const double 
 void zgemv_(const char *trans, const int32_t *m, const int32_t *n, const std::complex<double> *alpha, const std::complex<double> *a, const int32_t *lda,
             const std::complex<double> *x,const int32_t *incx, const std::complex<double> *beta, const std::complex<double> *y, const int32_t *incy);
 
-void ddot_(double* res,const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy);
+double ddot_(const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy);
 void zdotc_(std::complex<double>* res, const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy);
 
 // LAPACK functions
@@ -185,9 +185,8 @@ inline void zgemv(const char *trans, const int32_t *m, const int32_t *n, const s
 }
 
 inline double ddot( const int32_t *n, const double *x, const int32_t *incx, const double *y, const int32_t *incy)
-{ double res;
-  ddot_(&res, n, x, incx, y, incy);
-  return res;
+{
+  return ddot_(n, x, incx, y, incy);
 }
 
 inline void zdotc(std::complex<double>* res, const int32_t *n, const std::complex<double> *x, const int32_t *incx, const std::complex<double> *y, const int32_t *incy)
