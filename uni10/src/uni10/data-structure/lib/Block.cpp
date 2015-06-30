@@ -358,10 +358,34 @@ CMatrix operator*(const std::complex<double>& a, const Block& Ma){return Ma * a;
 #endif
 
 Matrix operator+(const Block& Ma, const Block& Mb){
+  /*if ((Ma.diag && !Mb.diag) || (!Ma.diag && Mb.diag) ){
+    std::ostringstream err;
+    err<<"Fatal error(code = T1). Addition of a diagonal and a regular matrices is not implemented.";
+    throw std::runtime_error(exception_msg(err.str())); ;
+  };*/
+
   try{
+    if (Ma.diag && !Mb.diag) {
+      //std::cout << "Ma is diagonal."<<std::endl;
+      Matrix Mc(Ma.Rnum,Ma.Cnum);
+      setDiag(Mc.m_elem,Ma.m_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
+      vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
+      return Mc;
+    } else if (Mb.diag && !Ma.diag) {
+      //std::cout << "Mb is diagonal."<<std::endl;
+
+      Matrix Mc(Mb.Rnum,Mb.Cnum);
+      setDiag(Mc.m_elem,Mb.m_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
+      //std::cout << Mc ;
+      vectorAdd(Mc.m_elem, Ma.m_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
+
+      return Mc;
+    } else {
     Matrix Mc(Ma);
     vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
     return Mc;
+    }
+
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");
