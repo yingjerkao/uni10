@@ -233,12 +233,24 @@ Matrix& Matrix::operator+= (const Block& Mb){
   try{
     if(!ongpu)
       m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
+    if (diag && !Mb.diag) {
+      Matrix Mc(Rnum,Cnum);
+      setDiag(Mc.m_elem,m_elem,Mc.Rnum,Mc.Cnum,Rnum,Mc.ongpu,ongpu);
+      this->resize(Rnum,Cnum);
+      *this=Mc;
+      vectorAdd(m_elem, Mb.m_elem, elemNum(), ongpu, Mb.ongpu);
+    } else if (Mb.diag && !diag) {
+      Matrix Mc(Mb.Rnum,Mb.Cnum);
+      setDiag(Mc.m_elem,Mb.m_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
+      vectorAdd(m_elem, Mc.m_elem, Mc.elemNum(), Mc.ongpu, ongpu);
+    } else {
     vectorAdd(m_elem, Mb.m_elem, elemNum(), ongpu, Mb.ongpu);
+    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::operator+=(uni10::Matrix&):");
   }
-	return *this;
+  return *this;
 }
 
 Matrix& Matrix::transpose(){
@@ -463,6 +475,11 @@ Matrix exp(const Block& mat){
 
 Matrix exph(const Block& mat){
   return exph(1.0, mat);
+}
+
+double Matrix::max(bool on_gpu){
+
+    return elemMax(m_elem,  elemNum(),  on_gpu);
 }
 
 };	/* namespace uni10 */
