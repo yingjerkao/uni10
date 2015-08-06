@@ -90,6 +90,24 @@ double getElemAt(size_t idx, double* elem, bool ongpu){
 void setElemAt(size_t idx, double val, double* elem, bool ongpu){
 	elem[idx] = val;
 }
+    
+
+double  elemMax(double* elem, size_t elemNum, bool ongpu){
+    
+    if (ongpu) {
+        // GPU not implemented
+        std::ostringstream err;
+        err<<"Fatal error(code = T1). GPU version is not implemented.";
+        throw std::runtime_error(exception_msg(err.str()));
+    } else {
+        double max;
+        max=elem[0];
+        
+        for (size_t i=1; i<elemNum; i++)
+        if (max < elem[i]) max=elem[i];
+        return max;
+    }
+}
 
 /***** Complex version *****/
 std::complex<double> getElemAt(size_t idx, std::complex<double>* elem, bool ongpu){

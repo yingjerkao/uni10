@@ -195,6 +195,11 @@ public:
     ///
     /// Performs element by element addition and store the results in Matrix
     Matrix& operator+= (const Block & Mb);
+    
+    /// @brief Returns the maximum element in Matrix
+    ///
+    /// Returns the maximum element in Matrix
+    double max(bool _ongpu=false);
 
 private:
     void init(bool togpu);
