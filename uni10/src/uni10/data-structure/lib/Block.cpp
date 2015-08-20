@@ -181,8 +181,36 @@ std::vector<CMatrix> Block::eig()const{
   }
 	return outs;
 }
-
-
+/***   qr  rq  ql  lq ***/
+std::vector<Matrix> Block::qr()const{
+  std::vector<Matrix> outs;
+  outs.push_back(Matrix(Rnum, Cnum, false, ongpu));
+  outs.push_back(Matrix(Cnum, Cnum, false, ongpu));
+  matrixQR(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+  return outs;
+}
+std::vector<Matrix> Block::rq()const{
+  std::vector<Matrix> outs;
+  outs.push_back(Matrix(Rnum, Rnum, false, ongpu)); //r
+  outs.push_back(Matrix(Rnum, Cnum, false, ongpu)); //q
+  matrixRQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
+  return outs;
+}
+std::vector<Matrix> Block::ql()const{
+  std::vector<Matrix> outs;
+  outs.push_back(Matrix(Rnum, Cnum, false, ongpu));
+  outs.push_back(Matrix(Cnum, Cnum, false, ongpu));
+  matrixQL(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+  return outs;
+}
+std::vector<Matrix> Block::lq()const{
+  std::vector<Matrix> outs;
+  outs.push_back(Matrix(Rnum, Rnum, false, ongpu));
+  outs.push_back(Matrix(Rnum, Cnum, false, ongpu));
+  matrixLQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
+  return outs;
+}
+/************************/
 std::vector<Matrix> Block::svd()const{
 	std::vector<Matrix> outs;
   try{

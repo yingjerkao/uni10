@@ -63,6 +63,12 @@ class Block{
 		std::vector<CMatrix> eig()const;
 		std::vector<Matrix> eigh()const;
 		std::vector<Matrix> svd()const;
+		/*** qr rq lq ql ***/
+		std::vector<Matrix> qr()const;
+		std::vector<Matrix> rq()const;
+		std::vector<Matrix> ql()const;
+		std::vector<Matrix> lq()const;
+		/*******************/
     size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
     Matrix inverse()const;
 		double trace()const;
