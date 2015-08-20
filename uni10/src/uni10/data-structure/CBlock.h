@@ -60,6 +60,12 @@ class CBlock{
 		std::vector<CMatrix> eig()const;
 		std::vector<CMatrix> eigh()const;
 		std::vector<CMatrix> svd()const;
+		/*** qr rq lq ql ***/
+		std::vector<CMatrix> qr()const;
+		std::vector<CMatrix> rq()const;
+		std::vector<CMatrix> ql()const;
+		std::vector<CMatrix> lq()const;
+		/*******************/
     size_t lanczosEigh(double& E0, CMatrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
     CMatrix inverse()const;
 		std::complex<double> trace()const;

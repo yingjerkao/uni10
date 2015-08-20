@@ -152,6 +152,122 @@ void eigSyDecompose(double* Kij, int N, double* Eig, double* EigVec, bool ongpu)
 	free(work);
 }
 
+/**** real qr rq lq ql ****/
+
+void matrixQR(double* Mij_ori, int M, int N, double* Q, double* R){
+  assert(M >= N);
+  double* Mij = (double*)malloc(N*M*sizeof(double));
+  memcpy(Mij, Mij_ori, N*M*sizeof(double));
+  double* tau = (double*)malloc(M*sizeof(double));
+  int lda = N;
+  int lwork = -1;
+  double worktestdge;
+  double worktestdor;
+  int info;
+  int K = N;
+  dgelqf(&N, &M, Mij, &lda, tau, &worktestdge, &lwork, &info);
+  dorglq(&N, &M, &K, Mij, &lda, tau, &worktestdor, &lwork, &info);
+  lwork = (int)worktestdge;
+  double* work = (double*)malloc(lwork*sizeof(double));
+  dgelqf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  //getQ
+  lwork = (int)worktestdor;
+  work = (double*)malloc(lwork*sizeof(double));
+  dorglq(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  memcpy(Q, Mij, N*M*sizeof(double));
+  //getR
+  double alpha = 1, beta = 0;
+  dgemm((char*)"N", (char*)"T", &N, &N, &M, &alpha, Mij_ori, &N, Mij, &N, &beta, R, &N);
+  free(Mij);
+  free(tau);
+  free(work);
+}
+void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R){
+  assert(N >= M);
+  double* Mij = (double*)malloc(M*N*sizeof(double));
+  memcpy(Mij, Mij_ori, M*N*sizeof(double));
+  double* tau = (double*)malloc(M*sizeof(double));
+  int lda = N;
+  int lwork = -1;
+  double worktestdge;
+  double worktestdor;
+  int info;
+  int K = M;
+  dgeqlf(&N, &M, Mij, &lda, tau, &worktestdge, &lwork, &info);
+  dorgql(&N, &M, &K, Mij, &lda, tau, &worktestdor, &lwork, &info);
+  lwork = (int)worktestdge;
+  double* work = (double*)malloc(lwork*sizeof(double));
+  dgeqlf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  //getQ
+  lwork = (int)worktestdor;
+  work = (double*)malloc(lwork*sizeof(double));
+  dorgql(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  memcpy(Q, Mij, N*M*sizeof(double));
+  //getR
+  double alpha = 1, beta = 0;
+  dgemm((char*)"T", (char*)"N", &M, &M, &N, &alpha, Mij, &N, Mij_ori, &N, &beta, R, &M);
+  free(Mij);
+  free(tau);
+  free(work);
+}
+void matrixLQ(double* Mij_ori, int M, int N, double* Q, double* L){
+  assert(N >= M);
+  double* Mij = (double*)malloc(M*N*sizeof(double));
+  memcpy(Mij, Mij_ori, M*N*sizeof(double));
+  double* tau = (double*)malloc(M*sizeof(double));
+  int lda = N;
+  int lwork = -1;
+  double worktestdge;
+  double worktestdor;
+  int info;
+  int K = M;
+  dgeqrf(&N, &M, Mij, &lda, tau, &worktestdge, &lwork, &info);
+  dorgqr(&N, &M, &K, Mij, &lda, tau, &worktestdor, &lwork, &info);
+  lwork = (int)worktestdge;
+  double* work = (double*)malloc(lwork*sizeof(double));
+  dgeqrf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  //getQ
+  lwork = (int)worktestdor;
+  work = (double*)malloc(lwork*sizeof(double));
+  dorgqr(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  memcpy(Q, Mij, N*M*sizeof(double));
+  //getR
+  double alpha = 1, beta = 0;
+  dgemm((char*)"T", (char*)"N", &M, &M, &N, &alpha, Mij, &N, Mij_ori, &N, &beta, L, &M);
+  free(Mij);
+  free(tau);
+  free(work);
+}
+void matrixQL(double* Mij_ori, int M, int N, double* Q, double* R){
+  assert(M >= N);
+  double* Mij = (double*)malloc(N*M*sizeof(double));
+  memcpy(Mij, Mij_ori, N*M*sizeof(double));
+  double* tau = (double*)malloc(M*sizeof(double));
+  int lda = N;
+  int lwork = -1;
+  double worktestdge;
+  double worktestdor;
+  int info;
+  int K = N;
+  dgerqf(&N, &M, Mij, &lda, tau, &worktestdge, &lwork, &info);
+  dorgrq(&N, &M, &K, Mij, &lda, tau, &worktestdor, &lwork, &info);
+  lwork = (int)worktestdge;
+  double* work = (double*)malloc(lwork*sizeof(double));
+  dgerqf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  //getQ
+  lwork = (int)worktestdor;
+  work = (double*)malloc(lwork*sizeof(double));
+  dorgrq(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  memcpy(Q, Mij, N*M*sizeof(double));
+  //getR
+  double alpha = 1, beta = 0;
+  dgemm((char*)"N", (char*)"T", &N, &N, &M, &alpha, Mij_ori, &N, Mij, &N, &beta, R, &N);
+  free(Mij);
+  free(tau);
+  free(work);
+}
+
+/**************************/
 void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, bool ongpu){
 	double* Mij = (double*)malloc(M * N * sizeof(double));
 	memcpy(Mij, Mij_ori, M * N * sizeof(double));
@@ -211,6 +327,7 @@ void matrixInv(double* A, int N, bool diag, bool ongpu){
   free(ipiv);
   free(work);
 }
+
 
 void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu, bool ongpuT){
 	for(size_t i = 0; i < M; i++)
@@ -760,4 +877,122 @@ bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, s
   free(Vm), free(As), free(Bs), free(d), free(e);
   return converged;
 }
+
+/**** complex qr rq lq ql ****/
+
+void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R){
+  assert(M >= N);
+  std::complex<double>* Mij = (std::complex<double>*)malloc(N*M*sizeof(std::complex<double>));
+  memcpy(Mij, Mij_ori, N*M*sizeof(std::complex<double>));
+  std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
+  int lda = N;
+  int lwork = -1;
+//  int lwork = 12*N;
+  std::complex<double> worktestzge;
+  std::complex<double> worktestzun;
+  int info;
+  int K = N;
+  zgelqf(&N, &M, Mij, &lda, tau, &worktestzge, &lwork, &info);
+  zunglq(&N, &M, &K, Mij, &lda, tau, &worktestzun, &lwork, &info);
+  lwork = (int)worktestzge.real();
+  std::complex<double>* work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
+  zgelqf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  //getQ
+  lwork = (int)worktestzun.real();
+  work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
+  zunglq(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  memcpy(Q, Mij, N*M*sizeof(std::complex<double>));
+  //getR
+  std::complex<double> alpha(1.0, 1.0), beta(0.0, 0.0);
+  zgemm((char*)"N", (char*)"C", &N, &N, &M, &alpha, Mij_ori, &N, Mij, &N, &beta, R, &N);
+  free(Mij);
+  free(tau);
+  free(work);
+}
+void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R){
+  assert(N >= M);
+  std::complex<double>* Mij = (std::complex<double>*)malloc(M*N*sizeof(std::complex<double>));
+  memcpy(Mij, Mij_ori, M*N*sizeof(double));
+  std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
+  int lda = N;
+  int lwork = -1;
+  std::complex<double> worktestzge;
+  std::complex<double> worktestzun;
+  int info;
+  int K = M;
+  zgeqlf(&N, &M, Mij, &lda, tau, &worktestzge, &lwork, &info);
+  zungql(&N, &M, &K, Mij, &lda, tau, &worktestzun, &lwork, &info);
+  lwork = (int)worktestzge.real();
+  std::complex<double>* work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
+  zgeqlf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  //getQ
+  lwork = (int)worktestzun.real();
+  work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
+  zungql(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  memcpy(Q, Mij, N*M*sizeof(std::complex<double>));
+  //getR
+  std::complex<double> alpha (1.0, 1.0), beta (0.0, 0.0);
+  zgemm((char*)"C", (char*)"N", &M, &M, &N, &alpha, Mij, &N, Mij_ori, &N, &beta, R, &M);
+  free(Mij);
+  free(tau);
+  free(work);
+}
+void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L){
+  assert(N >= M);
+  std::complex<double>* Mij = (std::complex<double>*)malloc(M*N*sizeof(std::complex<double>));
+  memcpy(Mij, Mij_ori, M*N*sizeof(std::complex<double>));
+  std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
+  int lda = N;
+  int lwork = -1;
+  std::complex<double> worktestzge;
+  std::complex<double> worktestzun;
+  int info;
+  int K = M;
+  zgeqrf(&N, &M, Mij, &lda, tau, &worktestzge, &lwork, &info);
+  zungqr(&N, &M, &K, Mij, &lda, tau, &worktestzun, &lwork, &info);
+  lwork = (int)worktestzge.real();
+  std::complex<double>* work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
+  zgeqrf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  //getQ
+  lwork = (int)worktestzun.real();
+  work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
+  zungqr(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  memcpy(Q, Mij, N*M*sizeof(std::complex<double>));
+  //getR
+  std::complex<double> alpha (1.0, 1.0), beta (0.0, 0.0);
+  zgemm((char*)"C", (char*)"N", &M, &M, &N, &alpha, Mij, &N, Mij_ori, &N, &beta, L, &M);
+  free(Mij);
+  free(tau);
+  free(work);
+}
+void matrixQL(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L){
+  assert(M >= N);
+  std::complex<double>* Mij = (std::complex<double>*)malloc(N*M*sizeof(std::complex<double>));
+  memcpy(Mij, Mij_ori, N*M*sizeof(std::complex<double>));
+  std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
+  int lda = N;
+  int lwork = -1;
+  std::complex<double> worktestzge;
+  std::complex<double> worktestzun;
+  int info;
+  int K = N;
+  zgerqf(&N, &M, Mij, &lda, tau, &worktestzge, &lwork, &info);
+  zungrq(&N, &M, &K, Mij, &lda, tau, &worktestzun, &lwork, &info);
+  lwork = (int)worktestzge.real();
+  std::complex<double>* work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
+  zgerqf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  //getQ
+  lwork = (int)worktestzun.real();
+  work = (std::complex<double>*)malloc(lwork*sizeof(std::complex<double>));
+  zungrq(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  memcpy(Q, Mij, N*M*sizeof(std::complex<double>));
+  //getR
+  std::complex<double> alpha (1.0, 1.0), beta (1.0, 1.0);
+  zgemm((char*)"N", (char*)"C", &N, &N, &M, &alpha, Mij_ori, &N, Mij, &N, &beta, L, &N);
+  free(Mij);
+  free(tau);
+  free(work);
+}
+
+/**************************/
 };	/* namespace uni10 */

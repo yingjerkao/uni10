@@ -74,7 +74,12 @@ void setCTranspose(double* A, size_t M, size_t N, bool ongpu);
 void setIdentity(double* elem, size_t M, size_t N, bool ongpu);
 void reshapeElem(double* elem, size_t* transOffset);
 bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu);
-
+//====== real qr rq ql lq ======//
+void matrixQR(double* Mij_ori, int M, int N, double* Q, double* R);
+void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R);
+void matrixQL(double* Mij_ori, int M, int N, double* Q, double* L);
+void matrixLQ(double* Mij_ori, int M, int N, double* Q, double* L);
+//==============================//
 /***** Complex version *****/
 void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, double *S, std::complex<double>* vT, bool ongpu);
 void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, std::complex<double>* S, std::complex<double>* vT, bool ongpu);
@@ -101,6 +106,12 @@ void eigSyDecompose(std::complex<double>* Kij, int N, double* Eig, std::complex<
 void setConjugate(std::complex<double> *A, size_t N, bool ongpu);
 void setIdentity(std::complex<double>* elem, size_t M, size_t N, bool ongpu);
 bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, std::complex<double>* eigVec, bool ongpu);
+//====== complex qr rq ql lq ======//
+void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R);
+void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R);
+void matrixQL(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L);
+void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L);
+//=================================//
 
 };	/* namespace uni10 */
 #endif /* UNI10_LAPACK_H */
