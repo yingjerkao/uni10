@@ -67,29 +67,31 @@ namespace uni10{
 	    size_t elemNum()const;
 	    void save(const std::string& fname)const;
 	    double norm()const;
-	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C
+	    void RtoC();
+	    matrixType getType()const;
 	    friend Matrix operator*(double a, const Block& Ma);
-	    /**********************************************************/	    
-	    
 	    friend Matrix operator*(const Block& Ma, double a);
 	    friend Matrix operator*(const std::complex<double>& a, const Block& Ma);
 	    friend Matrix operator*(const Block& Ma, const std::complex<double>& a);
+	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
+	    /**********************************************************/	    
+	    
+	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C
 	    friend Matrix operator+(const Block& Ma, const Block& Mb);
-	    Block& RtoC();
-	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
-	    double* getRealElem()const;
-	    std::complex<double>* getComplexElem()const;
-	    matrixType getType()const;
+	    friend bool operator==(const Block& m1, const Block& m2);
 	    std::vector<Matrix> qr()const;
 	    std::vector<Matrix> rq()const;
 	    std::vector<Matrix> ql()const;
 	    std::vector<Matrix> lq()const;
 	    std::vector<Matrix> svd()const;
 	    Matrix inverse()const;
+	    
+	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
+	    double* getRealElem()const;
+	    std::complex<double>* getComplexElem()const;
 	    Matrix getDiag()const;
 	    std::vector<Matrix> eigh()const;
 	    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
-	    friend bool operator==(const Block& m1, const Block& m2);
 	    friend Matrix exph(double a, const Block& mat);
 	    std::complex<double> trace()const;
 	    std::complex<double> sum()const;
@@ -101,7 +103,6 @@ namespace uni10{
 	    friend class CBlock;
 	    friend class Matrix;
 	    friend class CMatrix;
-	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
 	    /********************************************************************************/	    
 	    //friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 

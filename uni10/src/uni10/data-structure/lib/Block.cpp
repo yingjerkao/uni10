@@ -71,13 +71,25 @@ namespace uni10{
 
   Complex* Block::getComplexElem()const{return cm_elem;}
 
-  Block& Block::RtoC(){
-    assert(m_type == REAL);
-    cm_elem = (Complex*)malloc(sizeof(Complex)*elemNum());
-    for(size_t i = 0; i < elemNum(); i++)
-      cm_elem[i] = Complex(m_elem[i], 0);
-    free(m_elem);
-    return *this;
+  void Block::RtoC(){
+    try{
+      if(m_type == EMPTY){
+        std::ostringstream err;
+        err<<"This matrix is EMPTY. Nothing to do.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      if(m_type == REAL){
+        m_type = COMPLEX;
+        cm_elem = (Complex*)elemAlloc(elemNum() * sizeof(Complex), ongpu);
+        elemCast(cm_elem, m_elem, elemNum(), ongpu, ongpu);
+        if(m_elem != NULL)
+          elemFree(m_elem, elemNum() * sizeof(Real), ongpu);
+        m_elem = NULL;
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Block::RtoC():");
+    }
   }
 
   matrixType Block::getType()const{
@@ -98,74 +110,206 @@ namespace uni10{
     else
       return Rnum * Cnum;
   }
-  /***   qr  rq  ql  lq ***/
-
+  
   std::vector<Matrix> Block::qr()const{
     std::vector<Matrix> outs;
-    matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
-    outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
-    outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
-    if(m_type == REAL)
-      matrixQR(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
-    if(m_type == COMPLEX)
-      matrixQR(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+    try{
+      if(Rnum < Cnum){
+        std::ostringstream err;
+        err<<"Cannot perform QR decomposition when Rnum < Cnum. Nothing to do.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
+      outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
+      if(!diag){
+        std::cout << *this << std::endl;
+        if(m_type == REAL)
+          matrixQR(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+        if(m_type == COMPLEX)
+          matrixQR(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+      }else{
+        size_t min = std::min(Rnum, Cnum);
+        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
+        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
+        if(m_type == REAL){
+          for(int i = 0; i < min; i++)
+            tmpR[i*min+i] = m_elem[i];
+          matrixQR(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
+        }
+        if(m_type == COMPLEX){ 
+          for(int i = 0; i < min; i++)
+            tmpC[i*min+i] = cm_elem[i];
+          matrixQR(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
+        }
+        free(tmpC);
+        free(tmpR);
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Block::qr():");
+    }
     return outs;
   }
 
   std::vector<Matrix> Block::rq()const{
     std::vector<Matrix> outs;
-    matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
-    outs.push_back(Matrix(tp, Rnum, Rnum, false, ongpu)); //r
-    outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu)); //q
-    if(m_type == REAL)
-      matrixRQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
-    if(m_type == COMPLEX)
-      matrixRQ(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+    try{
+      if(Rnum > Cnum){
+        std::ostringstream err;
+        err<<"Cannot perform RQ decomposition when Rnum > Cnum. Nothing to do.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      outs.push_back(Matrix(tp, Rnum, Rnum, false, ongpu)); //r
+      outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu)); //q
+      if(!diag){
+        if(m_type == REAL)
+          matrixRQ(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+        if(m_type == COMPLEX)
+          matrixRQ(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+      }else{
+        size_t min = std::min(Rnum, Cnum);
+        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
+        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
+        if(m_type == REAL){
+          for(int i = 0; i < min; i++)
+            tmpR[i*min+i] = m_elem[i];
+          matrixRQ(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
+        }
+        if(m_type == COMPLEX){ 
+          for(int i = 0; i < min; i++)
+            tmpC[i*min+i] = cm_elem[i];
+          matrixRQ(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
+        }
+        free(tmpC);
+        free(tmpR);
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Block::rq():");
+    }
     return outs;
   }
 
   std::vector<Matrix> Block::ql()const{
     std::vector<Matrix> outs;
-    matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
-    outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
-    outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
-    if(m_type == REAL)
-      matrixQL(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
-    if(m_type == COMPLEX)
-      matrixQL(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+    try{
+      if(Rnum < Cnum){
+        std::ostringstream err;
+        err<<"Cannot perform QL decomposition when Rnum < Cnum. Nothing to do.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
+      outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
+      if(!diag){
+        if(m_type == REAL)
+          matrixQL(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+        if(m_type == COMPLEX)
+          matrixQL(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+      }else{
+        size_t min = std::min(Rnum, Cnum);
+        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
+        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
+        if(m_type == REAL){
+          for(int i = 0; i < min; i++)
+            tmpR[i*min+i] = m_elem[i];
+          matrixQL(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
+        }
+        if(m_type == COMPLEX){ 
+          for(int i = 0; i < min; i++)
+            tmpC[i*min+i] = cm_elem[i];
+          matrixQL(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
+        }
+        free(tmpC);
+        free(tmpR);
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Block::ql():");
+    }
     return outs;
   }
 
   std::vector<Matrix> Block::lq()const{
     std::vector<Matrix> outs;
-    matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
-    outs.push_back(Matrix(tp, Rnum, Rnum, false, ongpu));
-    outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
-    if(m_type == REAL)
-      matrixLQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
-    if(m_type == COMPLEX)
-      matrixLQ(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+    try{
+      if(Rnum > Cnum){
+        std::ostringstream err;
+        err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
+        throw std::runtime_error(exception_msg(err.str()));
+      } 
+      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      outs.push_back(Matrix(tp, Rnum, Rnum, false, ongpu));
+      outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
+      if(!diag){
+        if(m_type == REAL)
+          matrixLQ(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+        if(m_type == COMPLEX)
+          matrixLQ(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+      }else{
+        size_t min = std::min(Rnum, Cnum);
+        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
+        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
+        if(m_type == REAL){
+          for(int i = 0; i < min; i++)
+            tmpR[i*min+i] = m_elem[i];
+          matrixLQ(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
+        }
+        if(m_type == COMPLEX){ 
+          for(int i = 0; i < min; i++)
+            tmpC[i*min+i] = cm_elem[i];
+          matrixLQ(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
+        }
+        free(tmpC);
+        free(tmpR);
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Block::lq():");
+    }
     return outs;
   }
 
   std::vector<Matrix> Block::svd()const{
     std::vector<Matrix> outs;
     try{
+    /*  
       if(diag){
         std::ostringstream err;
         err<<"Cannot perform singular value decomposition on a diagonal matrix. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
+    */
       size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
       //GPU_NOT_READY
       matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
       outs.push_back(Matrix(tp, Rnum, min, false, ongpu));
       outs.push_back(Matrix(tp, min, min, true, ongpu));
       outs.push_back(Matrix(tp, min, Cnum, false, ongpu));
-      if(m_type == REAL)
-        matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
-      if(m_type == COMPLEX)
-        matrixSVD(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem, outs[2].cm_elem, ongpu);
+      if(!diag){
+        if(m_type == REAL)
+          matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
+        if(m_type == COMPLEX)
+          matrixSVD(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem, outs[2].cm_elem, ongpu);
+      }else{
+        size_t min = std::min(Rnum, Cnum);
+        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
+        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
+        if(m_type == REAL){
+          for(int i = 0; i < min; i++)
+            tmpR[i*min+i] = m_elem[i];
+          matrixSVD(tmpR, min, min, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
+        }
+        if(m_type == COMPLEX){ 
+          for(int i = 0; i < min; i++)
+            tmpC[i*min+i] = cm_elem[i];
+          matrixSVD(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem, outs[2].cm_elem, ongpu);
+        }
+        free(tmpC);
+        free(tmpR);
+      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::svd():");
@@ -493,29 +637,28 @@ namespace uni10{
   }
   Matrix operator*(double a, const Block& Ma){return Ma * a;}
 
-/************************************************************************/
-#ifndef UNI10_PURE_REAL
   Matrix operator*(const Block& Ma, const std::complex<double>& a){
     try{
-      if(Ma.m_type == REAL){
-        Matrix Mb(Ma);
+      Matrix Mb(Ma);
+      if(a.imag() == 0){
+        double _a = a.real();
+        if(Ma.m_type == REAL) 
+          vectorScal(_a, Mb.m_elem, Mb.elemNum(), Mb.isOngpu());
+        if(Ma.m_type == COMPLEX)
+          vectorScal(_a, Mb.cm_elem, Mb.elemNum(), Mb.isOngpu());
+      }
+      else{
         Mb.RtoC();
-        vectorScal(a, Mb.getComplexElem(), Mb.elemNum(), Mb.isOngpu());
-        return Mb;
+        vectorScal(a, Mb.cm_elem, Mb.elemNum(), Mb.isOngpu());
       }
-      if(Ma.m_type == COMPLEX){
-        Matrix Mb(Ma);
-        vectorScal(a, Mb.getComplexElem(), Mb.elemNum(), Mb.isOngpu());
-        return Mb;
-      }
+      return Mb;
     }
     catch(const std::exception& e){
-      propogate_exception(e, "In function operator*(uni10::Matrix&, double):");
+      propogate_exception(e, "In function operator*(uni10::Matrix&, Complex):");
       return Block();
     }
   }
   Matrix operator*(const std::complex<double>& a, const Block& Ma){return Ma * a;}
-#endif
   
   Matrix operator+(const Block& Ma, const Block& Mb){
     /*if ((Ma.diag && !Mb.diag) || (!Ma.diag && Mb.diag) ){
