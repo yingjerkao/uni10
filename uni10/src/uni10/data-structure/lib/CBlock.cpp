@@ -285,7 +285,7 @@ size_t CBlock::lanczosEigh(double& E0, CMatrix& psi, size_t max_iter, double err
 
 double CBlock::norm()const{
   try{
-	  return vectorNorm(m_elem, elemNum(), 1, ongpu);
+    return vectorNorm(m_elem, elemNum(), 1, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::norm():");

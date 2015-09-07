@@ -43,21 +43,20 @@ Matrix takeExp(double a, const Block& mat){
   }
 }
 
-
-
 CMatrix& CMatrix::conj(){
   setConjugate(m_elem, elemNum(), ongpu);
   return *this;
 }
 
 Matrix::Matrix(const CBlock& _cb): Block(_cb.Rnum, _cb.Cnum, _cb.diag){
-  init(true);
+  init(true, REAL);
   elemCast(m_elem, _cb.m_elem, elemNum(), ongpu, _cb.ongpu);
 }
 CMatrix::CMatrix(const Block& _b): CBlock(_b.Rnum, _b.Cnum, _b.diag){
   init(true);
   elemCast(m_elem, _b.m_elem, elemNum(), ongpu, _b.ongpu);
 }
+
 
 CMatrix& CMatrix::operator*= (const std::complex<double>& a){
   try{
@@ -151,5 +150,4 @@ CMatrix& CMatrix::operator+= (const Block& Mb){
   }
 	return *this;
 }
-
 };	/* namespace uni10 */

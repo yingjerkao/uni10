@@ -41,59 +41,78 @@
 #include <complex>
 
 namespace uni10{
-class UniTensor;
-class Matrix;
-class CMatrix;
-class Block{
+	    
+    enum matrixType {
+	EMPTY = -1, ///<Defines an incoming Bond
+	REAL = 0,  ///<Defines an outgoing Bond
+	COMPLEX = 1
+    };
+    
+    class UniTensor;
+    class Matrix;
+    class CMatrix;
+    class Block{
 	public:
-		Block();
-		Block(const Block& _b);
-    Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
-		virtual ~Block();
-		size_t row()const;
-		size_t col()const;
-		bool isDiag()const;
-		bool isOngpu()const;
-		size_t elemNum()const;
-		double operator[](size_t idx)const;
-		double at(size_t i, size_t j)const;
-		double* getElem()const;
-    Matrix getDiag()const;
-		void save(const std::string& fname)const;
-		std::vector<CMatrix> eig()const;
-		std::vector<Matrix> eigh()const;
-		std::vector<Matrix> svd()const;
-		/*** qr rq lq ql ***/
-		std::vector<Matrix> qr()const;
-		std::vector<Matrix> rq()const;
-		std::vector<Matrix> ql()const;
-		std::vector<Matrix> lq()const;
-		/*******************/
-    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
-    Matrix inverse()const;
-		double trace()const;
-		double norm()const;
-		double sum()const;
-		friend Matrix operator*(const Block& Ma, const Block& Mb);
-		friend Matrix operator*(double a, const Block& Ma);
-		friend Matrix operator*(const Block& Ma, double a);
-		friend CMatrix operator*(const std::complex<double>& a, const Block& Ma);
-		friend CMatrix operator*(const Block& Ma, const std::complex<double>& a);
-		friend Matrix operator+(const Block& Ma, const Block& Mb);
-		friend bool operator==(const Block& m1, const Block& m2);
-		friend class UniTensor;
-		friend class CUniTensor;
-		friend class CBlock;
-		friend class Matrix;
-		friend class CMatrix;
-		friend std::ostream& operator<< (std::ostream& os, const Block& b);
-		//friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+	    friend std::ostream& operator<< (std::ostream& os, const matrixType& tp);
+	    /********************* verified **************************/	    
+	    Block();
+	    Block(const Block& _b);
+	    Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
+	    Block(matrixType _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
+	    virtual ~Block();
+	    size_t row()const;
+	    size_t col()const;
+	    bool isDiag()const;
+	    bool isOngpu()const;
+	    size_t elemNum()const;
+	    void save(const std::string& fname)const;
+	    double norm()const;
+	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C
+	    friend Matrix operator*(double a, const Block& Ma);
+	    /**********************************************************/	    
+	    
+	    friend Matrix operator*(const Block& Ma, double a);
+	    friend Matrix operator*(const std::complex<double>& a, const Block& Ma);
+	    friend Matrix operator*(const Block& Ma, const std::complex<double>& a);
+	    friend Matrix operator+(const Block& Ma, const Block& Mb);
+	    Block& RtoC();
+	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
+	    double* getRealElem()const;
+	    std::complex<double>* getComplexElem()const;
+	    matrixType getType()const;
+	    std::vector<Matrix> qr()const;
+	    std::vector<Matrix> rq()const;
+	    std::vector<Matrix> ql()const;
+	    std::vector<Matrix> lq()const;
+	    std::vector<Matrix> svd()const;
+	    Matrix inverse()const;
+	    Matrix getDiag()const;
+	    std::vector<Matrix> eigh()const;
+	    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
+	    friend bool operator==(const Block& m1, const Block& m2);
+	    friend Matrix exph(double a, const Block& mat);
+	    std::complex<double> trace()const;
+	    std::complex<double> sum()const;
+	    std::complex<double> operator[](size_t idx)const;
+	    std::complex<double> at(size_t i, size_t j)const;
+	    std::vector<Matrix> eig()const;
+	    friend class UniTensor;
+	    friend class CUniTensor;
+	    friend class CBlock;
+	    friend class Matrix;
+	    friend class CMatrix;
+	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
+	    /********************************************************************************/	    
+	    //friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
+
 	protected:
-		double* m_elem;
-		size_t Rnum;		//number of rows of the block
-		size_t Cnum;		//number of columns of the block
-		bool diag;
-		bool ongpu;
-};
+	    matrixType m_type;
+	    double* m_elem;
+	    std::complex<double>* cm_elem;
+	    size_t Rnum;		//number of rows of the block
+	    size_t Cnum;		//number of columns of the block
+	    bool diag;
+	    bool ongpu;
+    };
 };
 #endif /* BLOCK_H */

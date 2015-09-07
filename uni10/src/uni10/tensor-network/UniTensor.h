@@ -420,7 +420,7 @@ namespace uni10 {
         /// @brief Trace
         /// Traces all bonds and returns the trace value.
         /// @return Trace of UniTensor
-        double trace()const;
+        std::complex<double> trace()const;
 
         /// @brief High-order SVD
         ///

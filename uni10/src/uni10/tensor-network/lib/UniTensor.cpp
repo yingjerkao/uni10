@@ -1376,7 +1376,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
 	return *this;
 }
 
-Real UniTensor::trace()const{
+std::complex<double> UniTensor::trace()const{
   try{
     if(!(status & HAVEELEM)){
       std::ostringstream err;
@@ -1385,19 +1385,21 @@ Real UniTensor::trace()const{
     }
     if(status & HAVEBOND){
       size_t Rnum;
-      Real trVal = 0;
+      std::complex<double> trVal(0, 0);
       for(std::map<Qnum, Block>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
         if(!(it->second.Rnum == it->second.Cnum)){
           std::ostringstream err;
           err<<"Cannot trace a non-square block.";
           throw std::runtime_error(exception_msg(err.str()));
         }
+/*************************************************************/        
         trVal += it->second.trace();
+/*************************************************************/        
       }
       return trVal;
     }
     else
-      return getElemAt(0, elem, ongpu);
+      return std::complex<double>(getElemAt(0, elem, ongpu), 0);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::trace():");

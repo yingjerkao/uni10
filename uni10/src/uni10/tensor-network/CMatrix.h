@@ -46,8 +46,8 @@ class CMatrix: public CBlock {
 		CMatrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
 		CMatrix(size_t _Rnum, size_t _Cnum, const std::vector<std::complex<double> >& _elem, bool _diag=false, bool src_ongpu=false);
 		CMatrix(const CMatrix& _m);
-    CMatrix(const CBlock& _b);
-    CMatrix(const Block& _b);
+    CMatrix(const CBlock& _b);  
+    CMatrix(const Block& _b);   //////
 		CMatrix();
 		~CMatrix();
 		CMatrix& operator=(const CMatrix& _m);
