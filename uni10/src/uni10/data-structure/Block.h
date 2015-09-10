@@ -75,16 +75,16 @@ namespace uni10{
 	    friend Matrix operator*(const Block& Ma, const std::complex<double>& a);
 	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
 	    /**********************************************************/	    
-	    
-	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C
-	    friend Matrix operator+(const Block& Ma, const Block& Mb);
-	    friend bool operator==(const Block& m1, const Block& m2);
 	    std::vector<Matrix> qr()const;
 	    std::vector<Matrix> rq()const;
 	    std::vector<Matrix> ql()const;
 	    std::vector<Matrix> lq()const;
 	    std::vector<Matrix> svd()const;
 	    Matrix inverse()const;
+	    
+	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C
+	    friend Matrix operator+(const Block& Ma, const Block& Mb);
+	    friend bool operator==(const Block& m1, const Block& m2);
 	    
 	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
 	    double* getRealElem()const;

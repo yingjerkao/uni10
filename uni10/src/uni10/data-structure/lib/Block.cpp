@@ -39,7 +39,6 @@ typedef std::complex<double> Complex;
 namespace uni10{
   
   std::ostream& operator<< (std::ostream& os, const matrixType& tp){
-    std::cout << "================================" << std::endl;
     try{
       if(tp == REAL)
         os << "The matrix type is REAL.";
@@ -123,7 +122,6 @@ namespace uni10{
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
       if(!diag){
-        std::cout << *this << std::endl;
         if(m_type == REAL)
           matrixQR(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
         if(m_type == COMPLEX)
@@ -165,9 +163,10 @@ namespace uni10{
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu)); //q
       if(!diag){
         if(m_type == REAL)
-          matrixRQ(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
-        if(m_type == COMPLEX)
-          matrixRQ(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+          matrixRQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
+        if(m_type == COMPLEX){
+          matrixRQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem);
+        }
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
@@ -175,12 +174,12 @@ namespace uni10{
         if(m_type == REAL){
           for(int i = 0; i < min; i++)
             tmpR[i*min+i] = m_elem[i];
-          matrixRQ(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
+          matrixRQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem);
         }
         if(m_type == COMPLEX){ 
           for(int i = 0; i < min; i++)
             tmpC[i*min+i] = cm_elem[i];
-          matrixRQ(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
+          matrixRQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem);
         }
         free(tmpC);
         free(tmpR);
@@ -245,9 +244,9 @@ namespace uni10{
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       if(!diag){
         if(m_type == REAL)
-          matrixLQ(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+          matrixLQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
         if(m_type == COMPLEX)
-          matrixLQ(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+          matrixLQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
@@ -255,12 +254,12 @@ namespace uni10{
         if(m_type == REAL){
           for(int i = 0; i < min; i++)
             tmpR[i*min+i] = m_elem[i];
-          matrixLQ(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
+          matrixLQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem);
         }
         if(m_type == COMPLEX){ 
           for(int i = 0; i < min; i++)
             tmpC[i*min+i] = cm_elem[i];
-          matrixLQ(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
+          matrixLQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem);
         }
         free(tmpC);
         free(tmpR);
@@ -855,7 +854,6 @@ namespace uni10{
   }
   
   Complex Block::trace()const{
-    std::cout << "==============================" << std::endl;
     try{
       if(!(Rnum == Cnum)){
         std::ostringstream err;
