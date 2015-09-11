@@ -740,8 +740,12 @@ Matrix& Matrix::operator*= (double a){
 
 Matrix& Matrix::operator+= (const Block& Mb){
   try{
-    if(!ongpu)
-      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
+    if(!ongpu && m_type == REAL)
+      m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
+    if(!ongpu && m_type == COMPLEX)
+      cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
+    *this = *this + Mb;
+  /*    
     if (diag && !Mb.diag) {
       Matrix Mc(Rnum,Cnum);
       setDiag(Mc.m_elem,m_elem,Mc.Rnum,Mc.Cnum,Rnum,Mc.ongpu,ongpu);
@@ -755,6 +759,7 @@ Matrix& Matrix::operator+= (const Block& Mb){
     } else {
     vectorAdd(m_elem, Mb.m_elem, elemNum(), ongpu, Mb.ongpu);
     }
+*/
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::operator+=(uni10::Matrix&):");

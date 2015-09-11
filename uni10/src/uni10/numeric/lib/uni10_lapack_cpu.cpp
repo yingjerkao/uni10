@@ -330,9 +330,9 @@ void matrixInv(double* A, int N, bool diag, bool ongpu){
 
 
 void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu, bool ongpuT){
-	for(size_t i = 0; i < M; i++)
-		for(size_t j = 0; j < N; j++)
-			AT[j * M + i] = A[i * N + j];
+  for(size_t i = 0; i < M; i++)
+    for(size_t j = 0; j < N; j++)
+      AT[j * M + i] = A[i * N + j];
 }
 
 void setTranspose(double* A, size_t M, size_t N, bool ongpu){

@@ -85,11 +85,11 @@ public:
     Matrix& operator*= (double a);
     Matrix& operator*= (const Block& Mb);
     Matrix& operator+= (const Block & Mb);
+    std::complex<double> operator[](size_t idx); //&
+    std::complex<double> at(size_t i, size_t j); //&
     Matrix& conj();
     ~Matrix();
 /**********************************************************/	    
-    std::complex<double> operator[](size_t idx); //&
-    std::complex<double> at(size_t i, size_t j); //&
     bool toGPU();
     double* getHostElem();
     //delete

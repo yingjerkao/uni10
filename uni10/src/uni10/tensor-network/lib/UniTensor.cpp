@@ -37,6 +37,7 @@
 #include <uni10/tensor-network/UniTensor.h>
 
 typedef double Real;
+typedef std::complex<double> Complex;
 namespace uni10{
 
 int64_t UniTensor::ELEMNUM = 0;
@@ -55,11 +56,21 @@ UniTensor::UniTensor(): status(0){
 
 UniTensor::UniTensor(Real val): status(0){ //GPU
   try{
-    initUniT();
+    initUniT(REAL);
     setElemAt(0, val, elem, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In constructor UniTensor::UniTensor(double val):");
+  }
+}
+
+UniTensor::UniTensor(Complex val): status(0){ //GPU
+  try{
+    initUniT(COMPLEX);
+    setElemAt(0, val, c_elem, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(Complex val):");
   }
 }
 
@@ -144,6 +155,15 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name):
   }
 }
 
+UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
+  try{
+    initUniT(_tp);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::string& = \"\"):");
+  }
+}
+
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT();
@@ -153,9 +173,30 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels,
     propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::vector<int>&, std::string& = \"\"):");
   }
 }
+
+UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
+  try{
+    initUniT(_tp);
+    setLabel(_labels);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::vector<int>&, std::string& = \"\"):");
+  }
+}
+
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT();
+    setLabel(_labels);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, int*, std::string& = \"\"):");
+  }
+}
+
+UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
+  try{
+    initUniT(_tp);
     setLabel(_labels);
   }
   catch(const std::exception& e){
@@ -209,13 +250,17 @@ UniTensor::UniTensor(const Block& blk): status(0){
 }
 
 UniTensor::~UniTensor(){
-	elemFree(elem, sizeof(Real) * m_elemNum, ongpu);
-	ELEMNUM -= m_elemNum;
-	COUNTER--;
+  if(m_type == REAL)
+    elemFree(elem, sizeof(Real) * m_elemNum, ongpu);
+  if(m_type == COMPLEX)
+    elemFree(c_elem, sizeof(Complex) * m_elemNum, ongpu);
+  ELEMNUM -= m_elemNum;
+  COUNTER--;
 }
 
 UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
   try{
+    m_type = UniT.m_type;
     bonds = UniT.bonds;
     blocks = UniT.blocks;
     labels = UniT.labels;
@@ -229,22 +274,39 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     RQidx2Dim = UniT.RQidx2Dim;
     CQidx2Dim = UniT.CQidx2Dim;
     RQidx2Blk = UniT.RQidx2Blk;
-
     ELEMNUM -= m_elemNum;	//free original memory
     if(elem != NULL)
       elemFree(elem, sizeof(Real) * m_elemNum, ongpu);
+    if(c_elem != NULL)
+      elemFree(c_elem, sizeof(Complex) * m_elemNum, ongpu);
     status = UniT.status;
     m_elemNum = UniT.m_elemNum;
-    elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
+    if(m_type == REAL)
+      elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
+    if(m_type == COMPLEX)
+      c_elem = (Complex*)elemAlloc(sizeof(Complex) * m_elemNum, ongpu);
+    
     std::map<Qnum, Block>::const_iterator it2;
     std::map< const Block* , Block*> blkmap;
-    for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
-      it->second.m_elem = &(elem[it->second.m_elem - UniT.elem]);
+    
+    if(m_type == REAL){
+      for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
+        it->second.m_elem = &(elem[it->second.m_elem - UniT.elem]);
 
-      it2 = UniT.blocks.find(it->first);
-      blkmap[&(it2->second)] = &(it->second);
+        it2 = UniT.blocks.find(it->first);
+        blkmap[&(it2->second)] = &(it->second);
+      }
     }
+    
+    if(m_type ==COMPLEX){
+      for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
+        it->second.cm_elem = &(c_elem[it->second.cm_elem - UniT.c_elem]);
 
+        it2 = UniT.blocks.find(it->first);
+        blkmap[&(it2->second)] = &(it->second);
+      }
+    }
+    
     if(UniT.status & HAVEBOND){
       for(std::map<int, Block*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
         it->second = blkmap[it->second];
@@ -255,7 +317,11 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
       MAXELEMNUM = ELEMNUM;
     if(m_elemNum > MAXELEMTEN)
       MAXELEMTEN = m_elemNum;
-    elemCopy(elem, UniT.elem, sizeof(Real) * UniT.m_elemNum, ongpu, UniT.ongpu);
+    
+    if(m_type == REAL)
+      elemCopy(elem, UniT.elem, sizeof(Real) * UniT.m_elemNum, ongpu, UniT.ongpu);
+    if(m_type == COMPLEX)
+      elemCopy(c_elem, UniT.c_elem, sizeof(Complex) * UniT.m_elemNum, ongpu, UniT.ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::operator=(uni10::UniTensor&):");
@@ -298,7 +364,7 @@ void UniTensor::setLabel(int* newLabels){
 }
 
 std::vector<int> UniTensor::label()const{
-	return labels;
+  return labels;
 }
 
 int UniTensor::label(size_t idx)const{
@@ -312,15 +378,15 @@ int UniTensor::label(size_t idx)const{
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::label(size_t):");
   }
-	return labels[idx];
+  return labels[idx];
 }
 
 std::string UniTensor::getName(){
-	return name;
+  return name;
 }
 
 void UniTensor::setName(const std::string& _name){
-	name = _name;
+  name = _name;
 }
 
 
@@ -329,7 +395,7 @@ size_t UniTensor::bondNum()const{return bonds.size();}
 size_t UniTensor::inBondNum()const{return RBondNum;}
 
 std::vector<Bond> UniTensor::bond()const{
-	return bonds;
+  return bonds;
 }
 
 Bond UniTensor::bond(size_t idx)const{
@@ -685,13 +751,26 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
       err<<"  Hint: Use Matrix::resize(int, int)";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(mat.m_elem != it->second.m_elem){
-      if(mat.isDiag()){
-        elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu);
-        setDiag(it->second.m_elem, mat.getElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+    if(m_type == REAL){
+      std::cout << mat << std::endl;
+      if(mat.m_elem != it->second.m_elem){
+        if(mat.isDiag()){
+          elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu);
+          setDiag(it->second.m_elem, mat.getRealElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+        }
+        else
+          elemCopy(it->second.m_elem, mat.getRealElem(), it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu, mat.isOngpu());
       }
-      else
-        elemCopy(it->second.m_elem, mat.getElem(), it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu, mat.isOngpu());
+    }
+    if(m_type == COMPLEX){
+      if(mat.cm_elem != it->second.cm_elem){
+        if(mat.isDiag()){
+          elemBzero(it->second.cm_elem, it->second.Rnum * it->second.Cnum * sizeof(Complex), ongpu);
+          setDiag(it->second.cm_elem, mat.getComplexElem(), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+        }
+        else
+          elemCopy(it->second.cm_elem, mat.getComplexElem(), it->second.Rnum * it->second.Cnum * sizeof(Complex), ongpu, mat.isOngpu());
+      }
     }
     status |= HAVEELEM;
   }
@@ -740,7 +819,10 @@ Real UniTensor::operator[](size_t idx)const{
 
 void UniTensor::set_zero(){
   try{
-    elemBzero(elem, m_elemNum * sizeof(Real), ongpu);
+    if(m_type == REAL)
+      elemBzero(elem, m_elemNum * sizeof(Real), ongpu);
+    if(m_type == COMPLEX)
+      elemBzero(c_elem, m_elemNum * sizeof(COMPLEX), ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -757,7 +839,10 @@ void UniTensor::set_zero(const Qnum& qnum){
       throw std::runtime_error(exception_msg(err.str()));
     }
     Block& block = it->second;
-    elemBzero(block.m_elem, block.Rnum * block.Cnum * sizeof(Real), ongpu);
+    if(m_type == REAL)
+      elemBzero(block.m_elem, block.Rnum * block.Cnum * sizeof(Real), ongpu);
+    if(m_type == COMPLEX)
+      elemBzero(block.cm_elem, block.Rnum * block.Cnum * sizeof(Complex), ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -774,7 +859,10 @@ void UniTensor::identity(const Qnum& qnum){
       throw std::runtime_error(exception_msg(err.str()));
     }
     Block& block = it->second;
-    setIdentity(block.m_elem, block.Rnum, block.Cnum, ongpu);
+    if(m_type == REAL)
+      setIdentity(block.m_elem, block.Rnum, block.Cnum, ongpu);
+    if(m_type == COMPLEX)
+      setIdentity(block.cm_elem, block.Rnum, block.Cnum, ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -783,15 +871,22 @@ void UniTensor::identity(const Qnum& qnum){
 }
 
 void UniTensor::identity(){
-	std::map<Qnum, Block>::iterator it;
-	for ( it = blocks.begin() ; it != blocks.end(); it++ )
-		setIdentity(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
-	status |= HAVEELEM;
+  std::map<Qnum, Block>::iterator it;
+  if(m_type == REAL)
+    for ( it = blocks.begin() ; it != blocks.end(); it++ )
+      setIdentity(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
+  if(m_type == COMPLEX)
+    for ( it = blocks.begin() ; it != blocks.end(); it++ )
+      setIdentity(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
+  status |= HAVEELEM;
 }
 
 void UniTensor::randomize(){
-	elemRand(elem, m_elemNum, ongpu);
-	status |= HAVEELEM;
+  if(m_type == REAL)
+    elemRand(elem, m_elemNum, ongpu);
+  if(m_type == COMPLEX)
+    elemRand(c_elem, m_elemNum, ongpu);
+  status |= HAVEELEM;
 }
 
 void UniTensor::orthoRand(const Qnum& qnum){
@@ -803,8 +898,11 @@ void UniTensor::orthoRand(const Qnum& qnum){
     throw std::runtime_error(exception_msg(err.str()));
   }
   Block& block = it->second;
-	orthoRandomize(block.m_elem, block.Rnum, block.Cnum, ongpu);
-	status |= HAVEELEM;
+  if(m_type == REAL)
+    orthoRandomize(block.m_elem, block.Rnum, block.Cnum, ongpu);
+  if(m_type == COMPLEX)
+    orthoRandomize(block.cm_elem, block.Rnum, block.Cnum, ongpu);
+  status |= HAVEELEM;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::orthoRand(std::Qnum&):");
@@ -812,14 +910,18 @@ void UniTensor::orthoRand(const Qnum& qnum){
 }
 
 void UniTensor::orthoRand(){
-	std::map<Qnum, Block>::iterator it;
-	for ( it = blocks.begin() ; it != blocks.end(); it++ )
-		orthoRandomize(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
-	status |= HAVEELEM;
+  std::map<Qnum, Block>::iterator it;
+  if(m_type == REAL)
+    for ( it = blocks.begin() ; it != blocks.end(); it++ )
+      orthoRandomize(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
+  if(m_type == COMPLEX)
+    for ( it = blocks.begin() ; it != blocks.end(); it++ )
+      orthoRandomize(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
+  status |= HAVEELEM;
 }
 
 void UniTensor::clear(){
-	status &= ~HAVEELEM;
+  status &= ~HAVEELEM;
 }
 
 void UniTensor::save(const std::string& fname){
@@ -923,200 +1025,407 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
     if(inorder && RBondNum == rowBondNum)	//do nothing
       return *this;
     else{
-      std::vector<Bond> outBonds;
-      bool withoutSymmetry = true;
-      for(int b = 0; b < bonds.size(); b++){
-        outBonds.push_back(bonds[rsp_outin[b]]);
-        if(bonds[b].Qnums.size() != 1)
-          withoutSymmetry = false;
-      }
-      for(int b = 0; b < bonds.size(); b++){
-        if(b < rowBondNum)
-          outBonds[b].change(BD_IN);
-        else
-          outBonds[b].change(BD_OUT);
-      }
-      UniTensor UniTout(outBonds, name);
-      if(status & HAVEELEM){
-        if(withoutSymmetry){
-          if(!inorder){
-            if(ongpu && UniTout.ongpu){
-              size_t* perInfo = (size_t*)malloc(bondNum * 2 * sizeof(size_t));
-              std::vector<size_t> newAcc(bondNum);
-              newAcc[bondNum - 1] = 1;
-              perInfo[bondNum - 1] = 1;
-              for(int b = bondNum - 1; b > 0; b--){
-                newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
-                perInfo[b - 1] = perInfo[b] * bonds[b].Qdegs[0];
+      if(m_type == REAL){
+        std::vector<Bond> outBonds;
+        bool withoutSymmetry = true;
+        for(int b = 0; b < bonds.size(); b++){
+          outBonds.push_back(bonds[rsp_outin[b]]);
+          if(bonds[b].Qnums.size() != 1)
+            withoutSymmetry = false;
+        }
+        for(int b = 0; b < bonds.size(); b++){
+          if(b < rowBondNum)
+            outBonds[b].change(BD_IN);
+          else
+            outBonds[b].change(BD_OUT);
+        }
+        UniTensor UniTout(m_type, outBonds, name);
+        if(status & HAVEELEM){
+          if(withoutSymmetry){
+            if(!inorder){
+              if(ongpu && UniTout.ongpu){
+                size_t* perInfo = (size_t*)malloc(bondNum * 2 * sizeof(size_t));
+                std::vector<size_t> newAcc(bondNum);
+                newAcc[bondNum - 1] = 1;
+                perInfo[bondNum - 1] = 1;
+                for(int b = bondNum - 1; b > 0; b--){
+                  newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
+                  perInfo[b - 1] = perInfo[b] * bonds[b].Qdegs[0];
+                }
+                for(int b = 0; b < bondNum; b++)
+                  perInfo[bondNum + rsp_outin[b]] = newAcc[b];
+                Real* des_elem = UniTout.elem;
+                Real* src_elem = elem;
+                reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
+                free(perInfo);
               }
-              for(int b = 0; b < bondNum; b++)
-                perInfo[bondNum + rsp_outin[b]] = newAcc[b];
-              Real* des_elem = UniTout.elem;
-              Real* src_elem = elem;
-              reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
-              free(perInfo);
+              else{
+                Real* des_elem = UniTout.elem;
+                Real* src_elem = elem;
+                size_t memsize = m_elemNum * sizeof(Real);
+                if(ongpu){
+                  src_elem = (Real*)elemAllocForce(memsize, false);
+                  elemCopy(src_elem, elem, memsize, false, ongpu);
+                }
+                if(UniTout.ongpu)
+                  des_elem = (Real*)elemAllocForce(memsize, false);
+
+                std::vector<size_t> transAcc(bondNum);
+                std::vector<size_t> newAcc(bondNum);
+                transAcc[bondNum - 1] = 1;
+                newAcc[bondNum - 1] = 1;
+                for(int b = bondNum - 1; b > 0; b--)
+                  newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
+                std::vector<int> bondDims(bondNum);
+                std::vector<int> idxs(bondNum);
+                for(int b = 0; b < bondNum; b++){
+                  transAcc[rsp_outin[b]] = newAcc[b];
+                  bondDims[b] = bonds[b].Qdegs[0];
+                  idxs[b] = 0;
+                }
+                size_t cnt_ot = 0;
+                for(int i = 0; i < m_elemNum; i++){
+                  des_elem[cnt_ot] = src_elem[i];
+                  for(int bend = bondNum - 1; bend >= 0; bend--){
+                    idxs[bend]++;
+                    if(idxs[bend] < bondDims[bend]){
+                      cnt_ot += transAcc[bend];
+                      break;
+                    }
+                    else{
+                      cnt_ot -= transAcc[bend] * (idxs[bend] - 1);
+                      idxs[bend] = 0;
+                    }
+                  }
+                }
+                if(ongpu)
+                  elemFree(src_elem, memsize, false);
+                if(UniTout.ongpu){
+                  elemCopy(UniTout.elem, des_elem, memsize, UniTout.ongpu, false);
+                  elemFree(des_elem, memsize, false);
+                }
+              }
             }
-            else{
-              Real* des_elem = UniTout.elem;
-              Real* src_elem = elem;
+            else{  //non-symmetry inorder
               size_t memsize = m_elemNum * sizeof(Real);
-              if(ongpu){
-                src_elem = (Real*)elemAllocForce(memsize, false);
-                elemCopy(src_elem, elem, memsize, false, ongpu);
-              }
-              if(UniTout.ongpu)
-                des_elem = (Real*)elemAllocForce(memsize, false);
-
-              std::vector<size_t> transAcc(bondNum);
-              std::vector<size_t> newAcc(bondNum);
-              transAcc[bondNum - 1] = 1;
-              newAcc[bondNum - 1] = 1;
-              for(int b = bondNum - 1; b > 0; b--)
-                newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
-              std::vector<int> bondDims(bondNum);
-              std::vector<int> idxs(bondNum);
-              for(int b = 0; b < bondNum; b++){
-                transAcc[rsp_outin[b]] = newAcc[b];
-                bondDims[b] = bonds[b].Qdegs[0];
-                idxs[b] = 0;
-              }
-              size_t cnt_ot = 0;
-              for(int i = 0; i < m_elemNum; i++){
-                des_elem[cnt_ot] = src_elem[i];
-                for(int bend = bondNum - 1; bend >= 0; bend--){
-                  idxs[bend]++;
-                  if(idxs[bend] < bondDims[bend]){
-                    cnt_ot += transAcc[bend];
-                    break;
-                  }
-                  else{
-                    cnt_ot -= transAcc[bend] * (idxs[bend] - 1);
-                    idxs[bend] = 0;
-                  }
-                }
-              }
-              if(ongpu)
-                elemFree(src_elem, memsize, false);
-              if(UniTout.ongpu){
-                elemCopy(UniTout.elem, des_elem, memsize, UniTout.ongpu, false);
-                elemFree(des_elem, memsize, false);
-              }
+              elemCopy(UniTout.elem, elem, memsize, UniTout.ongpu, ongpu);
             }
           }
-          else{  //non-symmetry inorder
-            size_t memsize = m_elemNum * sizeof(Real);
-            elemCopy(UniTout.elem, elem, memsize, UniTout.ongpu, ongpu);
-          }
-        }
-        else{
-          double sign = 1.0;
-          //For Fermionic system
-          std::vector<_Swap> swaps;
-          if(Qnum::isFermionic()){
-            std::vector<int> inLabelF(bondNum);
-            std::vector<int> outLabelF(bondNum);
-            std::vector<int> ordF(bondNum);
-
-            for(int b = 0; b < RBondNum; b++){
-              inLabelF[b] = labels[b];
-              ordF[b] = b;
-            }
-            for(int b = 0; b < UniTout.RBondNum; b++)
-              outLabelF[b] = newLabels[b];
-            for(int b = bondNum - 1; b >= RBondNum; b--){
-              ordF[b] = bondNum - b + RBondNum - 1;
-              inLabelF[ordF[b]] = labels[b];
-            }
-            for(int b = bondNum - 1; b >= UniTout.RBondNum; b--)
-              outLabelF[bondNum - b + UniTout.RBondNum - 1] = newLabels[b];
-
-            std::vector<int> rspF_outin(bondNum);
-            for(int i = 0; i < bondNum; i++)
-              for(int j = 0; j < bondNum; j++)
-                if(inLabelF[i] == outLabelF[j])
-                  rspF_outin[j] = i;
-            swaps = recSwap(rspF_outin, ordF);
-          }
-          //End Fermionic system
-          std::vector<int> Qin_idxs(bondNum, 0);
-          std::vector<int> Qot_idxs(bondNum, 0);
-          int Qin_off, Qot_off;
-          int tmp;
-          int Qin_RQoff, Qin_CQoff;
-          int Qot_CQoff, Qot_RQoff;
-          size_t sBin_r, sBin_c;	//sub-block of a Qidx
-          size_t sBin_rDim, sBin_cDim;	//sub-block of a Qidx
-          size_t sBot_cDim;	//sub-block of a Qidx
-          size_t sBot_r, sBot_c;
-          size_t Bin_cDim, Bot_cDim;
-          Real* Ein_ptr;
-          Real* Eot_ptr;
-          std::vector<int> sBin_idxs(bondNum, 0);
-          std::vector<int> sBin_sBdims(bondNum, 0);
-          std::vector<int> Qot_acc(bondNum, 1);
-          std::vector<int> sBot_acc(bondNum, 1);
-          for(int b = bondNum	- 1; b > 0; b--)
-            Qot_acc[b - 1] = Qot_acc[b] * UniTout.bonds[b].Qnums.size();
-
-          for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
-            Qin_off = it->first;
-            tmp = Qin_off;
-            int qdim;
-            for(int b = bondNum - 1; b >= 0; b--){
-              qdim = bonds[b].Qnums.size();
-              Qin_idxs[b] = tmp % qdim;
-              sBin_sBdims[b] = bonds[b].Qdegs[Qin_idxs[b]];
-              tmp /= qdim;
-            }
-            Qot_off = 0;
-            for(int b = 0; b < bondNum; b++){
-              Qot_idxs[b] = Qin_idxs[rsp_outin[b]];
-              Qot_off += Qot_idxs[b] * Qot_acc[b];
-            }
-            for(int b = bondNum	- 1; b > 0; b--)
-              sBot_acc[rsp_outin[b-1]] = sBot_acc[rsp_outin[b]] * bonds[rsp_outin[b]].Qdegs[Qot_idxs[b]];
-            Qin_RQoff = Qin_off / CQdim;
-            Qin_CQoff = Qin_off % CQdim;
-            Qot_RQoff = Qot_off / UniTout.CQdim;
-            Qot_CQoff = Qot_off % UniTout.CQdim;
-            Bin_cDim = RQidx2Blk[Qin_RQoff]->Cnum;
-            Bot_cDim = UniTout.RQidx2Blk[Qot_RQoff]->Cnum;
-            Ein_ptr = RQidx2Blk[Qin_RQoff]->m_elem + (RQidx2Off[Qin_RQoff] * Bin_cDim) + CQidx2Off[Qin_CQoff];
-            Eot_ptr = UniTout.RQidx2Blk[Qot_RQoff]->m_elem + (UniTout.RQidx2Off[Qot_RQoff] * Bot_cDim) + UniTout.CQidx2Off[Qot_CQoff];
-            sBin_rDim = RQidx2Dim[Qin_RQoff];
-            sBin_cDim = CQidx2Dim[Qin_CQoff];
-            sBot_cDim = UniTout.CQidx2Dim[Qot_CQoff];
-            int cnt_ot = 0;
-            sBin_idxs.assign(bondNum, 0);
+          else{
+            double sign = 1.0;
+            //For Fermionic system
+            std::vector<_Swap> swaps;
             if(Qnum::isFermionic()){
-              int sign01 = 0;
-              for(int i = 0; i < swaps.size(); i++)
-                sign01 ^= (bonds[swaps[i].b1].Qnums[Qin_idxs[swaps[i].b1]].prtF() & bonds[swaps[i].b2].Qnums[Qin_idxs[swaps[i].b2]].prtF());
-              sign = sign01 ? -1.0 : 1.0;
+              std::vector<int> inLabelF(bondNum);
+              std::vector<int> outLabelF(bondNum);
+              std::vector<int> ordF(bondNum);
+
+              for(int b = 0; b < RBondNum; b++){
+                inLabelF[b] = labels[b];
+                ordF[b] = b;
+              }
+              for(int b = 0; b < UniTout.RBondNum; b++)
+                outLabelF[b] = newLabels[b];
+              for(int b = bondNum - 1; b >= RBondNum; b--){
+                ordF[b] = bondNum - b + RBondNum - 1;
+                inLabelF[ordF[b]] = labels[b];
+              }
+              for(int b = bondNum - 1; b >= UniTout.RBondNum; b--)
+                outLabelF[bondNum - b + UniTout.RBondNum - 1] = newLabels[b];
+
+              std::vector<int> rspF_outin(bondNum);
+              for(int i = 0; i < bondNum; i++)
+                for(int j = 0; j < bondNum; j++)
+                  if(inLabelF[i] == outLabelF[j])
+                    rspF_outin[j] = i;
+              swaps = recSwap(rspF_outin, ordF);
             }
-            for(sBin_r = 0; sBin_r < sBin_rDim; sBin_r++)
-              for(sBin_c = 0; sBin_c < sBin_cDim; sBin_c++){
-                sBot_r = cnt_ot / sBot_cDim;
-                sBot_c = cnt_ot % sBot_cDim;
-                Eot_ptr[(sBot_r * Bot_cDim) + sBot_c] = sign * Ein_ptr[(sBin_r * Bin_cDim) + sBin_c];
-                for(int bend = bondNum - 1; bend >= 0; bend--){
-                  sBin_idxs[bend]++;
-                  if(sBin_idxs[bend] < sBin_sBdims[bend]){
-                    cnt_ot += sBot_acc[bend];
-                    break;
-                  }
-                  else{
-                    cnt_ot -= sBot_acc[bend] * (sBin_idxs[bend] - 1);
-                    sBin_idxs[bend] = 0;
+            //End Fermionic system
+            std::vector<int> Qin_idxs(bondNum, 0);
+            std::vector<int> Qot_idxs(bondNum, 0);
+            int Qin_off, Qot_off;
+            int tmp;
+            int Qin_RQoff, Qin_CQoff;
+            int Qot_CQoff, Qot_RQoff;
+            size_t sBin_r, sBin_c;	//sub-block of a Qidx
+            size_t sBin_rDim, sBin_cDim;	//sub-block of a Qidx
+            size_t sBot_cDim;	//sub-block of a Qidx
+            size_t sBot_r, sBot_c;
+            size_t Bin_cDim, Bot_cDim;
+            Real* Ein_ptr;
+            Real* Eot_ptr;
+            std::vector<int> sBin_idxs(bondNum, 0);
+            std::vector<int> sBin_sBdims(bondNum, 0);
+            std::vector<int> Qot_acc(bondNum, 1);
+            std::vector<int> sBot_acc(bondNum, 1);
+            for(int b = bondNum	- 1; b > 0; b--)
+              Qot_acc[b - 1] = Qot_acc[b] * UniTout.bonds[b].Qnums.size();
+
+            for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
+              Qin_off = it->first;
+              tmp = Qin_off;
+              int qdim;
+              for(int b = bondNum - 1; b >= 0; b--){
+                qdim = bonds[b].Qnums.size();
+                Qin_idxs[b] = tmp % qdim;
+                sBin_sBdims[b] = bonds[b].Qdegs[Qin_idxs[b]];
+                tmp /= qdim;
+              }
+              Qot_off = 0;
+              for(int b = 0; b < bondNum; b++){
+                Qot_idxs[b] = Qin_idxs[rsp_outin[b]];
+                Qot_off += Qot_idxs[b] * Qot_acc[b];
+              }
+              for(int b = bondNum	- 1; b > 0; b--)
+                sBot_acc[rsp_outin[b-1]] = sBot_acc[rsp_outin[b]] * bonds[rsp_outin[b]].Qdegs[Qot_idxs[b]];
+              Qin_RQoff = Qin_off / CQdim;
+              Qin_CQoff = Qin_off % CQdim;
+              Qot_RQoff = Qot_off / UniTout.CQdim;
+              Qot_CQoff = Qot_off % UniTout.CQdim;
+              Bin_cDim = RQidx2Blk[Qin_RQoff]->Cnum;
+              Bot_cDim = UniTout.RQidx2Blk[Qot_RQoff]->Cnum;
+              Ein_ptr = RQidx2Blk[Qin_RQoff]->m_elem + (RQidx2Off[Qin_RQoff] * Bin_cDim) + CQidx2Off[Qin_CQoff];
+              Eot_ptr = UniTout.RQidx2Blk[Qot_RQoff]->m_elem + (UniTout.RQidx2Off[Qot_RQoff] * Bot_cDim) + UniTout.CQidx2Off[Qot_CQoff];
+              sBin_rDim = RQidx2Dim[Qin_RQoff];
+              sBin_cDim = CQidx2Dim[Qin_CQoff];
+              sBot_cDim = UniTout.CQidx2Dim[Qot_CQoff];
+              int cnt_ot = 0;
+              sBin_idxs.assign(bondNum, 0);
+              if(Qnum::isFermionic()){
+                int sign01 = 0;
+                for(int i = 0; i < swaps.size(); i++)
+                  sign01 ^= (bonds[swaps[i].b1].Qnums[Qin_idxs[swaps[i].b1]].prtF() & bonds[swaps[i].b2].Qnums[Qin_idxs[swaps[i].b2]].prtF());
+                sign = sign01 ? -1.0 : 1.0;
+              }
+              for(sBin_r = 0; sBin_r < sBin_rDim; sBin_r++)
+                for(sBin_c = 0; sBin_c < sBin_cDim; sBin_c++){
+                  sBot_r = cnt_ot / sBot_cDim;
+                  sBot_c = cnt_ot % sBot_cDim;
+                  Eot_ptr[(sBot_r * Bot_cDim) + sBot_c] = sign * Ein_ptr[(sBin_r * Bin_cDim) + sBin_c];
+                  for(int bend = bondNum - 1; bend >= 0; bend--){
+                    sBin_idxs[bend]++;
+                    if(sBin_idxs[bend] < sBin_sBdims[bend]){
+                      cnt_ot += sBot_acc[bend];
+                      break;
+                    }
+                    else{
+                      cnt_ot -= sBot_acc[bend] * (sBin_idxs[bend] - 1);
+                      sBin_idxs[bend] = 0;
+                    }
                   }
                 }
-              }
+            }
           }
+          UniTout.status |= HAVEELEM;
         }
-        UniTout.status |= HAVEELEM;
+        *this = UniTout;
+        this->setLabel(newLabels);
       }
-      *this = UniTout;
-      this->setLabel(newLabels);
+      if(m_type == COMPLEX){
+        std::cout << "###############" << std::endl;
+        std::vector<Bond> outBonds;
+        bool withoutSymmetry = true;
+        for(int b = 0; b < bonds.size(); b++){
+          outBonds.push_back(bonds[rsp_outin[b]]);
+          if(bonds[b].Qnums.size() != 1)
+            withoutSymmetry = false;
+        }
+        for(int b = 0; b < bonds.size(); b++){
+          if(b < rowBondNum)
+            outBonds[b].change(BD_IN);
+          else
+            outBonds[b].change(BD_OUT);
+        }
+        std::cout << "####################" << std::endl;
+        std::cout << m_type << std::endl;
+        UniTensor UniTout(COMPLEX, outBonds, name);
+        if(status & HAVEELEM){
+          if(withoutSymmetry){
+            if(!inorder){
+              if(ongpu && UniTout.ongpu){
+                size_t* perInfo = (size_t*)malloc(bondNum * 2 * sizeof(size_t));
+                std::vector<size_t> newAcc(bondNum);
+                newAcc[bondNum - 1] = 1;
+                perInfo[bondNum - 1] = 1;
+                for(int b = bondNum - 1; b > 0; b--){
+                  newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
+                  perInfo[b - 1] = perInfo[b] * bonds[b].Qdegs[0];
+                }
+                for(int b = 0; b < bondNum; b++)
+                  perInfo[bondNum + rsp_outin[b]] = newAcc[b];
+                Complex* des_elem = UniTout.c_elem;
+                Complex* src_elem = c_elem;
+                reshapeElem(src_elem, bondNum, m_elemNum, perInfo, des_elem);
+                free(perInfo);
+              }
+              else{
+                Complex* des_elem = UniTout.c_elem;
+                Complex* src_elem = c_elem;
+                size_t memsize = m_elemNum * sizeof(Complex);
+                if(ongpu){
+                  src_elem = (Complex*)elemAllocForce(memsize, false);
+                  elemCopy(src_elem, c_elem, memsize, false, ongpu);
+                }
+                if(UniTout.ongpu)
+                  des_elem = (Complex*)elemAllocForce(memsize, false);
+
+                std::vector<size_t> transAcc(bondNum);
+                std::vector<size_t> newAcc(bondNum);
+                transAcc[bondNum - 1] = 1;
+                newAcc[bondNum - 1] = 1;
+                for(int b = bondNum - 1; b > 0; b--)
+                  newAcc[b - 1] = newAcc[b] * UniTout.bonds[b].Qdegs[0];
+                std::vector<int> bondDims(bondNum);
+                std::vector<int> idxs(bondNum);
+                for(int b = 0; b < bondNum; b++){
+                  transAcc[rsp_outin[b]] = newAcc[b];
+                  bondDims[b] = bonds[b].Qdegs[0];
+                  idxs[b] = 0;
+                }
+                size_t cnt_ot = 0;
+                for(int i = 0; i < m_elemNum; i++){
+                  des_elem[cnt_ot] = src_elem[i];
+                  for(int bend = bondNum - 1; bend >= 0; bend--){
+                    idxs[bend]++;
+                    if(idxs[bend] < bondDims[bend]){
+                      cnt_ot += transAcc[bend];
+                      break;
+                    }
+                    else{
+                      cnt_ot -= transAcc[bend] * (idxs[bend] - 1);
+                      idxs[bend] = 0;
+                    }
+                  }
+                }
+                if(ongpu)
+                  elemFree(src_elem, memsize, false);
+                if(UniTout.ongpu){
+                  elemCopy(UniTout.c_elem, des_elem, memsize, UniTout.ongpu, false);
+                  elemFree(des_elem, memsize, false);
+                }
+              }
+            }
+            else{  //non-symmetry inorder
+              size_t memsize = m_elemNum * sizeof(Complex);
+              elemCopy(UniTout.c_elem, c_elem, memsize, UniTout.ongpu, ongpu);
+              std::cout << "===================" << std::endl;
+              for(int i = 0; i < 8; i++)
+                std::cout << c_elem[i] << std::endl;
+              std::cout << "===================" << std::endl;
+              for(int i = 0; i < 8; i++)
+                std::cout << UniTout.c_elem[i] << std::endl;
+            }
+          }
+          else{
+            double sign = 1.0;
+            //For Fermionic system
+            std::vector<_Swap> swaps;
+            if(Qnum::isFermionic()){
+              std::vector<int> inLabelF(bondNum);
+              std::vector<int> outLabelF(bondNum);
+              std::vector<int> ordF(bondNum);
+
+              for(int b = 0; b < RBondNum; b++){
+                inLabelF[b] = labels[b];
+                ordF[b] = b;
+              }
+              for(int b = 0; b < UniTout.RBondNum; b++)
+                outLabelF[b] = newLabels[b];
+              for(int b = bondNum - 1; b >= RBondNum; b--){
+                ordF[b] = bondNum - b + RBondNum - 1;
+                inLabelF[ordF[b]] = labels[b];
+              }
+              for(int b = bondNum - 1; b >= UniTout.RBondNum; b--)
+                outLabelF[bondNum - b + UniTout.RBondNum - 1] = newLabels[b];
+
+              std::vector<int> rspF_outin(bondNum);
+              for(int i = 0; i < bondNum; i++)
+                for(int j = 0; j < bondNum; j++)
+                  if(inLabelF[i] == outLabelF[j])
+                    rspF_outin[j] = i;
+              swaps = recSwap(rspF_outin, ordF);
+            }
+            //End Fermionic system
+            std::vector<int> Qin_idxs(bondNum, 0);
+            std::vector<int> Qot_idxs(bondNum, 0);
+            int Qin_off, Qot_off;
+            int tmp;
+            int Qin_RQoff, Qin_CQoff;
+            int Qot_CQoff, Qot_RQoff;
+            size_t sBin_r, sBin_c;	//sub-block of a Qidx
+            size_t sBin_rDim, sBin_cDim;	//sub-block of a Qidx
+            size_t sBot_cDim;	//sub-block of a Qidx
+            size_t sBot_r, sBot_c;
+            size_t Bin_cDim, Bot_cDim;
+            Complex* Ein_ptr;
+            Complex* Eot_ptr;
+            std::vector<int> sBin_idxs(bondNum, 0);
+            std::vector<int> sBin_sBdims(bondNum, 0);
+            std::vector<int> Qot_acc(bondNum, 1);
+            std::vector<int> sBot_acc(bondNum, 1);
+            for(int b = bondNum	- 1; b > 0; b--)
+              Qot_acc[b - 1] = Qot_acc[b] * UniTout.bonds[b].Qnums.size();
+
+            for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
+              Qin_off = it->first;
+              tmp = Qin_off;
+              int qdim;
+              for(int b = bondNum - 1; b >= 0; b--){
+                qdim = bonds[b].Qnums.size();
+                Qin_idxs[b] = tmp % qdim;
+                sBin_sBdims[b] = bonds[b].Qdegs[Qin_idxs[b]];
+                tmp /= qdim;
+              }
+              Qot_off = 0;
+              for(int b = 0; b < bondNum; b++){
+                Qot_idxs[b] = Qin_idxs[rsp_outin[b]];
+                Qot_off += Qot_idxs[b] * Qot_acc[b];
+              }
+              for(int b = bondNum - 1; b > 0; b--)
+                sBot_acc[rsp_outin[b-1]] = sBot_acc[rsp_outin[b]] * bonds[rsp_outin[b]].Qdegs[Qot_idxs[b]];
+              Qin_RQoff = Qin_off / CQdim;
+              Qin_CQoff = Qin_off % CQdim;
+              Qot_RQoff = Qot_off / UniTout.CQdim;
+              Qot_CQoff = Qot_off % UniTout.CQdim;
+              Bin_cDim = RQidx2Blk[Qin_RQoff]->Cnum;
+              Bot_cDim = UniTout.RQidx2Blk[Qot_RQoff]->Cnum;
+              Ein_ptr = RQidx2Blk[Qin_RQoff]->cm_elem + (RQidx2Off[Qin_RQoff] * Bin_cDim) + CQidx2Off[Qin_CQoff];
+              Eot_ptr = UniTout.RQidx2Blk[Qot_RQoff]->cm_elem + (UniTout.RQidx2Off[Qot_RQoff] * Bot_cDim) + UniTout.CQidx2Off[Qot_CQoff];
+              sBin_rDim = RQidx2Dim[Qin_RQoff];
+              sBin_cDim = CQidx2Dim[Qin_CQoff];
+              sBot_cDim = UniTout.CQidx2Dim[Qot_CQoff];
+              int cnt_ot = 0;
+              sBin_idxs.assign(bondNum, 0);
+              if(Qnum::isFermionic()){
+                int sign01 = 0;
+                for(int i = 0; i < swaps.size(); i++)
+                  sign01 ^= (bonds[swaps[i].b1].Qnums[Qin_idxs[swaps[i].b1]].prtF() & bonds[swaps[i].b2].Qnums[Qin_idxs[swaps[i].b2]].prtF());
+                sign = sign01 ? -1.0 : 1.0;
+              }
+              for(sBin_r = 0; sBin_r < sBin_rDim; sBin_r++)
+                for(sBin_c = 0; sBin_c < sBin_cDim; sBin_c++){
+                  sBot_r = cnt_ot / sBot_cDim;
+                  sBot_c = cnt_ot % sBot_cDim;
+                  Eot_ptr[(sBot_r * Bot_cDim) + sBot_c] = sign * Ein_ptr[(sBin_r * Bin_cDim) + sBin_c];
+                  for(int bend = bondNum - 1; bend >= 0; bend--){
+                    sBin_idxs[bend]++;
+                    if(sBin_idxs[bend] < sBin_sBdims[bend]){
+                      cnt_ot += sBot_acc[bend];
+                      break;
+                    }
+                    else{
+                      cnt_ot -= sBot_acc[bend] * (sBin_idxs[bend] - 1);
+                      sBin_idxs[bend] = 0;
+                    }
+                  }
+                }
+            }
+          }
+          UniTout.status |= HAVEELEM;
+        }
+        *this = UniTout;
+        this->setLabel(newLabels);
+      }
     }
   }
   catch(const std::exception& e){
@@ -1944,8 +2253,12 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
         os<<"\nScalar: " << getElemAt(0, UniT.elem, UniT.ongpu);
         os<<", onGPU";
       }
-      else
-        os<<"\nScalar: " << UniT.elem[0];
+      else{
+        if(UniT.m_type == REAL)
+          os<<"\nScalar: " << UniT.elem[0];
+        if(UniT.m_type == COMPLEX)
+          os<<"\nScalar: " << UniT.c_elem[0];
+      }
       os<<"\n\n";
       return os;
     }
@@ -1960,6 +2273,11 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
     int layer = std::max(row, col);
     int nmlen = UniT.name.length() + 2;
     int star = 12 + (14 - nmlen) / 2;
+    os<<std::endl;
+    if(UniT.m_type == REAL)
+      os << "REAL" << std::endl; 
+    if(UniT.m_type == COMPLEX)
+      os << "COMPLEX" << std::endl;
     os<<std::endl;
     for(int s = 0; s < star; s++)
       os << "*";
@@ -2021,198 +2339,257 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
 
 /**************** Private Functions ***********************/
 
-void UniTensor::initUniT(){ //GPU
-	if(bonds.size()){
-		m_elemNum = grouping();
-		if(!(blocks.size() > 0)){ //No block in Tensor, Error!
+void UniTensor::initUniT(matrixType _tp){ //GPU
+  m_type = _tp;
+  if(bonds.size()){
+    m_elemNum = grouping();
+    if(!(blocks.size() > 0)){ //No block in Tensor, Error!
       std::ostringstream err;
       err<<"There is no symmetry block with the given bonds:\n";
       for(int b = 0; b < bonds.size(); b++)
         err<<"    "<<bonds[b];
       throw std::runtime_error(exception_msg(err.str()));
     }
-		labels.assign(bonds.size(), 0);
-		for(int b = 0; b < bonds.size(); b++)
-			labels[b] = b;
-		status |= HAVEBOND;
-	}
-	else{
-		Qnum q0(0);
-		blocks[q0] = Block(1, 1);
-		RBondNum = 0;
-		RQdim = 0;
-		CQdim = 0;
-		m_elemNum = 1;
-		status |= HAVEELEM;
-	}
-	elem = NULL;
-	elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
+    labels.assign(bonds.size(), 0);
+    for(int b = 0; b < bonds.size(); b++)
+      labels[b] = b;
+    status |= HAVEBOND;
+  }
+  else{
+    Qnum q0(0);
+    blocks[q0] = (_tp == REAL)? Block(REAL, 1, 1): Block(COMPLEX, 1, 1);
+    RBondNum = 0;
+    RQdim = 0;
+    CQdim = 0;
+    m_elemNum = 1;
+    status |= HAVEELEM;
+  }
+  if(_tp == REAL){
+    elem = NULL;
+    elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
+    c_elem = NULL;
+  }
+  if(_tp == COMPLEX){
+    c_elem = NULL;
+    c_elem = (Complex*)elemAlloc(sizeof(Complex) * m_elemNum, ongpu);
+    elem = NULL;
+  }
   size_t offset = 0;
-	for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-		it->second.m_elem = &(elem[offset]);
+  for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+    if(_tp == REAL)
+      it->second.m_elem = &(elem[offset]);
+    if(_tp == COMPLEX)
+      it->second.cm_elem = &(c_elem[offset]);
     it->second.ongpu = ongpu;
     offset += it->second.Rnum * it->second.Cnum;
   }
-	elemBzero(elem, sizeof(Real) * m_elemNum, ongpu);
-	ELEMNUM += m_elemNum;
-	COUNTER++;
-	if(ELEMNUM > MAXELEMNUM)
-		MAXELEMNUM = ELEMNUM;
-	if(m_elemNum > MAXELEMTEN)
-		MAXELEMTEN = m_elemNum;
+  if(_tp == REAL)
+    elemBzero(elem, sizeof(Real) * m_elemNum, ongpu);
+  if(_tp == COMPLEX)
+    elemBzero(c_elem, sizeof(Complex) * m_elemNum, ongpu);
+  
+  ELEMNUM += m_elemNum;
+  COUNTER++;
+  if(ELEMNUM > MAXELEMNUM)
+    MAXELEMNUM = ELEMNUM;
+  if(m_elemNum > MAXELEMTEN)
+    MAXELEMTEN = m_elemNum;
+}
+
+void UniTensor::initUniT(){ //GPU
+  m_type = REAL;
+  if(bonds.size()){
+    m_elemNum = grouping();
+    if(!(blocks.size() > 0)){ //No block in Tensor, Error!
+      std::ostringstream err;
+      err<<"There is no symmetry block with the given bonds:\n";
+      for(int b = 0; b < bonds.size(); b++)
+        err<<"    "<<bonds[b];
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    labels.assign(bonds.size(), 0);
+    for(int b = 0; b < bonds.size(); b++)
+      labels[b] = b;
+    status |= HAVEBOND;
+  }
+  else{
+    Qnum q0(0);
+    blocks[q0] = Block(REAL, 1, 1);
+    RBondNum = 0;
+    RQdim = 0;
+    CQdim = 0;
+    m_elemNum = 1;
+    status |= HAVEELEM;
+  }
+  elem = NULL;
+  elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
+  c_elem = NULL;
+  size_t offset = 0;
+  for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+    it->second.m_elem = &(elem[offset]);
+    it->second.ongpu = ongpu;
+    offset += it->second.Rnum * it->second.Cnum;
+  }
+  elemBzero(elem, sizeof(Real) * m_elemNum, ongpu);
+  ELEMNUM += m_elemNum;
+  COUNTER++;
+  if(ELEMNUM > MAXELEMNUM)
+    MAXELEMNUM = ELEMNUM;
+  if(m_elemNum > MAXELEMTEN)
+    MAXELEMTEN = m_elemNum;
 }
 
 size_t UniTensor::grouping(){
-	blocks.clear();
-	int row_bondNum = 0;
-	int col_bondNum = 0;
-	RQdim = 1;
-	CQdim = 1;
-        bool IN_BONDS_BEFORE_OUT_BONDS = true;
-	for(int i = 0; i < bonds.size(); i++){
-	  if(bonds[i].type() == BD_IN){
-            if(!(IN_BONDS_BEFORE_OUT_BONDS == true)){
-              std::ostringstream err;
-              err<<"Error in the input bond array: BD_OUT bonds must be placed after all BD_IN bonds.";
-              throw std::runtime_error(exception_msg(err.str()));
-            }
-	    RQdim *= bonds[i].Qnums.size();
-	    row_bondNum++;
-	  }
-	  else{
-            CQdim *= bonds[i].Qnums.size();
-            col_bondNum++;
-            IN_BONDS_BEFORE_OUT_BONDS = false;
-	  }
-	}
-	RBondNum = row_bondNum;
-	std::map<Qnum,size_t> row_QnumMdim;
-	std::vector<int> row_offs(row_bondNum, 0);
-	std::map<Qnum,std::vector<int> > row_Qnum2Qidx;
-	Qnum qnum;
-        size_t dim;
-	int boff = 0;
-	std::vector<size_t>tmpRQidx2Dim(RQdim, 1);
-	std::vector<size_t>tmpCQidx2Dim(CQdim, 1);
-	std::vector<size_t>tmpRQidx2Off(RQdim, 0);
-	std::vector<size_t>tmpCQidx2Off(CQdim, 0);
-	if(row_bondNum){
-		while(1){
-			qnum.assign();
-			dim = 1;
-			for(int b = 0; b < row_bondNum; b++){
-				qnum = qnum * bonds[b].Qnums[row_offs[b]];
-				dim *= bonds[b].Qdegs[row_offs[b]];
-			}
-			if(row_QnumMdim.find(qnum) != row_QnumMdim.end()){
-				tmpRQidx2Off[boff] = row_QnumMdim[qnum];
-				tmpRQidx2Dim[boff] = dim;
-				row_QnumMdim[qnum] += dim;
-			}
-			else{
-				tmpRQidx2Off[boff] = 0;
-				tmpRQidx2Dim[boff] = dim;
-				row_QnumMdim[qnum] = dim;
-			}
-			row_Qnum2Qidx[qnum].push_back(boff);
-			boff++;
-			int bidx;
-			for(bidx = row_bondNum - 1; bidx >= 0; bidx--){
-				row_offs[bidx]++;
-				if(row_offs[bidx] < bonds[bidx].Qnums.size())
-					break;
-				else
-					row_offs[bidx] = 0;
-			}
-			if(bidx < 0)	//run over all row_bond offsets
-				break;
-		}
-	}
-	else{
-		qnum.assign();
-		row_QnumMdim[qnum] = 1;
-		row_Qnum2Qidx[qnum].push_back(0);
-	}
-	std::map<Qnum,size_t> col_QnumMdim;
-	std::vector<int> col_offs(col_bondNum, 0);
-	std::map<Qnum,std::vector<int> > col_Qnum2Qidx;
-	boff = 0;
-	if(col_bondNum){
-		while(1){
-			qnum.assign();
-			dim = 1;
-			for(int b = 0; b < col_bondNum; b++){
-				qnum = qnum * bonds[b + row_bondNum].Qnums[col_offs[b]];
-				dim *= bonds[b + row_bondNum].Qdegs[col_offs[b]];
-			}
-			if(row_QnumMdim.find(qnum) != row_QnumMdim.end()){
-				if(col_QnumMdim.find(qnum) != col_QnumMdim.end()){
-					tmpCQidx2Off[boff] = col_QnumMdim[qnum];
-					tmpCQidx2Dim[boff] = dim;
-					col_QnumMdim[qnum] += dim;
-				}
-				else{
-					tmpCQidx2Off[boff] = 0;
-					tmpCQidx2Dim[boff] = dim;
-					col_QnumMdim[qnum] = dim;
-				}
-				col_Qnum2Qidx[qnum].push_back(boff);
-			}
-			boff++;
-			int bidx;
-			for(bidx = col_bondNum - 1; bidx >= 0; bidx--){
-				col_offs[bidx]++;
-				if(col_offs[bidx] < bonds[bidx + row_bondNum].Qnums.size())
-					break;
-				else
-					col_offs[bidx] = 0;
-			}
-			if(bidx < 0)	//run over all row_bond offsets
-				break;
-		}
-	}
-	else{
-		qnum.assign();
-		if(row_QnumMdim.find(qnum) != row_QnumMdim.end()){
-			col_QnumMdim[qnum] = 1;
-			col_Qnum2Qidx[qnum].push_back(0);
-		}
-	}
+  blocks.clear();
+  int row_bondNum = 0;
+  int col_bondNum = 0;
+  RQdim = 1;
+  CQdim = 1;
+  bool IN_BONDS_BEFORE_OUT_BONDS = true;
+  for(int i = 0; i < bonds.size(); i++){
+    if(bonds[i].type() == BD_IN){
+      if(!(IN_BONDS_BEFORE_OUT_BONDS == true)){
+        std::ostringstream err;
+        err<<"Error in the input bond array: BD_OUT bonds must be placed after all BD_IN bonds.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      RQdim *= bonds[i].Qnums.size();
+      row_bondNum++;
+    }
+    else{
+      CQdim *= bonds[i].Qnums.size();
+      col_bondNum++;
+      IN_BONDS_BEFORE_OUT_BONDS = false;
+    }
+  }
+  RBondNum = row_bondNum;
+  std::map<Qnum,size_t> row_QnumMdim;
+  std::vector<int> row_offs(row_bondNum, 0);
+  std::map<Qnum,std::vector<int> > row_Qnum2Qidx;
+  Qnum qnum;
+  size_t dim;
+  int boff = 0;
+  std::vector<size_t>tmpRQidx2Dim(RQdim, 1);
+  std::vector<size_t>tmpCQidx2Dim(CQdim, 1);
+  std::vector<size_t>tmpRQidx2Off(RQdim, 0);
+  std::vector<size_t>tmpCQidx2Off(CQdim, 0);
+  if(row_bondNum){
+    while(1){
+      qnum.assign();
+      dim = 1;
+      for(int b = 0; b < row_bondNum; b++){
+        qnum = qnum * bonds[b].Qnums[row_offs[b]];
+        dim *= bonds[b].Qdegs[row_offs[b]];
+      }
+      if(row_QnumMdim.find(qnum) != row_QnumMdim.end()){
+        tmpRQidx2Off[boff] = row_QnumMdim[qnum];
+        tmpRQidx2Dim[boff] = dim;
+        row_QnumMdim[qnum] += dim;
+      }
+      else{
+        tmpRQidx2Off[boff] = 0;
+        tmpRQidx2Dim[boff] = dim;
+        row_QnumMdim[qnum] = dim;
+      }
+      row_Qnum2Qidx[qnum].push_back(boff);
+      boff++;
+      int bidx;
+      for(bidx = row_bondNum - 1; bidx >= 0; bidx--){
+        row_offs[bidx]++;
+        if(row_offs[bidx] < bonds[bidx].Qnums.size())
+          break;
+        else
+          row_offs[bidx] = 0;
+      }
+      if(bidx < 0)	//run over all row_bond offsets
+        break;
+    }
+  }
+  else{
+    qnum.assign();
+    row_QnumMdim[qnum] = 1;
+    row_Qnum2Qidx[qnum].push_back(0);
+  }
+  std::map<Qnum,size_t> col_QnumMdim;
+  std::vector<int> col_offs(col_bondNum, 0);
+  std::map<Qnum,std::vector<int> > col_Qnum2Qidx;
+  boff = 0;
+  if(col_bondNum){
+    while(1){
+      qnum.assign();
+      dim = 1;
+      for(int b = 0; b < col_bondNum; b++){
+        qnum = qnum * bonds[b + row_bondNum].Qnums[col_offs[b]];
+        dim *= bonds[b + row_bondNum].Qdegs[col_offs[b]];
+      }
+      if(row_QnumMdim.find(qnum) != row_QnumMdim.end()){
+        if(col_QnumMdim.find(qnum) != col_QnumMdim.end()){
+          tmpCQidx2Off[boff] = col_QnumMdim[qnum];
+          tmpCQidx2Dim[boff] = dim;
+          col_QnumMdim[qnum] += dim;
+        }
+        else{
+          tmpCQidx2Off[boff] = 0;
+          tmpCQidx2Dim[boff] = dim;
+          col_QnumMdim[qnum] = dim;
+        }
+        col_Qnum2Qidx[qnum].push_back(boff);
+      }
+      boff++;
+      int bidx;
+      for(bidx = col_bondNum - 1; bidx >= 0; bidx--){
+        col_offs[bidx]++;
+        if(col_offs[bidx] < bonds[bidx + row_bondNum].Qnums.size())
+          break;
+        else
+          col_offs[bidx] = 0;
+      }
+      if(bidx < 0)	//run over all row_bond offsets
+        break;
+    }
+  }
+  else{
+    qnum.assign();
+    if(row_QnumMdim.find(qnum) != row_QnumMdim.end()){
+      col_QnumMdim[qnum] = 1;
+      col_Qnum2Qidx[qnum].push_back(0);
+    }
+  }
 
-	std::map<Qnum,size_t>::iterator it;
-	std::map<Qnum,size_t>::iterator it2;
-	std::set<int> Qidx;
-	int qidx;
-	size_t off = 0;
-	for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
-		it = row_QnumMdim.find(it2->first);
-    Block blk(it->second, it2->second); // blk(Rnum, Cnum);
-		off += blk.Rnum * blk.Cnum;
-		blocks[it->first] = blk;
-	  Block* blkptr = &(blocks[it->first]);
-		std::vector<int>& tmpRQidx = row_Qnum2Qidx[it->first];
-		std::vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];
-		for(int i = 0; i < tmpRQidx.size(); i++){
-			RQidx2Blk[tmpRQidx[i]] = blkptr;
-			for(int j = 0; j < tmpCQidx.size(); j++){
-				RQidx2Dim[tmpRQidx[i]] = tmpRQidx2Dim[tmpRQidx[i]];
-				RQidx2Off[tmpRQidx[i]] = tmpRQidx2Off[tmpRQidx[i]];
-				CQidx2Dim[tmpCQidx[j]] = tmpCQidx2Dim[tmpCQidx[j]];
-				CQidx2Off[tmpCQidx[j]] = tmpCQidx2Off[tmpCQidx[j]];
-				qidx = tmpRQidx[i] * CQdim + tmpCQidx[j];
-				Qidx.insert(qidx);
-			}
-		}
-	}
-	size_t elemEnc = 0;
-	for(std::map<int, size_t>::iterator itr = RQidx2Dim.begin(); itr != RQidx2Dim.end(); itr++)
-		for(std::map<int, size_t>::iterator itc = CQidx2Dim.begin(); itc != CQidx2Dim.end(); itc++){
-			qidx = itr->first * CQdim + itc->first;
-			if(Qidx.find(qidx) != Qidx.end()){
-				QidxEnc[qidx] = elemEnc;
-				elemEnc += RQidx2Dim[itr->first] * CQidx2Dim[itc->first];
-			}
-		}
+  std::map<Qnum,size_t>::iterator it;
+  std::map<Qnum,size_t>::iterator it2;
+  std::set<int> Qidx;
+  int qidx;
+  size_t off = 0;
+  for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
+    it = row_QnumMdim.find(it2->first);
+    Block blk(m_type, it->second, it2->second); // blk(Rnum, Cnum);
+    off += blk.Rnum * blk.Cnum;
+    blocks[it->first] = blk;
+    Block* blkptr = &(blocks[it->first]);
+    std::vector<int>& tmpRQidx = row_Qnum2Qidx[it->first];
+    std::vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];
+    for(int i = 0; i < tmpRQidx.size(); i++){
+      RQidx2Blk[tmpRQidx[i]] = blkptr;
+      for(int j = 0; j < tmpCQidx.size(); j++){
+        RQidx2Dim[tmpRQidx[i]] = tmpRQidx2Dim[tmpRQidx[i]];
+        RQidx2Off[tmpRQidx[i]] = tmpRQidx2Off[tmpRQidx[i]];
+        CQidx2Dim[tmpCQidx[j]] = tmpCQidx2Dim[tmpCQidx[j]];
+        CQidx2Off[tmpCQidx[j]] = tmpCQidx2Off[tmpCQidx[j]];
+        qidx = tmpRQidx[i] * CQdim + tmpCQidx[j];
+        Qidx.insert(qidx);
+      }
+    }
+  }
+  size_t elemEnc = 0;
+  for(std::map<int, size_t>::iterator itr = RQidx2Dim.begin(); itr != RQidx2Dim.end(); itr++)
+    for(std::map<int, size_t>::iterator itc = CQidx2Dim.begin(); itc != CQidx2Dim.end(); itc++){
+      qidx = itr->first * CQdim + itc->first;
+      if(Qidx.find(qidx) != Qidx.end()){
+        QidxEnc[qidx] = elemEnc;
+        elemEnc += RQidx2Dim[itr->first] * CQidx2Dim[itc->first];
+      }
+    }
   return off;
 }
 
