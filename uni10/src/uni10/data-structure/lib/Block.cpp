@@ -287,6 +287,7 @@ namespace uni10{
       outs.push_back(Matrix(tp, Rnum, min, false, ongpu));
       outs.push_back(Matrix(tp, min, min, true, ongpu));
       outs.push_back(Matrix(tp, min, Cnum, false, ongpu));
+      std::cout << outs[2] << std::endl;
       if(!diag){
         if(m_type == REAL)
           matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
@@ -584,7 +585,7 @@ namespace uni10{
           return Mc;
         }
       }
-      if(Ma.m_type == COMPLEX && Ma.m_type == REAL){
+      if(Ma.m_type == COMPLEX && Mb.m_type == REAL){
         Matrix _Mb(Mb);
         _Mb.RtoC();
         if((!Ma.diag) && (!_Mb.diag)){
@@ -676,12 +677,10 @@ namespace uni10{
           return Mc;
         } else if (Mb.diag && !Ma.diag) {
           //std::cout << "Mb is diagonal."<<std::endl;
-
           Matrix Mc(REAL, Mb.Rnum, Mb.Cnum);
           setDiag(Mc.m_elem,Mb.m_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
           //std::cout << Mc ;
           vectorAdd(Mc.m_elem, Ma.m_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
-
           return Mc;
         } else {
           Matrix Mc(Ma);
@@ -698,12 +697,10 @@ namespace uni10{
           return Mc;
         } else if (Mb.diag && !Ma.diag) {
           //std::cout << "Mb is diagonal."<<std::endl;
-
           Matrix Mc(COMPLEX, Mb.Rnum,Mb.Cnum);
           setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
           //std::cout << Mc ;
           vectorAdd(Mc.cm_elem, Ma.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
-
           return Mc;
         } else {
           Matrix Mc(Ma);
@@ -722,12 +719,10 @@ namespace uni10{
           return Mc;
         } else if (Mb.diag && !_Ma.diag) {
           //std::cout << "Mb is diagonal."<<std::endl;
-
           Matrix Mc(COMPLEX, Mb.Rnum,Mb.Cnum);
           setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
           //std::cout << Mc ;
           vectorAdd(Mc.cm_elem, _Ma.cm_elem, Mc.elemNum(), Mc.ongpu, _Ma.ongpu);
-
           return Mc;
         } else {
           Matrix Mc(_Ma);
@@ -746,12 +741,10 @@ namespace uni10{
           return Mc;
         } else if (_Mb.diag && !Ma.diag) {
           //std::cout << "Mb is diagonal."<<std::endl;
-
           Matrix Mc(COMPLEX, _Mb.Rnum,_Mb.Cnum);
           setDiag(Mc.cm_elem,_Mb.cm_elem,Mc.Rnum,Mc.Cnum,_Mb.Cnum,Mc.ongpu,_Mb.ongpu);
           //std::cout << Mc ;
           vectorAdd(Mc.cm_elem, Ma.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
-
           return Mc;
         } else {
           Matrix Mc(Ma);
@@ -900,7 +893,7 @@ namespace uni10{
       }
       if(m_type == REAL)
         return Complex(getElemAt(idx, m_elem, ongpu), 0);
-      if(m_type == COMPLEX)
+      if(m_type == COMPLEX) 
         return getElemAt(idx, cm_elem, ongpu);
     }
     catch(const std::exception& e){
@@ -946,10 +939,7 @@ namespace uni10{
       return 0;
     }
   }
-
-/************************************************************************/
-/************************/
-
+  
   std::vector<Matrix> Block::eig()const{
     std::vector<Matrix> outs;
     try{

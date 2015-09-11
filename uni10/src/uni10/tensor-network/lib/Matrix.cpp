@@ -44,6 +44,8 @@ void Matrix::matrixElemFree(){
     elemFree(m_elem, elemNum() * sizeof(Real), ongpu);
   if(cm_elem != NULL)
     elemFree(cm_elem, elemNum() * sizeof(Complex), ongpu);
+  m_elem = NULL;
+  cm_elem = NULL;
 }
 
 void Matrix::init(const Real* _elem, bool src_ongpu){
@@ -684,6 +686,11 @@ void Matrix::load(const std::string& fname){
   }
 }
 
+Matrix& Matrix::conj(){
+  if(m_type == COMPLEX)
+    setConjugate(cm_elem, elemNum(), ongpu);
+  return *this;
+}
 /********************************************************************************************/
 
 Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Block(_Rnum, _Cnum, _diag){
@@ -701,8 +708,10 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Block(_Rnum
 
 Matrix& Matrix::operator*= (const Block& Mb){
   try{
-    if(!ongpu)
-      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
+    if(!ongpu && m_type == REAL)
+      m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
+    if(!ongpu && m_type == COMPLEX)
+      cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
     *this = *this * Mb;
   }
   catch(const std::exception& e){
@@ -713,16 +722,21 @@ Matrix& Matrix::operator*= (const Block& Mb){
 
 Matrix& Matrix::operator*= (double a){
   try{
-    if(!ongpu)
-      m_elem = (double*)mvGPU(m_elem, elemNum() * sizeof(double), ongpu);
-    vectorScal(a, m_elem, elemNum(), ongpu);
+    if(!ongpu && m_type == REAL){
+      m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
+      vectorScal(a, m_elem, elemNum(), ongpu);
+    }
+    if(!ongpu && m_type == COMPLEX){
+      cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
+      vectorScal(a, cm_elem, elemNum(), ongpu);
+    }
+//    *this = *this * a;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::operator*=(double):");
   }
-	return *this;
+  return *this;
 }
-
 
 Matrix& Matrix::operator+= (const Block& Mb){
   try{
@@ -748,22 +762,55 @@ Matrix& Matrix::operator+= (const Block& Mb){
   return *this;
 }
 
-double& Matrix::operator[](size_t idx){
+Complex Matrix::operator[](size_t idx){
   try{
     if(!(idx < elemNum())){
       std::ostringstream err;
       err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
-    return m_elem[idx];
+    if(m_type == REAL)
+      m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
+    if(m_type == COMPLEX)
+      cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
+    return (m_type == REAL) ? Complex(m_elem[idx], 0) : cm_elem[idx];
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::opeartor[](size_t):");
-    return m_elem[0];
+    if(m_type == REAL)
+      return (m_type == REAL) ? Complex(m_elem[0], 0): cm_elem[0];
   }
 }
 
+Complex Matrix::at(size_t r, size_t c){
+  try{
+    if(!((r < Rnum) && (c < Cnum))){
+      std::ostringstream err;
+      err<<"The input indices are out of range.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(m_type == REAL)
+      m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
+    if(m_type == COMPLEX)
+      cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
+    if(diag){
+      if(!(r == c && r < elemNum())){
+        std::ostringstream err;
+        err<<"The matrix is diagonal, there is no off-diagonal element.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      
+      return (m_type == REAL) ? Complex(m_elem[r], 0) : cm_elem[r];
+    }
+    else{
+      return (m_type == REAL) ? Complex(m_elem[r * Cnum + c], 0) : cm_elem[r * Cnum + c];
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::at(size_t, size_t):");
+    return (m_type == REAL) ? Complex(m_elem[0], 0) : cm_elem[0];
+  }
+}
 double* Matrix::getHostElem(){
   try{
     if(ongpu){
@@ -775,32 +822,6 @@ double* Matrix::getHostElem(){
   }
 	return m_elem;
 }
-
-double& Matrix::at(size_t r, size_t c){
-  try{
-    if(!((r < Rnum) && (c < Cnum))){
-      std::ostringstream err;
-      err<<"The input indices are out of range.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
-    if(diag){
-      if(!(r == c && r < elemNum())){
-        std::ostringstream err;
-        err<<"The matrix is diagonal, there is no off-diagonal element.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      return m_elem[r];
-    }
-    else
-      return m_elem[r * Cnum + c];
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::at(size_t, size_t):");
-    return m_elem[0];
-  }
-}
-/**********************************************************************************/
 
 Matrix exp(double a, const Block& mat){
   try{

@@ -75,28 +75,26 @@ public:
     void set_zero();
     void randomize();
     void orthoRand();
+    Matrix& resize(size_t row, size_t col);
     void load(const std::string& fname);
     double max(bool _ongpu=false);
-	  /**********************************************************/	    
-    
-    
-    Matrix(const CBlock& _b);
-    ~Matrix();
-    Matrix& operator=(const Matrix& _m);
-    Matrix& operator=(const Block& _m);
     Matrix& transpose();
     Matrix& cTranspose();
-    Matrix& conj(){return *this;};
-    Matrix& resize(size_t row, size_t col);
-    bool toGPU();
-/********************************************************************************/
-    double& operator[](size_t idx);
-    double& at(size_t i, size_t j);
+    Matrix& operator=(const Matrix& _m);
+    Matrix& operator=(const Block& _m);
     Matrix& operator*= (double a);
     Matrix& operator*= (const Block& Mb);
     Matrix& operator+= (const Block & Mb);
-/********************************************************************************/
+    Matrix& conj();
+    ~Matrix();
+/**********************************************************/	    
+    std::complex<double> operator[](size_t idx); //&
+    std::complex<double> at(size_t i, size_t j); //&
+    bool toGPU();
     double* getHostElem();
+    //delete
+    Matrix(const CBlock& _b);
+/********************************************************************************/
 private:
     void matrixElemFree();
     void init(const double* _m_elem, const std::complex<double>* _cm_elem, bool src_ongpu);

@@ -69,35 +69,36 @@ namespace uni10{
 	    double norm()const;
 	    void RtoC();
 	    matrixType getType()const;
-	    friend Matrix operator*(double a, const Block& Ma);
-	    friend Matrix operator*(const Block& Ma, double a);
-	    friend Matrix operator*(const std::complex<double>& a, const Block& Ma);
-	    friend Matrix operator*(const Block& Ma, const std::complex<double>& a);
-	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
-	    /**********************************************************/	    
 	    std::vector<Matrix> qr()const;
 	    std::vector<Matrix> rq()const;
 	    std::vector<Matrix> ql()const;
 	    std::vector<Matrix> lq()const;
 	    std::vector<Matrix> svd()const;
 	    Matrix inverse()const;
-	    
-	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C
-	    friend Matrix operator+(const Block& Ma, const Block& Mb);
-	    friend bool operator==(const Block& m1, const Block& m2);
-	    
 	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
 	    double* getRealElem()const;
 	    std::complex<double>* getComplexElem()const;
-	    Matrix getDiag()const;
-	    std::vector<Matrix> eigh()const;
-	    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
-	    friend Matrix exph(double a, const Block& mat);
+	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C R*C C*R
+	    friend Matrix operator*(double a, const Block& Ma);
+	    friend Matrix operator*(const Block& Ma, double a);
+	    friend Matrix operator*(const std::complex<double>& a, const Block& Ma);
+	    friend Matrix operator*(const Block& Ma, const std::complex<double>& a);
+	    friend Matrix operator+(const Block& Ma, const Block& Mb);
+	    friend bool operator==(const Block& m1, const Block& m2);
+	    friend bool operator!=(const Block& m1, const Block& m2){return !(m1 == m2);};
 	    std::complex<double> trace()const;
 	    std::complex<double> sum()const;
 	    std::complex<double> operator[](size_t idx)const;
 	    std::complex<double> at(size_t i, size_t j)const;
 	    std::vector<Matrix> eig()const;
+	    std::vector<Matrix> eigh()const;
+	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
+	    friend Matrix exph(double a, const Block& mat);
+	    Matrix getDiag()const;
+	    /**********************************************************/	    
+	    
+	    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
+	    
 	    friend class UniTensor;
 	    friend class CUniTensor;
 	    friend class CBlock;
