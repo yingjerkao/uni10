@@ -233,7 +233,7 @@ namespace uni10{
       return CUniTensor();
     }
   }
-
+  
   CUniTensor operator*(const UniTensor& Ta, const std::complex<double>& a){
     try{
       if(!(Ta.status & Ta.HAVEELEM)){
@@ -250,9 +250,9 @@ namespace uni10{
       return CUniTensor();
     }
   }
-
   CUniTensor operator*(const std::complex<double>& a, const CUniTensor& Ta){return Ta * a;}
   CUniTensor operator*(const std::complex<double>& a, const UniTensor& Ta){return Ta * a;}
+  
   CUniTensor operator+(const CUniTensor& Ta, const UniTensor& Tb){
     CUniTensor Tc(Ta);
     return Tc += Tb;
