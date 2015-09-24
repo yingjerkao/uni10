@@ -60,7 +60,7 @@ void Matrix::init(const Complex* _elem, bool src_ongpu){
   elemCopy(cm_elem, _elem, elemNum() * sizeof(Complex), ongpu, src_ongpu);
 }
 
-void Matrix::init(bool _ongpu, matrixType tp){
+void Matrix::init(bool _ongpu, muType tp){
   if(tp == REAL){
     if(elemNum()){
       if(_ongpu)	// Try to allocate GPU memory
@@ -171,7 +171,7 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<Complex>& _elem, bo
   }
 }
 
-Matrix::Matrix(matrixType tp, size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu):Block(tp, _Rnum, _Cnum, _diag){
+Matrix::Matrix(muType tp, size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu):Block(tp, _Rnum, _Cnum, _diag){
   try{
     if(tp == REAL){
       init(_ongpu, tp);

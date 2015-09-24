@@ -56,40 +56,56 @@ namespace uni10 {
     class CMatrix;
     class CUniTensor;
     class UniTensor {
+
     public:
-        /******** merge *********/
+        
+        friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
+        
+        /********* verified *********/
+        
         UniTensor();
         UniTensor(double val);
         UniTensor(std::complex<double> val);
-    UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
-        UniTensor(matrixType tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
-    UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
-        UniTensor(matrixType tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
-    UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
-        UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
-        UniTensor(const Block& UniT);
-    UniTensor(const CBlock& UniT);
+        UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(muType tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+        UniTensor(muType tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+        UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
+        UniTensor(muType tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
         UniTensor(const UniTensor& UniT);
+        UniTensor(const Block& UniT);
         UniTensor(const std::string& fname);
-    UniTensor(const CUniTensor& UniT);
         ~UniTensor();
-        void setLabel(const std::vector<int>& newLabels);
-        void setLabel(int* newLabels);
+        void setRawElem(const std::vector<double>& rawElem);
+        void setRawElem(const double* rawElem);
+        void setRawElem(const std::vector< std::complex<double> >& rawElem);
+        void setRawElem(const std::complex<double>* rawElem);
+        void setRawElem(const Block& blk);
+        void setElem(const double* elem, bool _ongpu = false);
+        void setElem(const std::vector<double>& elem, bool _ongpu = false);
+        void setElem(const std::complex<double>* c_elem, bool _ongpu = false);
+        void setElem(const std::vector< std::complex<double> >& c_elem, bool _ongpu = false);
         void putBlock(const Block& mat);
         void putBlock(const Qnum& qnum, const Block& mat);
-    void putBlock(const CBlock& mat);
-    void putBlock(const Qnum& qnum, const CBlock& mat);
-        UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
-        UniTensor& permute(int* newLabels, int inBondNum);
-        UniTensor& permute(int inBondNum);
-        UniTensor& operator=(const UniTensor& UniT);
-        std::vector<int> label()const;
+        
+        void setLabel(const std::vector<int>& newLabels);
+        void setLabel(int* newLabels);
         int label(size_t idx)const;
+        std::vector<int> label()const;
         size_t bondNum()const;
         size_t inBondNum()const;
         std::vector<Bond> bond()const;
         Bond bond(size_t idx)const;
         size_t elemNum()const;
+        
+        /****************************/
+        
+       
+
+        UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
+        UniTensor& permute(int* newLabels, int inBondNum);
+        UniTensor& permute(int inBondNum);
+        UniTensor& operator=(const UniTensor& UniT);
         std::string getName();
         void setName(const std::string& _name);
         void set_zero();
@@ -101,16 +117,7 @@ namespace uni10 {
         void orthoRand(const Qnum& qnum);
         size_t blockNum()const;
         void clear();
-        void setRawElem(const std::vector<double>& rawElem);
-        void setRawElem(const double* rawElem);
-        void setRawElem(const std::vector< std::complex<double> >& rawElem);
-        void setRawElem(const std::complex<double>* rawElem);
-        void setRawElem(const Block& blk);
-        void setElem(const double* elem, bool _ongpu = false);
-        void setElem(const std::vector<double>& elem, bool _ongpu = false);
-        void setElem(const std::complex<double>* c_elem, bool _ongpu = false);
-        void setElem(const std::vector< std::complex<double> >& c_elem, bool _ongpu = false);
-    void setRawElem(const CBlock& blk);
+        void RtoC();
         Matrix getRawElem()const;
         UniTensor& transpose();
         UniTensor& combineBond(const std::vector<int>& combined_labels);
@@ -123,7 +130,7 @@ namespace uni10 {
         Matrix getBlock(bool diag = false)const;
         Matrix getBlock(const Qnum& qnum, bool diag = false)const;
         UniTensor& assign(const std::vector<Bond>& _bond);
-        UniTensor& assign(matrixType _tp, const std::vector<Bond>& _bond);
+        UniTensor& assign(muType _tp, const std::vector<Bond>& _bond);
         void addGate(const std::vector<_Swap>& swaps);
         bool similar(const UniTensor& Tb)const;
         bool elemCmp(const UniTensor& UniT)const;
@@ -134,39 +141,37 @@ namespace uni10 {
         std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
         std::complex<double> trace()const;
         std::vector<_Swap> exSwap(const UniTensor& Tb)const;
-        
         UniTensor& operator*= (double a);
+        UniTensor& operator*= (std::complex<double> a);
         UniTensor& operator*= (const UniTensor& Tb);
+        UniTensor& operator+= (const UniTensor& Tb);
         friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
-    friend CUniTensor operator*(const UniTensor& Ta, const std::complex<double>& a);
-    friend CUniTensor operator*(const std::complex<double>& a, const UniTensor& Ta);
+        friend UniTensor operator*(const UniTensor& Ta, const std::complex<double>& a);
+        friend UniTensor operator*(const std::complex<double>& a, const UniTensor& Ta);
         friend UniTensor operator*(const UniTensor& Ta, double a);
         friend UniTensor operator*(double a, const UniTensor& Ta);
-        UniTensor& operator+= (const UniTensor& Tb);
         friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
-        friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
         friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
         friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
-        std::complex<double> at(matrixType _tp, const std::vector<int>& idxs)const;
-        double at(const std::vector<int>& idxs)const;
-        std::complex<double> at(matrixType _tp, const std::vector<size_t>& idxs)const;
-        double at(const std::vector<size_t>& idxs)const;
         void save(const std::string& fname);
+        std::complex<double> at(muType _tp, const std::vector<int>& idxs)const;
+        std::complex<double> at(muType _tp, const std::vector<size_t>& idxs)const;
+        double at(const std::vector<int>& idxs)const;
+        double at(const std::vector<size_t>& idxs)const;
         std::string printRawElem(bool print=true)const;
         static std::string profile(bool print = true);
         UniTensor& partialTrace(int la, int lb);
         double* getElem();
         double* getRealElem();
         std::complex<double>* getComplexElem();
-        
-        /************************/
         double operator[](size_t idx) const;
+        
         friend class CUniTensor;
         friend class Node;
         friend class Network;
 
     private:
-        matrixType m_type;
+        muType u_type;
         std::string name;
         double *elem;       //Array of elements
         std::complex<double>* c_elem;       //Array of elements
@@ -192,8 +197,14 @@ namespace uni10 {
         static size_t MAXELEMTEN;   //Max number of element of a tensor
         //Private Functions
         size_t grouping();
-        void initUniT();
-        void initUniT(matrixType tp);
+        void uelemAlloc();
+        void uelemFree();
+        void uelemBzero();
+        void initBlocks(double* _elem);
+        void initBlocks(std::complex<double>* _c_elem);
+        void initPrototype(muType tp = EMPTY);
+        void initUniT(muType tp);
+        
         std::vector<UniTensor> _hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
         static const int HAVEBOND = 1;        /**< A flag for initialization */
         static const int HAVEELEM = 2;        /**< A flag for having element assigned */

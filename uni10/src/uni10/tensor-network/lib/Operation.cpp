@@ -36,6 +36,7 @@
 #include <uni10/tensor-network/CUniTensor.h>
 
 namespace uni10{
+/*  
   UniTensor::UniTensor(const CUniTensor& UniT): name(UniT.name), status(UniT.status), bonds(UniT.bonds){
     try{
       initUniT();
@@ -47,6 +48,7 @@ namespace uni10{
       propogate_exception(e, "In constructor UniTensor::UniTensor(uni10::CUniTensor& )");
     }
   }
+*/
   CUniTensor::CUniTensor(const UniTensor& UniT): name(UniT.name), status(UniT.status), bonds(UniT.bonds){
     try{
       initUniT();
@@ -58,7 +60,7 @@ namespace uni10{
       propogate_exception(e, "In constructor CUniTensor::CUniTensor(uni10::UniTensor& )");
     }
   }
-
+/*
   UniTensor::UniTensor(const CBlock& blk){
     try{
       Bond bdi(BD_IN, blk.Rnum);
@@ -72,7 +74,7 @@ namespace uni10{
       propogate_exception(e, "In constructor UniTensor::UniTensor(uni10::CBlock&");
     }
   }
-
+*/
   CUniTensor::CUniTensor(const Block& blk){
     try{
       Bond bdi(BD_IN, blk.Rnum);
@@ -86,8 +88,8 @@ namespace uni10{
       propogate_exception(e, "In constructor CUniTensor::CUniTensor(uni10::Block&");
     }
   }
-
-	void UniTensor::putBlock(const Qnum& qnum, const CBlock& mat){
+/*
+  void UniTensor::putBlock(const Qnum& qnum, const CBlock& mat){
     try{
       Matrix cm(mat);
       putBlock(qnum, cm);
@@ -97,7 +99,7 @@ namespace uni10{
     }
   }
 
-	void UniTensor::putBlock(const CBlock& mat){
+  void UniTensor::putBlock(const CBlock& mat){
     try{
       Qnum q0(0);
       putBlock(q0, mat);
@@ -106,8 +108,8 @@ namespace uni10{
       propogate_exception(e, "In function UniTensor::putBlock(uni10::CBlock&):");
     }
   }
-
-	void CUniTensor::putBlock(const Qnum& qnum, const Block& mat){
+*/
+  void CUniTensor::putBlock(const Qnum& qnum, const Block& mat){
     try{
       CMatrix cm(mat);
       putBlock(qnum, cm);
@@ -117,7 +119,7 @@ namespace uni10{
     }
   }
 
-	void CUniTensor::putBlock(const Block& mat){
+  void CUniTensor::putBlock(const Block& mat){
     try{
       Qnum q0(0);
       putBlock(q0, mat);
@@ -126,7 +128,7 @@ namespace uni10{
       propogate_exception(e, "In function CUniTensor::putBlock(uni10::Block&):");
     }
   }
-
+/*
   void UniTensor::setRawElem(const CBlock& blk){
     try{
       Matrix m(blk);
@@ -136,7 +138,7 @@ namespace uni10{
       propogate_exception(e, "In function UniTensor::setRawElem(uni10::CBlock&):");
     }
   }
-
+*/
   void CUniTensor::setRawElem(const Block& blk){
     try{
       CMatrix m(blk);
@@ -172,7 +174,6 @@ namespace uni10{
     return *this;
   }
 
-
   CUniTensor& CUniTensor::operator+= (const UniTensor& Tb){
     try{
       if(!(status & Tb.status & HAVEELEM)){
@@ -192,7 +193,7 @@ namespace uni10{
     }
     return *this;
   }
-
+  
   CUniTensor operator*(const CUniTensor& Ta, const UniTensor& Tb){
     try{
       CUniTensor cTa(Ta);
@@ -233,7 +234,7 @@ namespace uni10{
       return CUniTensor();
     }
   }
-  
+/*  
   CUniTensor operator*(const UniTensor& Ta, const std::complex<double>& a){
     try{
       if(!(Ta.status & Ta.HAVEELEM)){
@@ -250,8 +251,9 @@ namespace uni10{
       return CUniTensor();
     }
   }
+*/  
   CUniTensor operator*(const std::complex<double>& a, const CUniTensor& Ta){return Ta * a;}
-  CUniTensor operator*(const std::complex<double>& a, const UniTensor& Ta){return Ta * a;}
+//  CUniTensor operator*(const std::complex<double>& a, const UniTensor& Ta){return Ta * a;}
   
   CUniTensor operator+(const CUniTensor& Ta, const UniTensor& Tb){
     CUniTensor Tc(Ta);

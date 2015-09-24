@@ -62,7 +62,7 @@ public:
     Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
     Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
     Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool src_ongpu=false);
-    Matrix(matrixType tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+    Matrix(muType tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
     Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
     Matrix(const Matrix& _m);
     Matrix(const Block& _b);
@@ -100,7 +100,7 @@ private:
     void init(const double* _m_elem, const std::complex<double>* _cm_elem, bool src_ongpu);
     void init(const double* elem, bool _ongpu);
     void init(const std::complex<double>* elem, bool _ongpu);
-    void init(bool togpu, matrixType tp);
+    void init(bool togpu, muType tp);
 };
 
 Matrix takeExp(double a, const Block& mat);

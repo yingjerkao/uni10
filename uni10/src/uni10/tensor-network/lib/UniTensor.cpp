@@ -47,7 +47,7 @@ size_t UniTensor::MAXELEMTEN = 0;
 
 UniTensor::UniTensor(): status(0){
   try{
-    initUniT();
+    initPrototype();
   }
   catch(const std::exception& e){
     propogate_exception(e, "In constructor UniTensor::UniTensor():");
@@ -87,7 +87,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
       err<<"Error in opening file '" << fname <<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    fread(&m_type, 1, sizeof(m_type), fp);
+    fread(&u_type, 1, sizeof(u_type), fp);
     int st;
     fread(&st, 1, sizeof(int), fp);
     int bondNum;
@@ -116,7 +116,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
       Bond bd(tp, tot_qnums);
       bonds.push_back(bd);
     }
-    initUniT(m_type);
+    initUniT(u_type);
     int num_l;
     fread(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
     if(!(num_l == bonds.size())){
@@ -126,7 +126,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
     }
     labels.assign(num_l, 0);
     fread(&(labels[0]), num_l, sizeof(int), fp);
-    if(m_type == REAL){
+    if(u_type == REAL){
       if(st & HAVEELEM){
         Real *tmp_elem = elem;
         size_t memsize = m_elemNum * sizeof(Real);
@@ -142,7 +142,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
         status |= HAVEELEM;
       }
     }
-    if(m_type == COMPLEX){
+    if(u_type == COMPLEX){
       if(st & HAVEELEM){
         Complex *tmp_elem = c_elem;
         size_t memsize = m_elemNum * sizeof(Complex);
@@ -167,14 +167,14 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
 
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
-    initUniT();
+    initPrototype();
   }
   catch(const std::exception& e){
     propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::string& = \"\"):");
   }
 }
 
-UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UniTensor::UniTensor(muType _tp, const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT(_tp);
   }
@@ -185,7 +185,7 @@ UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, const std:
 
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
-    initUniT();
+    initPrototype();
     setLabel(_labels);
   }
   catch(const std::exception& e){
@@ -193,7 +193,7 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels,
   }
 }
 
-UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UniTensor::UniTensor(muType _tp, const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT(_tp);
     setLabel(_labels);
@@ -205,7 +205,7 @@ UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, std::vecto
 
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
-    initUniT();
+    initPrototype();
     setLabel(_labels);
   }
   catch(const std::exception& e){
@@ -213,7 +213,7 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::s
   }
 }
 
-UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
+UniTensor::UniTensor(muType _tp, const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT(_tp);
     setLabel(_labels);
@@ -224,28 +224,25 @@ UniTensor::UniTensor(matrixType _tp, const std::vector<Bond>& _bonds, int* _labe
 }
 
 UniTensor::UniTensor(const UniTensor& UniT): //GPU
-  m_type(UniT.m_type), status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels), name(UniT.name),
+  u_type(UniT.u_type), status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels), name(UniT.name),
   RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL), c_elem(NULL), 
   QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), RQidx2Blk(UniT.RQidx2Blk), CQidx2Dim(UniT.CQidx2Dim){
     try{
-      if(m_type == REAL)
-        elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
-      if(m_type == COMPLEX)
-        c_elem = (Complex*)elemAlloc(sizeof(Complex) * m_elemNum, ongpu);
       
+      uelemAlloc();
+
       std::map<Qnum, Block>::const_iterator it2;
       std::map<const Block* , Block*> blkmap;
       
-      if(m_type == REAL){
+      if(u_type == REAL){
         for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
           it->second.m_elem = &(elem[(it->second.m_elem - UniT.elem)]);
-
           it2 = UniT.blocks.find(it->first);
           blkmap[(&(it2->second))] = &(it->second);
         }
       } 
       
-      if(m_type == COMPLEX){
+      if(u_type == COMPLEX){
         for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
           it->second.cm_elem = &(c_elem[(it->second.cm_elem - UniT.c_elem)]);
 
@@ -266,9 +263,9 @@ UniTensor::UniTensor(const UniTensor& UniT): //GPU
       if(m_elemNum > MAXELEMTEN)
         MAXELEMTEN = m_elemNum;
       
-      if(m_type == REAL)
+      if(u_type == REAL)
         elemCopy(elem, UniT.elem, sizeof(Real) * UniT.m_elemNum, ongpu, UniT.ongpu);
-      if(m_type == COMPLEX)
+      if(u_type == COMPLEX)
         elemCopy(c_elem, UniT.c_elem, sizeof(Complex) * UniT.m_elemNum, ongpu, UniT.ongpu);
     }
     catch(const std::exception& e){
@@ -291,17 +288,14 @@ UniTensor::UniTensor(const Block& blk): status(0){
 }
 
 UniTensor::~UniTensor(){
-  if(m_type == REAL)
-    elemFree(elem, sizeof(Real) * m_elemNum, ongpu);
-  if(m_type == COMPLEX)
-    elemFree(c_elem, sizeof(Complex) * m_elemNum, ongpu);
+  uelemFree();
   ELEMNUM -= m_elemNum;
   COUNTER--;
 }
 
 UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
   try{
-    m_type = UniT.m_type;
+    u_type = UniT.u_type;
     bonds = UniT.bonds;
     blocks = UniT.blocks;
     labels = UniT.labels;
@@ -316,21 +310,25 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     CQidx2Dim = UniT.CQidx2Dim;
     RQidx2Blk = UniT.RQidx2Blk;
     ELEMNUM -= m_elemNum;	//free original memory
-    if(elem != NULL)
+    if(elem != NULL){
       elemFree(elem, sizeof(Real) * m_elemNum, ongpu);
-    if(c_elem != NULL)
+      elem = NULL;
+    }
+    if(c_elem != NULL){
       elemFree(c_elem, sizeof(Complex) * m_elemNum, ongpu);
+      c_elem = NULL;
+    }
     status = UniT.status;
     m_elemNum = UniT.m_elemNum;
-    if(m_type == REAL)
+    if(u_type == REAL)
       elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
-    if(m_type == COMPLEX)
+    if(u_type == COMPLEX)
       c_elem = (Complex*)elemAlloc(sizeof(Complex) * m_elemNum, ongpu);
     
     std::map<Qnum, Block>::const_iterator it2;
     std::map< const Block* , Block*> blkmap;
     
-    if(m_type == REAL){
+    if(u_type == REAL){
       for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
         it->second.m_elem = &(elem[it->second.m_elem - UniT.elem]);
 
@@ -339,7 +337,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
       }
     }
     
-    if(m_type ==COMPLEX){
+    if(u_type ==COMPLEX){
       for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
         it->second.cm_elem = &(c_elem[it->second.cm_elem - UniT.c_elem]);
 
@@ -359,9 +357,9 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     if(m_elemNum > MAXELEMTEN)
       MAXELEMTEN = m_elemNum;
     
-    if(m_type == REAL)
+    if(u_type == REAL)
       elemCopy(elem, UniT.elem, sizeof(Real) * UniT.m_elemNum, ongpu, UniT.ongpu);
-    if(m_type == COMPLEX)
+    if(u_type == COMPLEX)
       elemCopy(c_elem, UniT.c_elem, sizeof(Complex) * UniT.m_elemNum, ongpu, UniT.ongpu);
   }
   catch(const std::exception& e){
@@ -381,7 +379,7 @@ UniTensor& UniTensor::assign(const std::vector<Bond>& _bond){
   return *this;
 }
 
-UniTensor& UniTensor::assign(matrixType _tp, const std::vector<Bond>& _bond){
+UniTensor& UniTensor::assign(muType _tp, const std::vector<Bond>& _bond){
   try{
     UniTensor T(_tp, _bond);
     *this = T;
@@ -468,7 +466,7 @@ size_t UniTensor::elemNum()const{return m_elemNum;}
 
 Matrix UniTensor::getRawElem()const{
   try{
-    if(m_type == REAL){
+    if(u_type == REAL){
       if(status & HAVEBOND && status & HAVEELEM){
         int bondNum = bonds.size();
         size_t rowNum = 1;
@@ -501,7 +499,7 @@ Matrix UniTensor::getRawElem()const{
       else
         return Matrix();
     }
-    if(m_type == COMPLEX){
+    if(u_type == COMPLEX){
       if(status & HAVEBOND && status & HAVEELEM){
         int bondNum = bonds.size();
         size_t rowNum = 1;
@@ -543,10 +541,12 @@ Matrix UniTensor::getRawElem()const{
 
 void UniTensor::setRawElem(const Block& blk){
   try{
-    if(m_type == REAL)
-      setRawElem(blk.getRealElem());
-    if(m_type == COMPLEX)
-      setRawElem(blk.getComplexElem());
+    if(blk.m_type == EMPTY){
+      std::ostringstream err;
+      err<<"Can't put an EMPTY　block in UniTensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    (blk.m_type == REAL) ? setRawElem(blk.getRealElem()) :setRawElem(blk.getComplexElem());
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::setRawElem(uni10::Block&):");
@@ -567,6 +567,16 @@ void UniTensor::setRawElem(const Real* rawElem){
       std::ostringstream err;
       err<<"Setting elements to a tensor without bonds is not supported.";
       throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(u_type == COMPLEX){
+      std::ostringstream err;
+      err<<"Can't set double* in a complex tensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(u_type == EMPTY){
+      u_type = REAL;
+      uelemAlloc();
+      initBlocks(elem);
     }
     int bondNum = bonds.size();
     std::vector<int> Q_idxs(bondNum, 0);
@@ -652,6 +662,16 @@ void UniTensor::setRawElem(const Complex* rawElem){
       err<<"Setting elements to a tensor without bonds is not supported.";
       throw std::runtime_error(exception_msg(err.str()));
     }
+    if(u_type == REAL){
+      std::ostringstream err;
+      err<<"Can't set complex<double>* in a real tensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(u_type == EMPTY){
+      u_type = COMPLEX;
+      uelemAlloc();
+      initBlocks(c_elem);
+    }
     int bondNum = bonds.size();
     std::vector<int> Q_idxs(bondNum, 0);
     std::vector<int> Q_Bdims(bondNum, 0);
@@ -720,7 +740,7 @@ void UniTensor::setRawElem(const Complex* rawElem){
   }
 }
 
-Complex UniTensor::at(matrixType _tp, const std::vector<int>& idxs)const{
+Complex UniTensor::at(muType _tp, const std::vector<int>& idxs)const{
   try{
     std::vector<size_t> _idxs(idxs.size());
     for(int i = 0; i < idxs.size(); i++)
@@ -746,7 +766,7 @@ Real UniTensor::at(const std::vector<int>& idxs)const{
   }
 }
 
-Complex UniTensor::at(matrixType _tp, const std::vector<size_t>& idxs)const{
+Complex UniTensor::at(muType _tp, const std::vector<size_t>& idxs)const{
   try{
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
@@ -932,13 +952,13 @@ const Block& UniTensor::const_getBlock(const Qnum& qnum)const{
 std::map<Qnum, Matrix> UniTensor::getBlocks()const{
   std::map<Qnum, Matrix> mats;
   try{
-    if(m_type == REAL){
+    if(u_type == REAL){
       for(std::map<Qnum, Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
         Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
         mats.insert(std::pair<Qnum, Matrix>(it->first, mat));
       }
     }
-    if(m_type == COMPLEX){
+    if(u_type == COMPLEX){
       for(std::map<Qnum, Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
         Matrix mat(it->second.Rnum, it->second.Cnum, it->second.cm_elem, false, ongpu);
         mats.insert(std::pair<Qnum, Matrix>(it->first, mat));
@@ -974,11 +994,11 @@ Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
       return it->second.getDiag();
     }
     else{
-      if(m_type == REAL){
+      if(u_type == REAL){
         Matrix mat(it->second.Rnum, it->second.Cnum, it->second.m_elem, false, ongpu);
         return mat;
       }
-      if(m_type == COMPLEX){
+      if(u_type == COMPLEX){
         Matrix mat(it->second.Rnum, it->second.Cnum, it->second.cm_elem, false, ongpu);
         return mat;
       }
@@ -1014,7 +1034,17 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
       err<<"  Hint: Use Matrix::resize(int, int)";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(m_type == REAL){
+    
+    if(u_type == EMPTY){
+      u_type = mat.m_type;
+      uelemAlloc();
+      if(u_type == REAL)
+        initBlocks(elem);
+      if(u_type == COMPLEX)
+        initBlocks(c_elem);
+    }
+    
+    if(u_type == REAL){
       if(mat.m_elem != it->second.m_elem){
         if(mat.isDiag()){
           elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu);
@@ -1024,7 +1054,7 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
           elemCopy(it->second.m_elem, mat.getRealElem(), it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu, mat.isOngpu());
       }
     }
-    if(m_type == COMPLEX){
+    if(u_type == COMPLEX){
       if(mat.cm_elem != it->second.cm_elem){
         if(mat.isDiag()){
           elemBzero(it->second.cm_elem, it->second.Rnum * it->second.Cnum * sizeof(Complex), ongpu);
@@ -1055,6 +1085,16 @@ Complex* UniTensor::getComplexElem(){
 
 void UniTensor::setElem(const Real* _elem, bool _ongpu){
   try{
+    if(u_type == COMPLEX){
+      std::ostringstream err;
+      err<<"Can't set double* in a complex tensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(u_type == EMPTY){
+      u_type = REAL;
+      uelemAlloc();
+      initBlocks(elem);
+    }
     elemCopy(elem, _elem, m_elemNum * sizeof(Real), ongpu, _ongpu);
     status |= HAVEELEM;
   }
@@ -1074,6 +1114,16 @@ void UniTensor::setElem(const std::vector<Real>& _elem, bool _ongpu){
 
 void UniTensor::setElem(const Complex* _elem, bool _ongpu){
   try{
+    if(u_type == REAL){
+      std::ostringstream err;
+      err<<"Can't set complex<double>* in a real tensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(u_type == EMPTY){
+      u_type = COMPLEX;
+      uelemAlloc();
+      initBlocks(c_elem);
+    }
     elemCopy(c_elem, _elem, m_elemNum * sizeof(Complex), ongpu, _ongpu);
     status |= HAVEELEM;
   }
@@ -1108,10 +1158,7 @@ Real UniTensor::operator[](size_t idx)const{
 
 void UniTensor::set_zero(){
   try{
-    if(m_type == REAL)
-      elemBzero(elem, m_elemNum * sizeof(Real), ongpu);
-    if(m_type == COMPLEX)
-      elemBzero(c_elem, m_elemNum * sizeof(COMPLEX), ongpu);
+    (u_type == REAL) ? elemBzero(elem, m_elemNum * sizeof(Real), ongpu) : elemBzero(c_elem, m_elemNum * sizeof(COMPLEX), ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -1128,9 +1175,9 @@ void UniTensor::set_zero(const Qnum& qnum){
       throw std::runtime_error(exception_msg(err.str()));
     }
     Block& block = it->second;
-    if(m_type == REAL)
+    if(u_type == REAL)
       elemBzero(block.m_elem, block.Rnum * block.Cnum * sizeof(Real), ongpu);
-    if(m_type == COMPLEX)
+    if(u_type == COMPLEX)
       elemBzero(block.cm_elem, block.Rnum * block.Cnum * sizeof(Complex), ongpu);
     status |= HAVEELEM;
   }
@@ -1148,9 +1195,9 @@ void UniTensor::identity(const Qnum& qnum){
       throw std::runtime_error(exception_msg(err.str()));
     }
     Block& block = it->second;
-    if(m_type == REAL)
+    if(u_type == REAL)
       setIdentity(block.m_elem, block.Rnum, block.Cnum, ongpu);
-    if(m_type == COMPLEX)
+    if(u_type == COMPLEX)
       setIdentity(block.cm_elem, block.Rnum, block.Cnum, ongpu);
     status |= HAVEELEM;
   }
@@ -1161,19 +1208,19 @@ void UniTensor::identity(const Qnum& qnum){
 
 void UniTensor::identity(){
   std::map<Qnum, Block>::iterator it;
-  if(m_type == REAL)
+  if(u_type == REAL)
     for ( it = blocks.begin() ; it != blocks.end(); it++ )
       setIdentity(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
-  if(m_type == COMPLEX)
+  if(u_type == COMPLEX)
     for ( it = blocks.begin() ; it != blocks.end(); it++ )
       setIdentity(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
   status |= HAVEELEM;
 }
 
 void UniTensor::randomize(){
-  if(m_type == REAL)
+  if(u_type == REAL)
     elemRand(elem, m_elemNum, ongpu);
-  if(m_type == COMPLEX)
+  if(u_type == COMPLEX)
     elemRand(c_elem, m_elemNum, ongpu);
   status |= HAVEELEM;
 }
@@ -1187,9 +1234,9 @@ void UniTensor::orthoRand(const Qnum& qnum){
     throw std::runtime_error(exception_msg(err.str()));
   }
   Block& block = it->second;
-  if(m_type == REAL)
+  if(u_type == REAL)
     orthoRandomize(block.m_elem, block.Rnum, block.Cnum, ongpu);
-  if(m_type == COMPLEX)
+  if(u_type == COMPLEX)
     orthoRandomize(block.cm_elem, block.Rnum, block.Cnum, ongpu);
   status |= HAVEELEM;
   }
@@ -1200,10 +1247,10 @@ void UniTensor::orthoRand(const Qnum& qnum){
 
 void UniTensor::orthoRand(){
   std::map<Qnum, Block>::iterator it;
-  if(m_type == REAL)
+  if(u_type == REAL)
     for ( it = blocks.begin() ; it != blocks.end(); it++ )
       orthoRandomize(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
-  if(m_type == COMPLEX)
+  if(u_type == COMPLEX)
     for ( it = blocks.begin() ; it != blocks.end(); it++ )
       orthoRandomize(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
   status |= HAVEELEM;
@@ -1224,7 +1271,7 @@ void UniTensor::save(const std::string& fname){
       err<<"Error in writing to file '"<<fname<<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    fwrite(&m_type, 1, sizeof(m_type), fp);
+    fwrite(&u_type, 1, sizeof(u_type), fp);
     fwrite(&status, 1, sizeof(status), fp);	//OUT: status(4 bytes)
     int bondNum = bonds.size();
     fwrite(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
@@ -1240,7 +1287,7 @@ void UniTensor::save(const std::string& fname){
     int num_l = labels.size();
     fwrite(&num_l, 1, sizeof(int), fp);	//OUT: Number of Labels in the Tensor(4 bytes)
     fwrite(&(labels[0]), num_l, sizeof(int), fp);
-    if(m_type == REAL){
+    if(u_type == REAL){
       if(status & HAVEELEM){
         fwrite(&m_elemNum, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
         size_t memsize = m_elemNum * sizeof(Real);
@@ -1254,7 +1301,7 @@ void UniTensor::save(const std::string& fname){
           free(tmp_elem);
       }
     }
-    if(m_type == COMPLEX){
+    if(u_type == COMPLEX){
       if(status & HAVEELEM){
         fwrite(&m_elemNum, 1, sizeof(m_elemNum), fp);	//OUT: Number of elements in the Tensor(4 bytes)
         size_t memsize = m_elemNum * sizeof(Complex);
@@ -1331,7 +1378,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
     if(inorder && RBondNum == rowBondNum)	//do nothing
       return *this;
     else{
-      if(m_type == REAL){
+      if(u_type == REAL){
         std::vector<Bond> outBonds;
         bool withoutSymmetry = true;
         for(int b = 0; b < bonds.size(); b++){
@@ -1345,7 +1392,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
           else
             outBonds[b].change(BD_OUT);
         }
-        UniTensor UniTout(m_type, outBonds, name);
+        UniTensor UniTout(u_type, outBonds, name);
         if(status & HAVEELEM){
           if(withoutSymmetry){
             if(!inorder){
@@ -1527,7 +1574,7 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
         *this = UniTout;
         this->setLabel(newLabels);
       }
-      if(m_type == COMPLEX){
+      if(u_type == COMPLEX){
         std::vector<Bond> outBonds;
         bool withoutSymmetry = true;
         for(int b = 0; b < bonds.size(); b++){
@@ -1764,9 +1811,9 @@ UniTensor& UniTensor::transpose(){
       else
         outBonds[b].m_type = BD_OUT;
     }
-    UniTensor UniTout(m_type, outBonds, name);
+    UniTensor UniTout(u_type, outBonds, name);
     UniTout.setLabel(outLabels);
-    if(m_type == REAL){
+    if(u_type == REAL){
       if(status & HAVEELEM){
         std::map<Qnum, Block>::iterator it_in;
         std::map<Qnum, Block>::iterator it_out;
@@ -1784,7 +1831,7 @@ UniTensor& UniTensor::transpose(){
         UniTout.status |= HAVEELEM;
       }
     }
-    if(m_type == COMPLEX){
+    if(u_type == COMPLEX){
       if(status & HAVEELEM){
         std::map<Qnum, Block>::iterator it_in;
         std::map<Qnum, Block>::iterator it_out;
@@ -1873,13 +1920,13 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
       }
     }
     this->permute(rsp_labels, RBnum);
-    UniTensor Tout(m_type, newBonds, reduced_labels);
+    UniTensor Tout(u_type, newBonds, reduced_labels);
     
-    if(m_type == REAL)
+    if(u_type == REAL)
       if(status & HAVEELEM)
         Tout.setElem(elem, ongpu);
     
-    if(m_type == COMPLEX)
+    if(u_type == COMPLEX)
       if(status & HAVEELEM)
         Tout.setElem(c_elem, ongpu);
     
@@ -1927,7 +1974,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
       throw std::runtime_error(exception_msg(err.str()));
     }
     
-    if(m_type == REAL){
+    if(u_type == REAL){
       UniTensor Tt(REAL, newBonds, newLabels);
       rsp_labels[bondNum - 2] = labels[ia];
       rsp_labels[bondNum - 1] = labels[ib];
@@ -2005,7 +2052,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
       *this = Tt;
     }
     
-    if(m_type == COMPLEX){
+    if(u_type == COMPLEX){
       UniTensor Tt(COMPLEX, newBonds, newLabels);
       rsp_labels[bondNum - 2] = labels[ia];
       rsp_labels[bondNum - 1] = labels[ib];
@@ -2110,9 +2157,9 @@ std::complex<double> UniTensor::trace()const{
       return trVal;
     }
     else{
-      if(m_type == REAL)
+      if(u_type == REAL)
         return std::complex<double>(getElemAt(0, elem, ongpu), 0);
-      if(m_type == COMPLEX)
+      if(u_type == COMPLEX)
         return getElemAt(0, c_elem, ongpu);
     }
   }
@@ -2191,7 +2238,7 @@ std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<Matrix>& Ls)
 
 bool UniTensor::similar(const UniTensor& Tb)const{
   try{
-    if(m_type != Tb.m_type)
+    if(u_type != Tb.u_type)
       return false;
     if(bonds.size() != Tb.bonds.size())
       return false;
@@ -2208,7 +2255,7 @@ bool UniTensor::similar(const UniTensor& Tb)const{
 
 bool UniTensor::elemCmp(const UniTensor& UniT)const{
   try{
-    if(m_type != UniT.m_type)
+    if(u_type != UniT.u_type)
       return false;
     double diff;
     if(m_elemNum == UniT.m_elemNum){
@@ -2280,9 +2327,9 @@ std::string UniTensor::printRawElem(bool print)const{
       }
     }
     else if(status & HAVEELEM){
-      if(m_type == REAL)
+      if(u_type == REAL)
         os<<"\nScalar: " << elem[0]<<"\n\n";
-      if(m_type == COMPLEX)
+      if(u_type == COMPLEX)
         os<<"\nScalar: " << c_elem[0]<<"\n\n";
     }
     else{
@@ -2331,6 +2378,21 @@ UniTensor& UniTensor::operator*= (double a){
   return *this;
 }
 
+UniTensor& UniTensor::operator*= (Complex a){
+  try{
+    if(!(status & HAVEELEM)){
+      std::ostringstream err;
+      err<<"Cannot perform scalar multiplication on a tensor before setting its elements.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    *this = *this * a;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::operator*=(std::complex<double>):");
+  }
+  return *this;
+}
+
 UniTensor& UniTensor::operator*=(const UniTensor& uT){
   try{
     *this = *this * uT;
@@ -2353,9 +2415,9 @@ UniTensor& UniTensor::operator+= (const UniTensor& Tb){
       err<<"Cannot perform addition of two tensors having different bonds.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(m_type == REAL)
+    if(u_type == REAL)
       vectorAdd(elem, Tb.elem, m_elemNum, ongpu, Tb.ongpu);
-    if(m_type == COMPLEX)
+    if(u_type == COMPLEX)
       vectorAdd(c_elem, Tb.c_elem, m_elemNum, ongpu, Tb.ongpu);
   }
   catch(const std::exception& e){
@@ -2420,7 +2482,7 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
     size_t sB_r, sB_c;	//sub-block of a Qidx
     size_t sB_rDim, sB_cDim;	//sub-block of a Qidx
     size_t B_cDim;
-    if(m_type == REAL){
+    if(u_type == REAL){
       Real* Eptr;
       for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
         Q_off = it->first;
@@ -2446,7 +2508,7 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
             Eptr[(sB_r * B_cDim) + sB_c] *= sign;
       }
     }
-    if(m_type == COMPLEX){
+    if(u_type == COMPLEX){
       Complex* Eptr;
       for(std::map<int, size_t>::iterator it = QidxEnc.begin(); it != QidxEnc.end(); it++){
         Q_off = it->first;
@@ -2537,7 +2599,7 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
         cBonds.push_back(Ta.bonds[i]);
       for(int i = conBond; i < BbondNum; i++)
         cBonds.push_back(Tb.bonds[i]);
-      matrixType tp = (Ta.m_type == REAL && Tb.m_type == REAL) ? REAL : COMPLEX;
+      muType tp = (Ta.u_type == REAL && Tb.u_type == REAL) ? REAL : COMPLEX;
       UniTensor Tc(tp, cBonds);
       if(cBonds.size())
         Tc.setLabel(newLabelC);
@@ -2659,6 +2721,53 @@ UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
   }
 }
 
+void UniTensor::RtoC(){
+  try{
+    if(u_type == EMPTY){
+      std::ostringstream err;
+      err<<"This matrix is EMPTY. Nothing to do.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(u_type == REAL){
+      u_type = COMPLEX;
+      c_elem = (Complex*)elemAlloc( m_elemNum * sizeof(Complex), ongpu);
+      elemCast(c_elem, elem, m_elemNum, ongpu, ongpu);
+      size_t offset = 0;
+      for(std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+        it->second.RtoC();
+        it->second.cm_elem = &(c_elem[offset]);
+        it->second.ongpu = ongpu;
+        offset += it->second.Rnum * it->second.Cnum;
+      }
+      elem = NULL;
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::RtoC( )");
+  }
+}
+
+UniTensor operator*(const std::complex<double>& a, const UniTensor& Ta){
+  try{
+    if(!(Ta.status & Ta.HAVEELEM)){
+      std::ostringstream err;
+      err<<"Cannot perform scalar multiplication on a tensor before setting its elements.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    UniTensor Tb(Ta);
+    if(Tb.u_type == REAL)
+      Tb.RtoC();
+    vectorScal(a, Tb.c_elem, Tb.m_elemNum, Tb.ongpu);
+    return Tb;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function operator*(uni10::UniTensor&, complex<double>&):");
+    return UniTensor();
+  }
+}
+        
+UniTensor operator*(const UniTensor& Ta, const std::complex<double>& a){return a * Ta;};
+
 UniTensor operator*(const UniTensor& Ta, double a){
   try{
     if(!(Ta.status & Ta.HAVEELEM)){
@@ -2667,9 +2776,9 @@ UniTensor operator*(const UniTensor& Ta, double a){
       throw std::runtime_error(exception_msg(err.str()));
     }
     UniTensor Tb(Ta);
-    if(Tb.m_type == REAL)
+    if(Tb.u_type == REAL)
       vectorScal(a, Tb.elem, Tb.m_elemNum, Tb.ongpu);
-    if(Tb.m_type == COMPLEX)
+    if(Tb.u_type == COMPLEX)
       vectorScal(a, Tb.c_elem, Tb.m_elemNum, Tb.ongpu);
     return Tb;
   }
@@ -2694,10 +2803,10 @@ UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
       throw std::runtime_error(exception_msg(err.str()));
     }
     UniTensor Tc(Ta);
-    if(Tc.m_type == REAL)
-    vectorAdd(Tc.elem, Tb.elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu);
-    if(Tc.m_type == COMPLEX)
-    vectorAdd(Tc.c_elem, Tb.c_elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu);
+    if(Tc.u_type == REAL)
+      vectorAdd(Tc.elem, Tb.elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu);
+    if(Tc.u_type == COMPLEX)
+      vectorAdd(Tc.c_elem, Tb.c_elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu);
     return Tc;
   }
   catch(const std::exception& e){
@@ -2710,13 +2819,20 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
   try{
     if(!(UniT.status & UniT.HAVEBOND)){
       if(UniT.ongpu){
-        os<<"\nScalar: " << getElemAt(0, UniT.elem, UniT.ongpu);
+        if(UniT.u_type == EMPTY)
+          os<<"This Tensor is EMPTY";
+        if(UniT.u_type == REAL)
+          os<<"\nScalar: " << getElemAt(0, UniT.elem, UniT.ongpu);
+        if(UniT.u_type == COMPLEX)
+          os<<"\nScalar: " << getElemAt(0, UniT.c_elem, UniT.ongpu);
         os<<", onGPU";
       }
       else{
-        if(UniT.m_type == REAL)
+        if(UniT.u_type == EMPTY)
+          os<<"This Tensor is EMPTY";
+        if(UniT.u_type == REAL)
           os<<"\nScalar: " << UniT.elem[0];
-        if(UniT.m_type == COMPLEX)
+        if(UniT.u_type == COMPLEX)
           os<<"\nScalar: " << UniT.c_elem[0];
       }
       os<<"\n\n";
@@ -2733,18 +2849,19 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
     int layer = std::max(row, col);
     int nmlen = UniT.name.length() + 2;
     int star = 12 + (14 - nmlen) / 2;
-    os<<std::endl;
-    if(UniT.m_type == REAL)
-      os << "REAL" << std::endl; 
-    if(UniT.m_type == COMPLEX)
-      os << "COMPLEX" << std::endl;
-    os<<std::endl;
     for(int s = 0; s < star; s++)
       os << "*";
     if(UniT.name.length() > 0)
       os << " " << UniT.name << " ";
     for(int s = 0; s < star; s++)
       os<<"*";
+    os<<std::endl;
+    if(UniT.u_type == EMPTY)
+      os << "EMPTY" << std::endl; 
+    if(UniT.u_type == REAL)
+      os << "REAL" << std::endl; 
+    if(UniT.u_type == COMPLEX)
+      os << "COMPLEX" << std::endl;
     if(UniT.ongpu)
       os<<"\n                 onGPU";
     os << "\n             ____________\n";
@@ -2795,12 +2912,10 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
   }
 	return os;
 }
-
-
 /**************** Private Functions ***********************/
 
-void UniTensor::initUniT(matrixType _tp){ //GPU
-  m_type = _tp;
+void UniTensor::initPrototype(muType _tp){
+  u_type = _tp;
   if(bonds.size()){
     m_elemNum = grouping();
     if(!(blocks.size() > 0)){ //No block in Tensor, Error!
@@ -2817,36 +2932,15 @@ void UniTensor::initUniT(matrixType _tp){ //GPU
   }
   else{
     Qnum q0(0);
-    blocks[q0] = (_tp == REAL)? Block(REAL, 1, 1): Block(COMPLEX, 1, 1);
+    blocks[q0] = (u_type == REAL)? Block(REAL, 1, 1): Block(COMPLEX, 1, 1);
     RBondNum = 0;
     RQdim = 0;
     CQdim = 0;
     m_elemNum = 1;
     status |= HAVEELEM;
   }
-  if(_tp == REAL){
-    elem = NULL;
-    elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
-    c_elem = NULL;
-  }
-  if(_tp == COMPLEX){
-    c_elem = NULL;
-    c_elem = (Complex*)elemAlloc(sizeof(Complex) * m_elemNum, ongpu);
-    elem = NULL;
-  }
-  size_t offset = 0;
-  for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-    if(_tp == REAL)
-      it->second.m_elem = &(elem[offset]);
-    if(_tp == COMPLEX)
-      it->second.cm_elem = &(c_elem[offset]);
-    it->second.ongpu = ongpu;
-    offset += it->second.Rnum * it->second.Cnum;
-  }
-  if(_tp == REAL)
-    elemBzero(elem, sizeof(Real) * m_elemNum, ongpu);
-  if(_tp == COMPLEX)
-    elemBzero(c_elem, sizeof(Complex) * m_elemNum, ongpu);
+  elem = NULL;
+  c_elem = NULL;
   
   ELEMNUM += m_elemNum;
   COUNTER++;
@@ -2856,47 +2950,35 @@ void UniTensor::initUniT(matrixType _tp){ //GPU
     MAXELEMTEN = m_elemNum;
 }
 
-void UniTensor::initUniT(){ //GPU
-  m_type = REAL;
-  if(bonds.size()){
-    m_elemNum = grouping();
-    if(!(blocks.size() > 0)){ //No block in Tensor, Error!
-      std::ostringstream err;
-      err<<"There is no symmetry block with the given bonds:\n";
-      for(int b = 0; b < bonds.size(); b++)
-        err<<"    "<<bonds[b];
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    labels.assign(bonds.size(), 0);
-    for(int b = 0; b < bonds.size(); b++)
-      labels[b] = b;
-    status |= HAVEBOND;
-  }
-  else{
-    Qnum q0(0);
-    blocks[q0] = Block(REAL, 1, 1);
-    RBondNum = 0;
-    RQdim = 0;
-    CQdim = 0;
-    m_elemNum = 1;
-    status |= HAVEELEM;
-  }
-  elem = NULL;
-  elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
-  c_elem = NULL;
+
+void UniTensor::initBlocks(Real* _elem){
   size_t offset = 0;
-  for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-    it->second.m_elem = &(elem[offset]);
+  for(std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+    it->second.m_type = u_type; 
+    it->second.m_elem = &(_elem[offset]);
     it->second.ongpu = ongpu;
     offset += it->second.Rnum * it->second.Cnum;
   }
-  elemBzero(elem, sizeof(Real) * m_elemNum, ongpu);
-  ELEMNUM += m_elemNum;
-  COUNTER++;
-  if(ELEMNUM > MAXELEMNUM)
-    MAXELEMNUM = ELEMNUM;
-  if(m_elemNum > MAXELEMTEN)
-    MAXELEMTEN = m_elemNum;
+}
+
+void UniTensor::initBlocks(Complex* _c_elem){
+  size_t offset = 0;
+  for(std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+    it->second.m_type = u_type; 
+    it->second.cm_elem = &(_c_elem[offset]);
+    it->second.ongpu = ongpu;
+    offset += it->second.Rnum * it->second.Cnum;
+  }
+}
+
+void UniTensor::initUniT(muType _tp){ //GPU
+  initPrototype(_tp); 
+  uelemAlloc();
+  if(u_type == REAL)
+  initBlocks(elem);  
+  if(u_type == COMPLEX)
+  initBlocks(c_elem);  
+  uelemBzero();
 }
 
 size_t UniTensor::grouping(){
@@ -3023,7 +3105,7 @@ size_t UniTensor::grouping(){
   size_t off = 0;
   for ( it2 = col_QnumMdim.begin() ; it2 != col_QnumMdim.end(); it2++ ){
     it = row_QnumMdim.find(it2->first);
-    Block blk(m_type, it->second, it2->second); // blk(Rnum, Cnum);
+    Block blk(u_type, it->second, it2->second); // blk(Rnum, Cnum);
     off += blk.Rnum * blk.Cnum;
     blocks[it->first] = blk;
     Block* blkptr = &(blocks[it->first]);
@@ -3051,6 +3133,27 @@ size_t UniTensor::grouping(){
       }
     }
   return off;
+}
+
+void UniTensor::uelemAlloc(){
+  if(u_type == REAL) 
+    elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu); 
+  if(u_type == COMPLEX)
+    c_elem = (Complex*)elemAlloc(sizeof(Complex) * m_elemNum, ongpu);
+}
+
+void UniTensor::uelemFree(){
+  if(elem != NULL)
+    elemFree(elem, sizeof(Real) * m_elemNum, ongpu);
+  if(c_elem != NULL)
+    elemFree(c_elem, sizeof(Complex) * m_elemNum, ongpu);
+}
+
+void UniTensor::uelemBzero(){
+  if(u_type == REAL) 
+    elemBzero(elem, sizeof(Real) * m_elemNum, ongpu);
+  if(u_type == COMPLEX)  
+    elemBzero(c_elem, sizeof(Complex) * m_elemNum, ongpu);
 }
 
 std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{

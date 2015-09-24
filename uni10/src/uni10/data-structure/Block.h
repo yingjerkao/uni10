@@ -42,7 +42,7 @@
 
 namespace uni10{
 	    
-    enum matrixType {
+    enum muType {
 	EMPTY = -1, ///<Defines an incoming Bond
 	REAL = 0,  ///<Defines an outgoing Bond
 	COMPLEX = 1
@@ -53,12 +53,12 @@ namespace uni10{
     class CMatrix;
     class Block{
 	public:
-	    friend std::ostream& operator<< (std::ostream& os, const matrixType& tp);
+	    friend std::ostream& operator<< (std::ostream& os, const muType& tp);
 	    /********************* verified **************************/	    
 	    Block();
 	    Block(const Block& _b);
 	    Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
-	    Block(matrixType _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
+	    Block(muType _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
 	    virtual ~Block();
 	    size_t row()const;
 	    size_t col()const;
@@ -68,7 +68,7 @@ namespace uni10{
 	    void save(const std::string& fname)const;
 	    double norm()const;
 	    void RtoC();
-	    matrixType getType()const;
+	    muType getType()const;
 	    std::vector<Matrix> qr()const;
 	    std::vector<Matrix> rq()const;
 	    std::vector<Matrix> ql()const;
@@ -108,7 +108,7 @@ namespace uni10{
 	    //friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 
 	protected:
-	    matrixType m_type;
+	    muType m_type;
 	    double* m_elem;
 	    std::complex<double>* cm_elem;
 	    size_t Rnum;		//number of rows of the block

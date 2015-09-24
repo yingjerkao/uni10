@@ -38,7 +38,7 @@ typedef std::complex<double> Complex;
 
 namespace uni10{
   
-  std::ostream& operator<< (std::ostream& os, const matrixType& tp){
+  std::ostream& operator<< (std::ostream& os, const muType& tp){
     try{
       if(tp == REAL)
         os << "The matrix type is REAL.";
@@ -49,7 +49,7 @@ namespace uni10{
       os << std::endl << std::endl;
     }
     catch(const std::exception& e){
-      propogate_exception(e, "In function operator<<(std::ostream&, uni10::matrixType&):");
+      propogate_exception(e, "In function operator<<(std::ostream&, uni10::muType&):");
     }
     return os;
   }
@@ -58,7 +58,7 @@ namespace uni10{
 
   Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): m_type(EMPTY), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
 
-  Block::Block(matrixType _tp, size_t _Rnum, size_t _Cnum, bool _diag): m_type(_tp), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
+  Block::Block(muType _tp, size_t _Rnum, size_t _Cnum, bool _diag): m_type(_tp), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
 
   Block::Block(const Block& _b): m_type(_b.m_type), Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem), cm_elem(_b.cm_elem){}
   
@@ -91,7 +91,7 @@ namespace uni10{
     }
   }
 
-  matrixType Block::getType()const{
+  muType Block::getType()const{
     return m_type;
   }
 
@@ -118,7 +118,7 @@ namespace uni10{
         err<<"Cannot perform QR decomposition when Rnum < Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
       if(!diag){
@@ -158,7 +158,7 @@ namespace uni10{
         err<<"Cannot perform RQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
       outs.push_back(Matrix(tp, Rnum, Rnum, false, ongpu)); //r
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu)); //q
       if(!diag){
@@ -199,7 +199,7 @@ namespace uni10{
         err<<"Cannot perform QL decomposition when Rnum < Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
       if(!diag){
@@ -239,7 +239,7 @@ namespace uni10{
         err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       } 
-      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
       outs.push_back(Matrix(tp, Rnum, Rnum, false, ongpu));
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       if(!diag){
@@ -283,7 +283,7 @@ namespace uni10{
     */
       size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
       //GPU_NOT_READY
-      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
       outs.push_back(Matrix(tp, Rnum, min, false, ongpu));
       outs.push_back(Matrix(tp, min, min, true, ongpu));
       outs.push_back(Matrix(tp, min, Cnum, false, ongpu));
@@ -322,7 +322,7 @@ namespace uni10{
       if(diag)
         return *this;
       else{
-        matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+        muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
         Matrix D(tp, Rnum, Cnum, true, ongpu);
         if(m_type == REAL)
           ::uni10::getDiag(m_elem, D.getRealElem(), Rnum, Cnum, D.elemNum(), ongpu, D.isOngpu());
@@ -372,7 +372,7 @@ namespace uni10{
         throw std::runtime_error(exception_msg(err.str()));
       }
       //GPU_NOT_READY
-      matrixType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
       outs.push_back(Matrix(tp, Rnum, Cnum, true, ongpu));
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       Matrix Eig(REAL, Rnum, Cnum, true, ongpu);
