@@ -1158,6 +1158,11 @@ Real UniTensor::operator[](size_t idx)const{
 
 void UniTensor::set_zero(){
   try{
+    if(u_type == EMPTY){
+      std::ostringstream err;
+      err<<"Can't set zeros in EMPTY tensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
     (u_type == REAL) ? elemBzero(elem, m_elemNum * sizeof(Real), ongpu) : elemBzero(c_elem, m_elemNum * sizeof(COMPLEX), ongpu);
     status |= HAVEELEM;
   }
@@ -1174,15 +1179,38 @@ void UniTensor::set_zero(const Qnum& qnum){
       err<<"There is no block with the given quantum number "<<qnum;
       throw std::runtime_error(exception_msg(err.str()));
     }
+    if(it->second.m_type == EMPTY){
+      std::ostringstream err;
+      err<<"Can't set zeros in EMPTY block";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
     Block& block = it->second;
-    if(u_type == REAL)
-      elemBzero(block.m_elem, block.Rnum * block.Cnum * sizeof(Real), ongpu);
-    if(u_type == COMPLEX)
-      elemBzero(block.cm_elem, block.Rnum * block.Cnum * sizeof(Complex), ongpu);
+    (u_type == REAL) ? elemBzero(block.m_elem, block.Rnum * block.Cnum * sizeof(Real), ongpu) : elemBzero(block.cm_elem, block.Rnum * block.Cnum * sizeof(Complex), ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::set_zero(std::Qnum&):");
+  }
+}
+
+void UniTensor::identity(){
+  try{
+    if(u_type == EMPTY){
+      std::ostringstream err;
+      err<<"Can't set identity in EMPTY tensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    std::map<Qnum, Block>::iterator it;
+    if(u_type == REAL)
+      for ( it = blocks.begin() ; it != blocks.end(); it++ )
+        setIdentity(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
+    if(u_type == COMPLEX)
+      for ( it = blocks.begin() ; it != blocks.end(); it++ )
+        setIdentity(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
+    status |= HAVEELEM;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::identity():");
   }
 }
 
@@ -1194,11 +1222,13 @@ void UniTensor::identity(const Qnum& qnum){
       err<<"There is no block with the given quantum number "<<qnum;
       throw std::runtime_error(exception_msg(err.str()));
     }
+    if(it->second.m_type == EMPTY){
+      std::ostringstream err;
+      err<<"Can't set identity in EMPTY block";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
     Block& block = it->second;
-    if(u_type == REAL)
-      setIdentity(block.m_elem, block.Rnum, block.Cnum, ongpu);
-    if(u_type == COMPLEX)
-      setIdentity(block.cm_elem, block.Rnum, block.Cnum, ongpu);
+    (u_type == REAL) ? setIdentity(block.m_elem, block.Rnum, block.Cnum, ongpu) : setIdentity(block.cm_elem, block.Rnum, block.Cnum, ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
@@ -1206,39 +1236,41 @@ void UniTensor::identity(const Qnum& qnum){
   }
 }
 
-void UniTensor::identity(){
-  std::map<Qnum, Block>::iterator it;
-  if(u_type == REAL)
-    for ( it = blocks.begin() ; it != blocks.end(); it++ )
-      setIdentity(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
-  if(u_type == COMPLEX)
-    for ( it = blocks.begin() ; it != blocks.end(); it++ )
-      setIdentity(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
-  status |= HAVEELEM;
-}
 
 void UniTensor::randomize(){
-  if(u_type == REAL)
-    elemRand(elem, m_elemNum, ongpu);
-  if(u_type == COMPLEX)
-    elemRand(c_elem, m_elemNum, ongpu);
-  status |= HAVEELEM;
+  try{
+    if(u_type == EMPTY){
+      std::ostringstream err;
+      err<<"Can't randomize EMPTY tensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    (u_type == REAL) ? elemRand(elem, m_elemNum, ongpu) : elemRand(c_elem, m_elemNum, ongpu);
+    status |= HAVEELEM;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::randomize():");
+  }
 }
 
 void UniTensor::orthoRand(const Qnum& qnum){
   try{
-  std::map<Qnum, Block>::iterator it = blocks.find(qnum);
-  if(it == blocks.end()){
-    std::ostringstream err;
-    err<<"There is no block with the given quantum number "<<qnum;
-    throw std::runtime_error(exception_msg(err.str()));
-  }
-  Block& block = it->second;
-  if(u_type == REAL)
-    orthoRandomize(block.m_elem, block.Rnum, block.Cnum, ongpu);
-  if(u_type == COMPLEX)
-    orthoRandomize(block.cm_elem, block.Rnum, block.Cnum, ongpu);
-  status |= HAVEELEM;
+    std::map<Qnum, Block>::iterator it = blocks.find(qnum);
+    if(it == blocks.end()){
+      std::ostringstream err;
+      err<<"There is no block with the given quantum number "<<qnum;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(u_type == EMPTY){
+      std::ostringstream err;
+      err<<"Can't orthoRand EMPTY block";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    Block& block = it->second;
+    if(u_type == REAL)
+      orthoRandomize(block.m_elem, block.Rnum, block.Cnum, ongpu);
+    if(u_type == COMPLEX)
+      orthoRandomize(block.cm_elem, block.Rnum, block.Cnum, ongpu);
+    status |= HAVEELEM;
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::orthoRand(std::Qnum&):");
@@ -1246,14 +1278,24 @@ void UniTensor::orthoRand(const Qnum& qnum){
 }
 
 void UniTensor::orthoRand(){
-  std::map<Qnum, Block>::iterator it;
-  if(u_type == REAL)
-    for ( it = blocks.begin() ; it != blocks.end(); it++ )
-      orthoRandomize(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
-  if(u_type == COMPLEX)
-    for ( it = blocks.begin() ; it != blocks.end(); it++ )
-      orthoRandomize(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
-  status |= HAVEELEM;
+  try{
+    if(u_type == EMPTY){
+      std::ostringstream err;
+      err<<"Can't orthoRand EMPTY tensor";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    std::map<Qnum, Block>::iterator it;
+    if(u_type == REAL)
+      for ( it = blocks.begin() ; it != blocks.end(); it++ )
+        orthoRandomize(it->second.m_elem, it->second.Rnum, it->second.Cnum, ongpu);
+    if(u_type == COMPLEX)
+      for ( it = blocks.begin() ; it != blocks.end(); it++ )
+        orthoRandomize(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
+    status |= HAVEELEM;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::orthoRand():");
+  }
 }
 
 void UniTensor::clear(){
@@ -1922,13 +1964,8 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
     this->permute(rsp_labels, RBnum);
     UniTensor Tout(u_type, newBonds, reduced_labels);
     
-    if(u_type == REAL)
-      if(status & HAVEELEM)
-        Tout.setElem(elem, ongpu);
-    
-    if(u_type == COMPLEX)
-      if(status & HAVEELEM)
-        Tout.setElem(c_elem, ongpu);
+    if(status & HAVEELEM)
+      (Tout.u_type == REAL) ? Tout.setElem(elem, ongpu) : Tout.setElem(c_elem, ongpu);
     
     *this = Tout;
   }
@@ -2403,8 +2440,15 @@ UniTensor& UniTensor::operator*=(const UniTensor& uT){
   return *this;
 }
 
-UniTensor& UniTensor::operator+= (const UniTensor& Tb){
+UniTensor& UniTensor::operator+= (const UniTensor& _Tb){
   try{
+    
+    UniTensor Tb(_Tb);
+    if(u_type == REAL && Tb.u_type == COMPLEX)
+      this->RtoC();
+    if(Tb.u_type == REAL && u_type == COMPLEX)
+      Tb.RtoC();
+    
     if(!(status & Tb.status & HAVEELEM)){
       std::ostringstream err;
       err<<"Cannot perform addition of tensors before setting their elements.";
@@ -2415,6 +2459,7 @@ UniTensor& UniTensor::operator+= (const UniTensor& Tb){
       err<<"Cannot perform addition of two tensors having different bonds.";
       throw std::runtime_error(exception_msg(err.str()));
     }
+    
     if(u_type == REAL)
       vectorAdd(elem, Tb.elem, m_elemNum, ongpu, Tb.ongpu);
     if(u_type == COMPLEX)
@@ -2540,8 +2585,16 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
   }
 }
 
-UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
+UniTensor contract(UniTensor& _Ta, UniTensor& _Tb, bool fast){
   try{
+    
+    UniTensor Ta(_Ta);
+    UniTensor Tb(_Tb);
+    if(Ta.u_type == REAL && Tb.u_type == COMPLEX)
+      Ta.RtoC();
+    if(Tb.u_type == REAL && Ta.u_type == COMPLEX)
+      Tb.RtoC();
+    
     if(!(Ta.status & Tb.status & Ta.HAVEELEM)){
       std::ostringstream err;
       err<<"Cannot perform contraction of two tensors before setting their elements.";
@@ -2551,6 +2604,8 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
       UniTensor Ttmp = Tb;
       return contract(Ta, Ttmp, fast);
     }
+    
+    
     if(Ta.status & Ta.HAVEBOND && Tb.status & Ta.HAVEBOND){
       int AbondNum = Ta.bonds.size();
       int BbondNum = Tb.bonds.size();
@@ -2616,12 +2671,7 @@ UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast){
             err<<"The dimensions the bonds to be contracted out are different.";
             throw std::runtime_error(exception_msg(err.str()));
           }
-          if(blockA.getType() == REAL && blockB.getType() == COMPLEX)
-            blockA.RtoC();
-          if(blockA.getType() == COMPLEX && blockB.getType() == REAL)
-            blockB.RtoC();
-          
-          if(blockA.getType() == REAL && blockB.getType() == REAL)
+          if(Ta.u_type == REAL && Tb.u_type == REAL)
             matrixMul(blockA.getRealElem(), blockB.getRealElem(), blockA.row(), blockB.col(), blockA.col(), blockC.getRealElem(), Ta.ongpu, Tb.ongpu, Tc.ongpu);
           else
             matrixMul(blockA.getComplexElem(), blockB.getComplexElem(), blockA.row(), blockB.col(), blockA.col(), blockC.getComplexElem(), Ta.ongpu, Tb.ongpu, Tc.ongpu);
@@ -2790,8 +2840,16 @@ UniTensor operator*(const UniTensor& Ta, double a){
 
 UniTensor operator*(double a, const UniTensor& Ta){return Ta * a;};
 
-UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
+UniTensor operator+(const UniTensor& _Ta, const UniTensor& _Tb){
   try{
+    
+    UniTensor Ta(_Ta);
+    UniTensor Tb(_Tb);
+    if(Ta.u_type == REAL && Tb.u_type == COMPLEX)
+      Ta.RtoC();
+    if(Tb.u_type == REAL && Ta.u_type == COMPLEX)
+      Tb.RtoC();
+    
     if(!(Ta.status & Tb.status & Ta.HAVEELEM)){
       std::ostringstream err;
       err<<"Cannot perform addition of tensors before setting their elements.";
@@ -2802,6 +2860,7 @@ UniTensor operator+(const UniTensor& Ta, const UniTensor& Tb){
       err<<"Cannot perform addition of two tensors having diffirent bonds.";
       throw std::runtime_error(exception_msg(err.str()));
     }
+    
     UniTensor Tc(Ta);
     if(Tc.u_type == REAL)
       vectorAdd(Tc.elem, Tb.elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu);
