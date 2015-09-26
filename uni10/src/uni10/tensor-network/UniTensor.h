@@ -109,6 +109,7 @@ namespace uni10 {
         size_t blockNum()const;
         UniTensor& combineBond(const std::vector<int>& combined_labels);
         std::vector<Qnum> blockQnum()const;
+        Qnum blockQnum(size_t idx)const;
         
         void set_zero();
         void set_zero(const Qnum& qnum);
@@ -132,43 +133,52 @@ namespace uni10 {
         friend UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb);
         friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
         friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
-        /****************************/
-       
-
         friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
+        
+        UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
+        UniTensor& permute(int* newLabels, int inBondNum);
+        UniTensor& permute(int inBondNum);
+        
         std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum = 0)const;
         std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
         std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
         std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
         std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
-        
-        UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
-        UniTensor& permute(int* newLabels, int inBondNum);
-        UniTensor& permute(int inBondNum);
-        UniTensor& operator=(const UniTensor& UniT);
-        
-        Matrix getRawElem()const;
+       
         UniTensor& transpose();
-        Qnum blockQnum(size_t idx)const;
-        UniTensor& assign(const std::vector<Bond>& _bond);
+        void save(const std::string& fname);
         UniTensor& assign(muType _tp, const std::vector<Bond>& _bond);
-        void addGate(const std::vector<_Swap>& swaps);
+
+        Matrix getRawElem()const;
         bool similar(const UniTensor& Tb)const;
         bool elemCmp(const UniTensor& UniT)const;
         std::complex<double> trace()const;
+        /****************************/
+
+        /******** check func ********/
+        bool isCelemEmpty(); 
+        bool isElemEmpty();
+        /****************************/
+        
+        /******** find bug **********/
+        UniTensor& operator=(const UniTensor& UniT);
+        UniTensor& assign(const std::vector<Bond>& _bond);
+        /****************************/
+        
+        double* getElem();
+        double* getRealElem();
+        void addGate(const std::vector<_Swap>& swaps);
         std::vector<_Swap> exSwap(const UniTensor& Tb)const;
-        void save(const std::string& fname);
-        std::complex<double> at(muType _tp, const std::vector<int>& idxs)const;
-        std::complex<double> at(muType _tp, const std::vector<size_t>& idxs)const;
         double at(const std::vector<int>& idxs)const;
         double at(const std::vector<size_t>& idxs)const;
         std::string printRawElem(bool print=true)const;
         static std::string profile(bool print = true);
         UniTensor& partialTrace(int la, int lb);
-        double* getElem();
-        double* getRealElem();
         std::complex<double>* getComplexElem();
+
         double operator[](size_t idx) const;
+        std::complex<double> at(muType _tp, const std::vector<int>& idxs)const;
+        std::complex<double> at(muType _tp, const std::vector<size_t>& idxs)const;
         
         friend class CUniTensor;
         friend class Node;

@@ -295,6 +295,7 @@ UniTensor::~UniTensor(){
 
 UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
   try{
+    
     u_type = UniT.u_type;
     bonds = UniT.bonds;
     blocks = UniT.blocks;
@@ -309,25 +310,20 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     RQidx2Dim = UniT.RQidx2Dim;
     CQidx2Dim = UniT.CQidx2Dim;
     RQidx2Blk = UniT.RQidx2Blk;
+    
     ELEMNUM -= m_elemNum;	//free original memory
-    if(elem != NULL){
-      elemFree(elem, sizeof(Real) * m_elemNum, ongpu);
-      elem = NULL;
-    }
-    if(c_elem != NULL){
-      elemFree(c_elem, sizeof(Complex) * m_elemNum, ongpu);
-      c_elem = NULL;
-    }
+
+    uelemFree();
+    elem = NULL;
+    c_elem = NULL;
     status = UniT.status;
     m_elemNum = UniT.m_elemNum;
-    if(u_type == REAL)
-      elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
-    if(u_type == COMPLEX)
-      c_elem = (Complex*)elemAlloc(sizeof(Complex) * m_elemNum, ongpu);
-    
+ 
+    uelemAlloc();
+
     std::map<Qnum, Block>::const_iterator it2;
     std::map< const Block* , Block*> blkmap;
-    
+
     if(u_type == REAL){
       for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
         it->second.m_elem = &(elem[it->second.m_elem - UniT.elem]);
@@ -336,7 +332,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
         blkmap[&(it2->second)] = &(it->second);
       }
     }
-    
+
     if(u_type ==COMPLEX){
       for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
         it->second.cm_elem = &(c_elem[it->second.cm_elem - UniT.c_elem]);
@@ -345,7 +341,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
         blkmap[&(it2->second)] = &(it->second);
       }
     }
-    
+
     if(UniT.status & HAVEBOND){
       for(std::map<int, Block*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
         it->second = blkmap[it->second];
@@ -356,11 +352,12 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
       MAXELEMNUM = ELEMNUM;
     if(m_elemNum > MAXELEMTEN)
       MAXELEMTEN = m_elemNum;
-    
+
     if(u_type == REAL)
       elemCopy(elem, UniT.elem, sizeof(Real) * UniT.m_elemNum, ongpu, UniT.ongpu);
     if(u_type == COMPLEX)
       elemCopy(c_elem, UniT.c_elem, sizeof(Complex) * UniT.m_elemNum, ongpu, UniT.ongpu);
+
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::operator=(uni10::UniTensor&):");
@@ -389,6 +386,7 @@ UniTensor& UniTensor::assign(muType _tp, const std::vector<Bond>& _bond){
   }
   return *this;
 }
+
 
 void UniTensor::setLabel(const std::vector<int>& newLabels){
   try{
@@ -578,6 +576,7 @@ void UniTensor::setRawElem(const Real* rawElem){
       uelemAlloc();
       initBlocks(elem);
     }
+    
     int bondNum = bonds.size();
     std::vector<int> Q_idxs(bondNum, 0);
     std::vector<int> Q_Bdims(bondNum, 0);
@@ -635,6 +634,7 @@ void UniTensor::setRawElem(const Real* rawElem){
           }
         }
     }
+    
     if(ongpu){
       elemCopy(elem, work, m_elemNum * sizeof(Real), ongpu, false);
       free(work);
@@ -2273,6 +2273,13 @@ std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<Matrix>& Ls)
   }
 }
 
+bool UniTensor::isCelemEmpty(){
+  return c_elem == NULL;
+}
+bool UniTensor::isElemEmpty(){
+  return elem == NULL;
+}
+
 bool UniTensor::similar(const UniTensor& Tb)const{
   try{
     if(u_type != Tb.u_type)
@@ -2294,7 +2301,7 @@ bool UniTensor::elemCmp(const UniTensor& UniT)const{
   try{
     if(u_type != UniT.u_type)
       return false;
-    double diff;
+    double diff;;
     if(m_elemNum == UniT.m_elemNum){
       for(size_t i = 0; i < m_elemNum; i++){
         diff = std::abs(elem[i] - UniT.elem[i]);
@@ -2991,7 +2998,7 @@ void UniTensor::initPrototype(muType _tp){
   }
   else{
     Qnum q0(0);
-    blocks[q0] = (u_type == REAL)? Block(REAL, 1, 1): Block(COMPLEX, 1, 1);
+    blocks[q0] = Block(u_type, 1, 1);
     RBondNum = 0;
     RQdim = 0;
     CQdim = 0;
