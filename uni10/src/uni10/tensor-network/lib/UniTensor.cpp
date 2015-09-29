@@ -230,9 +230,17 @@ UniTensor::UniTensor(const UniTensor& UniT): //GPU
     try{
       
       uelemAlloc();
+     
 
       std::map<Qnum, Block>::const_iterator it2;
       std::map<const Block* , Block*> blkmap;
+      
+      if(u_type == EMPTY){
+        for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+          it2 = UniT.blocks.find(it->first);
+          blkmap[(&(it2->second))] = &(it->second);
+        }
+      } 
       
       if(u_type == REAL){
         for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
@@ -241,7 +249,7 @@ UniTensor::UniTensor(const UniTensor& UniT): //GPU
           blkmap[(&(it2->second))] = &(it->second);
         }
       } 
-      
+
       if(u_type == COMPLEX){
         for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
           it->second.cm_elem = &(c_elem[(it->second.cm_elem - UniT.c_elem)]);
@@ -250,7 +258,7 @@ UniTensor::UniTensor(const UniTensor& UniT): //GPU
           blkmap[(&(it2->second))] = &(it->second);
         }
       } 
-      
+
       if(UniT.status & HAVEBOND){
         for(std::map<int, Block*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
           it->second = blkmap[it->second];
@@ -323,6 +331,13 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
 
     std::map<Qnum, Block>::const_iterator it2;
     std::map< const Block* , Block*> blkmap;
+    
+    if(u_type == EMPTY){
+      for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
+        it2 = UniT.blocks.find(it->first);
+        blkmap[(&(it2->second))] = &(it->second);
+      }
+    } 
 
     if(u_type == REAL){
       for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
