@@ -60,6 +60,8 @@ namespace uni10 {
     public:
         
         friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
+        std::string printRawElem(bool print=true)const;
+        static std::string profile(bool print = true);
         
         /********* verified *********/
         
@@ -110,6 +112,8 @@ namespace uni10 {
         UniTensor& combineBond(const std::vector<int>& combined_labels);
         std::vector<Qnum> blockQnum()const;
         Qnum blockQnum(size_t idx)const;
+        std::vector<_Swap> exSwap(const UniTensor& Tb)const;
+        void addGate(const std::vector<_Swap>& swaps);
         
         void set_zero();
         void set_zero(const Qnum& qnum);
@@ -148,11 +152,19 @@ namespace uni10 {
         UniTensor& transpose();
         void save(const std::string& fname);
         UniTensor& assign(muType _tp, const std::vector<Bond>& _bond);
-
+        
+        //double* getElem();
+        double* getRealElem();
+        std::complex<double>* getComplexElem();
         Matrix getRawElem()const;
         bool similar(const UniTensor& Tb)const;
         bool elemCmp(const UniTensor& UniT)const;
         std::complex<double> trace()const;
+        UniTensor& partialTrace(int la, int lb);
+        std::complex<double> operator[](size_t idx) const;
+        std::complex<double> at(const std::vector<int>& idxs)const;
+        std::complex<double> at(const std::vector<size_t>& idxs)const;
+        
         /****************************/
 
         /******** check func ********/
@@ -165,18 +177,6 @@ namespace uni10 {
         UniTensor& assign(const std::vector<Bond>& _bond);
         /****************************/
         
-        double* getElem();
-        double* getRealElem();
-        void addGate(const std::vector<_Swap>& swaps);
-        std::vector<_Swap> exSwap(const UniTensor& Tb)const;
-        double at(const std::vector<int>& idxs)const;
-        double at(const std::vector<size_t>& idxs)const;
-        std::string printRawElem(bool print=true)const;
-        static std::string profile(bool print = true);
-        UniTensor& partialTrace(int la, int lb);
-        std::complex<double>* getComplexElem();
-
-        double operator[](size_t idx) const;
         std::complex<double> at(muType _tp, const std::vector<int>& idxs)const;
         std::complex<double> at(muType _tp, const std::vector<size_t>& idxs)const;
         

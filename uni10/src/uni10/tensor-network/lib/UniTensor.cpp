@@ -479,7 +479,7 @@ Matrix UniTensor::getRawElem()const{
         int bend;
         std::vector<Real> rawElem;
         while(1){
-          rawElem.push_back(at(idxs));
+          rawElem.push_back(at(idxs).real());
           for(bend = bondNum - 1; bend >= 0; bend--){
             idxs[bend]++;
             if(idxs[bend] < bonds[bend].dim())
@@ -753,7 +753,7 @@ Complex UniTensor::at(muType _tp, const std::vector<int>& idxs)const{
   }
 }
 
-Real UniTensor::at(const std::vector<int>& idxs)const{
+Complex UniTensor::at(const std::vector<int>& idxs)const{
   try{
     std::vector<size_t> _idxs(idxs.size());
     for(int i = 0; i < idxs.size(); i++)
@@ -827,7 +827,7 @@ Complex UniTensor::at(muType _tp, const std::vector<size_t>& idxs)const{
   }
 }
 
-Real UniTensor::at(const std::vector<size_t>& idxs)const{
+Complex UniTensor::at(const std::vector<size_t>& idxs)const{
   try{
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
@@ -861,22 +861,43 @@ Real UniTensor::at(const std::vector<size_t>& idxs)const{
     int Qoff = 0;
     for(int b = 0; b < bondNum; b++)
       Qoff += Q_acc[b] * Qidxs[b];
-    if(QidxEnc.find(Qoff) != QidxEnc.end()){
-      int Q_RQoff = Qoff / CQdim;
-      int Q_CQoff = Qoff % CQdim;
-      Block* blk = RQidx2Blk.find(Q_RQoff)->second;
-      size_t B_cDim = blk->Cnum;
-      size_t sB_cDim = CQidx2Dim.find(Q_CQoff)->second;
-      size_t blkRoff = RQidx2Off.find(Q_RQoff)->second;
-      size_t blkCoff = CQidx2Off.find(Q_CQoff)->second;
-      Real* boff = blk->m_elem + (blkRoff * B_cDim) + blkCoff;
-      int cnt = 0;
-      std::vector<int> D_acc(bondNum, 1);
-      for(int b = bondNum	- 1; b > 0; b--)
-        D_acc[b - 1] = D_acc[b] * bonds[b].Qdegs[Qidxs[b]];
-      for(int b = 0; b < bondNum; b++)
-        cnt += (idxs[b] - bonds[b].offsets[Qidxs[b]]) * D_acc[b];
-      return boff[(cnt / sB_cDim) * B_cDim + cnt % sB_cDim];
+    if(u_type == REAL){
+      if(QidxEnc.find(Qoff) != QidxEnc.end()){
+        int Q_RQoff = Qoff / CQdim;
+        int Q_CQoff = Qoff % CQdim;
+        Block* blk = RQidx2Blk.find(Q_RQoff)->second;
+        size_t B_cDim = blk->Cnum;
+        size_t sB_cDim = CQidx2Dim.find(Q_CQoff)->second;
+        size_t blkRoff = RQidx2Off.find(Q_RQoff)->second;
+        size_t blkCoff = CQidx2Off.find(Q_CQoff)->second;
+        Real* boff = blk->m_elem + (blkRoff * B_cDim) + blkCoff;
+        int cnt = 0;
+        std::vector<int> D_acc(bondNum, 1);
+        for(int b = bondNum	- 1; b > 0; b--)
+          D_acc[b - 1] = D_acc[b] * bonds[b].Qdegs[Qidxs[b]];
+        for(int b = 0; b < bondNum; b++)
+          cnt += (idxs[b] - bonds[b].offsets[Qidxs[b]]) * D_acc[b];
+        return Complex(boff[(cnt / sB_cDim) * B_cDim + cnt % sB_cDim], 0.0);
+      }
+    }
+    if(u_type == COMPLEX){
+      if(QidxEnc.find(Qoff) != QidxEnc.end()){
+        int Q_RQoff = Qoff / CQdim;
+        int Q_CQoff = Qoff % CQdim;
+        Block* blk = RQidx2Blk.find(Q_RQoff)->second;
+        size_t B_cDim = blk->Cnum;
+        size_t sB_cDim = CQidx2Dim.find(Q_CQoff)->second;
+        size_t blkRoff = RQidx2Off.find(Q_RQoff)->second;
+        size_t blkCoff = CQidx2Off.find(Q_CQoff)->second;
+        Complex* boff = blk->cm_elem + (blkRoff * B_cDim) + blkCoff;
+        int cnt = 0;
+        std::vector<int> D_acc(bondNum, 1);
+        for(int b = bondNum	- 1; b > 0; b--)
+          D_acc[b - 1] = D_acc[b] * bonds[b].Qdegs[Qidxs[b]];
+        for(int b = 0; b < bondNum; b++)
+          cnt += (idxs[b] - bonds[b].offsets[Qidxs[b]]) * D_acc[b];
+        return boff[(cnt / sB_cDim) * B_cDim + cnt % sB_cDim];
+      }
     }
     else{
       return 0.0;
@@ -1070,11 +1091,11 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
     propogate_exception(e, "In function UniTensor::putBlock(uni10::Qnum&, uni10::Block&):");
   }
 }
-
+/*
 Real* UniTensor::getElem(){
   return elem;
 }
-
+*/
 Real* UniTensor::getRealElem(){
   return elem;
 }
@@ -1141,14 +1162,17 @@ void UniTensor::setElem(const std::vector<Complex>& _elem, bool _ongpu){
   }
 }
 
-Real UniTensor::operator[](size_t idx)const{
+Complex UniTensor::operator[](size_t idx)const{
   try{
     if(!(idx < m_elemNum)){
       std::ostringstream err;
       err<<"Index exceeds the number of elements("<<m_elemNum<<").";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    return getElemAt(idx, elem, ongpu);
+    if(u_type == REAL)
+      return Complex(getElemAt(idx, elem, ongpu), 0);
+    if(u_type == COMPLEX)
+      return getElemAt(idx, c_elem, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::operator[](size_t):");
@@ -2355,7 +2379,10 @@ std::string UniTensor::printRawElem(bool print)const{
             os<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
             r++;
           }
-          os<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
+          if(u_type == REAL) 
+            os<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs).real();
+          if(u_type == COMPLEX) 
+            os<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
           for(bend = bondNum - 1; bend >= 0; bend--){
             idxs[bend]++;
             if(idxs[bend] < bonds[bend].dim())
@@ -2806,6 +2833,8 @@ void UniTensor::RtoC(){
 
 UniTensor operator*(const std::complex<double>& a, const UniTensor& Ta){
   try{
+    if(a.imag() == 0)
+      return a.real()*Ta;
     if(!(Ta.status & Ta.HAVEELEM)){
       std::ostringstream err;
       err<<"Cannot perform scalar multiplication on a tensor before setting its elements.";

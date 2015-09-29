@@ -287,7 +287,7 @@ namespace uni10{
       outs.push_back(Matrix(tp, Rnum, min, false, ongpu));
       outs.push_back(Matrix(tp, min, min, true, ongpu));
       outs.push_back(Matrix(tp, min, Cnum, false, ongpu));
-      std::cout << outs[2] << std::endl;
+//      std::cout << outs[2] << std::endl;
       if(!diag){
         if(m_type == REAL)
           matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
