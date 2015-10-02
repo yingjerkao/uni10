@@ -40,9 +40,9 @@ namespace uni10{
   
   std::ostream& operator<< (std::ostream& os, const muType& tp){
     try{
-      if(tp == REAL)
+      if(tp == RL)
         os << "The matrix type is REAL.";
-      if(tp == COMPLEX)
+      if(tp == CX)
         os << "The matrix type is COMPLEX.";
       if(tp == EMPTY)
         os << "This matrix is EMPTY.";
@@ -70,26 +70,6 @@ namespace uni10{
 
   Complex* Block::getComplexElem()const{return cm_elem;}
 
-  void Block::RtoC(){
-    try{
-      if(m_type == EMPTY){
-        std::ostringstream err;
-        err<<"This matrix is EMPTY. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(m_type == REAL){
-        m_type = COMPLEX;
-        cm_elem = (Complex*)elemAlloc(elemNum() * sizeof(Complex), ongpu);
-        elemCast(cm_elem, m_elem, elemNum(), ongpu, ongpu);
-        if(m_elem != NULL)
-          elemFree(m_elem, elemNum() * sizeof(Real), ongpu);
-        m_elem = NULL;
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::RtoC():");
-    }
-  }
 
   muType Block::getType()const{
     return m_type;
@@ -118,24 +98,24 @@ namespace uni10{
         err<<"Cannot perform QR decomposition when Rnum < Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == RL ) ? RL : CX;
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
       if(!diag){
-        if(m_type == REAL)
+        if(m_type == RL)
           matrixQR(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
-        if(m_type == COMPLEX)
+        if(m_type == CX)
           matrixQR(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        if(m_type == REAL){
+        if(m_type == RL){
           for(int i = 0; i < min; i++)
             tmpR[i*min+i] = m_elem[i];
           matrixQR(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
         }
-        if(m_type == COMPLEX){ 
+        if(m_type == CX){ 
           for(int i = 0; i < min; i++)
             tmpC[i*min+i] = cm_elem[i];
           matrixQR(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
@@ -158,25 +138,25 @@ namespace uni10{
         err<<"Cannot perform RQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == RL ) ? RL : CX;
       outs.push_back(Matrix(tp, Rnum, Rnum, false, ongpu)); //r
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu)); //q
       if(!diag){
-        if(m_type == REAL)
+        if(m_type == RL)
           matrixRQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
-        if(m_type == COMPLEX){
+        if(m_type == CX){
           matrixRQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem);
         }
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        if(m_type == REAL){
+        if(m_type == RL){
           for(int i = 0; i < min; i++)
             tmpR[i*min+i] = m_elem[i];
           matrixRQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem);
         }
-        if(m_type == COMPLEX){ 
+        if(m_type == CX){ 
           for(int i = 0; i < min; i++)
             tmpC[i*min+i] = cm_elem[i];
           matrixRQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem);
@@ -199,24 +179,24 @@ namespace uni10{
         err<<"Cannot perform QL decomposition when Rnum < Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == RL ) ? RL : CX;
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(tp, Cnum, Cnum, false, ongpu));
       if(!diag){
-        if(m_type == REAL)
+        if(m_type == RL)
           matrixQL(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
-        if(m_type == COMPLEX)
+        if(m_type == CX)
           matrixQL(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        if(m_type == REAL){
+        if(m_type == RL){
           for(int i = 0; i < min; i++)
             tmpR[i*min+i] = m_elem[i];
           matrixQL(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
         }
-        if(m_type == COMPLEX){ 
+        if(m_type == CX){ 
           for(int i = 0; i < min; i++)
             tmpC[i*min+i] = cm_elem[i];
           matrixQL(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
@@ -239,24 +219,24 @@ namespace uni10{
         err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       } 
-      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == RL ) ? RL : CX;
       outs.push_back(Matrix(tp, Rnum, Rnum, false, ongpu));
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
       if(!diag){
-        if(m_type == REAL)
+        if(m_type == RL)
           matrixLQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
-        if(m_type == COMPLEX)
+        if(m_type == CX)
           matrixLQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        if(m_type == REAL){
+        if(m_type == RL){
           for(int i = 0; i < min; i++)
             tmpR[i*min+i] = m_elem[i];
           matrixLQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem);
         }
-        if(m_type == COMPLEX){ 
+        if(m_type == CX){ 
           for(int i = 0; i < min; i++)
             tmpC[i*min+i] = cm_elem[i];
           matrixLQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem);
@@ -283,26 +263,26 @@ namespace uni10{
     */
       size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
       //GPU_NOT_READY
-      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == RL ) ? RL : CX;
       outs.push_back(Matrix(tp, Rnum, min, false, ongpu));
       outs.push_back(Matrix(tp, min, min, true, ongpu));
       outs.push_back(Matrix(tp, min, Cnum, false, ongpu));
 //      std::cout << outs[2] << std::endl;
       if(!diag){
-        if(m_type == REAL)
+        if(m_type == RL)
           matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
-        if(m_type == COMPLEX)
+        if(m_type == CX)
           matrixSVD(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem, outs[2].cm_elem, ongpu);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        if(m_type == REAL){
+        if(m_type == RL){
           for(int i = 0; i < min; i++)
             tmpR[i*min+i] = m_elem[i];
           matrixSVD(tmpR, min, min, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
         }
-        if(m_type == COMPLEX){ 
+        if(m_type == CX){ 
           for(int i = 0; i < min; i++)
             tmpC[i*min+i] = cm_elem[i];
           matrixSVD(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem, outs[2].cm_elem, ongpu);
@@ -322,11 +302,11 @@ namespace uni10{
       if(diag)
         return *this;
       else{
-        muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+        muType tp = ( m_type == RL ) ? RL : CX;
         Matrix D(tp, Rnum, Cnum, true, ongpu);
-        if(m_type == REAL)
+        if(m_type == RL)
           ::uni10::getDiag(m_elem, D.getRealElem(), Rnum, Cnum, D.elemNum(), ongpu, D.isOngpu());
-        if(m_type == COMPLEX)
+        if(m_type == CX)
           ::uni10::getDiag(cm_elem, D.getComplexElem(), Rnum, Cnum, D.elemNum(), ongpu, D.isOngpu());
         return D;
       }
@@ -346,9 +326,9 @@ namespace uni10{
       }
       Matrix invM(*this);
       assert(ongpu == invM.isOngpu());
-      if(m_type == REAL)
+      if(m_type == RL)
         matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
-      if(m_type == COMPLEX)
+      if(m_type == CX)
         matrixInv(invM.cm_elem, Rnum, invM.diag, invM.ongpu);
       return invM;
     }
@@ -372,13 +352,13 @@ namespace uni10{
         throw std::runtime_error(exception_msg(err.str()));
       }
       //GPU_NOT_READY
-      muType tp = ( m_type == REAL ) ? REAL : COMPLEX;
+      muType tp = ( m_type == RL ) ? RL : CX;
       outs.push_back(Matrix(tp, Rnum, Cnum, true, ongpu));
       outs.push_back(Matrix(tp, Rnum, Cnum, false, ongpu));
-      Matrix Eig(REAL, Rnum, Cnum, true, ongpu);
-      if(m_type == REAL)
+      Matrix Eig(RL, Rnum, Cnum, true, ongpu);
+      if(m_type == RL)
         eigSyDecompose(m_elem, Rnum, Eig.m_elem, outs[1].m_elem, ongpu);
-      if(m_type == COMPLEX)
+      if(m_type == CX)
         eigSyDecompose(cm_elem, Rnum, Eig.m_elem, outs[1].cm_elem, ongpu);
       outs[0] = Eig;
     }
@@ -401,7 +381,7 @@ namespace uni10{
       fwrite(&Cnum, sizeof(Cnum), 1, fp);
       fwrite(&diag, sizeof(diag), 1, fp);
       fwrite(&ongpu, sizeof(ongpu), 1, fp);
-      if(m_type == REAL){
+      if(m_type == RL){
         Real* elem = m_elem;
         if(ongpu){
           elem = (Real*)malloc(elemNum() * sizeof(Real));
@@ -411,7 +391,7 @@ namespace uni10{
         if(ongpu)
           free(elem);
       }
-      if(m_type == COMPLEX){
+      if(m_type == CX){
         Complex* elem = cm_elem;
         if(ongpu){
           elem = (Complex*)malloc(elemNum() * sizeof(Complex));
@@ -428,47 +408,6 @@ namespace uni10{
     }
   }
   
-  size_t Block::lanczosEigh(double& E0, Matrix& psi, size_t max_iter, double err_tol)const{
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(!(Rnum == psi.elemNum())){
-        std::ostringstream err;
-        err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(ongpu && !psi.ongpu){
-        if(!psi.toGPU()){
-          std::ostringstream err;
-          err<<"Error when allocating GPU global memory.";
-          throw std::runtime_error(exception_msg(err.str()));
-        }
-      }
-      size_t iter = max_iter;
-      if(m_type == REAL){
-        if(!lanczosEV(m_elem, psi.m_elem, Rnum, iter, err_tol, E0, psi.m_elem, ongpu)){
-          std::ostringstream err;
-          err<<"Lanczos algorithm fails in converging.";;
-          throw std::runtime_error(exception_msg(err.str()));
-        }
-      }
-      if(m_type == COMPLEX){
-        if(!lanczosEV(cm_elem, psi.cm_elem, Rnum, iter, err_tol, E0, psi.cm_elem, ongpu)){
-          std::ostringstream err;
-          err<<"Lanczos algorithm fails in converging.";;
-          throw std::runtime_error(exception_msg(err.str()));
-        }
-      }
-      return iter;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-      return 0;
-    }
-  }
   
   bool operator== (const Block& m1, const Block& m2){
     try{
@@ -478,7 +417,7 @@ namespace uni10{
         double diff;
         if(m1.elemNum() == m2.elemNum()){
           for(size_t i = 0; i < m1.elemNum(); i++){
-            diff = (m1.m_type == REAL) ? std::abs(m1.m_elem[i] - m2.m_elem[i]) : std::abs(m1.cm_elem[i] -m2.cm_elem[i]);
+            diff = (m1.m_type == RL) ? std::abs(m1.m_elem[i] - m2.m_elem[i]) : std::abs(m1.cm_elem[i] -m2.cm_elem[i]);
             if(diff > 1E-12)
               return false;
           }
@@ -501,9 +440,9 @@ namespace uni10{
         throw std::runtime_error(exception_msg(err.str()));
       }
       // R*R
-      if(Ma.m_type == REAL && Mb.m_type == REAL){
+      if(Ma.m_type == RL && Mb.m_type == RL){
         if((!Ma.diag) && (!Mb.diag)){
-          Matrix Mc(REAL, Ma.Rnum, Mb.Cnum);
+          Matrix Mc(RL, Ma.Rnum, Mb.Cnum);
           matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
           return Mc;
         }
@@ -520,7 +459,7 @@ namespace uni10{
           return Mc;
         }
         else{
-          Matrix Mc(REAL, Ma.Rnum, Mb.Cnum, true);
+          Matrix Mc(RL, Ma.Rnum, Mb.Cnum, true);
           Mc.set_zero();
           size_t min = std::min(Ma.elemNum(), Mb.elemNum());
           elemCopy(Mc.m_elem, Ma.m_elem, min * sizeof(Real), Mc.ongpu, Ma.ongpu);
@@ -528,9 +467,9 @@ namespace uni10{
           return Mc;
         }
       }
-      if(Ma.m_type == COMPLEX && Mb.m_type == COMPLEX){
+      if(Ma.m_type == CX && Mb.m_type == CX){
         if((!Ma.diag) && (!Mb.diag)){
-          Matrix Mc(COMPLEX, Ma.Rnum, Mb.Cnum);
+          Matrix Mc(CX, Ma.Rnum, Mb.Cnum);
           matrixMul(Ma.cm_elem, Mb.cm_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.cm_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
           return Mc;
         }
@@ -547,7 +486,7 @@ namespace uni10{
           return Mc;
         }
         else{
-          Matrix Mc(COMPLEX, Ma.Rnum, Mb.Cnum, true);
+          Matrix Mc(CX, Ma.Rnum, Mb.Cnum, true);
           Mc.set_zero();
           size_t min = std::min(Ma.elemNum(), Mb.elemNum());
           elemCopy(Mc.cm_elem, Ma.cm_elem, min * sizeof(Complex), Mc.ongpu, Ma.ongpu);
@@ -556,11 +495,11 @@ namespace uni10{
         }
       }
       
-      if(Ma.m_type == REAL && Mb.m_type == COMPLEX){
+      if(Ma.m_type == RL && Mb.m_type == CX){
         Matrix _Ma(Ma);
-        _Ma.RtoC();
+        RtoC(_Ma);
         if((!_Ma.diag) && (!Mb.diag)){
-          Matrix Mc(COMPLEX, _Ma.Rnum, Mb.Cnum);
+          Matrix Mc(CX, _Ma.Rnum, Mb.Cnum);
           matrixMul(_Ma.cm_elem, Mb.cm_elem, _Ma.Rnum, Mb.Cnum, _Ma.Cnum, Mc.cm_elem, _Ma.ongpu, Mb.ongpu, Mc.ongpu);
           return Mc;
         }
@@ -577,7 +516,7 @@ namespace uni10{
           return Mc;
         }
         else{
-          Matrix Mc(COMPLEX, _Ma.Rnum, Mb.Cnum, true);
+          Matrix Mc(CX, _Ma.Rnum, Mb.Cnum, true);
           Mc.set_zero();
           size_t min = std::min(_Ma.elemNum(), Mb.elemNum());
           elemCopy(Mc.cm_elem, _Ma.cm_elem, min * sizeof(Complex), Mc.ongpu, _Ma.ongpu);
@@ -585,11 +524,11 @@ namespace uni10{
           return Mc;
         }
       }
-      if(Ma.m_type == COMPLEX && Mb.m_type == REAL){
+      if(Ma.m_type == CX && Mb.m_type == RL){
         Matrix _Mb(Mb);
-        _Mb.RtoC();
+        RtoC(_Mb);
         if((!Ma.diag) && (!_Mb.diag)){
-          Matrix Mc(COMPLEX, Ma.Rnum, _Mb.Cnum);
+          Matrix Mc(CX, Ma.Rnum, _Mb.Cnum);
           matrixMul(Ma.cm_elem, _Mb.cm_elem, Ma.Rnum, _Mb.Cnum, Ma.Cnum, Mc.cm_elem, Ma.ongpu, _Mb.ongpu, Mc.ongpu);
           return Mc;
         }
@@ -606,7 +545,7 @@ namespace uni10{
           return Mc;
         }
         else{
-          Matrix Mc(COMPLEX, Ma.Rnum, _Mb.Cnum, true);
+          Matrix Mc(CX, Ma.Rnum, _Mb.Cnum, true);
           Mc.set_zero();
           size_t min = std::min(Ma.elemNum(), _Mb.elemNum());
           elemCopy(Mc.cm_elem, Ma.cm_elem, min * sizeof(Complex), Mc.ongpu, Ma.ongpu);
@@ -624,9 +563,9 @@ namespace uni10{
   Matrix operator*(const Block& Ma, double a){
     try{
       Matrix Mb(Ma);
-      if(Ma.m_type == REAL)
+      if(Ma.m_type == RL)
         vectorScal(a, Mb.m_elem, Mb.elemNum(), Mb.isOngpu());
-      if(Ma.m_type == COMPLEX)
+      if(Ma.m_type == CX)
         vectorScal(a, Mb.cm_elem, Mb.elemNum(), Mb.isOngpu());
       return Mb;
     }
@@ -642,13 +581,13 @@ namespace uni10{
       Matrix Mb(Ma);
       if(a.imag() == 0){
         double _a = a.real();
-        if(Ma.m_type == REAL) 
+        if(Ma.m_type == RL) 
           vectorScal(_a, Mb.m_elem, Mb.elemNum(), Mb.isOngpu());
-        if(Ma.m_type == COMPLEX)
+        if(Ma.m_type == CX)
           vectorScal(_a, Mb.cm_elem, Mb.elemNum(), Mb.isOngpu());
       }
       else{
-        Mb.RtoC();
+        RtoC(Mb);
         vectorScal(a, Mb.cm_elem, Mb.elemNum(), Mb.isOngpu());
       }
       return Mb;
@@ -668,16 +607,16 @@ namespace uni10{
       };*/
 
     try{
-      if(Ma.m_type == REAL && Mb.m_type == REAL){
+      if(Ma.m_type == RL && Mb.m_type == RL){
         if (Ma.diag && !Mb.diag) {
           //std::cout << "Ma is diagonal."<<std::endl;
-          Matrix Mc(REAL, Ma.Rnum,Ma.Cnum);
+          Matrix Mc(RL, Ma.Rnum,Ma.Cnum);
           setDiag(Mc.m_elem,Ma.m_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
           vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
           return Mc;
         } else if (Mb.diag && !Ma.diag) {
           //std::cout << "Mb is diagonal."<<std::endl;
-          Matrix Mc(REAL, Mb.Rnum, Mb.Cnum);
+          Matrix Mc(RL, Mb.Rnum, Mb.Cnum);
           setDiag(Mc.m_elem,Mb.m_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
           //std::cout << Mc ;
           vectorAdd(Mc.m_elem, Ma.m_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
@@ -688,16 +627,16 @@ namespace uni10{
           return Mc;
         }
       }
-      if(Ma.m_type == COMPLEX && Mb.m_type == COMPLEX){
+      if(Ma.m_type == CX && Mb.m_type == CX){
         if (Ma.diag && !Mb.diag) {
           //std::cout << "Ma is diagonal."<<std::endl;
-          Matrix Mc(COMPLEX, Ma.Rnum,Ma.Cnum);
+          Matrix Mc(CX, Ma.Rnum,Ma.Cnum);
           setDiag(Mc.cm_elem,Ma.cm_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
           vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
           return Mc;
         } else if (Mb.diag && !Ma.diag) {
           //std::cout << "Mb is diagonal."<<std::endl;
-          Matrix Mc(COMPLEX, Mb.Rnum,Mb.Cnum);
+          Matrix Mc(CX, Mb.Rnum,Mb.Cnum);
           setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
           //std::cout << Mc ;
           vectorAdd(Mc.cm_elem, Ma.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
@@ -708,18 +647,18 @@ namespace uni10{
           return Mc;
         }
       }
-      if(Ma.m_type == REAL && Mb.m_type == COMPLEX){
+      if(Ma.m_type == RL && Mb.m_type == CX){
         Matrix _Ma(Ma);
-        _Ma.RtoC();
+        RtoC(_Ma);
         if (_Ma.diag && !Mb.diag) {
           //std::cout << "Ma is diagonal."<<std::endl;
-          Matrix Mc(COMPLEX, _Ma.Rnum,_Ma.Cnum);
+          Matrix Mc(CX, _Ma.Rnum,_Ma.Cnum);
           setDiag(Mc.cm_elem,_Ma.cm_elem,Mc.Rnum,Mc.Cnum,_Ma.Rnum,Mc.ongpu,_Ma.ongpu);
           vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
           return Mc;
         } else if (Mb.diag && !_Ma.diag) {
           //std::cout << "Mb is diagonal."<<std::endl;
-          Matrix Mc(COMPLEX, Mb.Rnum,Mb.Cnum);
+          Matrix Mc(CX, Mb.Rnum,Mb.Cnum);
           setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
           //std::cout << Mc ;
           vectorAdd(Mc.cm_elem, _Ma.cm_elem, Mc.elemNum(), Mc.ongpu, _Ma.ongpu);
@@ -730,18 +669,18 @@ namespace uni10{
           return Mc;
         }
       }
-      if(Ma.m_type == COMPLEX && Mb.m_type == REAL){
+      if(Ma.m_type == CX && Mb.m_type == RL){
         Matrix _Mb(Mb);
-        _Mb.RtoC();
+        RtoC(_Mb);
         if (Ma.diag && !_Mb.diag) {
           //std::cout << "Ma is diagonal."<<std::endl;
-          Matrix Mc(COMPLEX, Ma.Rnum,Ma.Cnum);
+          Matrix Mc(CX, Ma.Rnum,Ma.Cnum);
           setDiag(Mc.cm_elem,Ma.cm_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
           vectorAdd(Mc.cm_elem, _Mb.cm_elem, Mc.elemNum(), Mc.ongpu, _Mb.ongpu);
           return Mc;
         } else if (_Mb.diag && !Ma.diag) {
           //std::cout << "Mb is diagonal."<<std::endl;
-          Matrix Mc(COMPLEX, _Mb.Rnum,_Mb.Cnum);
+          Matrix Mc(CX, _Mb.Rnum,_Mb.Cnum);
           setDiag(Mc.cm_elem,_Mb.cm_elem,Mc.Rnum,Mc.Cnum,_Mb.Cnum,Mc.ongpu,_Mb.ongpu);
           //std::cout << Mc ;
           vectorAdd(Mc.cm_elem, Ma.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
@@ -762,16 +701,16 @@ namespace uni10{
   std::ostream& operator<< (std::ostream& os, const Block& b){
     try{
       os << b.Rnum << " x " << b.Cnum << " = " << b.elemNum();
-      if(b.m_type == REAL)
+      if(b.m_type == RL)
         os << ", REAL";
-      if(b.m_type == COMPLEX)
+      if(b.m_type == CX)
         os << ", COMPLEX";
       if(b.diag)
         os << ", Diagonal";
       if(b.ongpu)
         os<< ", onGPU";
       os <<std::endl << std::endl;
-      if(b.m_type == REAL){
+      if(b.m_type == RL){
         Real* elem;
         if(b.ongpu){
           elem = (Real*)malloc(b.elemNum() * sizeof(Real));
@@ -795,7 +734,7 @@ namespace uni10{
         if(b.ongpu)
           free(elem);
       }
-      if(b.m_type == COMPLEX){
+      if(b.m_type == CX){
         Complex* elem;
         if(b.ongpu){
           elem = (Complex*)malloc(b.elemNum() * sizeof(Complex));
@@ -835,9 +774,9 @@ namespace uni10{
         err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(m_type == REAL)
+      if(m_type == RL)
         return vectorNorm(m_elem, elemNum(), 1, ongpu);
-      if(m_type == COMPLEX)
+      if(m_type == CX)
         return vectorNorm(cm_elem, elemNum(), 1, ongpu);
     }
     catch(const std::exception& e){
@@ -853,13 +792,13 @@ namespace uni10{
         err<<"Cannot perform trace on a non-square matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(m_type == REAL){
+      if(m_type == RL){
         if(diag)
           return Complex(vectorSum(m_elem, elemNum(), 1, ongpu), 0);
         else
           return Complex(vectorSum(m_elem, Cnum, Cnum + 1, ongpu), 0);
       }
-      if(m_type == COMPLEX){
+      if(m_type == CX){
         if(diag)
           return vectorSum(cm_elem, elemNum(), 1, ongpu);
         else
@@ -873,9 +812,9 @@ namespace uni10{
 
   Complex Block::sum()const{
     try{
-      if(m_type == REAL)
+      if(m_type == RL)
         return Complex(vectorSum(m_elem, elemNum(), 1, ongpu), 0);
-      if(m_type == COMPLEX)
+      if(m_type == CX)
         return vectorSum(cm_elem, elemNum(), 1, ongpu);
     }
     catch(const std::exception& e){
@@ -891,9 +830,9 @@ namespace uni10{
         err<<"Index exceeds the number of elements("<<elemNum()<<").";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(m_type == REAL)
+      if(m_type == RL)
         return Complex(getElemAt(idx, m_elem, ongpu), 0);
-      if(m_type == COMPLEX) 
+      if(m_type == CX) 
         return getElemAt(idx, cm_elem, ongpu);
     }
     catch(const std::exception& e){
@@ -909,7 +848,7 @@ namespace uni10{
         err<<"The input indices are out of range.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(m_type == REAL){
+      if(m_type == RL){
         if(diag){
           if(!(r == c && r < elemNum())){
             std::ostringstream err;
@@ -921,7 +860,7 @@ namespace uni10{
         else
           return Complex(getElemAt(r * Cnum + c, m_elem, ongpu), 0);
       }
-      if(m_type == COMPLEX){
+      if(m_type == CX){
         if(diag){
           if(!(r == c && r < elemNum())){
             std::ostringstream err;
@@ -954,11 +893,11 @@ namespace uni10{
         throw std::runtime_error(exception_msg(err.str()));
       }
       //GPU_NOT_READY
-      outs.push_back(Matrix(COMPLEX, Rnum, Cnum, true, ongpu));
-      outs.push_back(Matrix(COMPLEX, Rnum, Cnum, false, ongpu));
-      if(m_type == REAL)
+      outs.push_back(Matrix(CX, Rnum, Cnum, true, ongpu));
+      outs.push_back(Matrix(CX, Rnum, Cnum, false, ongpu));
+      if(m_type == RL)
         eigDecompose(m_elem, Rnum, outs[0].cm_elem, outs[1].cm_elem, ongpu);
-      if(m_type == COMPLEX)
+      if(m_type == CX)
         eigDecompose(cm_elem, Rnum, outs[0].cm_elem, outs[1].cm_elem, ongpu);
     }
     catch(const std::exception& e){
@@ -966,7 +905,48 @@ namespace uni10{
     }
     return outs;
   }
-  
+
+  size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
+    try{
+      if(!(ori_mat.Rnum == ori_mat.Cnum)){
+        std::ostringstream err;
+        err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      if(!(ori_mat.Rnum == psi.elemNum())){
+        std::ostringstream err;
+        err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      if(ori_mat.ongpu && !psi.ongpu){
+        if(!psi.toGPU()){
+          std::ostringstream err;
+          err<<"Error when allocating GPU global memory.";
+          throw std::runtime_error(exception_msg(err.str()));
+        }
+      }
+      size_t iter = max_iter;
+      if(ori_mat.m_type == RL){
+        if(!lanczosEV(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, err_tol, E0, psi.m_elem, ori_mat.ongpu)){
+          std::ostringstream err;
+          err<<"Lanczos algorithm fails in converging.";;
+          throw std::runtime_error(exception_msg(err.str()));
+        }
+      }
+      if(ori_mat.m_type == CX){
+        if(!lanczosEV(ori_mat.cm_elem, psi.cm_elem, ori_mat.Rnum, iter, err_tol, E0, psi.cm_elem, ori_mat.ongpu)){
+          std::ostringstream err;
+          err<<"Lanczos algorithm fails in converging.";;
+          throw std::runtime_error(exception_msg(err.str()));
+        }
+      }
+      return iter;
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+      return 0;
+    }
+  }
 };	/* namespace uni10 */
 #ifdef Block
 #undef Block

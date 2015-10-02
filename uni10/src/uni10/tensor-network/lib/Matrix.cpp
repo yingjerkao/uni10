@@ -49,19 +49,19 @@ void Matrix::matrixElemFree(){
 }
 
 void Matrix::init(const Real* _elem, bool src_ongpu){
-  m_type = REAL;
-  init(true, REAL);
+  m_type = RL;
+  init(true, RL);
   elemCopy(m_elem, _elem, elemNum() * sizeof(Real), ongpu, src_ongpu);
 }
 
 void Matrix::init(const Complex* _elem, bool src_ongpu){
-  m_type = COMPLEX;
-  init(true, COMPLEX);
+  m_type = CX;
+  init(true, CX);
   elemCopy(cm_elem, _elem, elemNum() * sizeof(Complex), ongpu, src_ongpu);
 }
 
 void Matrix::init(bool _ongpu, muType tp){
-  if(tp == REAL){
+  if(tp == RL){
     if(elemNum()){
       if(_ongpu)	// Try to allocate GPU memory
         m_elem = (Real*)elemAlloc(elemNum() * sizeof(Real), ongpu);
@@ -71,7 +71,7 @@ void Matrix::init(bool _ongpu, muType tp){
       }
     }
   }
-  if(tp == COMPLEX){
+  if(tp == CX){
     if(elemNum()){
       if(_ongpu)	// Try to allocate GPU memory
         cm_elem = (Complex*)elemAlloc(elemNum() * sizeof(Complex), ongpu);
@@ -173,12 +173,12 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<Complex>& _elem, bo
 
 Matrix::Matrix(muType tp, size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu):Block(tp, _Rnum, _Cnum, _diag){
   try{
-    if(tp == REAL){
+    if(tp == RL){
       init(_ongpu, tp);
       if(elemNum())
         elemBzero(m_elem, elemNum() * sizeof(Real), ongpu);
     }
-    if(tp == COMPLEX){
+    if(tp == CX){
       init(_ongpu, tp);
       if(elemNum())
         elemBzero(cm_elem, elemNum() * sizeof(Complex), ongpu);
@@ -202,17 +202,17 @@ Matrix::Matrix(const std::string& fname){
     fread(&Cnum, sizeof(Cnum), 1, fp);
     fread(&diag, sizeof(diag), 1, fp);
     fread(&ongpu, sizeof(ongpu), 1, fp);
-    if(m_type == REAL){
-      init(ongpu, REAL);
+    if(m_type == RL){
+      init(ongpu, RL);
       if(elemNum())
         elemBzero(m_elem, elemNum() * sizeof(Real), ongpu);
     }
-    if(m_type == COMPLEX){
-      init(ongpu, COMPLEX);
+    if(m_type == CX){
+      init(ongpu, CX);
       if(elemNum())
         elemBzero(cm_elem, elemNum() * sizeof(Complex), ongpu);
     }
-    if(m_type == REAL){
+    if(m_type == RL){
       Real* elem = m_elem;
       if(ongpu)
         elem = (Real*)malloc(elemNum() * sizeof(Real));
@@ -222,7 +222,7 @@ Matrix::Matrix(const std::string& fname){
         free(elem);
       }
     }
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       Complex* elem = cm_elem;
       if(ongpu)
         elem = (Complex*)malloc(elemNum() * sizeof(Complex));
@@ -299,14 +299,14 @@ void Matrix::setElem(const std::vector<Real>& elem, bool _ongpu){
 
 void Matrix::setElem(const Real* elem, bool _ongpu){
   try{
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       std::ostringstream err;
       err<<"Can't set REAL elements in a COMPLEX matrix" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(m_type == EMPTY)
       init(elem, _ongpu);
-    m_type = REAL;
+    m_type = RL;
     elemCopy(m_elem, elem, elemNum() * sizeof(Real), ongpu, _ongpu);
   }
   catch(const std::exception& e){
@@ -336,16 +336,16 @@ void Matrix::setElem(const std::vector<Complex>& elem, bool _ongpu){
 }
 
 void Matrix::setElem(const Complex* elem, bool _ongpu){
-  assert(m_type == EMPTY || m_type == COMPLEX);
+  assert(m_type == EMPTY || m_type == CX);
   try{
-    if(m_type == REAL){
+    if(m_type == RL){
       std::ostringstream err;
       err<<"Can't set Complex elements in a REAL matrix" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(m_type == EMPTY)
       init(elem, _ongpu);
-    m_type = COMPLEX;
+    m_type = CX;
     elemCopy(cm_elem, elem, elemNum() * sizeof(Complex), ongpu, _ongpu);
   }
   catch(const std::exception& e){
@@ -366,14 +366,14 @@ void Matrix::identity(){
     if(cm_elem != NULL)
       elemFree(cm_elem, elemNum() * sizeof(Complex), ongpu);
     
-    if(m_type == REAL){
+    if(m_type == RL){
       m_elem = (Real*)elemAlloc(elemNum() * sizeof(Real), ongpu);
       Real* elemI = (Real*)malloc(elemNum() * sizeof(Real));
       for(int i = 0; i < elemNum(); i++)
         elemI[i] = 1;
       this->setElem(elemI, false);
     }
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       cm_elem = (Complex*)elemAlloc(elemNum() * sizeof(Complex), ongpu);
       Complex* elemI = (Complex*)malloc(elemNum() * sizeof(Complex));
       for(int i = 0; i < elemNum(); i++)
@@ -393,11 +393,11 @@ void Matrix::set_zero(){
       err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(m_type == REAL){
+    if(m_type == RL){
       if(elemNum())
         elemBzero(m_elem, elemNum() * sizeof(Real), ongpu);
     }
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       if(elemNum())
         elemBzero(cm_elem, elemNum() * sizeof(Complex), ongpu);
     }
@@ -414,12 +414,12 @@ void Matrix::randomize(){
       err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(m_type == REAL){
+    if(m_type == RL){
       if(!ongpu)
         m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
       elemRand(m_elem, elemNum(), ongpu);
     }
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       if(!ongpu)
         cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
       elemRand(cm_elem, elemNum(), ongpu);
@@ -437,13 +437,13 @@ void Matrix::orthoRand(){
       err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(m_type == REAL){
+    if(m_type == RL){
       if(!ongpu)
         m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
       if(!diag)
         orthoRandomize(m_elem, Rnum, Cnum, ongpu);
     }
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       if(!ongpu)
         cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
       if(!diag)
@@ -456,15 +456,15 @@ void Matrix::orthoRand(){
 }
 
 Matrix& Matrix::transpose(){
-  assert(m_type == REAL || m_type == COMPLEX);
+  assert(m_type == RL || m_type == CX);
   try{
-    if(m_type == REAL){
+    if(m_type == RL){
       if(!ongpu)
         m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
       if(!(diag || Rnum == 1 || Cnum == 1))
         setTranspose(m_elem, Rnum, Cnum, ongpu);
     }
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       if(!ongpu)
         cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
       if(!(diag || Rnum == 1 || Cnum == 1))
@@ -481,9 +481,9 @@ Matrix& Matrix::transpose(){
 }
 
 Matrix& Matrix::cTranspose(){
-  assert(m_type == REAL || m_type == COMPLEX);
+  assert(m_type == RL || m_type == CX);
   try{
-    if(m_type == REAL){
+    if(m_type == RL){
       if(!ongpu)
         m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
       if(diag || Rnum == 1 || Cnum == 1)
@@ -491,7 +491,7 @@ Matrix& Matrix::cTranspose(){
       else
         setCTranspose(m_elem, Rnum, Cnum, ongpu);
     }
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       if(!ongpu)
         cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
       if(diag || Rnum == 1 || Cnum == 1)
@@ -515,7 +515,7 @@ Matrix& Matrix::resize(size_t row, size_t col){
       size_t _elemNum = row < col ? row : col;
       if(_elemNum > elemNum()){
         bool des_ongpu;
-        if(m_type == REAL){
+        if(m_type == RL){
           Real* elem = (Real*)elemAlloc(_elemNum * sizeof(Real), des_ongpu);
           elemBzero(elem, _elemNum * sizeof(Real), des_ongpu);
           elemCopy(elem, m_elem, elemNum() * sizeof(Real), des_ongpu, ongpu);
@@ -523,7 +523,7 @@ Matrix& Matrix::resize(size_t row, size_t col){
             elemFree(m_elem, elemNum() * sizeof(Real), ongpu);
           m_elem = elem;
         }
-        if(m_type == COMPLEX){
+        if(m_type == CX){
           Complex* elem = (Complex*)elemAlloc(_elemNum * sizeof(Complex), des_ongpu);
           elemBzero(elem, _elemNum * sizeof(Complex), des_ongpu);
           elemCopy(elem, cm_elem, elemNum() * sizeof(Complex), des_ongpu, ongpu);
@@ -534,9 +534,9 @@ Matrix& Matrix::resize(size_t row, size_t col){
         ongpu = des_ongpu;
       }
       else{
-        if(m_type == REAL)
+        if(m_type == RL)
           shrinkWithoutFree((elemNum() - _elemNum) * sizeof(Real), ongpu);
-        if(m_type == COMPLEX)
+        if(m_type == CX)
           shrinkWithoutFree((elemNum() - _elemNum) * sizeof(Complex), ongpu);
       }
       Rnum = row;
@@ -547,7 +547,7 @@ Matrix& Matrix::resize(size_t row, size_t col){
         size_t _elemNum = row * col;
         if(row > Rnum){
           bool des_ongpu;
-          if(m_type == REAL){
+          if(m_type == RL){
             Real* elem = (Real*)elemAlloc(_elemNum * sizeof(Real), des_ongpu);
             elemBzero(elem, _elemNum * sizeof(Real), des_ongpu);
             elemCopy(elem, m_elem, elemNum() * sizeof(Real), des_ongpu, ongpu);
@@ -555,7 +555,7 @@ Matrix& Matrix::resize(size_t row, size_t col){
               elemFree(m_elem, elemNum() * sizeof(Real), ongpu);
             m_elem = elem;
           }
-          if(m_type == COMPLEX){
+          if(m_type == CX){
             Complex* elem = (Complex*)elemAlloc(_elemNum * sizeof(Complex), des_ongpu);
             elemBzero(elem, _elemNum * sizeof(Complex), des_ongpu);
             elemCopy(elem, cm_elem, elemNum() * sizeof(Complex), des_ongpu, ongpu);
@@ -566,9 +566,9 @@ Matrix& Matrix::resize(size_t row, size_t col){
           ongpu = des_ongpu;
         }
         else{
-          if(m_type == REAL)
+          if(m_type == RL)
             shrinkWithoutFree((elemNum() - _elemNum) * sizeof(Real), ongpu);
-          if(m_type == REAL)
+          if(m_type == RL)
             shrinkWithoutFree((elemNum() - _elemNum) * sizeof(Complex), ongpu);
         }
         Rnum = row;
@@ -577,7 +577,7 @@ Matrix& Matrix::resize(size_t row, size_t col){
         size_t data_row = row < Rnum ? row : Rnum;
         size_t data_col = col < Cnum ? col : Cnum;
         bool des_ongpu;
-        if(m_type == REAL){
+        if(m_type == RL){
           Real* elem = (Real*)elemAlloc(row * col * sizeof(Real), des_ongpu);
           elemBzero(elem, row * col * sizeof(Real), des_ongpu);
           for(size_t r = 0; r < data_row; r++)
@@ -586,7 +586,7 @@ Matrix& Matrix::resize(size_t row, size_t col){
             elemFree(m_elem, elemNum() * sizeof(Real), ongpu);
           m_elem = elem;
         }
-        if(m_type == COMPLEX){
+        if(m_type == CX){
           Complex* elem = (Complex*)elemAlloc(row * col * sizeof(Complex), des_ongpu);
           elemBzero(elem, row * col * sizeof(Complex), des_ongpu);
           for(size_t r = 0; r < data_row; r++)
@@ -608,11 +608,11 @@ Matrix& Matrix::resize(size_t row, size_t col){
 }
 
 bool Matrix::toGPU(){
-  if(m_type == REAL){
+  if(m_type == RL){
     if(!ongpu)
       m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
   }
-  if(m_type == COMPLEX){
+  if(m_type == CX){
     if(!ongpu)
       cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
   }
@@ -621,9 +621,9 @@ bool Matrix::toGPU(){
 
 double Matrix::max(bool on_gpu){
   try{
-    if(m_type != REAL){
+    if(m_type != RL){
       std::ostringstream err;
-      if(m_type == COMPLEX)
+      if(m_type == CX)
         err<< "Can't comparision. The type of matirx is COMPLEX" << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
       if(m_type == EMPTY)
         err<< "Can't comparision. The type of matirx is EMPTY" << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
@@ -649,17 +649,17 @@ void Matrix::load(const std::string& fname){
     fread(&Cnum, sizeof(Cnum), 1, fp);
     fread(&diag, sizeof(diag), 1, fp);
     fread(&ongpu, sizeof(ongpu), 1, fp);
-    if(m_type == REAL){
-      init(ongpu, REAL);
+    if(m_type == RL){
+      init(ongpu, RL);
       if(elemNum())
         elemBzero(m_elem, elemNum() * sizeof(Real), ongpu);
     }
-    if(m_type == COMPLEX){
-      init(ongpu, COMPLEX);
+    if(m_type == CX){
+      init(ongpu, CX);
       if(elemNum())
         elemBzero(cm_elem, elemNum() * sizeof(Complex), ongpu);
     }
-    if(m_type == REAL){
+    if(m_type == RL){
       Real* elem = m_elem;
       if(ongpu)
         elem = (Real*)malloc(elemNum() * sizeof(Real));
@@ -669,7 +669,7 @@ void Matrix::load(const std::string& fname){
         free(elem);
       }
     }
-    if(m_type == COMPLEX){
+    if(m_type == CX){
       Complex* elem = cm_elem;
       if(ongpu)
         elem = (Complex*)malloc(elemNum() * sizeof(Complex));
@@ -687,7 +687,7 @@ void Matrix::load(const std::string& fname){
 }
 
 Matrix& Matrix::conj(){
-  if(m_type == COMPLEX)
+  if(m_type == CX)
     setConjugate(cm_elem, elemNum(), ongpu);
   return *this;
 }
@@ -696,7 +696,7 @@ Matrix& Matrix::conj(){
 Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Block(_Rnum, _Cnum, _diag){
 /*
   try{
-    init(_ongpu, REAL);
+    init(_ongpu, RL);
     if(elemNum())
       elemBzero(m_elem, elemNum() * sizeof(double), ongpu);
   }
@@ -708,9 +708,9 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Block(_Rnum
 
 Matrix& Matrix::operator*= (const Block& Mb){
   try{
-    if(!ongpu && m_type == REAL)
+    if(!ongpu && m_type == RL)
       m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
-    if(!ongpu && m_type == COMPLEX)
+    if(!ongpu && m_type == CX)
       cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
     *this = *this * Mb;
   }
@@ -722,11 +722,11 @@ Matrix& Matrix::operator*= (const Block& Mb){
 
 Matrix& Matrix::operator*= (double a){
   try{
-    if(!ongpu && m_type == REAL){
+    if(!ongpu && m_type == RL){
       m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
       vectorScal(a, m_elem, elemNum(), ongpu);
     }
-    if(!ongpu && m_type == COMPLEX){
+    if(!ongpu && m_type == CX){
       cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
       vectorScal(a, cm_elem, elemNum(), ongpu);
     }
@@ -740,9 +740,9 @@ Matrix& Matrix::operator*= (double a){
 
 Matrix& Matrix::operator+= (const Block& Mb){
   try{
-    if(!ongpu && m_type == REAL)
+    if(!ongpu && m_type == RL)
       m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
-    if(!ongpu && m_type == COMPLEX)
+    if(!ongpu && m_type == CX)
       cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
     *this = *this + Mb;
   /*    
@@ -774,16 +774,16 @@ Complex Matrix::operator[](size_t idx){
       err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(m_type == REAL)
+    if(m_type == RL)
       m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
-    if(m_type == COMPLEX)
+    if(m_type == CX)
       cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
-    return (m_type == REAL) ? Complex(m_elem[idx], 0) : cm_elem[idx];
+    return (m_type == RL) ? Complex(m_elem[idx], 0) : cm_elem[idx];
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::opeartor[](size_t):");
-    if(m_type == REAL)
-      return (m_type == REAL) ? Complex(m_elem[0], 0): cm_elem[0];
+    if(m_type == RL)
+      return (m_type == RL) ? Complex(m_elem[0], 0): cm_elem[0];
   }
 }
 
@@ -794,9 +794,9 @@ Complex Matrix::at(size_t r, size_t c){
       err<<"The input indices are out of range.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(m_type == REAL)
+    if(m_type == RL)
       m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
-    if(m_type == COMPLEX)
+    if(m_type == CX)
       cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
     if(diag){
       if(!(r == c && r < elemNum())){
@@ -805,15 +805,15 @@ Complex Matrix::at(size_t r, size_t c){
         throw std::runtime_error(exception_msg(err.str()));
       }
       
-      return (m_type == REAL) ? Complex(m_elem[r], 0) : cm_elem[r];
+      return (m_type == RL) ? Complex(m_elem[r], 0) : cm_elem[r];
     }
     else{
-      return (m_type == REAL) ? Complex(m_elem[r * Cnum + c], 0) : cm_elem[r * Cnum + c];
+      return (m_type == RL) ? Complex(m_elem[r * Cnum + c], 0) : cm_elem[r * Cnum + c];
     }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::at(size_t, size_t):");
-    return (m_type == REAL) ? Complex(m_elem[0], 0) : cm_elem[0];
+    return (m_type == RL) ? Complex(m_elem[0], 0) : cm_elem[0];
   }
 }
 double* Matrix::getHostElem(){
@@ -846,9 +846,9 @@ Matrix exph(double a, const Block& mat){
     std::vector<Matrix> rets = mat.eigh();
     Matrix UT(rets[1]);
     UT.cTranspose();
-    if(mat.m_type == REAL)
+    if(mat.m_type == RL)
       vectorExp(a, rets[0].getRealElem(), rets[0].row(), rets[0].isOngpu());
-    if(mat.m_type == COMPLEX)
+    if(mat.m_type == CX)
       vectorExp(a, rets[0].getComplexElem(), rets[0].row(), rets[0].isOngpu());
     return UT * (rets[0] * rets[1]);
   }
@@ -878,5 +878,26 @@ Matrix exp(const Block& mat){
 Matrix exph(const Block& mat){
   return exph(1.0, mat);
 }
+
+void Matrix::assign(size_t _Rnum, size_t _Cnum){
+  try{
+    Matrix M(m_type, _Rnum, _Cnum);
+    *this = M;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::assign(size_t ,size_t ):");
+  }
+}
+
+void Matrix::assign(muType _tp, size_t _Rnum, size_t _Cnum){
+  try{
+    Matrix M(_tp, _Rnum, _Cnum);
+    *this = M;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::assign(size_t ,size_t ):");
+  }
+}
+
 
 };	/* namespace uni10 */

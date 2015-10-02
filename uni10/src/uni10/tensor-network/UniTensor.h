@@ -124,8 +124,6 @@ namespace uni10 {
         void orthoRand(const Qnum& qnum);
         void clear();
         
-        void RtoC();
-        
         UniTensor& operator*= (double a);
         UniTensor& operator*= (std::complex<double> a);
         UniTensor& operator*= (const UniTensor& Tb);
@@ -138,6 +136,7 @@ namespace uni10 {
         friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
         friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
         friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
+        friend void RtoC(UniTensor& UniT);
         
         UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
         UniTensor& permute(int* newLabels, int inBondNum);
@@ -225,5 +224,6 @@ namespace uni10 {
     };
     UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
     UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
+    void RtoC(UniTensor& UniT);
 };  /* namespace uni10 */
 #endif /* UNITENSOR_H */

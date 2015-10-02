@@ -44,8 +44,8 @@ namespace uni10{
 	    
     enum muType {
 	EMPTY = -1, ///<Defines an incoming Bond
-	REAL = 0,  ///<Defines an outgoing Bond
-	COMPLEX = 1
+	RL = 0,  ///<Defines an outgoing Bond
+	CX = 1
     };
     
     class UniTensor;
@@ -54,7 +54,9 @@ namespace uni10{
     class Block{
 	public:
 	    friend std::ostream& operator<< (std::ostream& os, const muType& tp);
+
 	    /********************* verified **************************/	    
+
 	    Block();
 	    Block(const Block& _b);
 	    Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
@@ -67,7 +69,6 @@ namespace uni10{
 	    size_t elemNum()const;
 	    void save(const std::string& fname)const;
 	    double norm()const;
-	    void RtoC();
 	    muType getType()const;
 	    std::vector<Matrix> qr()const;
 	    std::vector<Matrix> rq()const;
@@ -78,6 +79,8 @@ namespace uni10{
 	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
 	    double* getRealElem()const;
 	    std::complex<double>* getComplexElem()const;
+	    friend void RtoC(Block& mat);
+	    friend void RtoC(UniTensor& UniT);
 	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C R*C C*R
 	    friend Matrix operator*(double a, const Block& Ma);
 	    friend Matrix operator*(const Block& Ma, double a);
@@ -92,12 +95,13 @@ namespace uni10{
 	    std::complex<double> at(size_t i, size_t j)const;
 	    std::vector<Matrix> eig()const;
 	    std::vector<Matrix> eigh()const;
+	    friend size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
 	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
 	    friend Matrix exph(double a, const Block& mat);
 	    Matrix getDiag()const;
+	    
 	    /**********************************************************/	    
 	    
-	    size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;
 	    
 	    friend class UniTensor;
 	    friend class CUniTensor;
@@ -116,5 +120,7 @@ namespace uni10{
 	    bool diag;
 	    bool ongpu;
     };
+    void RtoC(Block& mat);
+    size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
 };
 #endif /* BLOCK_H */

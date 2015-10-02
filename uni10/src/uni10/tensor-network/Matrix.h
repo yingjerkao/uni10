@@ -89,7 +89,9 @@ public:
     std::complex<double> at(size_t i, size_t j); //&
     Matrix& conj();
     ~Matrix();
-/**********************************************************/	    
+    /**********************************************************/	    
+    void assign(size_t _Rnum, size_t _Cnum);
+    void assign(muType _tp, size_t _Rnum, size_t _Cnum);
     bool toGPU();
     double* getHostElem();
     //delete

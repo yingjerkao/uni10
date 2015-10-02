@@ -49,7 +49,7 @@ CMatrix& CMatrix::conj(){
 }
 
 Matrix::Matrix(const CBlock& _cb): Block(_cb.Rnum, _cb.Cnum, _cb.diag){
-  init(true, REAL);
+  init(true, RL);
   elemCast(m_elem, _cb.m_elem, elemNum(), ongpu, _cb.ongpu);
 }
 
