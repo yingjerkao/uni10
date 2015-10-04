@@ -56,53 +56,104 @@ class Matrix:public Block {
 public:
     ///@brief Default constructor
     ///
-	  /********************* verified **************************/	    
-    Matrix();
-    Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
-    Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
-    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
-    Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool src_ongpu=false);
+	  /*********************  OPERATOR **************************/	    
+
+    Matrix& operator=(const Matrix& _m);
+    Matrix& operator=(const Block& _m);
+    Matrix& operator*= (double a);
+    Matrix& operator*= (std::complex<double> a);
+    Matrix& operator*= (const Block& Mb);
+    Matrix& operator+= (const Block& Mb);
+
+    /********************* going move **************************/	    
+
     Matrix(muType tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+    Matrix(const CBlock& _b);
+    void assign(muType _tp, size_t _Rnum, size_t _Cnum);
+
+    /*********************  NO TYPE **************************/	    
+
+    Matrix();
     Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
     Matrix(const Matrix& _m);
     Matrix(const Block& _b);
     Matrix(const std::string& fname);
-    void setElem(const double* elem, bool _ongpu = false);
-    void setElem(const std::vector<double>& elem, bool _ongpu = false);
-    void setElem(const std::complex<double>* elem, bool _ongpu = false);
-    void setElem(const std::vector< std::complex<double> >& elem, bool _ongpu = false);
+    ~Matrix();
     void identity();
     void set_zero();
     void randomize();
     void orthoRand();
-    Matrix& resize(size_t row, size_t col);
-    void load(const std::string& fname);
-    double max(bool _ongpu=false);
     Matrix& transpose();
     Matrix& cTranspose();
-    Matrix& operator=(const Matrix& _m);
-    Matrix& operator=(const Block& _m);
-    Matrix& operator*= (double a);
-    Matrix& operator*= (const Block& Mb);
-    Matrix& operator+= (const Block & Mb);
+    Matrix& conj();
+    Matrix& resize(size_t row, size_t col);
+    double max(bool _ongpu=false);
+    void load(const std::string& fname);
+    void assign(size_t _Rnum, size_t _Cnum);
+    bool toGPU();
+
+    /*********************  REAL **********************/
+
+    Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(rflag _tp, const std::string& fname);
+    Matrix(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+    void setElem(const double* elem, bool _ongpu = false);
+    void setElem(const std::vector<double>& elem, bool _ongpu = false);
+    void identity(rflag _tp);
+    void set_zero(rflag _tp);
+    void randomize(rflag _tp);
+    void orthoRand(rflag _tp);
+    Matrix& transpose(rflag _tp);
+    Matrix& cTranspose(rflag _tp);
+    Matrix& conj(rflag _tp);
+    Matrix& resize(rflag _tp, size_t row, size_t col);
+    double max(rflag _tp, bool _ongpu=false);
+    void assign(rflag _tp, size_t _Rnum, size_t _Cnum);
+    bool toGPU(rflag _tp);
+
+    /*********************  COMPLEX **********************/
+    
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(cflag _tp, const std::string& fname);
+    Matrix(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+    void setElem(const std::complex<double>* elem, bool _ongpu = false);
+    void setElem(const std::vector< std::complex<double> >& elem, bool _ongpu = false);
+    void identity(cflag _tp);
+    void set_zero(cflag _tp);
+    void randomize(cflag _tp);
+    void orthoRand(cflag _tp);
+    Matrix& transpose(cflag _tp);
+    Matrix& cTranspose(cflag _tp);
+    Matrix& conj(cflag _tp);
+    Matrix& resize(cflag _tp, size_t row, size_t col);
+    double max(cflag _tp, bool _ongpu=false);
+    void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
+    bool toGPU(cflag _tp);
+   
+    /*****************************************************/
+
     std::complex<double> operator[](size_t idx); //&
     std::complex<double> at(size_t i, size_t j); //&
-    Matrix& conj();
-    ~Matrix();
-    /**********************************************************/	    
-    void assign(size_t _Rnum, size_t _Cnum);
-    void assign(muType _tp, size_t _Rnum, size_t _Cnum);
-    bool toGPU();
     double* getHostElem();
     //delete
-    Matrix(const CBlock& _b);
+
 /********************************************************************************/
 private:
-    void matrixElemFree();
+    /********************* going move **************************/	    
+    void init(bool togpu, muType tp);
+    /*********************  NO TYPE **********************/
+    void melemFree();
+    void setMelemBNULL();
+    /*********************  REAL **********************/
     void init(const double* _m_elem, const std::complex<double>* _cm_elem, bool src_ongpu);
     void init(const double* elem, bool _ongpu);
+    void init(rflag _tp, bool togpu);
+    /*********************  COMPLEX **********************/
     void init(const std::complex<double>* elem, bool _ongpu);
-    void init(bool togpu, muType tp);
+    void init(cflag _tp, bool togpu);
+    /***********************************8*****************/
 };
 
 Matrix takeExp(double a, const Block& mat);

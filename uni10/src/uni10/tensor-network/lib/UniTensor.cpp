@@ -3326,13 +3326,14 @@ void RtoC(UniTensor& UniT){
 }
 void RtoC(Block& mat){
   try{
-    if(mat.m_type == EMPTY){
+    if(mat.typeID() == 0){
       std::ostringstream err;
       err<<"This matrix is EMPTY. Nothing to do.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(mat.m_type == RL){
-      mat.m_type = CX;
+    if(mat.typeID() == 1){
+      mat.r_flag = RNULL;
+      mat.c_flag = CTYPE;
       mat.cm_elem = (Complex*)elemAlloc(mat.elemNum() * sizeof(Complex), mat.ongpu);
       elemCast(mat.cm_elem, mat.m_elem, mat.elemNum(), mat.ongpu, mat.ongpu);
       if(mat.m_elem != NULL)
