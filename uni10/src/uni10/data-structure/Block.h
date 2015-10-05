@@ -158,13 +158,13 @@ namespace uni10{
 	    std::complex<double>* getElem(cflag _tp)const;     //rename -> getRealElem() && getComplexElem();
 	    std::complex<double> at(cflag _tp, size_t i, size_t j)const;
 	    friend size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
-
+	    void printElemIsNULL() const;
 	    /******************Friend funcs*******************/
 
 	    friend void RtoC(Block& mat);
 	    friend void RtoC(UniTensor& UniT);
 	    friend Matrix exph(double a, const Block& mat);
-
+    
 	    /*****************************************************/
 
 	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();

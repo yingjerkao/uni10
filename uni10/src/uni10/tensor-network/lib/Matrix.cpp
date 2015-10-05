@@ -149,6 +149,30 @@ namespace uni10{
     }
     return *this;
   }
+
+  Complex Matrix::operator[](size_t idx){
+    try{
+      if(!(idx < elemNum())){
+        std::ostringstream err;
+        err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      if(typeID() == 0){
+        std::ostringstream err;
+        err<<"This matrix is EMPTY." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      else if(typeID() == 1)
+        m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
+      else if(typeID() == 2)
+        cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
+      return (typeID() == 1) ? Complex(m_elem[idx], 0) : cm_elem[idx];
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::opeartor[](size_t):");
+      return (typeID() == 1) ? Complex(m_elem[0], 0): cm_elem[0];
+    }
+  }
   /********************* going move **************************/	    
 
   void Matrix::assign(muType _tp, size_t _Rnum, size_t _Cnum){
@@ -216,12 +240,10 @@ namespace uni10{
 
   void Matrix::init(const Real* _m_elem, const Complex* _cm_elem, bool src_ongpu){
     assert(!(_m_elem != NULL && _cm_elem != NULL));
-    if(_m_elem != NULL){
+    if(_m_elem != NULL)
       init(_m_elem, src_ongpu);
-    }
-    if(_cm_elem != NULL){
+    else if(_cm_elem != NULL)
       init(_cm_elem, src_ongpu);
-    }
   }
 
   Matrix::Matrix(): Block(){}
@@ -275,7 +297,7 @@ namespace uni10{
           free(elem);
         }
       }
-      if(typeID() == 2){
+      else if(typeID() == 2){
         init(CTYPE, ongpu);
         if(elemNum())
           elemBzero(cm_elem, elemNum() * sizeof(Complex), ongpu);
@@ -306,15 +328,15 @@ namespace uni10{
 
   void Matrix::identity(){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        identity(RTYPE); 
+      else if(typeID() == 2)
+        identity(CTYPE); 
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        identity(RTYPE); 
-      if(typeID() == 2)
-        identity(CTYPE); 
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::identity():");
@@ -323,15 +345,15 @@ namespace uni10{
 
   void Matrix::set_zero(){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        set_zero(RTYPE);
+      else if(typeID() == 2)
+        set_zero(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        set_zero(RTYPE);
-      if(typeID() == 2)
-        set_zero(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::set_zero():");
@@ -340,15 +362,15 @@ namespace uni10{
 
   void Matrix::randomize(){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        randomize(RTYPE);
+      else if(typeID() == 2)
+        randomize(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        randomize(RTYPE);
-      if(typeID() == 2)
-        randomize(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::randomize():");
@@ -357,15 +379,15 @@ namespace uni10{
 
   void Matrix::orthoRand(){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        orthoRand(RTYPE);
+      else if(typeID() == 2)
+        orthoRand(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        orthoRand(RTYPE);
-      if(typeID() == 2)
-        orthoRand(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::orthoRand():");
@@ -374,15 +396,15 @@ namespace uni10{
   
   Matrix& Matrix::transpose(){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return transpose(RTYPE);
+      else if(typeID() == 2)
+        return transpose(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return transpose(RTYPE);
-      else if(typeID() == 2)
-        return transpose(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::transpose():");
@@ -391,15 +413,15 @@ namespace uni10{
 
   Matrix& Matrix::cTranspose(){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+       return cTranspose(RTYPE);
+      else if(typeID() == 2)
+       return cTranspose(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-       return cTranspose(RTYPE);
-      else if(typeID() == 2)
-       return cTranspose(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::cTranspose():");
@@ -408,15 +430,15 @@ namespace uni10{
   
   Matrix& Matrix::conj(){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return  conj(RTYPE);
+      else if(typeID() == 2)
+        return  conj(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return  conj(RTYPE);
-      else if(typeID() == 2)
-        return  conj(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::conj():");
@@ -425,15 +447,15 @@ namespace uni10{
   
   Matrix& Matrix::resize(size_t row, size_t col){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return  resize(RTYPE, row, col);
+      else if(typeID() == 2)
+        return  resize(CTYPE, row, col);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return  resize(RTYPE, row, col);
-      else if(typeID() == 2)
-        return  resize(CTYPE, row, col);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::resize(size_t, size_t):");
@@ -441,35 +463,17 @@ namespace uni10{
     return *this;
   }
 
-  double Matrix::max(rflag _tp, bool on_gpu){
-    try{
-      return elemMax(m_elem,  elemNum(),  on_gpu);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::max(bool ):");
-    }
-  }
-  double Matrix::max(cflag _tp, bool on_gpu){
-    try{
-      std::ostringstream err;
-      err<< "Can't comparision. The type of matirx is COMPLEX" << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::max(bool ):");
-    }
-  }
   double Matrix::max(bool on_gpu){
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return  max(RTYPE, on_gpu);
+      else if(typeID() == 2)
+        return  max(CTYPE, on_gpu);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<< "Can't comparision. The type of matirx is EMPTY" << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return  max(RTYPE, on_gpu);
-      else if(typeID() == 2)
-        return  max(CTYPE, on_gpu);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::max(bool ):");
@@ -505,8 +509,7 @@ namespace uni10{
           free(elem);
         }
       }
-     
-      if(typeID() == 2){
+      else if(typeID() == 2){
         init(CTYPE, ongpu);
         if(elemNum())
           elemBzero(cm_elem, elemNum() * sizeof(Complex), ongpu);
@@ -528,14 +531,14 @@ namespace uni10{
 
   void Matrix::assign(size_t _Rnum, size_t _Cnum){
     try{
-      if(typeID() == 0){
-        Matrix M(_Rnum, _Cnum);
-        *this = M;
-      }
-      else if(typeID() == 1)
+      if(typeID() == 1)
         assign(RTYPE, _Rnum, _Cnum);
       else if(typeID() == 2)
         assign(CTYPE, _Rnum, _Cnum);
+      else if(typeID() == 0){
+        Matrix M(_Rnum, _Cnum);
+        *this = M;
+      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::assign(size_t ,size_t ):");
@@ -545,10 +548,45 @@ namespace uni10{
   bool Matrix::toGPU(){
     if(typeID() == 1)
       return toGPU(RTYPE);
-    if(typeID() == 2)
+    else if(typeID() == 2)
       return toGPU(CTYPE);
   }
+
+  Complex Matrix::at(size_t r, size_t c){
+    try{
+      if(!((r < Rnum) && (c < Cnum))){
+        std::ostringstream err;
+        err<<"The input indices are out of range.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      if(typeID() == 0){
+        std::ostringstream err;
+        err<<"This matrix is EMPTY." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      if(typeID() == 1)
+        m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
+      else if(typeID() == 2)
+        cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
+      if(diag){
+        if(!(r == c && r < elemNum())){
+          std::ostringstream err;
+          err<<"The matrix is diagonal, there is no off-diagonal element.";
+          throw std::runtime_error(exception_msg(err.str()));
+        }
+        return (typeID() == 1) ? Complex(m_elem[r], 0) : cm_elem[r];
+      }
+      else{
+        return (typeID() ==1 ) ? Complex(m_elem[r * Cnum + c], 0) : cm_elem[r * Cnum + c];
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::at(size_t, size_t):");
+      return (typeID() == 1) ? Complex(m_elem[0], 0) : cm_elem[0];
+    }
+  }
   /********************* NEE **********************/
+
   /*********************  REAL **********************/
 
   void Matrix::init(rflag _tp, bool _ongpu){
@@ -863,6 +901,44 @@ namespace uni10{
       m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
     return ongpu;
   }
+  
+  double Matrix::max(rflag _tp, bool on_gpu){
+    try{
+      return elemMax(m_elem,  elemNum(),  on_gpu);
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::max(bool ):");
+    }
+  }
+
+  Real& Matrix::at(rflag _tp, size_t idx){
+    try{
+      if(!(idx < elemNum())){
+        std::ostringstream err;
+        err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
+      return m_elem[idx];
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::opeartor[](rflag ,size_t ):");
+      return m_elem[0];
+    }
+  }
+
+  Real* Matrix::getHostElem(rflag _tp){
+    try{
+      if(ongpu){
+        m_elem = (Real*)mvCPU(m_elem, elemNum() * sizeof(Real), ongpu);
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::getHostElem(rflag _tp):");
+    }
+    return m_elem;
+  }
+
   /*********************  REE **********************/
   /*********************  COMPLEX **********************/
   
@@ -1179,71 +1255,56 @@ namespace uni10{
       cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
     return ongpu;
   }
+  
+  double Matrix::max(cflag _tp, bool on_gpu){
+    try{
+      std::ostringstream err;
+      err<< "Can't comparision. The type of matirx is COMPLEX" << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::max(bool ):");
+    }
+  }
+
+  Complex& Matrix::at(cflag _tp, size_t idx){
+    try{
+      if(!(idx < elemNum())){
+        std::ostringstream err;
+        err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
+      return cm_elem[idx];
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::opeartor[](cflag , size_t ):");
+      return cm_elem[0];
+    }
+  }
+
+  Complex* Matrix::getHostElem(cflag _tp){
+    try{
+      if(ongpu){
+        cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::getHostElem(cflag _tp):");
+    }
+    return cm_elem;
+  }
   /***********************CEE*****************************/
   /*****************************************************/
-
-  /************************Testing**********************/
-
-
-
-
-
-
-
-
 
 /********************************************************************************************/
 
 
-Complex Matrix::operator[](size_t idx){
-  try{
-    if(!(idx < elemNum())){
-      std::ostringstream err;
-      err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(m_type == RL)
-      m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
-    if(m_type == CX)
-      cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
-    return (m_type == RL) ? Complex(m_elem[idx], 0) : cm_elem[idx];
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::opeartor[](size_t):");
-    if(m_type == RL)
-      return (m_type == RL) ? Complex(m_elem[0], 0): cm_elem[0];
-  }
-}
 
-Complex Matrix::at(size_t r, size_t c){
-  try{
-    if(!((r < Rnum) && (c < Cnum))){
-      std::ostringstream err;
-      err<<"The input indices are out of range.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(m_type == RL)
-      m_elem = (double*)mvCPU(m_elem, elemNum() * sizeof(double), ongpu);
-    if(m_type == CX)
-      cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
-    if(diag){
-      if(!(r == c && r < elemNum())){
-        std::ostringstream err;
-        err<<"The matrix is diagonal, there is no off-diagonal element.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      
-      return (m_type == RL) ? Complex(m_elem[r], 0) : cm_elem[r];
-    }
-    else{
-      return (m_type == RL) ? Complex(m_elem[r * Cnum + c], 0) : cm_elem[r * Cnum + c];
-    }
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::at(size_t, size_t):");
-    return (m_type == RL) ? Complex(m_elem[0], 0) : cm_elem[0];
-  }
-}
+
+
+
+
 double* Matrix::getHostElem(){
   try{
     if(ongpu){

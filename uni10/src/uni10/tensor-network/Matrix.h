@@ -64,6 +64,7 @@ public:
     Matrix& operator*= (std::complex<double> a);
     Matrix& operator*= (const Block& Mb);
     Matrix& operator+= (const Block& Mb);
+    std::complex<double> operator[](size_t idx); //&
 
     /********************* going move **************************/	    
 
@@ -111,6 +112,8 @@ public:
     double max(rflag _tp, bool _ongpu=false);
     void assign(rflag _tp, size_t _Rnum, size_t _Cnum);
     bool toGPU(rflag _tp);
+    double& at(rflag _tp, size_t i); //&
+    double* getHostElem(rflag _tp);
 
     /*********************  COMPLEX **********************/
     
@@ -131,13 +134,14 @@ public:
     double max(cflag _tp, bool _ongpu=false);
     void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
     bool toGPU(cflag _tp);
+    std::complex<double>& at(cflag _tp, size_t i); //&
+    std::complex<double>* getHostElem(cflag _tp);
    
     /*****************************************************/
 
-    std::complex<double> operator[](size_t idx); //&
-    std::complex<double> at(size_t i, size_t j); //&
-    double* getHostElem();
     //delete
+    double* getHostElem();
+    std::complex<double> at(size_t i, size_t j); //&
 
 /********************************************************************************/
 private:
@@ -146,8 +150,8 @@ private:
     /*********************  NO TYPE **********************/
     void melemFree();
     void setMelemBNULL();
-    /*********************  REAL **********************/
     void init(const double* _m_elem, const std::complex<double>* _cm_elem, bool src_ongpu);
+    /*********************  REAL **********************/
     void init(const double* elem, bool _ongpu);
     void init(rflag _tp, bool togpu);
     /*********************  COMPLEX **********************/

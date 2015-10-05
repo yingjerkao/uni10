@@ -38,8 +38,19 @@ typedef std::complex<double> Complex;
 
 namespace uni10{
   
+  void Block::printElemIsNULL() const{
+    if(m_elem == NULL && cm_elem == NULL)
+      std::cout << std::endl << "REAL elem is NULL, COMPLEX elem is NULL. "<< std::endl << std::endl;
+    if(m_elem != NULL && cm_elem == NULL)
+      std::cout << std::endl << "REAL elem isn't NULL, COMPLEX elem is NULL. "<< std::endl << std::endl;
+    if(m_elem == NULL && cm_elem != NULL)
+      std::cout << std::endl << "REAL elem is NULL, COMPLEX elem isn't NULL. "<< std::endl << std::endl;
+    if(m_elem != NULL && cm_elem != NULL)
+      std::cout << std::endl << "REAL elem isn't NULL, COMPLEX elem isn't NULL. "<< std::endl << std::endl;
+  }
+
   /********************* going move **************************/	    
- 
+
   Block::Block(muType _tp, size_t _Rnum, size_t _Cnum, bool _diag): m_type(_tp), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
   Real* Block::getRealElem()const{return m_elem;}
   Complex* Block::getComplexElem()const{return cm_elem;}
@@ -148,7 +159,6 @@ namespace uni10{
         err<<"The dimensions of the two matrices do not match for matrix multiplication.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      // R*R
       if(Ma.typeID() == 1 && Mb.typeID() == 1){
         if((!Ma.diag) && (!Mb.diag)){
           Matrix Mc(RTYPE, Ma.Rnum, Mb.Cnum);
@@ -201,7 +211,9 @@ namespace uni10{
           vectorMul(Mc.cm_elem, Mb.cm_elem, min, Mc.ongpu, Mb.ongpu);
           return Mc;
         }
-      }else if(Ma.typeID() == 1 && Mb.m_type == 2){
+      }
+     
+      if(Ma.typeID() == 1 && Mb.typeID() == 2){  //R*C
         Matrix _Ma(Ma);
         RtoC(_Ma);
         if((!_Ma.diag) && (!Mb.diag)){
@@ -345,7 +357,7 @@ namespace uni10{
           vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
           return Mc;
         }
-      }else if(Ma.typeID() == 1 && Mb.typeID() == 22){
+      }else if(Ma.typeID() == 1 && Mb.typeID() == 2){
         Matrix _Ma(Ma);
         RtoC(_Ma);
         if (_Ma.diag && !Mb.diag) {
@@ -428,7 +440,7 @@ namespace uni10{
   Block::Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(CNULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){
     if(_typeID == 1)
       r_flag = RTYPE; 
-    if(_typeID == 2)
+    else if(_typeID == 2)
       c_flag = CTYPE; 
   }
   
@@ -477,9 +489,9 @@ namespace uni10{
     try{
       if(typeID() == 0) 
         savePrototype(fname);
-      if(typeID() == 1) 
+      else if(typeID() == 1) 
         save(RTYPE, fname);
-      if(typeID() == 2) 
+      else if(typeID() == 2) 
         save(CTYPE, fname);
     }
     catch(const std::exception& e){
@@ -495,15 +507,15 @@ namespace uni10{
         err<<"Cannot perform QR decomposition when Rnum < Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return qr(RTYPE);
+      else if(typeID() == 2)
+        return qr(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform QR decomposition on EMPTY matrix . Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        return qr(RTYPE);
-      if(typeID() == 2)
-        return qr(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::qr():");
@@ -520,15 +532,15 @@ namespace uni10{
         err<<"Cannot perform RQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return rq(RTYPE);
+      else if(typeID() == 2)
+        return rq(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform RQ decomposition on EMPTY matrix . Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        return rq(RTYPE);
-      if(typeID() == 2)
-        return rq(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::rq():");
@@ -544,15 +556,15 @@ namespace uni10{
         err<<"Cannot perform QL decomposition when Rnum < Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return ql(RTYPE);
+      else if(typeID() == 2)
+        return ql(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform QL decomposition on EMPTY matrix . Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        return ql(RTYPE);
-      if(typeID() == 2)
-        return ql(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::ql():");
@@ -560,8 +572,6 @@ namespace uni10{
     return outs;
   }
   
-  
-
   std::vector<Matrix> Block::lq()const{
     std::vector<Matrix> outs;
     try{
@@ -570,15 +580,15 @@ namespace uni10{
         err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       } 
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return lq(RTYPE);
+      else if(typeID() == 2)
+        return lq(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform LQ decomposition on EMPTY matrix . Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        return lq(RTYPE);
-      if(typeID() == 2)
-        return lq(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::lq():");
@@ -589,15 +599,15 @@ namespace uni10{
   std::vector<Matrix> Block::svd()const{
     std::vector<Matrix> outs;
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return svd(RTYPE);
+      else if(typeID() == 2)
+        return svd(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform SVD decomposition on EMPTY matrix . Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        return svd(RTYPE);
-      if(typeID() == 2)
-        return svd(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::svd():");
@@ -608,15 +618,15 @@ namespace uni10{
   
   Real Block::norm()const{
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return vectorNorm(m_elem, elemNum(), 1, ongpu);
+      else if(typeID() == 2)
+        return vectorNorm(cm_elem, elemNum(), 1, ongpu);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 1)
-        return vectorNorm(m_elem, elemNum(), 1, ongpu);
-      if(typeID() == 2)
-        return vectorNorm(cm_elem, elemNum(), 1, ongpu);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::norm():");
@@ -640,7 +650,7 @@ namespace uni10{
       assert(ongpu == invM.isOngpu());
       if(typeID() == 1)
         matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
-      if(typeID() == 2)
+      else if(typeID() == 2)
         matrixInv(invM.cm_elem, Rnum, invM.diag, invM.ongpu);
       return invM;
     }
@@ -652,19 +662,15 @@ namespace uni10{
   
   Matrix Block::getDiag()const{
     try{
-      if(diag)
-        return *this;
-      else{
-        int _typeID = typeID();
-        if(_typeID == 0){
-          std::ostringstream err;
-          err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
-          throw std::runtime_error(exception_msg(err.str()));
-        }
-        if(_typeID == 1)
-          getDiag(RTYPE);
-        if(_typeID == 2)
-          getDiag(CTYPE);
+      int _typeID = this->typeID();
+      if(_typeID == 1)
+        return getDiag(RTYPE);
+      else if(_typeID == 2)
+        return getDiag(CTYPE);
+      else if(_typeID == 0){
+        std::ostringstream err;
+        err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
+        throw std::runtime_error(exception_msg(err.str()));
       }
     }
     catch(const std::exception& e){
@@ -680,15 +686,15 @@ namespace uni10{
         err<<"Cannot perform trace on a non-square matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return Complex(trace(RTYPE), 0);
+      else if(typeID() == 2)
+        return trace(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform trace on an EMPTY matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return Complex(trace(RTYPE), 0);
-      else if(typeID() == 2)
-        return trace(CTYPE);
     }catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::trace():");
       return 0;
@@ -697,15 +703,15 @@ namespace uni10{
 
   Complex Block::sum()const{
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return Complex(vectorSum(m_elem, elemNum(), 1, ongpu), 0);
+      else if(typeID() == 2)
+        return vectorSum(cm_elem, elemNum(), 1, ongpu);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform trace on an EMPTY matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return Complex(vectorSum(m_elem, elemNum(), 1, ongpu), 0);
-      else if(typeID() == 2)
-        return vectorSum(cm_elem, elemNum(), 1, ongpu);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::sum():");
@@ -715,15 +721,15 @@ namespace uni10{
   
   std::vector<Matrix> Block::eig()const{
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return eig(RTYPE);
+      else if(typeID() == 2)
+        return eig(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform eigenvalue decomposition on an EMPTY matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return eig(RTYPE);
-      else if(typeID() == 2)
-        return eig(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::eig():");
@@ -732,15 +738,15 @@ namespace uni10{
   
   std::vector<Matrix> Block::eigh()const{
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return eigh(RTYPE);
+      else if(typeID() == 2)
+        return eigh(CTYPE);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"Cannot perform eigenvalue decomposition on an EMPTY matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return eigh(RTYPE);
-      else if(typeID() == 2)
-        return eigh(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::eigh():");
@@ -750,15 +756,15 @@ namespace uni10{
 
   Complex Block::at(size_t r, size_t c)const{
     try{
-      if(typeID() == 0){
+      if(typeID() == 1)
+        return Complex(at(RTYPE, r, c), 0);
+      else if(typeID() == 2)
+        return at(CTYPE, r, c);
+      else if(typeID() == 0){
         std::ostringstream err;
         err<<"This matrix is EMPTY.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      else if(typeID() == 1)
-        return Complex(at(RTYPE, r, c), 0);
-      else if(typeID() == 2)
-        return at(CTYPE, r, c);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::at(size_t, size_t):");

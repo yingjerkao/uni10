@@ -59,62 +59,50 @@ namespace uni10 {
 
     public:
         
+        /*********************  OPERATOR **************************/	    
+        
         friend std::ostream& operator<< (std::ostream& os, const UniTensor& UniT);
-        std::string printRawElem(bool print=true)const;
-        static std::string profile(bool print = true);
-        
-        /********* verified *********/
-        
-        UniTensor();
-        UniTensor(double val);
-        UniTensor(std::complex<double> val);
-        UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
+       
+       
+        /********************* going move **************************/	    
+       
         UniTensor(muType tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
-        UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
         UniTensor(muType tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
-        UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
         UniTensor(muType tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
+      
+        /*********************  NO TYPE **************************/	    
+     
+        UniTensor();
+        UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+        UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
         UniTensor(const UniTensor& UniT);
-        UniTensor(const Block& UniT);
         UniTensor(const std::string& fname);
+        
+        UniTensor(const Block& UniT);
         ~UniTensor();
-        void setRawElem(const std::vector<double>& rawElem);
-        void setRawElem(const double* rawElem);
-        void setRawElem(const std::vector< std::complex<double> >& rawElem);
-        void setRawElem(const std::complex<double>* rawElem);
-        void setRawElem(const Block& blk);
-        void setElem(const double* elem, bool _ongpu = false);
-        void setElem(const std::vector<double>& elem, bool _ongpu = false);
-        void setElem(const std::complex<double>* c_elem, bool _ongpu = false);
-        void setElem(const std::vector< std::complex<double> >& c_elem, bool _ongpu = false);
-        void putBlock(const Block& mat);
-        void putBlock(const Qnum& qnum, const Block& mat);
         
-        const Block& const_getBlock()const;
-        const Block& const_getBlock(const Qnum& qnum)const;
-        std::map<Qnum, Matrix> getBlocks()const;
-        const std::map<Qnum, Block>& const_getBlocks()const;
-        Matrix getBlock(bool diag = false)const;
-        Matrix getBlock(const Qnum& qnum, bool diag = false)const;
-        
+        int typeID()const; 
         void setLabel(const std::vector<int>& newLabels);
         void setLabel(int* newLabels);
-        int label(size_t idx)const;
         std::vector<int> label()const;
+        int label(size_t idx)const;
+        std::string getName();
+        void setName(const std::string& _name);
         size_t bondNum()const;
         size_t inBondNum()const;
         std::vector<Bond> bond()const;
         Bond bond(size_t idx)const;
         size_t elemNum()const;
-        void setName(const std::string& _name);
-        std::string getName();
         size_t blockNum()const;
-        UniTensor& combineBond(const std::vector<int>& combined_labels);
         std::vector<Qnum> blockQnum()const;
         Qnum blockQnum(size_t idx)const;
-        std::vector<_Swap> exSwap(const UniTensor& Tb)const;
-        void addGate(const std::vector<_Swap>& swaps);
-        
+        const std::map<Qnum, Block>& const_getBlocks()const;
+        const Block& const_getBlock()const;
+        const Block& const_getBlock(const Qnum& qnum)const;
+        std::map<Qnum, Matrix> getBlocks()const;
+        Matrix getBlock(bool diag = false)const;
+        Matrix getBlock(const Qnum& qnum, bool diag = false)const;
         void set_zero();
         void set_zero(const Qnum& qnum);
         void identity();
@@ -122,8 +110,57 @@ namespace uni10 {
         void randomize();
         void orthoRand();
         void orthoRand(const Qnum& qnum);
-        void clear();
+        void save(const std::string& fname);
+        UniTensor& transpose();
         
+        /*********************  REAL **********************/
+        
+        UniTensor(double val);
+        UniTensor(rflag _tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(rflag _tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+        UniTensor(rflag _tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
+        void setRawElem(const std::vector<double>& rawElem);
+        void setRawElem(const double* rawElem);
+        void setElem(const double* elem, bool _ongpu = false);
+        void setElem(const std::vector<double>& elem, bool _ongpu = false);
+        std::map<Qnum, Matrix> getBlocks(rflag _tp)const;
+        Matrix getBlock(rflag _tp, bool diag = false)const;
+        Matrix getBlock(rflag _tp, const Qnum& qnum, bool diag = false)const;
+        void set_zero(rflag _tp);
+        void set_zero(rflag _tp, const Qnum& qnum);
+        void identity(rflag _tp);
+        void identity(rflag _tp, const Qnum& qnum);
+        void randomize(rflag _tp);
+        void orthoRand(rflag _tp);
+        void orthoRand(rflag _tp, const Qnum& qnum);
+        UniTensor& transpose(rflag _tp);
+       
+        /*********************  COMPLEX **********************/
+      
+        UniTensor(std::complex<double> val);
+        UniTensor(cflag _tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(cflag _tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+        UniTensor(cflag _tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
+        void setRawElem(const std::vector< std::complex<double> >& rawElem);
+        void setRawElem(const std::complex<double>* rawElem);
+        void setElem(const std::complex<double>* c_elem, bool _ongpu = false);
+        void setElem(const std::vector< std::complex<double> >& c_elem, bool _ongpu = false);
+        std::map<Qnum, Matrix> getBlocks(cflag _tp)const;
+        Matrix getBlock(cflag _tp, bool diag = false)const;
+        Matrix getBlock(cflag _tp, const Qnum& qnum, bool diag = false)const;
+        void set_zero(cflag _tp);
+        void set_zero(cflag _tp, const Qnum& qnum);
+        void identity(cflag _tp);
+        void identity(cflag _tp, const Qnum& qnum);
+        void randomize(cflag _tp);
+        void orthoRand(cflag _tp);
+        void orthoRand(cflag _tp, const Qnum& qnum);
+        UniTensor& transpose(cflag _tp);
+     
+        /******************Friend funcs*******************/
+        
+        /*****************************************************/
+    
         UniTensor& operator*= (double a);
         UniTensor& operator*= (std::complex<double> a);
         UniTensor& operator*= (const UniTensor& Tb);
@@ -136,6 +173,23 @@ namespace uni10 {
         friend UniTensor operator+ (const UniTensor& Ta, const UniTensor& Tb);
         friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
         friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
+        
+        std::string printRawElem(bool print=true)const;
+        static std::string profile(bool print = true);
+
+        void setRawElem(const Block& blk);
+        void putBlock(const Block& mat);
+        void putBlock(const Qnum& qnum, const Block& mat);
+        
+        
+        UniTensor& combineBond(const std::vector<int>& combined_labels);
+        std::vector<_Swap> exSwap(const UniTensor& Tb)const;
+        void addGate(const std::vector<_Swap>& swaps);
+        
+        bool similar(const UniTensor& Tb)const;
+        bool elemCmp(const UniTensor& UniT)const;
+        void clear();
+        
         friend void RtoC(UniTensor& UniT);
         
         UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
@@ -148,16 +202,12 @@ namespace uni10 {
         std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
         std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
        
-        UniTensor& transpose();
-        void save(const std::string& fname);
         UniTensor& assign(muType _tp, const std::vector<Bond>& _bond);
         
         //double* getElem();
         double* getRealElem();
         std::complex<double>* getComplexElem();
         Matrix getRawElem()const;
-        bool similar(const UniTensor& Tb)const;
-        bool elemCmp(const UniTensor& UniT)const;
         std::complex<double> trace()const;
         UniTensor& partialTrace(int la, int lb);
         std::complex<double> operator[](size_t idx) const;
@@ -185,6 +235,9 @@ namespace uni10 {
 
     private:
         muType u_type;
+
+        rflag r_flag;
+        cflag c_flag;
         std::string name;
         double *elem;       //Array of elements
         std::complex<double>* c_elem;       //Array of elements
@@ -209,14 +262,31 @@ namespace uni10 {
         static size_t MAXELEMNUM;
         static size_t MAXELEMTEN;   //Max number of element of a tensor
         //Private Functions
-        size_t grouping();
-        void uelemAlloc();
-        void uelemFree();
-        void uelemBzero();
-        void initBlocks(double* _elem);
-        void initBlocks(std::complex<double>* _c_elem);
+        /********************* going move **************************/	    
         void initPrototype(muType tp = EMPTY);
         void initUniT(muType tp);
+        void uelemAlloc();
+        void initBlocks(double* _elem);
+        void initBlocks(std::complex<double>* _c_elem);
+        void uelemBzero();
+        /*********************  NO TYPE **************************/	    
+        void initUniT();
+        void initUniT(int _typeID);
+        size_t grouping();
+        void uelemFree();
+        /*********************  REAL **********************/
+        void initUniT(rflag _tp);
+        size_t grouping(rflag _tp);
+        void uelemAlloc(rflag _tp);
+        void initBlocks(rflag _tp);
+        void uelemBzero(rflag _tp);
+        /*********************  COMPLEX **********************/
+        void initUniT(cflag _tp);
+        size_t grouping(cflag _tp);
+        void uelemAlloc(cflag _tp);
+        void initBlocks(cflag _tp);
+        void uelemBzero(cflag _tp);
+        /*****************************************************/
         
         std::vector<UniTensor> _hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
         static const int HAVEBOND = 1;        /**< A flag for initialization */
