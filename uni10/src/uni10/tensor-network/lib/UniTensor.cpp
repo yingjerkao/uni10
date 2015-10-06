@@ -263,7 +263,10 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     RQidx2Blk = UniT.RQidx2Blk;
     
     ELEMNUM -= m_elemNum;	//free original memory
-
+    
+    
+    uelemFree(); 
+    
     elem = NULL;
     c_elem = NULL;
     status = UniT.status;
@@ -1341,7 +1344,8 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
         initBlocks(CTYPE);
       }
     }
-    else if(typeID() == 1){
+    
+    if(typeID() == 1){
       if(mat.m_elem != it->second.m_elem){
         if(mat.isDiag()){
           elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu);
@@ -2559,6 +2563,18 @@ void UniTensor::putBlock(rflag _tp, const Qnum& qnum, const Block& mat){
       err<<"The dimension of input matrix does not match for the dimension of the block with quantum number "<<qnum<<std::endl;
       err<<"  Hint: Use Matrix::resize(int, int)";
       throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(typeID() == 2){
+      std::ostringstream err;
+      err<<"Can't put a REAL Block in a COMPLEX tensor."<<qnum<<std::endl;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    
+    if(typeID() == 0){
+      r_flag = RTYPE;
+      c_flag = CNULL;
+      uelemAlloc(RTYPE);
+      initBlocks(RTYPE);
     }
 
     if(mat.m_elem != it->second.m_elem){
@@ -3806,6 +3822,19 @@ void UniTensor::putBlock(cflag _tp, const Qnum& qnum, const Block& mat){
       err<<"  Hint: Use Matrix::resize(int, int)";
       throw std::runtime_error(exception_msg(err.str()));
     }
+    if(typeID() == 1){
+      std::ostringstream err;
+      err<<"Can't put COMPLEX Block in a REAL tensor."<<qnum<<std::endl;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    
+    if(typeID() == 0){
+      r_flag = RNULL;
+      c_flag = CTYPE;
+      uelemAlloc(CTYPE);
+      initBlocks(CTYPE);
+    }
+
     if(mat.cm_elem != it->second.cm_elem){
       if(mat.isDiag()){
         elemBzero(it->second.cm_elem, it->second.Rnum * it->second.Cnum * sizeof(Complex), ongpu);

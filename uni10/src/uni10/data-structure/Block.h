@@ -153,7 +153,7 @@ namespace uni10{
     
 	    /*****************************************************/
 
-	    //double* getElem()const;     //rename -> getRealElem() && getComplexElem();
+	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
 	    //friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 	    
 	    /**********************************************************/	    

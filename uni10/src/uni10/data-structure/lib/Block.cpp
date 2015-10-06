@@ -1419,7 +1419,7 @@ namespace uni10{
   /*****************************************************/
   
 
-//  Real* Block::getElem()const{return m_elem;}
+  Real* Block::getElem()const{return m_elem;}
   
   size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
     try{
