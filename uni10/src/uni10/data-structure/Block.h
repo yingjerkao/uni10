@@ -43,12 +43,6 @@
 
 namespace uni10{
 
-    enum muType {
-	EMPTY = -1, ///<Defines an incoming Bond
-	RL = 0,  ///<Defines an outgoing Bond
-	CX = 1
-    };
-    
     enum rflag{
 	RNULL = 0,	
 	RTYPE = 1
@@ -61,13 +55,13 @@ namespace uni10{
 
     class UniTensor;
     class Matrix;
-//    class CMatrix;
+    class CMatrix;
     class Block{
 	public:
 
 	    /*********************  OPERATOR **************************/	    
 
-	    friend std::ostream& operator<< (std::ostream& os, const muType& tp);
+	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
 	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C R*C C*R
 	    friend Matrix operator*(double a, const Block& Ma);
 	    friend Matrix operator*(const Block& Ma, double a);
@@ -77,14 +71,6 @@ namespace uni10{
 	    friend bool operator==(const Block& m1, const Block& m2);
 	    friend bool operator!=(const Block& m1, const Block& m2){return !(m1 == m2);};
 	    
-	    /********************* going move **************************/	    
-
-	    Block(muType _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
-	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
-	    muType getType()const;
-	    double* getRealElem()const;
-	    std::complex<double>* getComplexElem()const;
-
 	    /*********************  NO TYPE **************************/	    
 	
 	    Block();
@@ -167,7 +153,8 @@ namespace uni10{
     
 	    /*****************************************************/
 
-	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
+	    //double* getElem()const;     //rename -> getRealElem() && getComplexElem();
+	    //friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 	    
 	    /**********************************************************/	    
 	    friend class UniTensor;
@@ -176,10 +163,8 @@ namespace uni10{
 	    friend class Matrix;
 	    friend class CMatrix;
 	    /********************************************************************************/	    
-	    //friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
 
 	protected:
-	    muType m_type;
 	    rflag r_flag;
 	    cflag c_flag;
 	    double* m_elem;

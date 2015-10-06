@@ -54,6 +54,7 @@ int main(){
 	// Make a pure density matrix from ground state
 	uni10::Matrix U = results[1];
 	// Generate ground state by taking the first H.rol() elements from U.
+/*	
 	uni10::Matrix GS(1, H.col(), U.getElem());
 	// Transposed GS
 	uni10::Matrix GST = GS;
@@ -70,7 +71,9 @@ int main(){
 
 	// Measure ground state energy
 	std::cout<<"\nThe ground state energy: " << (Rho * H).trace() << std::endl;
+	*/
 }
+
 /* Output:
 
 4 x 4 = 16

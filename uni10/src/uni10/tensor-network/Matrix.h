@@ -56,6 +56,7 @@ class Matrix:public Block {
 public:
     ///@brief Default constructor
     ///
+    Matrix(const CBlock& _b);
 	  /*********************  OPERATOR **************************/	    
 
     Matrix& operator=(const Matrix& _m);
@@ -65,12 +66,6 @@ public:
     Matrix& operator*= (const Block& Mb);
     Matrix& operator+= (const Block& Mb);
     std::complex<double> operator[](size_t idx); //&
-
-    /********************* going move **************************/	    
-
-    Matrix(muType tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
-    Matrix(const CBlock& _b);
-    void assign(muType _tp, size_t _Rnum, size_t _Cnum);
 
     /*********************  NO TYPE **************************/	    
 
@@ -145,8 +140,6 @@ public:
 
 /********************************************************************************/
 private:
-    /********************* going move **************************/	    
-    void init(bool togpu, muType tp);
     /*********************  NO TYPE **********************/
     void melemFree();
     void setMelemBNULL();

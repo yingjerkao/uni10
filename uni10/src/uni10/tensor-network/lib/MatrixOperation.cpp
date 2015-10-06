@@ -49,7 +49,7 @@ CMatrix& CMatrix::conj(){
 }
 
 Matrix::Matrix(const CBlock& _cb): Block(_cb.Rnum, _cb.Cnum, _cb.diag){
-  init(true, RL);
+  init(RTYPE, true);
   elemCast(m_elem, _cb.m_elem, elemNum(), ongpu, _cb.ongpu);
 }
 
@@ -108,7 +108,7 @@ bool operator== (const CBlock& m1, const Block& m2){
 CMatrix operator+(const CBlock& Ma, const Block& Mb){
   try{
     CMatrix Mc(Ma);
-    vectorAdd(Mc.getElem(), Mb.getElem(), Mc.elemNum(), Mc.isOngpu(), Mb.isOngpu());
+    vectorAdd(Mc.getElem(), Mb.getElem(RTYPE), Mc.elemNum(), Mc.isOngpu(), Mb.isOngpu());
     return Mc;
   }
   catch(const std::exception& e){

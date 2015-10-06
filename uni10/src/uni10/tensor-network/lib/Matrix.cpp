@@ -103,8 +103,7 @@ namespace uni10{
   Matrix& Matrix::operator*= (Complex a){
     try{
       if(a.imag() == 0){
-        double _a = a.real();
-        *this = *this * _a; 
+        *this = *this * a.real(); 
       }
       else{ 
         if(typeID() == 1) 
@@ -171,58 +170,6 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::opeartor[](size_t):");
       return (typeID() == 1) ? Complex(m_elem[0], 0): cm_elem[0];
-    }
-  }
-  /********************* going move **************************/	    
-
-  void Matrix::assign(muType _tp, size_t _Rnum, size_t _Cnum){
-    try{
-      Matrix M(_tp, _Rnum, _Cnum);
-      *this = M;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::assign(size_t ,size_t ):");
-    }
-  }
-
-  void Matrix::init(bool _ongpu, muType tp){
-    if(tp == RL){
-      if(elemNum()){
-        if(_ongpu)	// Try to allocate GPU memory
-          m_elem = (Real*)elemAlloc(elemNum() * sizeof(Real), ongpu);
-        else{
-          m_elem = (Real*)elemAllocForce(elemNum() * sizeof(Real), false);
-          ongpu = false;
-        }
-      }
-    }
-    if(tp == CX){
-      if(elemNum()){
-        if(_ongpu)	// Try to allocate GPU memory
-          cm_elem = (Complex*)elemAlloc(elemNum() * sizeof(Complex), ongpu);
-        else{
-          cm_elem = (Complex*)elemAllocForce(elemNum() * sizeof(Complex), false);
-          ongpu = false;
-        }
-      }
-    }
-  }
-
-  Matrix::Matrix(muType tp, size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu):Block(tp, _Rnum, _Cnum, _diag){
-    try{
-      if(tp == RL){
-        init(_ongpu, tp);
-        if(elemNum())
-          elemBzero(m_elem, elemNum() * sizeof(Real), ongpu);
-      }
-      if(tp == CX){
-        init(_ongpu, tp);
-        if(elemNum())
-          elemBzero(cm_elem, elemNum() * sizeof(Complex), ongpu);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, bool=false):");
     }
   }
   /*********************  NO TYPE **************************/	    

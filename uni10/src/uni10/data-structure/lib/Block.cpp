@@ -49,12 +49,6 @@ namespace uni10{
       std::cout << std::endl << "REAL elem isn't NULL, COMPLEX elem isn't NULL. "<< std::endl << std::endl;
   }
 
-  /********************* going move **************************/	    
-
-  Block::Block(muType _tp, size_t _Rnum, size_t _Cnum, bool _diag): m_type(_tp), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
-  Real* Block::getRealElem()const{return m_elem;}
-  Complex* Block::getComplexElem()const{return cm_elem;}
-
   /*********************  OPERATOR **************************/	    
   std::ostream& operator<< (std::ostream& os, const Block& b){
     try{
@@ -131,13 +125,13 @@ namespace uni10{
 
   bool operator== (const Block& m1, const Block& m2){
     try{
-      if(m1.m_type != m2.m_type)
+      if(m1.typeID() != m2.typeID())
         return false;
       else{
         double diff;
         if(m1.elemNum() == m2.elemNum()){
           for(size_t i = 0; i < m1.elemNum(); i++){
-            diff = (m1.m_type == RL) ? std::abs(m1.m_elem[i] - m2.m_elem[i]) : std::abs(m1.cm_elem[i] -m2.cm_elem[i]);
+            diff = (m1.typeID() == 1) ? std::abs(m1.m_elem[i] - m2.m_elem[i]) : std::abs(m1.cm_elem[i] -m2.cm_elem[i]);
             if(diff > 1E-12)
               return false;
           }
@@ -296,8 +290,7 @@ namespace uni10{
     try{
       Matrix Mb(Ma);
       if(a.imag() == 0){
-        double _a = a.real();
-        return _a * Mb; 
+        return a.real() * Mb; 
       }else{
         RtoC(Mb);
         vectorScal(a, Mb.cm_elem, Mb.elemNum(), Mb.isOngpu());
@@ -774,7 +767,7 @@ namespace uni10{
   /*********************NEE*****************************/
   /*********************  REAL **********************/
 
-  Block::Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(_tp), c_flag(CNULL), m_type(EMPTY), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
+  Block::Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(_tp), c_flag(CNULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
 	    
   Real* Block::getElem(rflag _tp)const{return m_elem;}
   
@@ -1100,7 +1093,7 @@ namespace uni10{
   /*********************REE*****************************/
   /*********************  COMPLEX **********************/
 
-  Block::Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(_tp), m_type(EMPTY), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
+  Block::Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(_tp), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
   
   Complex* Block::getElem(cflag _tp)const{return cm_elem;}
   
@@ -1425,43 +1418,8 @@ namespace uni10{
   /*********************CEE*****************************/
   /*****************************************************/
   
-  std::ostream& operator<< (std::ostream& os, const muType& tp){
-    try{
-      if(tp == RL)
-        os << "The matrix type is REAL.";
-      if(tp == CX)
-        os << "The matrix type is COMPLEX.";
-      if(tp == EMPTY)
-        os << "This matrix is EMPTY.";
-      os << std::endl << std::endl;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function operator<<(std::ostream&, uni10::muType&):");
-    }
-    return os;
-  }
 
-
-  Real* Block::getElem()const{return m_elem;}
-  
-
-
-  muType Block::getType()const{
-    return m_type;
-  }
-
-  
-  
-
-
-  
-  
-  
-  
-  
-  
-  
-
+//  Real* Block::getElem()const{return m_elem;}
   
   size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
     try{
