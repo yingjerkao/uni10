@@ -54,56 +54,206 @@ namespace uni10{
 /// The Matrix follows the C convention that the memory storage is row-major and indices start from 0.
 class Matrix:public Block {
 public:
-    ///@brief Default constructor
-    ///
     Matrix(const CBlock& _b);
-	  /*********************  OPERATOR **************************/	    
+	  /*********************  OPERATOR **************************/
 
+    /// @brief Assign to Matrix
+    ///
+    /// Assigns the content of \c mat to Matrix, replacing the original content by reallocating new memory
+    /// fit for \c mat.
+    /// @param _m Second Matrix
     Matrix& operator=(const Matrix& _m);
+    /// @overload
     Matrix& operator=(const Block& _m);
+
+    /// @brief Multiply Matrix by a scalar and assign
+    ///
+    /// Performs element-wise multiplication with a Real scalar \c a .
     Matrix& operator*= (double a);
+
+    /// @brief Multiply Matrix by a scalar and assign
+    ///
+    /// Performs element-wise multiplication with a Complex scalar \c a .
     Matrix& operator*= (std::complex<double> a);
+
+    /// @brief   Multiply Matrix by a second matrix and assign
+    ///
+    /// Performs matrix multiplication of Matrix with another Matrix \c Mb and store the results in Matrix
     Matrix& operator*= (const Block& Mb);
+
+    /// @brief Perform addition of elements and assign
+    ///
+    /// Performs element by element addition and store the results in Matrix
+
     Matrix& operator+= (const Block& Mb);
+    /// @brief Access individual element
+    ///
+    /// Returns a complex value to the element at position \c idx in Matrix. The value \c idx is a serial index
+    /// counted in row-major sense from the first element (\c idx = 0) of Matrix.
+    /// @note This function works similar to member function Matrix::at().
+    /// @param idx Element index
+    /// @return Element of Matrix at position \c idx
     std::complex<double> operator[](size_t idx); //&
 
-    /*********************  NO TYPE **************************/	    
-
+    /*********************  NO TYPE **************************/
+    ///@brief Default constructor
+    ///
     Matrix();
+
+    /// @brief Create a Matrix
+    ///
+    /// Allocate memory of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true) for
+    /// matrix elements and set the elements to zero
+    /// @param _Rnum Number of Rows
+    /// @param _Cnum Number of Columns
+    /// @param _diag Set \c true for diagonal matrix, defaults to \c false
     Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+    /// @brief Copy constructor
     Matrix(const Matrix& _m);
+    /// @overload
     Matrix(const Block& _b);
+    // #### new
     Matrix(const std::string& fname);
+    /// @brief Destructor
+    ///
+    /// Destroys  Matrix and freeing all the allocated memory for matrix elements.
     ~Matrix();
+
+    /// @brief Set to identity
+    ///
+    /// Sets the diagonal matrix elements to 1.
     void identity();
+
+    /// @brief Assign zero elements
+    ///
+    /// Assigns zeros to the elements of Matrix.
     void set_zero();
+
+    /// @brief Assign random elements
+    ///
+    /// Assigns random values between [0, 1) to  elements of Matrix.
     void randomize();
+
+    /// @brief Assign elements
+    ///
+    /// Assigns randomly generated orthogonal bases to the elements of  Matrix.
+    /// \c Nr = row() and \c Nc = col().
+    /// If the <tt> Nr < Nc </tt>, randomly generates \c Nr orthogonal basis row vectors of dimension \c Nc.
+    /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand();
+
+    /// @brief Transpose Matrix
+    ///
+    /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& transpose();
+
+    /// @brief Transpose a complex Matrix
+    ///
+    /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& cTranspose();
     Matrix& conj();
+
+    /// @brief Resize Matrix
+    ///
+    /// Changes the number of columns and rows to the values \c row and \c col.
+    /// If the size shrinks, the outsize elements are truncated. If the size grows,
+    /// extra elements are filled with zero.
+    /// @param row New number of rows
+    /// @param col New number of columns
     Matrix& resize(size_t row, size_t col);
+
+    /// @brief Returns the maximum element in Matrix
+    ///
+    /// Returns the maximum element in Matrix
     double max(bool _ongpu=false);
+
+    /// @brief Load Matrix from a file
+    ///
+    /// Loads the elements of  Matrix from a binary file \c fname.
+    /// @param fname Filename
     void load(const std::string& fname);
+
+    // ##### new
     void assign(size_t _Rnum, size_t _Cnum);
     bool toGPU();
 
+    /// @brief Access individual element
+    ///
+    /// Returns a reference to the element in the i-th row and j-th column of Matrix.
+    /// @note The values \c i and \c j are counted from 0.
+    /// @param i,j Index of Matrix
+    /// @return Element at index \c (i,j) of Matrix
+    std::complex<double> at(size_t i, size_t j); //&
+
     /*********************  REAL **********************/
 
+    /// @brief Create a Matrix
+    ///
+    /// Allocate memory of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true) for
+    /// matrix elements and copy the elements from \c _elem
     Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
+    /// @overload
     Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
+    // #####new
     Matrix(rflag _tp, const std::string& fname);
+
     Matrix(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+
+    /// @brief Copy elements
+    ///
+    /// Copies the first elemNum() elements from \c elem, replacing the original ones.
+    /// @param elem  Matrix elements to be copied from.
     void setElem(const double* elem, bool _ongpu = false);
+
+    /// @overload
     void setElem(const std::vector<double>& elem, bool _ongpu = false);
+
+    /// @brief Set to identity
+    ///
+    /// Sets the diagonal matrix elements to 1.
     void identity(rflag _tp);
+
+    /// @brief Assign zero elements
+    ///
+    /// Assigns zeros to the elements of Matrix.
     void set_zero(rflag _tp);
+
+    /// @brief Assign random elements
+    ///
+    /// Assigns random values between [0, 1) to  elements of Matrix.
     void randomize(rflag _tp);
+
+    /// @brief Assign elements
+    ///
+    /// Assigns randomly generated orthogonal bases to the elements of  Matrix.
+    /// \c Nr = row() and \c Nc = col().
+    /// If the <tt> Nr < Nc </tt>, randomly generates \c Nr orthogonal basis row vectors of dimension \c Nc.
+    /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand(rflag _tp);
+
+    /// @brief Transpose Matrix
+    ///
+    /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& transpose(rflag _tp);
+
+    /// @brief Transpose a complex Matrix
+    ///
+    /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& cTranspose(rflag _tp);
     Matrix& conj(rflag _tp);
+
+    /// @brief Resize Matrix
+    ///
+    /// Changes the number of columns and rows to the values \c row and \c col.
+    /// If the size shrinks, the outsize elements are truncated. If the size grows,
+    /// extra elements are filled with zero.
+    /// @param row New number of rows
+    /// @param col New number of columns
     Matrix& resize(rflag _tp, size_t row, size_t col);
+
+    /// @brief Returns the maximum element in Matrix
+    ///
+    /// Returns the maximum element in Matrix
     double max(rflag _tp, bool _ongpu=false);
     void assign(rflag _tp, size_t _Rnum, size_t _Cnum);
     bool toGPU(rflag _tp);
@@ -111,32 +261,85 @@ public:
     double* getHostElem(rflag _tp);
 
     /*********************  COMPLEX **********************/
-    
+
+    /// @brief Create a Matrix
+    ///
+    /// Allocate memory of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true) for
+    /// matrix elements and copy the elements from \c _elem
     Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
+    /// @overload
     Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool src_ongpu=false);
+
     Matrix(cflag _tp, const std::string& fname);
+
     Matrix(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+
+    /// @brief Copy elements
+    ///
+    /// Copies the first elemNum() elements from \c elem, replacing the original ones.
+    /// @param elem  Matrix elements to be copied from.
     void setElem(const std::complex<double>* elem, bool _ongpu = false);
+
+    /// @overload
     void setElem(const std::vector< std::complex<double> >& elem, bool _ongpu = false);
+
+    /// @brief Set to identity
+    ///
+    /// Sets the diagonal matrix elements to 1.
     void identity(cflag _tp);
+
+    /// @brief Assign zero elements
+    ///
+    /// Assigns zeros to the elements of Matrix.
     void set_zero(cflag _tp);
+
+    /// @brief Assign random elements
+    ///
+    /// Assigns random values between [0, 1) to  elements of Matrix.
     void randomize(cflag _tp);
+
+    /// @brief Assign elements
+    ///
+    /// Assigns randomly generated orthogonal bases to the elements of  Matrix.
+    /// \c Nr = row() and \c Nc = col().
+    /// If the <tt> Nr < Nc </tt>, randomly generates \c Nr orthogonal basis row vectors of dimension \c Nc.
+    /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand(cflag _tp);
+
+    /// @brief Transpose Matrix
+    ///
+    /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& transpose(cflag _tp);
+
+    /// @brief Transpose a complex Matrix
+    ///
+    /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& cTranspose(cflag _tp);
     Matrix& conj(cflag _tp);
+
+    /// @brief Resize Matrix
+    ///
+    /// Changes the number of columns and rows to the values \c row and \c col.
+    /// If the size shrinks, the outsize elements are truncated. If the size grows,
+    /// extra elements are filled with zero.
+    /// @param row New number of rows
+    /// @param col New number of columns
     Matrix& resize(cflag _tp, size_t row, size_t col);
+
+    /// @brief Returns the maximum element in Matrix
+    ///
+    /// Returns the maximum element in Matrix
     double max(cflag _tp, bool _ongpu=false);
     void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
     bool toGPU(cflag _tp);
     std::complex<double>& at(cflag _tp, size_t i); //&
     std::complex<double>* getHostElem(cflag _tp);
-   
+
     /*****************************************************/
 
     //delete
     double* getHostElem();
-    std::complex<double> at(size_t i, size_t j); //&
+
 
 /********************************************************************************/
 private:
