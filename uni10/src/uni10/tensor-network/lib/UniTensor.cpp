@@ -45,7 +45,7 @@ int UniTensor::COUNTER = 0;
 size_t UniTensor::MAXELEMNUM = 0;
 size_t UniTensor::MAXELEMTEN = 0;
 
-/*********************  OPERATOR **************************/	    
+/*********************  OPERATOR **************************/
 
 std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
   try{
@@ -89,9 +89,9 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
       os<<"*";
     os<<std::endl;
     if(UniT.typeID() == 0)
-      os << "EMPTY" << std::endl; 
+      os << "EMPTY" << std::endl;
     if(UniT.typeID() == 1)
-      os << "REAL" << std::endl; 
+      os << "REAL" << std::endl;
     if(UniT.typeID() == 2)
       os << "COMPLEX" << std::endl;
     if(UniT.ongpu)
@@ -206,7 +206,7 @@ UniTensor operator*(const std::complex<double>& a, const UniTensor& Ta){
     return UniTensor();
   }
 }
-        
+
 UniTensor operator*(const UniTensor& Ta, const std::complex<double>& a){return a * Ta;};
 
 UniTensor operator*(const UniTensor& Ta, double a){
@@ -245,7 +245,7 @@ UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
 
 UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
   try{
-    
+
     r_flag = UniT.r_flag;
     c_flag = UniT.c_flag;
     bonds = UniT.bonds;
@@ -261,21 +261,21 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     RQidx2Dim = UniT.RQidx2Dim;
     CQidx2Dim = UniT.CQidx2Dim;
     RQidx2Blk = UniT.RQidx2Blk;
-    
+
     ELEMNUM -= m_elemNum;	//free original memory
-    
-    
-    uelemFree(); 
-    
+
+
+    uelemFree();
+
     elem = NULL;
     c_elem = NULL;
     status = UniT.status;
     m_elemNum = UniT.m_elemNum;
- 
+
 
     std::map<Qnum, Block>::const_iterator it2;
     std::map< const Block* , Block*> blkmap;
-    
+
     if(typeID() == 0){
       for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
         it2 = UniT.blocks.find(it->first);
@@ -324,7 +324,7 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
 
 UniTensor operator+(const UniTensor& _Ta, const UniTensor& _Tb){
   try{
-    
+
     UniTensor Ta(_Ta);
     UniTensor Tb(_Tb);
     if(Ta.typeID() == 1 && Tb.typeID() == 2)
@@ -341,7 +341,7 @@ UniTensor operator+(const UniTensor& _Ta, const UniTensor& _Tb){
       err<<"Cannot perform addition of two tensors having diffirent bonds.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    
+
     UniTensor Tc(Ta);
     Tc.typeID() == 1 ? vectorAdd(Tc.elem, Tb.elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu) :vectorAdd(Tc.c_elem, Tb.c_elem, Tc.m_elemNum, Tc.ongpu, Tb.ongpu);
     return Tc;
@@ -354,13 +354,13 @@ UniTensor operator+(const UniTensor& _Ta, const UniTensor& _Tb){
 
 UniTensor& UniTensor::operator+= (const UniTensor& _Tb){
   try{
-    
+
     UniTensor Tb(_Tb);
     if(typeID() == 1 && Tb.typeID() == 2)
       RtoC(*this);
     if(typeID() == 2 && Tb.typeID() == 1)
       RtoC(Tb);
-    
+
     if(!(status & Tb.status & HAVEELEM)){
       std::ostringstream err;
       err<<"Cannot perform addition of tensors before setting their elements.";
@@ -371,7 +371,7 @@ UniTensor& UniTensor::operator+= (const UniTensor& _Tb){
       err<<"Cannot perform addition of two tensors having different bonds.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    
+
     typeID() == 1 ? vectorAdd(elem, Tb.elem, m_elemNum, ongpu, Tb.ongpu) : vectorAdd(c_elem, Tb.c_elem, m_elemNum, ongpu, Tb.ongpu);
   }
   catch(const std::exception& e){
@@ -393,7 +393,7 @@ Matrix otimes(const Block& Ma, const Block& Mb){
 }
 
 
-/*********************  NO TYPE **************************/	    
+/*********************  NO TYPE **************************/
 
 UniTensor::UniTensor(): status(0){
   try{
@@ -436,20 +436,20 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, int* _labels, const std::s
 
 UniTensor::UniTensor(const UniTensor& UniT): //GPU
   r_flag(UniT.r_flag), c_flag(UniT.c_flag),status(UniT.status), bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels), name(UniT.name),
-  RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL), c_elem(NULL), 
+  RBondNum(UniT.RBondNum), RQdim(UniT.RQdim), CQdim(UniT.CQdim), m_elemNum(UniT.m_elemNum), elem(NULL), c_elem(NULL),
   QidxEnc(UniT.QidxEnc), RQidx2Off(UniT.RQidx2Off), CQidx2Off(UniT.CQidx2Off), RQidx2Dim(UniT.RQidx2Dim), RQidx2Blk(UniT.RQidx2Blk), CQidx2Dim(UniT.CQidx2Dim){
     try{
-      
+
       std::map<Qnum, Block>::const_iterator it2;
       std::map<const Block* , Block*> blkmap;
-      
+
       if(typeID() == 0){
         for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
           it2 = UniT.blocks.find(it->first);
           blkmap[(&(it2->second))] = &(it->second);
         }
-      } 
-      
+      }
+
       if(typeID() == 1){
         uelemAlloc(RTYPE);
         for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
@@ -457,7 +457,7 @@ UniTensor::UniTensor(const UniTensor& UniT): //GPU
           it2 = UniT.blocks.find(it->first);
           blkmap[(&(it2->second))] = &(it->second);
         }
-      } 
+      }
 
       if(typeID() == 2){
         uelemAlloc(CTYPE);
@@ -467,20 +467,20 @@ UniTensor::UniTensor(const UniTensor& UniT): //GPU
           it2 = UniT.blocks.find(it->first);
           blkmap[(&(it2->second))] = &(it->second);
         }
-      } 
+      }
 
       if(UniT.status & HAVEBOND){
         for(std::map<int, Block*>::iterator it = RQidx2Blk.begin(); it != RQidx2Blk.end(); it++)
           it->second = blkmap[it->second];
       }
-      
+
       ELEMNUM += m_elemNum;
       COUNTER++;
       if(ELEMNUM > MAXELEMNUM)
         MAXELEMNUM = ELEMNUM;
       if(m_elemNum > MAXELEMTEN)
         MAXELEMTEN = m_elemNum;
-      
+
       if(typeID() == 1)
         elemCopy(elem, UniT.elem, sizeof(Real) * UniT.m_elemNum, ongpu, UniT.ongpu);
       if(typeID() == 2)
@@ -601,6 +601,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
   catch(const std::exception& e){
     propogate_exception(e, "In constructor UniTensor::UniTensor(std::string&):");
   }
+  exit(0);
 }
 
 
@@ -757,6 +758,7 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlocks():");
   }
+  return std::map<Qnum, Matrix>();
 }
 
 Matrix UniTensor::getBlock(bool diag)const{
@@ -775,6 +777,7 @@ Matrix UniTensor::getBlock(bool diag)const{
     propogate_exception(e, "In function UniTensor::getBlock(bool=false):");
     return Matrix();
   }
+  return Matrix();
 }
 
 Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
@@ -793,13 +796,14 @@ Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
     propogate_exception(e, "In function UniTensor::getBlock(uni10::Qnum&):");
     return Matrix(0, 0);
   }
+  return Matrix();
 }
 
 void UniTensor::set_zero(){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       set_zero(RTYPE);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       set_zero(CTYPE);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -814,9 +818,9 @@ void UniTensor::set_zero(){
 
 void UniTensor::set_zero(const Qnum& qnum){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       set_zero(RTYPE, qnum);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       set_zero(CTYPE, qnum);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -831,9 +835,9 @@ void UniTensor::set_zero(const Qnum& qnum){
 
 void UniTensor::identity(){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       identity(RTYPE);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       identity(CTYPE);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -848,9 +852,9 @@ void UniTensor::identity(){
 
 void UniTensor::identity(const Qnum& qnum){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       identity(RTYPE, qnum);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       identity(CTYPE, qnum);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -865,9 +869,9 @@ void UniTensor::identity(const Qnum& qnum){
 
 void UniTensor::randomize(){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       randomize(RTYPE);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       randomize(CTYPE);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -882,9 +886,9 @@ void UniTensor::randomize(){
 
 void UniTensor::orthoRand(){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       orthoRand(RTYPE);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       orthoRand(CTYPE);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -899,9 +903,9 @@ void UniTensor::orthoRand(){
 
 void UniTensor::orthoRand(const Qnum& qnum){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       orthoRand(RTYPE, qnum);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       orthoRand(CTYPE, qnum);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -980,9 +984,9 @@ void UniTensor::save(const std::string& fname){
 
 UniTensor& UniTensor::transpose(){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       return transpose(RTYPE);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       return transpose(CTYPE);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -993,13 +997,14 @@ UniTensor& UniTensor::transpose(){
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::transpose():");
   }
+  exit(0);
 }
 
 UniTensor& UniTensor::permute(int rowBondNum){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       return permute(RTYPE, rowBondNum);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       return permute(CTYPE, rowBondNum);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1016,9 +1021,9 @@ UniTensor& UniTensor::permute(int rowBondNum){
 
 UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       return permute(RTYPE, newLabels, rowBondNum);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       return permute(CTYPE, newLabels, rowBondNum);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1034,9 +1039,9 @@ UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
 
 UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       return permute(RTYPE, newLabels, rowBondNum);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       return permute(CTYPE, newLabels, rowBondNum);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1061,11 +1066,11 @@ UniTensor contract(UniTensor& _Ta, UniTensor& _Tb, bool fast){
     else if(_Ta.typeID() == 2 && _Tb.typeID() == 2)
       return contract(CTYPE, _Ta, _Tb, fast);
     else if(_Ta.typeID() == 1 && _Tb.typeID() == 2){
-      UniTensor Ta(_Ta); 
+      UniTensor Ta(_Ta);
       RtoC(Ta);
       return contract(CTYPE, Ta, _Tb, fast);
     }else{
-      UniTensor Tb(_Tb); 
+      UniTensor Tb(_Tb);
       RtoC(Tb);
       return contract(CTYPE, _Ta, Tb, fast);
     }
@@ -1174,9 +1179,9 @@ std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, std::vector<Matrix>& Ls)
 
 UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
   try{
-    if(typeID() == 1)         
+    if(typeID() == 1)
       return combineBond(RTYPE, cmbLabels);
-    else if(typeID() == 2)         
+    else if(typeID() == 2)
       return combineBond(CTYPE, cmbLabels);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1187,6 +1192,7 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::combineBond(std::vector<int>&):");
   }
+  exit(0);
 }
 
 std::string UniTensor::printRawElem(bool print)const{
@@ -1226,9 +1232,9 @@ std::string UniTensor::printRawElem(bool print)const{
             os<<"\n    |\n" << std::setw(2) << rowQ[r].U1() << "," << rowQ[r].prt() << "|";
             r++;
           }
-          if(typeID() == 1) 
+          if(typeID() == 1)
             os<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs).real();
-          else if(typeID() == 2) 
+          else if(typeID() == 2)
             os<< std::setw(7) << std::fixed << std::setprecision(3) << at(idxs);
           for(bend = bondNum - 1; bend >= 0; bend--){
             idxs[bend]++;
@@ -1283,9 +1289,9 @@ std::string UniTensor::profile(bool print){
 
 void UniTensor::setRawElem(const Block& blk){
   try{
-    if(blk.typeID() == 1) 
+    if(blk.typeID() == 1)
       setRawElem(RTYPE, blk);
-    else if(blk.typeID() == 2) 
+    else if(blk.typeID() == 2)
       setRawElem(CTYPE, blk);
     else if(blk.typeID() == 0){
       std::ostringstream err;
@@ -1300,9 +1306,9 @@ void UniTensor::setRawElem(const Block& blk){
 
 void UniTensor::putBlock(const Block& mat){
   try{
-    if(mat.typeID() == 1) 
+    if(mat.typeID() == 1)
       putBlock(RTYPE, mat);
-    else if(mat.typeID() == 2) 
+    else if(mat.typeID() == 2)
       putBlock(CTYPE, mat);
     else if(mat.typeID() == 0){
       std::ostringstream err;
@@ -1329,7 +1335,7 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
       err<<"  Hint: Use Matrix::resize(int, int)";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    
+
     if(typeID() == 0){
       if(mat.typeID() == 1){
         r_flag = RTYPE;
@@ -1344,7 +1350,7 @@ void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
         initBlocks(CTYPE);
       }
     }
-    
+
     if(typeID() == 1){
       if(mat.m_elem != it->second.m_elem){
         if(mat.isDiag()){
@@ -1406,9 +1412,9 @@ std::vector<_Swap> UniTensor::exSwap(const UniTensor& Tb) const{
 }
 void UniTensor::addGate(const std::vector<_Swap>& swaps){
   try{
-    if(typeID() == 1) 
+    if(typeID() == 1)
       addGate(RTYPE, swaps);
-    else if(typeID() == 2) 
+    else if(typeID() == 2)
       addGate(CTYPE, swaps);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1423,9 +1429,9 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
 
 Complex UniTensor::trace()const{
   try{
-    if(typeID() == 1) 
+    if(typeID() == 1)
       return Complex(trace(RTYPE), 0);
-    else if(typeID() == 2) 
+    else if(typeID() == 2)
       return trace(CTYPE);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1437,13 +1443,14 @@ Complex UniTensor::trace()const{
     propogate_exception(e, "In function UniTensor::trace():");
     return 0;
   }
+  return 0;
 }
 
 UniTensor& UniTensor::partialTrace(int la, int lb){
   try{
-    if(typeID() == 1) 
+    if(typeID() == 1)
       return partialTrace(RTYPE, la, lb);
-    else if(typeID() == 2) 
+    else if(typeID() == 2)
       return partialTrace(CTYPE, la, lb);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1454,6 +1461,7 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::partialTrace(int, int):");
   }
+  exit(0);
 }
 
 Complex UniTensor::operator[](size_t idx)const{
@@ -1472,13 +1480,14 @@ Complex UniTensor::operator[](size_t idx)const{
     propogate_exception(e, "In function UniTensor::operator[](size_t):");
     return 0;
   }
+  return 0;
 }
 
 Matrix UniTensor::getRawElem()const{
   try{
-    if(typeID() == 1) 
+    if(typeID() == 1)
       return getRawElem(RTYPE);
-    else if(typeID() == 2) 
+    else if(typeID() == 2)
       return getRawElem(CTYPE);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1490,6 +1499,7 @@ Matrix UniTensor::getRawElem()const{
     propogate_exception(e, "In function UniTensor::getRawElem():");
     return Matrix();
   }
+  return Matrix();
 }
 
 UniTensor& UniTensor::assign(const std::vector<Bond>& _bond){
@@ -1534,7 +1544,7 @@ bool UniTensor::elemCmp(const UniTensor& _UniT)const{
     }
     UniTensor Ta(*this);
     UniTensor UniT(_UniT);
-    if(Ta.typeID() != UniT.typeID()) 
+    if(Ta.typeID() != UniT.typeID())
       Ta.typeID() == 1 ? RtoC(Ta) : RtoC(UniT);
 
     double diff;
@@ -1581,9 +1591,9 @@ Complex UniTensor::at(const std::vector<int>& idxs)const{
 
 Complex UniTensor::at(const std::vector<size_t>& idxs)const{
   try{
-    if(typeID() == 1) 
+    if(typeID() == 1)
       return Complex(at(RTYPE, idxs), 0.0);
-    else if(typeID() == 2) 
+    else if(typeID() == 2)
       return at(CTYPE, idxs);
     else if(typeID() == 0){
       std::ostringstream err;
@@ -1595,6 +1605,7 @@ Complex UniTensor::at(const std::vector<size_t>& idxs)const{
     propogate_exception(e, "In function UniTensor::at(std::vector<size_t>&):");
     return 0;
   }
+  exit(0);
 }
 /*********************  neeee **********************/
 /*********************  REAL **********************/
@@ -1722,7 +1733,7 @@ void UniTensor::setRawElem(const Real* rawElem){
           }
         }
     }
-    
+
     if(ongpu){
       elemCopy(elem, work, m_elemNum * sizeof(Real), ongpu, false);
       free(work);
@@ -2249,7 +2260,7 @@ UniTensor contract(rflag _tp, UniTensor& Ta, UniTensor& Tb, bool fast){
       UniTensor Ttmp = Tb;
       return contract(Ta, Ttmp, fast);
     }
-    
+
     if(Ta.status & Ta.HAVEBOND && Tb.status & Ta.HAVEBOND){
       int AbondNum = Ta.bonds.size();
       int BbondNum = Tb.bonds.size();
@@ -2519,10 +2530,10 @@ UniTensor& UniTensor::combineBond(rflag _tp, const std::vector<int>&cmbLabels){
     }
     this->permute(RTYPE, rsp_labels, RBnum);
     UniTensor Tout(RTYPE, newBonds, reduced_labels);
-    
+
     if(status & HAVEELEM)
       Tout.setElem(elem, ongpu);
-    
+
     *this = Tout;
   }
   catch(const std::exception& e){
@@ -2569,7 +2580,7 @@ void UniTensor::putBlock(rflag _tp, const Qnum& qnum, const Block& mat){
       err<<"Can't put a REAL Block in a COMPLEX tensor."<<qnum<<std::endl;
       throw std::runtime_error(exception_msg(err.str()));
     }
-    
+
     if(typeID() == 0){
       r_flag = RTYPE;
       c_flag = CNULL;
@@ -2896,7 +2907,7 @@ Real UniTensor::at(rflag _tp, const std::vector<size_t>& idxs)const{
     int Qoff = 0;
     for(int b = 0; b < bondNum; b++)
       Qoff += Q_acc[b] * Qidxs[b];
-   
+
     if(QidxEnc.find(Qoff) != QidxEnc.end()){
       int Q_RQoff = Qoff / CQdim;
       int Q_CQoff = Qoff % CQdim;
@@ -2987,7 +2998,7 @@ void UniTensor::setRawElem(const Complex* rawElem){
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(typeID() == 0){
-      r_flag = RNULL; 
+      r_flag = RNULL;
       c_flag = CTYPE;
       uelemAlloc(CTYPE);
       initBlocks(CTYPE);
@@ -3575,7 +3586,7 @@ UniTensor contract(cflag _tp, UniTensor& Ta, UniTensor& Tb, bool fast){
       UniTensor Ttmp = Tb;
       return contract(Ta, Ttmp, fast);
     }
-    
+
     if(Ta.status & Ta.HAVEBOND && Tb.status & Ta.HAVEBOND){
       int AbondNum = Ta.bonds.size();
       int BbondNum = Tb.bonds.size();
@@ -3777,10 +3788,10 @@ UniTensor& UniTensor::combineBond(cflag _tp, const std::vector<int>&cmbLabels){
     }
     this->permute(CTYPE, rsp_labels, RBnum);
     UniTensor Tout(CTYPE, newBonds, reduced_labels);
-    
+
     if(status & HAVEELEM)
       Tout.setElem(c_elem, ongpu);
-    
+
     *this = Tout;
   }
   catch(const std::exception& e){
@@ -3827,7 +3838,7 @@ void UniTensor::putBlock(cflag _tp, const Qnum& qnum, const Block& mat){
       err<<"Can't put COMPLEX Block in a REAL tensor."<<qnum<<std::endl;
       throw std::runtime_error(exception_msg(err.str()));
     }
-    
+
     if(typeID() == 0){
       r_flag = RNULL;
       c_flag = CTYPE;
@@ -4154,7 +4165,7 @@ Complex UniTensor::at(cflag _tp, const std::vector<size_t>& idxs)const{
     int Qoff = 0;
     for(int b = 0; b < bondNum; b++)
       Qoff += Q_acc[b] * Qidxs[b];
-   
+
     if(QidxEnc.find(Qoff) != QidxEnc.end()){
       int Q_RQoff = Qoff / CQdim;
       int Q_CQoff = Qoff % CQdim;
@@ -4193,11 +4204,11 @@ Real* UniTensor::getElem(){
 */
 
 /**************** Private Functions ***********************/
-/*********************  NO TYPE **************************/	    
+/*********************  NO TYPE **************************/
 
 void UniTensor::initUniT(){
-  r_flag = RNULL; 
-  c_flag = CNULL; 
+  r_flag = RNULL;
+  c_flag = CNULL;
   if(bonds.size()){
     m_elemNum = grouping();
     if(!(blocks.size() > 0)){ //No block in Tensor, Error!
@@ -4223,7 +4234,7 @@ void UniTensor::initUniT(){
   }
   elem = NULL;
   c_elem = NULL;
-  
+
   ELEMNUM += m_elemNum;
   COUNTER++;
   if(ELEMNUM > MAXELEMNUM)
@@ -4557,8 +4568,8 @@ size_t UniTensor::grouping(rflag _tp){
 }
 
 void UniTensor::initUniT(rflag _tp){ //GPU
-  r_flag = RTYPE; 
-  c_flag = CNULL; 
+  r_flag = RTYPE;
+  c_flag = CNULL;
   if(bonds.size()){
     m_elemNum = grouping(RTYPE);
     if(!(blocks.size() > 0)){ //No block in Tensor, Error!
@@ -4582,10 +4593,10 @@ void UniTensor::initUniT(rflag _tp){ //GPU
     m_elemNum = 1;
     status |= HAVEELEM;
   }
-  
+
   elem = NULL;
   c_elem = NULL;
-  
+
   ELEMNUM += m_elemNum;
   COUNTER++;
   if(ELEMNUM > MAXELEMNUM)
@@ -4593,15 +4604,15 @@ void UniTensor::initUniT(rflag _tp){ //GPU
   if(m_elemNum > MAXELEMTEN)
     MAXELEMTEN = m_elemNum;
   uelemAlloc(RTYPE);
-  initBlocks(RTYPE);  
+  initBlocks(RTYPE);
   uelemBzero(RTYPE);
 }
 
 void UniTensor::initBlocks(rflag _tp){
   size_t offset = 0;
   for(std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-    it->second.r_flag = RTYPE; 
-    it->second.c_flag = CNULL; 
+    it->second.r_flag = RTYPE;
+    it->second.c_flag = CNULL;
     it->second.m_elem = &(elem[offset]);
     it->second.ongpu = ongpu;
     offset += it->second.Rnum * it->second.Cnum;
@@ -4609,7 +4620,7 @@ void UniTensor::initBlocks(rflag _tp){
 }
 
 void UniTensor::uelemAlloc(rflag _tp){
-  elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu); 
+  elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
 }
 
 void UniTensor::uelemBzero(rflag _tp){
@@ -4647,7 +4658,7 @@ void UniTensor::initUniT(cflag _tp){ //GPU
   }
   elem = NULL;
   c_elem = NULL;
-  
+
   ELEMNUM += m_elemNum;
   COUNTER++;
   if(ELEMNUM > MAXELEMNUM)
@@ -4656,7 +4667,7 @@ void UniTensor::initUniT(cflag _tp){ //GPU
     MAXELEMTEN = m_elemNum;
 
   uelemAlloc(CTYPE);
-  initBlocks(CTYPE);  
+  initBlocks(CTYPE);
   uelemBzero(CTYPE);
 }
 
@@ -4818,8 +4829,8 @@ size_t UniTensor::grouping(cflag _tp){
 void UniTensor::initBlocks(cflag _tp){
   size_t offset = 0;
   for(std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-    it->second.r_flag = RNULL; 
-    it->second.c_flag = CTYPE; 
+    it->second.r_flag = RNULL;
+    it->second.c_flag = CTYPE;
     it->second.cm_elem = &(c_elem[offset]);
     it->second.ongpu = ongpu;
     offset += it->second.Rnum * it->second.Cnum;

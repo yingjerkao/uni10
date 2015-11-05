@@ -37,7 +37,7 @@ typedef double Real;
 typedef std::complex<double> Complex;
 
 namespace uni10{
-  
+
   void Block::printElemIsNULL() const{
     if(m_elem == NULL && cm_elem == NULL)
       std::cout << std::endl << "REAL elem is NULL, COMPLEX elem is NULL. "<< std::endl << std::endl;
@@ -49,14 +49,14 @@ namespace uni10{
       std::cout << std::endl << "REAL elem isn't NULL, COMPLEX elem isn't NULL. "<< std::endl << std::endl;
   }
 
-  /*********************  OPERATOR **************************/	    
+  /*********************  OPERATOR **************************/
   std::ostream& operator<< (std::ostream& os, const Block& b){
     try{
       os << b.Rnum << " x " << b.Cnum << " = " << b.elemNum();
       if(b.typeID() == 0){
         os <<std::endl << std::endl;
         os << "This matrix is EMPTY" <<std::endl << std::endl;
-      } 
+      }
       if(b.typeID() == 1){
         os << ", REAL";
         if(b.diag)
@@ -206,7 +206,7 @@ namespace uni10{
           return Mc;
         }
       }
-     
+
       if(Ma.typeID() == 1 && Mb.typeID() == 2){  //R*C
         Matrix _Ma(Ma);
         RtoC(_Ma);
@@ -270,8 +270,9 @@ namespace uni10{
       propogate_exception(e, "In function operator*(uni10::Matrix&, uni10::Matrix&):");
       return Block();
     }
+    return Matrix();
   }
-  
+
   Matrix operator*(const Block& Ma, double a){
     try{
       Matrix Mb(Ma);
@@ -290,7 +291,7 @@ namespace uni10{
     try{
       Matrix Mb(Ma);
       if(a.imag() == 0){
-        return a.real() * Mb; 
+        return a.real() * Mb;
       }else{
         RtoC(Mb);
         vectorScal(a, Mb.cm_elem, Mb.elemNum(), Mb.isOngpu());
@@ -303,7 +304,7 @@ namespace uni10{
     }
   }
   Matrix operator*(const std::complex<double>& a, const Block& Ma){return Ma * a;}
-  
+
   Matrix operator+(const Block& Ma, const Block& Mb){
     /*if ((Ma.diag && !Mb.diag) || (!Ma.diag && Mb.diag) ){
       std::ostringstream err;
@@ -399,8 +400,9 @@ namespace uni10{
       propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");
       return Block();
     }
+    return Block();
   }
-  
+
   Complex Block::operator[](size_t idx)const{
     try{
       if(!(idx < elemNum())){
@@ -415,28 +417,29 @@ namespace uni10{
       }
       else if(typeID() == 1)
         return Complex(getElemAt(idx, m_elem, ongpu), 0);
-      else if(typeID() == 2) 
+      else if(typeID() == 2)
         return getElemAt(idx, cm_elem, ongpu);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::operator[](size_t):");
       return 0;
     }
+    return Complex();
   }
- 
-  /*********************  NO TYPE **************************/	    
+
+  /*********************  NO TYPE **************************/
 
   Block::Block():r_flag(RNULL), c_flag(CNULL), Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL), cm_elem(NULL){}
 
   Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(CNULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
-  
+
   Block::Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(CNULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){
     if(_typeID == 1)
-      r_flag = RTYPE; 
+      r_flag = RTYPE;
     else if(_typeID == 2)
-      c_flag = CTYPE; 
+      c_flag = CTYPE;
   }
-  
+
   Block::Block(const Block& _b): r_flag(_b.r_flag), c_flag(_b.c_flag), Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem), cm_elem(_b.cm_elem){}
 
   Block::~Block(){}
@@ -459,7 +462,7 @@ namespace uni10{
   int Block::typeID()const{
     return r_flag + c_flag;
   }
-  
+
   void Block::savePrototype(const std::string& fname)const{
     FILE *fp = fopen(fname.c_str(), "w");
     if(!(fp != NULL)){
@@ -467,7 +470,7 @@ namespace uni10{
       err<<"Error in writing to file '"<<fname<<"'.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(typeID() == 0){ 
+    if(typeID() == 0){
       fwrite(&r_flag, sizeof(r_flag), 1, fp);
       fwrite(&c_flag, sizeof(c_flag), 1, fp);
       fwrite(&Rnum, sizeof(Rnum), 1, fp);
@@ -476,15 +479,15 @@ namespace uni10{
       fwrite(&ongpu, sizeof(ongpu), 1, fp);
     }
     fclose(fp);
-  } 
-  
+  }
+
   void Block::save(const std::string& fname)const{
     try{
-      if(typeID() == 0) 
+      if(typeID() == 0)
         savePrototype(fname);
-      else if(typeID() == 1) 
+      else if(typeID() == 1)
         save(RTYPE, fname);
-      else if(typeID() == 2) 
+      else if(typeID() == 2)
         save(CTYPE, fname);
     }
     catch(const std::exception& e){
@@ -515,7 +518,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
 
   std::vector<Matrix> Block::rq()const{
     std::vector<Matrix> outs;
@@ -564,7 +567,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::lq()const{
     std::vector<Matrix> outs;
     try{
@@ -572,7 +575,7 @@ namespace uni10{
         std::ostringstream err;
         err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
-      } 
+      }
       if(typeID() == 1)
         return lq(RTYPE);
       else if(typeID() == 2)
@@ -607,8 +610,8 @@ namespace uni10{
     }
     return outs;
   }
-  
-  
+
+
   Real Block::norm()const{
     try{
       if(typeID() == 1)
@@ -625,8 +628,9 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::norm():");
       return 0;
     }
+    return 0;
   }
-  
+
   Matrix Block::inverse()const{
     try{
       if(!(Rnum == Cnum)){
@@ -652,7 +656,7 @@ namespace uni10{
       return Matrix();
     }
   }
-  
+
   Matrix Block::getDiag()const{
     try{
       int _typeID = this->typeID();
@@ -670,8 +674,9 @@ namespace uni10{
       propogate_exception(e, "In function Block::getDiag():");
       return Matrix();
     }
+    return Matrix();
   }
-  
+
   Complex Block::trace()const{
     try{
       if(!(Rnum == Cnum)){
@@ -692,6 +697,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::trace():");
       return 0;
     }
+    return 0;
   }
 
   Complex Block::sum()const{
@@ -710,8 +716,9 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::sum():");
       return 0;
     }
+    return Complex();
   }
-  
+
   std::vector<Matrix> Block::eig()const{
     try{
       if(typeID() == 1)
@@ -727,8 +734,9 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::eig():");
     }
+    return std::vector<Matrix>();
   }
-  
+
   std::vector<Matrix> Block::eigh()const{
     try{
       if(typeID() == 1)
@@ -744,8 +752,9 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::eigh():");
     }
+    return std::vector<Matrix>();
   }
- 
+
 
   Complex Block::at(size_t r, size_t c)const{
     try{
@@ -763,14 +772,15 @@ namespace uni10{
       propogate_exception(e, "In function Block::at(size_t, size_t):");
       return 0;
     }
+    return Complex();
   }
   /*********************NEE*****************************/
   /*********************  REAL **********************/
 
   Block::Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(_tp), c_flag(CNULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
-	    
+
   Real* Block::getElem(rflag _tp)const{return m_elem;}
-  
+
   void Block::save(rflag _tp, const std::string& fname)const{
     try{
       FILE *fp = fopen(fname.c_str(), "w");
@@ -800,7 +810,7 @@ namespace uni10{
       propogate_exception(e, "In function Block::save(std::string&):");
     }
   }
-  
+
   std::vector<Matrix> Block::qr(rflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -827,7 +837,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::rq(rflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -862,7 +872,7 @@ namespace uni10{
         std::ostringstream err;
         err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
-      } 
+      }
       outs.push_back(Matrix(RTYPE, Rnum, Rnum, false, ongpu));
       outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu));
       if(!diag){
@@ -881,7 +891,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::ql(rflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -908,11 +918,11 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::svd(rflag _tp)const{
     std::vector<Matrix> outs;
     try{
-    /*  
+    /*
       if(diag){
         std::ostringstream err;
         err<<"Cannot perform singular value decomposition on a diagonal matrix. Nothing to do.";
@@ -940,7 +950,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   Real Block::norm(rflag _tp)const{
     try{
       if(typeID() == 0){
@@ -955,7 +965,7 @@ namespace uni10{
       return 0;
     }
   }
-  
+
   Matrix Block::inverse(rflag _tp)const{
     try{
       if(!(Rnum == Cnum)){
@@ -973,7 +983,7 @@ namespace uni10{
       return Matrix();
     }
   }
-  
+
   Matrix Block::getDiag(rflag _tp)const{
     try{
       if(diag)
@@ -989,7 +999,7 @@ namespace uni10{
       return Matrix();
     }
   }
-  
+
   Real Block::trace(rflag _tp)const{
     try{
       if(!(Rnum == Cnum)){
@@ -1006,7 +1016,7 @@ namespace uni10{
       return 0;
     }
   }
-  
+
   Real Block::sum(rflag _tp)const{
     try{
       return vectorSum(m_elem, elemNum(), 1, ongpu);
@@ -1016,7 +1026,7 @@ namespace uni10{
       return 0;
     }
   }
-  
+
   std::vector<Matrix> Block::eig(rflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -1040,7 +1050,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::eigh(rflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -1094,9 +1104,9 @@ namespace uni10{
   /*********************  COMPLEX **********************/
 
   Block::Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(_tp), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
-  
+
   Complex* Block::getElem(cflag _tp)const{return cm_elem;}
-  
+
   void Block::save(cflag _tp, const std::string& fname)const{
     try{
       FILE *fp = fopen(fname.c_str(), "w");
@@ -1125,7 +1135,7 @@ namespace uni10{
       propogate_exception(e, "In function Block::save(std::string&):");
     }
   }
-  
+
   std::vector<Matrix> Block::qr(cflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -1152,7 +1162,7 @@ namespace uni10{
     }
     return outs;
   }
- 
+
   std::vector<Matrix> Block::rq(cflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -1179,7 +1189,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::lq(cflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -1187,7 +1197,7 @@ namespace uni10{
         std::ostringstream err;
         err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
         throw std::runtime_error(exception_msg(err.str()));
-      } 
+      }
       outs.push_back(Matrix(CTYPE, Rnum, Rnum, false, ongpu));
       outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
       if(!diag){
@@ -1206,7 +1216,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::ql(cflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -1233,11 +1243,11 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::svd(cflag _tp)const{
     std::vector<Matrix> outs;
     try{
-    /*  
+    /*
       if(diag){
         std::ostringstream err;
         err<<"Cannot perform singular value decomposition on a diagonal matrix. Nothing to do.";
@@ -1265,7 +1275,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   Real Block::norm(cflag _tp)const{
     try{
       if(typeID() == 0){
@@ -1280,7 +1290,7 @@ namespace uni10{
       return 0;
     }
   }
-  
+
   Matrix Block::inverse(cflag _tp)const{
     try{
       if(!(Rnum == Cnum)){
@@ -1298,7 +1308,7 @@ namespace uni10{
       return Matrix();
     }
   }
-  
+
   Matrix Block::getDiag(cflag _tp)const{
     try{
       if(diag)
@@ -1314,7 +1324,7 @@ namespace uni10{
       return Matrix();
     }
   }
-  
+
   Complex Block::trace(cflag _tp)const{
     try{
       if(!(Rnum == Cnum)){
@@ -1331,7 +1341,7 @@ namespace uni10{
       return 0;
     }
   }
-  
+
   Complex Block::sum(cflag _tp)const{
     try{
       return vectorSum(cm_elem, elemNum(), 1, ongpu);
@@ -1341,7 +1351,7 @@ namespace uni10{
       return 0;
     }
   }
-  
+
   std::vector<Matrix> Block::eig(cflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -1365,7 +1375,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   std::vector<Matrix> Block::eigh(cflag _tp)const{
     std::vector<Matrix> outs;
     try{
@@ -1391,7 +1401,7 @@ namespace uni10{
     }
     return outs;
   }
-  
+
   Complex Block::at(cflag _tp, size_t r, size_t c)const{
     try{
       if(!((r < Rnum) && (c < Cnum))){
@@ -1417,10 +1427,10 @@ namespace uni10{
   }
   /*********************CEE*****************************/
   /*****************************************************/
-  
+
 
   Real* Block::getElem()const{return m_elem;}
-  
+
   size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
     try{
       if(!(ori_mat.Rnum == ori_mat.Cnum)){
@@ -1502,6 +1512,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
       return 0;
     }
+    return 0;
   }
 
 };	/* namespace uni10 */

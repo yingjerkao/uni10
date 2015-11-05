@@ -37,8 +37,8 @@ typedef double Real;
 typedef std::complex<double> Complex;
 
 namespace uni10{
-	/*********************  OPERATOR **************************/	    
-  
+	/*********************  OPERATOR **************************/
+
   Matrix& Matrix::operator=(const Matrix& _m){
     try{
       Rnum = _m.Rnum;
@@ -103,10 +103,10 @@ namespace uni10{
   Matrix& Matrix::operator*= (Complex a){
     try{
       if(a.imag() == 0){
-        *this = *this * a.real(); 
+        *this = *this * a.real();
       }
-      else{ 
-        if(typeID() == 1) 
+      else{
+        if(typeID() == 1)
           RtoC(*this);
         if(!ongpu){
           cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
@@ -119,7 +119,7 @@ namespace uni10{
     }
     return *this;
   }
-  
+
   Matrix& Matrix::operator+= (const Block& Mb){
     try{
       if(!ongpu && typeID() == 1)
@@ -127,7 +127,7 @@ namespace uni10{
       if(!ongpu && typeID() == 2)
         cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
       *this = *this + Mb;
-      /*    
+      /*
             if (diag && !Mb.diag) {
             Matrix Mc(Rnum,Cnum);
             setDiag(Mc.m_elem,m_elem,Mc.Rnum,Mc.Cnum,Rnum,Mc.ongpu,ongpu);
@@ -172,8 +172,8 @@ namespace uni10{
       return (typeID() == 1) ? Complex(m_elem[0], 0): cm_elem[0];
     }
   }
-  /*********************  NO TYPE **************************/	    
-  
+  /*********************  NO TYPE **************************/
+
   void Matrix::melemFree(){
     if(m_elem != NULL)
       elemFree(m_elem, elemNum() * sizeof(Real), ongpu);
@@ -194,9 +194,9 @@ namespace uni10{
   }
 
   Matrix::Matrix(): Block(){}
- 
+
   Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Block(_Rnum, _Cnum, _diag){}
-  
+
   Matrix::Matrix(const Matrix& _m): Block(_m.typeID(), _m.Rnum, _m.Cnum, _m.diag){
     try{
       init(_m.m_elem, _m.cm_elem, _m.ongpu);
@@ -223,14 +223,14 @@ namespace uni10{
         err<<"Error in opening file '" << fname <<"'.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      
+
       fread(&r_flag, sizeof(r_flag), 1, fp);
       fread(&c_flag, sizeof(c_flag), 1, fp);
       fread(&Rnum, sizeof(Rnum), 1, fp);
       fread(&Cnum, sizeof(Cnum), 1, fp);
       fread(&diag, sizeof(diag), 1, fp);
       fread(&ongpu, sizeof(ongpu), 1, fp);
-      
+
       if(typeID() == 1){
         init(RTYPE, ongpu);
         if(elemNum())
@@ -263,7 +263,7 @@ namespace uni10{
       propogate_exception(e, "In constructor Matrix::Matrix(std::string& )");
     }
   }
-  
+
   Matrix::~Matrix(){
     try{
       melemFree();
@@ -276,9 +276,9 @@ namespace uni10{
   void Matrix::identity(){
     try{
       if(typeID() == 1)
-        identity(RTYPE); 
+        identity(RTYPE);
       else if(typeID() == 2)
-        identity(CTYPE); 
+        identity(CTYPE);
       else if(typeID() == 0){
         std::ostringstream err;
         err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
@@ -340,7 +340,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::orthoRand():");
     }
   }
-  
+
   Matrix& Matrix::transpose(){
     try{
       if(typeID() == 1)
@@ -356,6 +356,7 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::transpose():");
     }
+    exit(0);
   }
 
   Matrix& Matrix::cTranspose(){
@@ -373,8 +374,9 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::cTranspose():");
     }
+    exit(0);
   }
-  
+
   Matrix& Matrix::conj(){
     try{
       if(typeID() == 1)
@@ -390,8 +392,9 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::conj():");
     }
+    exit(0);
   }
-  
+
   Matrix& Matrix::resize(size_t row, size_t col){
     try{
       if(typeID() == 1)
@@ -425,6 +428,7 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::max(bool ):");
     }
+    return 0;
   }
 
   void Matrix::load(const std::string& fname){
@@ -442,7 +446,7 @@ namespace uni10{
       fread(&Cnum, sizeof(Cnum), 1, fp);
       fread(&diag, sizeof(diag), 1, fp);
       fread(&ongpu, sizeof(ongpu), 1, fp);
-      
+
       if(typeID() == 1){
         init(RTYPE, ongpu);
         if(elemNum())
@@ -497,6 +501,7 @@ namespace uni10{
       return toGPU(RTYPE);
     else if(typeID() == 2)
       return toGPU(CTYPE);
+    return 0;
   }
 
   Complex Matrix::at(size_t r, size_t c){
@@ -547,7 +552,7 @@ namespace uni10{
     }
     cm_elem = NULL;
   }
-  
+
   void Matrix::init(const Real* _elem, bool src_ongpu){
   //  m_type = RL;
     init(RTYPE, true);
@@ -564,7 +569,7 @@ namespace uni10{
       propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, bool=false):");
     }
   }
-  
+
   Matrix::Matrix(size_t _Rnum, size_t _Cnum, const Real* _elem, bool _diag, bool src_ongpu): Block(RTYPE, _Rnum, _Cnum, _diag){
     try{
       init(_elem, src_ongpu);
@@ -573,7 +578,7 @@ namespace uni10{
       propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, double*, bool=false):");
     }
   }
-  
+
   Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<Real>& _elem, bool _diag, bool src_ongpu): Block(RTYPE, _Rnum, _Cnum, _diag){
     try{
       if(_diag == false && _Rnum*_Cnum != _elem.size()){
@@ -665,7 +670,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::setElem(double*, bool=false):");
     }
   }
-  
+
   void Matrix::identity(rflag _tp){
     try{
       if(typeID() == 0){
@@ -686,8 +691,8 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::identity():");
     }
-  } 
-  
+  }
+
   void Matrix::set_zero(rflag _tp){
     try{
       if(typeID() == 0){
@@ -702,7 +707,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::set_zero():");
     }
   }
-  
+
   void Matrix::randomize(rflag _tp){
     try{
       if(typeID() == 0){
@@ -718,7 +723,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::randomize():");
     }
   }
-  
+
   void Matrix::orthoRand(rflag _tp){
     try{
       if(typeID() == 0){
@@ -735,7 +740,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::orthoRand():");
     }
   }
-  
+
   Matrix& Matrix::transpose(rflag _tp){
     try{
       if(!ongpu)
@@ -751,7 +756,7 @@ namespace uni10{
     }
     return *this;
   }
-  
+
   Matrix& Matrix::cTranspose(rflag _tp){
     try{
       if(!ongpu)
@@ -769,11 +774,11 @@ namespace uni10{
     }
     return *this;
   }
-  
+
   Matrix& Matrix::conj(rflag _tp){
     return *this;
   }
-  
+
   Matrix& Matrix::resize(rflag _tp, size_t row, size_t col){
     try{
       if(diag){
@@ -832,7 +837,7 @@ namespace uni10{
     }
     return *this;
   }
-  
+
   void Matrix::assign(rflag _tp, size_t _Rnum, size_t _Cnum){
     try{
       Matrix M(RTYPE, _Rnum, _Cnum);
@@ -848,7 +853,7 @@ namespace uni10{
       m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
     return ongpu;
   }
-  
+
   double Matrix::max(rflag _tp, bool on_gpu){
     try{
       return elemMax(m_elem,  elemNum(),  on_gpu);
@@ -856,6 +861,7 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::max(bool ):");
     }
+    return 0;
   }
 
   Real& Matrix::at(rflag _tp, size_t idx){
@@ -888,7 +894,7 @@ namespace uni10{
 
   /*********************  REE **********************/
   /*********************  COMPLEX **********************/
-  
+
   void Matrix::init(cflag _tp, bool _ongpu){
     if(elemNum()){
       if(_ongpu)	// Try to allocate GPU memory
@@ -900,7 +906,7 @@ namespace uni10{
     }
     m_elem = NULL;
   }
-  
+
   void Matrix::init(const Complex* _elem, bool src_ongpu){
     init(CTYPE, true);
     elemCopy(cm_elem, _elem, elemNum() * sizeof(Complex), ongpu, src_ongpu);
@@ -947,7 +953,7 @@ namespace uni10{
       propogate_exception(e, "In constructor Matrix::Matrix(size_t, size_t, std::vector<Complex>&, bool=false):");
     }
   }
-  
+
   Matrix::Matrix(cflag _tp, const std::string& fname){
     try{
       FILE *fp = fopen(fname.c_str(), "r");
@@ -1018,7 +1024,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::setElem(Complex*, bool=false):");
     }
   }
-  
+
   void Matrix::identity(cflag _tp){
     try{
       if(typeID() == 0){
@@ -1039,7 +1045,7 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::identity():");
     }
-  } 
+  }
 
   void Matrix::set_zero(cflag _tp){
     try{
@@ -1055,7 +1061,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::set_zero():");
     }
   }
-  
+
   void Matrix::randomize(cflag _tp){
     try{
       if(typeID() == 0){
@@ -1071,7 +1077,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::randomize():");
     }
   }
-  
+
   void Matrix::orthoRand(cflag _tp){
     try{
       if(typeID() == 0){
@@ -1088,7 +1094,7 @@ namespace uni10{
       propogate_exception(e, "In function Matrix::orthoRand():");
     }
   }
-  
+
   Matrix& Matrix::transpose(cflag _tp){
     try{
       if(!ongpu)
@@ -1104,7 +1110,7 @@ namespace uni10{
     }
     return *this;
   }
-  
+
   Matrix& Matrix::cTranspose(cflag _tp){
     try{
       if(!ongpu)
@@ -1122,12 +1128,12 @@ namespace uni10{
     }
     return *this;
   }
-  
+
   Matrix& Matrix::conj(cflag _tp){
     setConjugate(cm_elem, elemNum(), ongpu);
     return *this;
   }
-  
+
   Matrix& Matrix::resize(cflag _tp, size_t row, size_t col){
     try{
       if(diag){
@@ -1186,7 +1192,7 @@ namespace uni10{
     }
     return *this;
   }
-  
+
   void Matrix::assign(cflag _tp, size_t _Rnum, size_t _Cnum){
     try{
       Matrix M(CTYPE, _Rnum, _Cnum);
@@ -1202,7 +1208,7 @@ namespace uni10{
       cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
     return ongpu;
   }
-  
+
   double Matrix::max(cflag _tp, bool on_gpu){
     try{
       std::ostringstream err;
@@ -1212,6 +1218,7 @@ namespace uni10{
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::max(bool ):");
     }
+    return 0;
   }
 
   Complex& Matrix::at(cflag _tp, size_t idx){
@@ -1319,6 +1326,7 @@ Matrix exph(double a, const Block& mat){
     propogate_exception(e, "In function exph(double, uni10::Matrix&):");
     return Matrix();
   }
+  return Matrix();
 }
 
 Matrix exp(const std::complex<double>& a, const Block& mat){

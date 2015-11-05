@@ -44,14 +44,14 @@
 namespace uni10{
 
     enum rflag{
-	RNULL = 0,	
+	RNULL = 0,
 	RTYPE = 1
-    };    
+    };
 
     enum cflag{
 	CNULL = 0,
-	CTYPE = 2 
-    };    
+	CTYPE = 2
+    };
 
     class UniTensor;
     class Matrix;
@@ -59,7 +59,7 @@ namespace uni10{
     class Block{
 	public:
 
-	    /*********************  OPERATOR **************************/	    
+	    /*********************  OPERATOR **************************/
 
 	    friend std::ostream& operator<< (std::ostream& os, const Block& b);
 	    friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C R*C C*R
@@ -70,9 +70,9 @@ namespace uni10{
 	    friend Matrix operator+(const Block& Ma, const Block& Mb);
 	    friend bool operator==(const Block& m1, const Block& m2);
 	    friend bool operator!=(const Block& m1, const Block& m2){return !(m1 == m2);};
-	    
-	    /*********************  NO TYPE **************************/	    
-	
+
+	    /*********************  NO TYPE **************************/
+
 	    Block();
 	    Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
 	    Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag = false);
@@ -93,7 +93,7 @@ namespace uni10{
 	    std::vector<Matrix> svd()const;
 	    std::vector<Matrix> eig()const;
 	    std::vector<Matrix> eigh()const;
-	    
+
 	    Matrix inverse()const;
 	    double norm()const;
 	    Matrix getDiag()const;
@@ -104,7 +104,7 @@ namespace uni10{
 	    std::complex<double> at(size_t i, size_t j)const;
 
 	    /*********************  REAL **********************/
-	   
+
 	    Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
 	    void save(rflag _tp, const std::string& fname)const;
 	    std::vector<Matrix> qr(rflag _tp)const;
@@ -112,7 +112,7 @@ namespace uni10{
 	    std::vector<Matrix> ql(rflag _tp)const;
 	    std::vector<Matrix> lq(rflag _tp)const;
 	    std::vector<Matrix> svd(rflag _tp)const;
-	   
+
 	    std::vector<Matrix> eig(rflag _tp)const;
 	    std::vector<Matrix> eigh(rflag _tp)const;
 	    Matrix inverse(rflag _tp)const;
@@ -133,7 +133,7 @@ namespace uni10{
 	    std::vector<Matrix> ql(cflag _tp)const;
 	    std::vector<Matrix> lq(cflag _tp)const;
 	    std::vector<Matrix> svd(cflag _tp)const;
-	  
+
 	    std::vector<Matrix> eig(cflag _tp)const;
 	    std::vector<Matrix> eigh(cflag _tp)const;
 	    Matrix inverse(cflag _tp)const;
@@ -150,19 +150,19 @@ namespace uni10{
 	    friend void RtoC(Block& mat);
 	    friend void RtoC(UniTensor& UniT);
 	    friend Matrix exph(double a, const Block& mat);
-    
+
 	    /*****************************************************/
 
 	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
 	    //friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
-	    
-	    /**********************************************************/	    
+
+	    /**********************************************************/
 	    friend class UniTensor;
 	    friend class CUniTensor;
 	    friend class CBlock;
 	    friend class Matrix;
 	    friend class CMatrix;
-	    /********************************************************************************/	    
+	    /********************************************************************************/
 
 	protected:
 	    rflag r_flag;
