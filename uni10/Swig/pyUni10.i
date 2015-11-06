@@ -20,6 +20,7 @@
 %include "std_vector.i"
 %include "std_map.i"
 %include "std_string.i"
+%include "std_complex.i"
 %include "exception.i"
 /*%include "typemaps.i"*/
 namespace std{
@@ -134,6 +135,7 @@ enum bondType{
   BD_IN = 1,
   BD_OUT = -1
 };
+
 class Bond {
   public:
       /*Bond(){};*/
@@ -176,7 +178,19 @@ extern Bond combine(const std::vector<Bond>& bds);
 /* End of Bond */
 
 /* Block */
+
 %apply int *OUTPUT { int *lanczos_iter};
+
+enum rflag{
+  RNULL = 0,
+  RTYPE = 1
+};
+
+enum cflag{
+  CNULL = 0,
+  CTYPE = 2
+};
+
 class Matrix;
 class Block{
   public:
@@ -196,9 +210,9 @@ class Block{
     std::vector<Matrix> eigh()const;
     std::vector<Matrix> svd()const;
     /*size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;*/
-    double trace()const;
+    /*double trace()const;*/
     double norm()const;
-    double sum()const;
+    /*double sum()const;*/
     /*
     friend Matrix operator* (const Block& Ma, const Block& Mb);
     friend Matrix operator*(const Block& Ma, double a);
@@ -234,7 +248,7 @@ class Block{
       Matrix __rmul__(double a){
         return a * (*self);
       }
-      double __getitem__(PyObject *parm) {
+      std::complex<double> __getitem__(PyObject *parm) {
         if (PyTuple_Check(parm)){
           long r,c;
           r=PyInt_AsLong(PyTuple_GetItem(parm,0));
@@ -249,11 +263,13 @@ class Block{
           return (*self)[PyInt_AsLong(parm)];
         return 0;
       }
+      /*
       double lanczosEigh(Matrix& psi, int *lanczos_iter, size_t max_iter=200, double err_tol = 5E-15){
         double E0;
         *lanczos_iter = (*self).lanczosEigh(E0, psi, max_iter, err_tol);
         return E0;
       }
+      */
     }
 };
 
@@ -321,7 +337,7 @@ class Matrix: public Block {
           Matrix __rmul__(double a){
             return a * (*self);
           }
-          double __getitem__(PyObject *parm) {
+          std::complex<double> __getitem__(PyObject *parm) {
             if (PyTuple_Check(parm)){
               long r,c;
               r=PyInt_AsLong(PyTuple_GetItem(parm,0));
@@ -336,6 +352,7 @@ class Matrix: public Block {
               return (*self)[PyInt_AsLong(parm)];
             return 0;
           }
+          /*
           void __setitem__(PyObject *parm, double val){
             if (PyTuple_Check(parm)){
               long r,c;
@@ -355,7 +372,8 @@ class Matrix: public Block {
             double E0;
             *lanczos_iter = (*self).lanczosEigh(E0, psi, max_iter, err_tol);
             return E0;
-          }
+           }
+          */
         }
 };
 Matrix takeExp(double a, const Block& mat);
@@ -390,7 +408,9 @@ class UniTensor{
     void setRawElem(const Block& blk);
     void setRawElem(const std::vector<double>& rawElem);
     /*void setRawElem(const double* rawElem);*/
-    double at(const std::vector<int>& idxs)const;
+
+    /*double at(const std::vector<int>& idxs)const;*/
+
     /*double at(const std::vector<size_t>& idxs)const;*/
     size_t blockNum()const;
     std::vector<Qnum> blockQnum()const;
@@ -423,7 +443,7 @@ class UniTensor{
     UniTensor& transpose();
     UniTensor& combineBond(const std::vector<int>& combined_labels);
     UniTensor& partialTrace(int la, int lb);
-    double trace()const;
+    /*double trace()const;*/
     std::vector<_Swap> exSwap(const UniTensor& Tb)const;
     void addGate(const std::vector<_Swap>& swaps);
     /*
@@ -467,7 +487,7 @@ class UniTensor{
       UniTensor __rmul__(double a){
         return a * (*self);
       }
-      double __getitem__(PyObject *parm) {
+      std::complex<double> __getitem__(PyObject *parm) {
         return (*self)[PyInt_AsLong(parm)];
       }
       static const std::string profile(){
