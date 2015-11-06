@@ -41,6 +41,8 @@ namespace uni10{
 
   Matrix& Matrix::operator=(const Matrix& _m){
     try{
+      r_flag = _m.r_flag;
+      c_flag = _m.c_flag;
       Rnum = _m.Rnum;
       Cnum = _m.Cnum;
       diag = _m.diag;
@@ -56,6 +58,8 @@ namespace uni10{
 
   Matrix& Matrix::operator=(const Block& _b){
     try{
+      r_flag = _b.r_flag;
+      c_flag = _b.c_flag;
       Rnum = _b.Rnum;
       Cnum = _b.Cnum;
       diag = _b.diag;
