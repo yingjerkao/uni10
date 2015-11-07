@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/Yun-Hsuan/Git_repo/tensorlib_mergecr/uni10/test/testSource/testQnum.cpp
+gtest/gtest.h
+-
+iostream
+-
+map
+-
+uni10.hpp
+/home/Yun-Hsuan/Git_repo/tensorlib_mergecr/uni10/test/testSource/uni10.hpp
+time.h
+-
+vector
+-
+
