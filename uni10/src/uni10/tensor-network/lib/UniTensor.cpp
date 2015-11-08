@@ -414,6 +414,18 @@ UniTensor::UniTensor(const std::vector<Bond>& _bonds, const std::string& _name):
   }
 }
 
+UniTensor::UniTensor(const std::string _tp, const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
+  try{
+    if(_tp == "R")
+      initUniT(RTYPE);
+    else if(_tp == "C")
+      initUniT(CTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::string& = \"\"):");
+  }
+}
+
 UniTensor::UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
     initUniT();

@@ -201,6 +201,28 @@ namespace uni10{
 
   Matrix::Matrix(size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu): Block(_Rnum, _Cnum, _diag){}
 
+  Matrix::Matrix(std::string _tp, size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu):Block(_Rnum, _Cnum, _diag){
+    try{
+      if(_tp == "R"){
+        r_flag = RTYPE;
+        c_flag = CNULL;
+        init(RTYPE, _ongpu);
+        if(elemNum())
+          elemBzero(m_elem, elemNum() * sizeof(Real), ongpu);
+      }
+      else if(_tp == "C"){
+        r_flag = RNULL;
+        c_flag = CTYPE;
+        init(CTYPE, _ongpu);
+        if(elemNum())
+          elemBzero(cm_elem, elemNum() * sizeof(Complex), ongpu);
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In constructor Matrix::Matrix(int, size_t, size_t, bool=false):");
+    }
+  }
+
   Matrix::Matrix(const Matrix& _m): Block(_m.typeID(), _m.Rnum, _m.Cnum, _m.diag){
     try{
       init(_m.m_elem, _m.cm_elem, _m.ongpu);

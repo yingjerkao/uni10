@@ -108,6 +108,7 @@ public:
     /// @param _Cnum Number of Columns
     /// @param _diag Set \c true for diagonal matrix, defaults to \c false
     Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+    Matrix(std::string tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
     /// @brief Copy constructor
     Matrix(const Matrix& _m);
     /// @overload
@@ -193,7 +194,7 @@ public:
     /// matrix elements and copy the elements from \c _elem
     Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
     /// @overload
-    Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
     // #####new
     Matrix(rflag _tp, const std::string& fname);
 
@@ -266,7 +267,7 @@ public:
     ///
     /// Allocate memory of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true) for
     /// matrix elements and copy the elements from \c _elem
-    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
     /// @overload
     Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool src_ongpu=false);
 

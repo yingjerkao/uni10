@@ -203,6 +203,7 @@ namespace uni10 {
         ///
         /// @param val Value of the scalar
         UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(const std::string _tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
 
         /// @brief Create a UniTensor from a list of Bond's
         /// @param _bonds List of bonds
