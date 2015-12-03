@@ -37,11 +37,13 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 ################################
 # Unit Tests
 ################################
-set(test_sources testQnum.cpp)
+
+SET(CMAKE_CXX_FLAGS "-O3 -std=c++11")
+set(test_sources testSource/testQnum.cpp)
 # Add test cpp file
 add_executable( runUnitTests ${test_sources})
 # Link test executable against gtest & gtest_main
-target_link_libraries(runUnitTests gtest gtest_main uni10)
+target_link_libraries(runUnitTests pthread gtest gtest_main uni10)
 add_test( runUnitTests runUnitTests )
 
 

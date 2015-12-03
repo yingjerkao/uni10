@@ -20,6 +20,7 @@
 %include "std_vector.i"
 %include "std_map.i"
 %include "std_string.i"
+%include "std_complex.i"
 %include "exception.i"
 /*%include "typemaps.i"*/
 namespace std{
@@ -134,6 +135,7 @@ enum bondType{
   BD_IN = 1,
   BD_OUT = -1
 };
+
 class Bond {
   public:
       /*Bond(){};*/
@@ -176,40 +178,53 @@ extern Bond combine(const std::vector<Bond>& bds);
 /* End of Bond */
 
 /* Block */
+
 %apply int *OUTPUT { int *lanczos_iter};
+
+enum rflag{
+  RNULL = 0,
+  RTYPE = 1
+};
+
+enum cflag{
+  CNULL = 0,
+  CTYPE = 2
+};
+
 class Matrix;
 class Block{
   public:
     Block();
-    /*Block(const Block& _b);*/
     Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
+    Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag = false);
+    /*Block(const Block& _b);*/
     virtual ~Block();
     size_t row()const;
     size_t col()const;
     bool isDiag()const;
     bool isOngpu()const;
     size_t elemNum()const;
+    int typeID()const;
+    void save(const std::string& fname)const;
+    void savePrototype(const std::string& fname)const;
+    std::vector<Matrix> qr()const;
+    std::vector<Matrix> rq()const;
+    std::vector<Matrix> ql()const;
+    std::vector<Matrix> lq()const;
+    std::vector<Matrix> svd()const;
+    std::vector<Matrix> eig()const;
+    std::vector<Matrix> eigh()const;
     /*double operator[](size_t idx)const;*/
     /*double at(size_t i, size_t j)const;*/
     /*double* getElem()const;*/
-    void save(const std::string& fname)const;
-    std::vector<Matrix> eigh()const;
-    std::vector<Matrix> svd()const;
     /*size_t lanczosEigh(double& E0, Matrix& psi, size_t max_iter=200, double err_tol = 5E-15)const;*/
-    double trace()const;
+    /*double trace()const;*/
+    Matrix inverse()const;
     double norm()const;
-    double sum()const;
-    /*
-    friend Matrix operator* (const Block& Ma, const Block& Mb);
-    friend Matrix operator*(const Block& Ma, double a);
-    friend Matrix operator*(double a, const Block& Ma);
-    friend Matrix operator+(const Block& Ma, const Block& Mb);
-    friend bool operator== (const Block& m1, const Block& m2);
-    friend class UniTensor;
-    friend class Matrix;
-    friend std::ostream& operator<< (std::ostream& os, const Block& b);
-    friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
-    */
+    Matrix getDiag()const;
+    std::complex<double> trace()const;
+    std::complex<double> sum()const;
+
     %extend {
       bool __eq__(const Block& b2){
         return (*self) == b2;
@@ -234,7 +249,7 @@ class Block{
       Matrix __rmul__(double a){
         return a * (*self);
       }
-      double __getitem__(PyObject *parm) {
+      std::complex<double> __getitem__(PyObject *parm) {
         if (PyTuple_Check(parm)){
           long r,c;
           r=PyInt_AsLong(PyTuple_GetItem(parm,0));
@@ -249,11 +264,13 @@ class Block{
           return (*self)[PyInt_AsLong(parm)];
         return 0;
       }
+      /*
       double lanczosEigh(Matrix& psi, int *lanczos_iter, size_t max_iter=200, double err_tol = 5E-15){
         double E0;
         *lanczos_iter = (*self).lanczosEigh(E0, psi, max_iter, err_tol);
         return E0;
       }
+      */
     }
 };
 
@@ -263,28 +280,81 @@ class Block{
 /* Matrix */
 class Matrix: public Block {
     public:
+        /*********************  NO TYPE **************************/
+        Matrix();
         Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
-        Matrix(size_t _Rnum, size_t _Cnum, double* _elem, bool _diag=false, bool src_ongpu=false);
-        Matrix(size_t _Rnum, size_t _Cnum, std::vector<double> _elem, bool _diag=false, bool src_ongpu=false);
         Matrix(const Matrix& _m);
         Matrix(const Block& _b);
-        Matrix();
+        Matrix(const std::string& fname);
+        Matrix(std::string tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
         ~Matrix();
+        void identity();
+        void set_zero();
+        void randomize();
+        void orthoRand();
+        Matrix& transpose();
+        Matrix& cTranspose();
+        Matrix& conj();
+        Matrix& resize(size_t row, size_t col);
+        double max(bool _ongpu=false);
+        void load(const std::string& fname);
+        void assign(size_t _Rnum, size_t _Cnum);
+        bool toGPU();
+        /*********************  REAL **********************/
+        Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
+        Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
+        void setElem(const std::vector<double>& elem, bool _ongpu = false);
+        /*
+        Matrix(rflag _tp, const std::string& fname);
+        Matrix(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+        void setElem(const double* elem, bool _ongpu = false);
+        void setElem(const std::vector<double>& elem, bool _ongpu = false);
+        void identity(rflag _tp);
+        void set_zero(rflag _tp);
+        void randomize(rflag _tp);
+        void orthoRand(rflag _tp);
+        Matrix& transpose(rflag _tp);
+        Matrix& cTranspose(rflag _tp);
+        Matrix& conj(rflag _tp);
+        Matrix& resize(rflag _tp, size_t row, size_t col);
+        double max(rflag _tp, bool _ongpu=false);
+        void assign(rflag _tp, size_t _Rnum, size_t _Cnum);
+        bool toGPU(rflag _tp);
+        double& at(rflag _tp, size_t i); //&
+        double* getHostElem(rflag _tp);
+        */
+        /*********************  COMPLEX **********************/
+
+        Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
+        Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool src_ongpu=false);
+        void setElem(const std::vector< std::complex<double> >& elem, bool _ongpu = false);
+        /*
+        Matrix(cflag _tp, const std::string& fname);
+        Matrix(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+        void setElem(const std::complex<double>* elem, bool _ongpu = false);
+        void identity(cflag _tp);
+        void set_zero(cflag _tp);
+        void randomize(cflag _tp);
+        void orthoRand(cflag _tp);
+        Matrix& transpose(cflag _tp);
+        Matrix& cTranspose(cflag _tp);
+        Matrix& conj(cflag _tp);
+        Matrix& resize(cflag _tp, size_t row, size_t col);
+        double max(cflag _tp, bool _ongpu=false);
+        void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
+        bool toGPU(cflag _tp);
+        std::complex<double>& at(cflag _tp, size_t i); //&
+        std::complex<double>* getHostElem(cflag _tp);
+        */
+        /*****************************************************/
+
         /*Matrix& operator=(const Matrix& _m);*/
         /*Matrix& operator=(const Block& _m);*/
         /*double& operator[](size_t idx);*/
         /*double& at(size_t i, size_t j);*/
         /*double* getHostElem();*/
         /*void setElem(const double* elem, bool _ongpu = false);*/
-        void setElem(const std::vector<double>& elem, bool _ongpu = false);
-        Matrix& resize(size_t row, size_t col);
-        void load(const std::string& fname);
-        void identity();
-        void set_zero();
-        void randomize();
-        void orthoRand();
         /*bool toGPU();*/
-        Matrix& transpose();
         /*
         Matrix& operator*= (double a);
 		    Matrix& operator*= (const Matrix& Mb);
@@ -321,7 +391,7 @@ class Matrix: public Block {
           Matrix __rmul__(double a){
             return a * (*self);
           }
-          double __getitem__(PyObject *parm) {
+          std::complex<double> __getitem__(PyObject *parm) {
             if (PyTuple_Check(parm)){
               long r,c;
               r=PyInt_AsLong(PyTuple_GetItem(parm,0));
@@ -336,6 +406,7 @@ class Matrix: public Block {
               return (*self)[PyInt_AsLong(parm)];
             return 0;
           }
+          /*
           void __setitem__(PyObject *parm, double val){
             if (PyTuple_Check(parm)){
               long r,c;
@@ -355,7 +426,8 @@ class Matrix: public Block {
             double E0;
             *lanczos_iter = (*self).lanczosEigh(E0, psi, max_iter, err_tol);
             return E0;
-          }
+           }
+          */
         }
 };
 Matrix takeExp(double a, const Block& mat);
@@ -373,6 +445,7 @@ class UniTensor{
     UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
     UniTensor(const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
     UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
+    UniTensor(const std::string _tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
     UniTensor(const UniTensor& UniT);
     ~UniTensor();
     /*UniTensor& operator=(const UniTensor& UniT);*/
@@ -390,7 +463,9 @@ class UniTensor{
     void setRawElem(const Block& blk);
     void setRawElem(const std::vector<double>& rawElem);
     /*void setRawElem(const double* rawElem);*/
-    double at(const std::vector<int>& idxs)const;
+
+    /*double at(const std::vector<int>& idxs)const;*/
+
     /*double at(const std::vector<size_t>& idxs)const;*/
     size_t blockNum()const;
     std::vector<Qnum> blockQnum()const;
@@ -423,7 +498,7 @@ class UniTensor{
     UniTensor& transpose();
     UniTensor& combineBond(const std::vector<int>& combined_labels);
     UniTensor& partialTrace(int la, int lb);
-    double trace()const;
+    /*double trace()const;*/
     std::vector<_Swap> exSwap(const UniTensor& Tb)const;
     void addGate(const std::vector<_Swap>& swaps);
     /*
@@ -467,7 +542,7 @@ class UniTensor{
       UniTensor __rmul__(double a){
         return a * (*self);
       }
-      double __getitem__(PyObject *parm) {
+      std::complex<double> __getitem__(PyObject *parm) {
         return (*self)[PyInt_AsLong(parm)];
       }
       static const std::string profile(){

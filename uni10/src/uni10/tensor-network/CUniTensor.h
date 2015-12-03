@@ -142,10 +142,10 @@ class CUniTensor{
     friend CUniTensor operator*(const UniTensor& Ta, const CUniTensor& Tb);
     friend CUniTensor operator*(const CUniTensor& Ta, double a);
     friend CUniTensor operator*(const CUniTensor& Ta, const std::complex<double>& a);
-    friend CUniTensor operator*(const UniTensor& Ta, const std::complex<double>& a);
+//	friend CUniTensor operator*(const UniTensor& Ta, const std::complex<double>& a);
     friend CUniTensor operator*(double a, const CUniTensor& Ta);
     friend CUniTensor operator*(const std::complex<double>& a, const CUniTensor& Ta);
-    friend CUniTensor operator*(const std::complex<double>& a, const UniTensor& Ta);
+//	friend CUniTensor operator*(const std::complex<double>& a, const UniTensor& Ta);
     friend CUniTensor operator+(const CUniTensor& Ta, const CUniTensor& Tb);
     friend CUniTensor operator+(const UniTensor& Ta, const CUniTensor& Tb);
     friend CUniTensor operator+(const CUniTensor& Ta, const UniTensor& Tb);

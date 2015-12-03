@@ -198,7 +198,7 @@ void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R){
   lwork = (int)worktestdge;
   double* work = (double*)malloc(lwork*sizeof(double));
   dgeqlf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
-  //getQ
+  ///getQ
   lwork = (int)worktestdor;
   work = (double*)malloc(lwork*sizeof(double));
   dorgql(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
@@ -300,7 +300,7 @@ void matrixInv(double* A, int N, bool diag, bool ongpu){
       A[i] = A[i] == 0 ? 0 : 1.0/A[i];
     return;
   }
-  int *ipiv = (int*)malloc(N+1 * sizeof(int));
+  int *ipiv = (int*)malloc((N+1)*sizeof(int));
   int info;
   dgetrf(&N, &N, A, &N, ipiv, &info);
   if(info != 0){
@@ -308,15 +308,15 @@ void matrixInv(double* A, int N, bool diag, bool ongpu){
     err<<"Error in Lapack function 'dgetrf': Lapack INFO = "<<info;
     throw std::runtime_error(exception_msg(err.str()));
   }
-	int lwork = -1;
-	double worktest;
+  int lwork = -1;
+  double worktest;
   dgetri(&N, A, &N, ipiv, &worktest, &lwork, &info);
   if(info != 0){
     std::ostringstream err;
     err<<"Error in Lapack function 'dgetri': Lapack INFO = "<<info;
     throw std::runtime_error(exception_msg(err.str()));
   }
-	lwork = (int)worktest;
+  lwork = (int)worktest;
   double *work = (double*)malloc(lwork * sizeof(double));
   dgetri(&N, A, &N, ipiv, work, &lwork, &info);
   if(info != 0){
@@ -330,9 +330,9 @@ void matrixInv(double* A, int N, bool diag, bool ongpu){
 
 
 void setTranspose(double* A, size_t M, size_t N, double* AT, bool ongpu, bool ongpuT){
-	for(size_t i = 0; i < M; i++)
-		for(size_t j = 0; j < N; j++)
-			AT[j * M + i] = A[i * N + j];
+  for(size_t i = 0; i < M; i++)
+    for(size_t j = 0; j < N; j++)
+      AT[j * M + i] = A[i * N + j];
 }
 
 void setTranspose(double* A, size_t M, size_t N, bool ongpu){
@@ -483,6 +483,101 @@ bool lanczosEV(double* A, double* psi, size_t dim, size_t& max_iter, double err_
   return converged;
 }
 
+bool lanczosEVL(double* A, double* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, double* eigVec, bool ongpu){
+  int N = dim;
+  const int min_iter = 2;
+  const double beta_err = 1E-15;
+  if(!(max_iter > min_iter)){
+    std::ostringstream err;
+    err<<"Maximum iteration number should be set greater than 2.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  double a = 1;
+  double alpha;
+  double beta = 1;
+  int inc = 1;
+  size_t M = max_iter;
+  double *Vm = (double*)malloc((M + 1) * N * sizeof(double));
+  double *As = (double*)malloc(M * sizeof(double));
+  double *Bs = (double*)malloc(M * sizeof(double));
+  double *d = (double*)malloc(M * sizeof(double));
+  double *e = (double*)malloc(M * sizeof(double));
+  int it = 0;
+  memcpy(Vm, psi, N * sizeof(double));
+  vectorScal(1 / vectorNorm(psi, N, 1, false), Vm, N, false);
+  memset(&Vm[(it+1) * N], 0, N * sizeof(double));
+  memset(As, 0, M * sizeof(double));
+  memset(Bs, 0, M * sizeof(double));
+  double e_diff = 1;
+  double e0_old = 0;
+  bool converged = false;
+  while((((e_diff > err_tol) && it < max_iter) || it < min_iter) && beta > beta_err){
+    double minus_beta = -beta;
+    dgemv((char*)"T", &N, &N, &a, A, &N, &Vm[it * N], &inc, &minus_beta, &Vm[(it+1) * N], &inc);
+    alpha = ddot(&N, &Vm[it*N], &inc, &Vm[(it+1) * N], &inc);
+    double minus_alpha = -alpha;
+    daxpy(&N, &minus_alpha, &Vm[it * N], &inc, &Vm[(it+1) * N], &inc);
+
+    beta = vectorNorm(&Vm[(it+1) * N], N, 1, false);
+    if(it < max_iter - 1)
+      memcpy(&Vm[(it + 2) * N], &Vm[it * N], N * sizeof(double));
+    As[it] = alpha;
+    if(beta > beta_err){
+      vectorScal(1/beta, &Vm[(it+1) * N], N, false);
+      if(it < max_iter - 1)
+	Bs[it] = beta;
+    }
+    else
+      converged = true;
+    it++;
+    if(it > 1){
+      double* z = NULL;//(double*)malloc(it * it * sizeof(double));
+      double* work = NULL;//(double*)malloc(4 * it * sizeof(double));
+      int info;
+      memcpy(d, As, it * sizeof(double));
+      memcpy(e, Bs, it * sizeof(double));
+      dstev((char*)"N", &it, d, e, z, &it, work, &info);
+      if(info != 0){
+	std::ostringstream err;
+	err<<"Error in Lapack function 'dstev': Lapack INFO = "<<info;
+	throw std::runtime_error(exception_msg(err.str()));
+      }
+      double base = std::abs(d[0]) > 1 ? std::abs(d[0]) : 1;
+      e_diff = std::abs(d[0] - e0_old) / base;
+      e0_old = d[0];
+      if(e_diff <= err_tol)
+	converged = true;
+    }
+  }
+  if(it > 1){
+    memcpy(d, As, it * sizeof(double));
+    memcpy(e, Bs, it * sizeof(double));
+    double* z = (double*)malloc(it * it * sizeof(double));
+    double* work = (double*)malloc(4 * it * sizeof(double));
+    int info;
+    dstev((char*)"V", &it, d, e, z, &it, work, &info);
+    if(info != 0){
+      std::ostringstream err;
+      err<<"Error in Lapack function 'dstev': Lapack INFO = "<<info;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    memset(eigVec, 0, N * sizeof(double));
+
+    for(int k = 0; k < it; k++){
+      daxpy(&N, &z[k], &Vm[k * N], &inc, eigVec, &inc);
+    }
+    max_iter = it;
+    eigVal = d[0];
+    free(z), free(work);
+  }
+  else{
+    max_iter = 1;
+    eigVal = 0;
+  }
+  free(Vm), free(As), free(Bs), free(d), free(e);
+  return converged;
+}
+
 /***** Complex version *****/
 void matrixSVD(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* U, double *S, std::complex<double>* vT, bool ongpu){
 	std::complex<double>* Mij = (std::complex<double>*)malloc(M * N * sizeof(std::complex<double>));
@@ -525,7 +620,7 @@ void matrixInv(std::complex<double>* A, int N, bool diag, bool ongpu){
       A[i] = std::abs(A[i]) == 0 ? 0.0 : 1.0/A[i];
     return;
   }
-  int *ipiv = (int*)malloc(N+1 * sizeof(int));
+  int *ipiv = (int*)malloc((N+1) * sizeof(int));
   int info;
   zgetrf(&N, &N, A, &N, ipiv, &info);
   if(info != 0){
@@ -881,7 +976,6 @@ bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, s
 /**** complex qr rq lq ql ****/
 
 void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R){
-  assert(M >= N);
   std::complex<double>* Mij = (std::complex<double>*)malloc(N*M*sizeof(std::complex<double>));
   memcpy(Mij, Mij_ori, N*M*sizeof(std::complex<double>));
   std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
@@ -903,16 +997,16 @@ void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
   zunglq(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
   memcpy(Q, Mij, N*M*sizeof(std::complex<double>));
   //getR
-  std::complex<double> alpha(1.0, 1.0), beta(0.0, 0.0);
+  std::complex<double> alpha(1.0, 0.0), beta(0.0, 0.0);
   zgemm((char*)"N", (char*)"C", &N, &N, &M, &alpha, Mij_ori, &N, Mij, &N, &beta, R, &N);
   free(Mij);
   free(tau);
   free(work);
 }
 void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R){
-  assert(N >= M);
+  
   std::complex<double>* Mij = (std::complex<double>*)malloc(M*N*sizeof(std::complex<double>));
-  memcpy(Mij, Mij_ori, M*N*sizeof(double));
+  memcpy(Mij, Mij_ori, M*N*sizeof(std::complex<double>));
   std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
   int lda = N;
   int lwork = -1;
@@ -931,14 +1025,16 @@ void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
   zungql(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
   memcpy(Q, Mij, N*M*sizeof(std::complex<double>));
   //getR
-  std::complex<double> alpha (1.0, 1.0), beta (0.0, 0.0);
+  std::complex<double> alpha (1.0, 0.0), beta (0.0, 0.0);
   zgemm((char*)"C", (char*)"N", &M, &M, &N, &alpha, Mij, &N, Mij_ori, &N, &beta, R, &M);
   free(Mij);
   free(tau);
   free(work);
+
 }
+
 void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L){
-  assert(N >= M);
+  
   std::complex<double>* Mij = (std::complex<double>*)malloc(M*N*sizeof(std::complex<double>));
   memcpy(Mij, Mij_ori, M*N*sizeof(std::complex<double>));
   std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
@@ -959,7 +1055,7 @@ void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
   zungqr(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
   memcpy(Q, Mij, N*M*sizeof(std::complex<double>));
   //getR
-  std::complex<double> alpha (1.0, 1.0), beta (0.0, 0.0);
+  std::complex<double> alpha (1.0, 0.0), beta (0.0, 0.0);
   zgemm((char*)"C", (char*)"N", &M, &M, &N, &alpha, Mij, &N, Mij_ori, &N, &beta, L, &M);
   free(Mij);
   free(tau);
@@ -987,7 +1083,7 @@ void matrixQL(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
   zungrq(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
   memcpy(Q, Mij, N*M*sizeof(std::complex<double>));
   //getR
-  std::complex<double> alpha (1.0, 1.0), beta (1.0, 1.0);
+  std::complex<double> alpha (1.0, 0.0), beta (1.0, 1.0);
   zgemm((char*)"N", (char*)"C", &N, &N, &M, &alpha, Mij_ori, &N, Mij, &N, &beta, L, &N);
   free(Mij);
   free(tau);

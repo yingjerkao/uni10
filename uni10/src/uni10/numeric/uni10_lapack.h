@@ -106,12 +106,11 @@ void eigSyDecompose(std::complex<double>* Kij, int N, double* Eig, std::complex<
 void setConjugate(std::complex<double> *A, size_t N, bool ongpu);
 void setIdentity(std::complex<double>* elem, size_t M, size_t N, bool ongpu);
 bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, std::complex<double>* eigVec, bool ongpu);
-//====== complex qr rq ql lq ======//
+bool lanczosEVL(std::complex<double>* A, std::complex<double>* psi, size_t dim, size_t& max_iter, double err_tol, double& eigVal, std::complex<double>* eigVec, bool ongpu);
 void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R);
 void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R);
 void matrixQL(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L);
 void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L);
-//=================================//
 
 };	/* namespace uni10 */
 #endif /* UNI10_LAPACK_H */

@@ -1591,7 +1591,6 @@ std::string CUniTensor::profile(bool print){
   }
   return os.str();
 }
-
 CUniTensor& CUniTensor::operator*= (double a){
   try{
     if(!(status & HAVEELEM)){
@@ -1616,7 +1615,6 @@ CUniTensor& CUniTensor::operator*=(const CUniTensor& uT){
   }
   return *this;
 }
-
 CUniTensor& CUniTensor::operator+= (const CUniTensor& Tb){
   try{
     if(!(status & Tb.status & HAVEELEM)){
@@ -1836,7 +1834,7 @@ CUniTensor contract(CUniTensor& Ta, CUniTensor& Tb, bool fast){
       return Ta[0] * Tb;
     else
       return CUniTensor(Ta[0] * Tb[0]);
-  }
+    }
   catch(const std::exception& e){
     propogate_exception(e, "In function contract(uni10::CUniTensor&, uni10::CUniTensor, bool):");
     return CUniTensor();
@@ -1882,7 +1880,6 @@ CMatrix otimes(const CBlock& Ma, const CBlock& Mb){
     return CMatrix();
   }
 }
-
 CUniTensor operator*(const CUniTensor& Ta, const CUniTensor& Tb){
   try{
     CUniTensor cTa = Ta;
@@ -1913,7 +1910,6 @@ CUniTensor operator*(const CUniTensor& Ta, double a){
 }
 
 CUniTensor operator*(double a, const CUniTensor& Ta){return Ta * a;};
-
 CUniTensor operator+(const CUniTensor& Ta, const CUniTensor& Tb){
   try{
     if(!(Ta.status & Tb.status & Ta.HAVEELEM)){

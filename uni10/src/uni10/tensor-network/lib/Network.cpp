@@ -603,73 +603,73 @@ void Network::putTensorT(const std::string& nameT, const UniTensor& UniT, bool f
 }
 
 void Network::branch(Node* sbj, Node* tar){
-	Node* par = new Node(tar->contract(sbj));
-	if(sbj->parent == NULL){	//create a parent node
-		if(tar->parent != NULL){	//tar is not root
-			if(tar->parent->left == tar)	// tar on the left side of its parent
-				tar->parent->left = par;
-			else
-				tar->parent->right = par;
-			par->parent = tar->parent;
-		}
-		else{	//tar is root
-			par->parent = NULL;
-			root = par;
-		}
-	}
-	else{	//sbj and tar have same parent and replace the parent node
-		if(tar->parent->parent != NULL){
-			if(tar->parent->parent->left == tar->parent)	// tar on the left side of its parent
-				tar->parent->parent->left = par;
-			else
-				tar->parent->parent->right = par;
-			par->parent = tar->parent->parent;
-		}
-		else{	//tar->parent is root
-			par->parent = NULL;
-			root = par;
-		}
-		delete tar->parent;
-	}
-	par->left = tar;
-	par->right = sbj;
-	tar->parent = par;
-	sbj->parent = par;
-	par->point = tar->metric(sbj);
-	if(sbj->parent->parent != NULL){	//propagate up
-		sbj = sbj->parent;
-		branch(sbj->parent->right, sbj->parent->left);
-	}
+  Node* par = new Node(tar->contract(sbj));
+  if(sbj->parent == NULL){	//create a parent node
+    if(tar->parent != NULL){	//tar is not root
+      if(tar->parent->left == tar)	// tar on the left side of its parent
+	tar->parent->left = par;
+      else
+	tar->parent->right = par;
+      par->parent = tar->parent;
+    }
+    else{	//tar is root
+      par->parent = NULL;
+      root = par;
+    }
+  }
+  else{	//sbj and tar have same parent and replace the parent node
+    if(tar->parent->parent != NULL){
+      if(tar->parent->parent->left == tar->parent)	// tar on the left side of its parent
+	tar->parent->parent->left = par;
+      else
+	tar->parent->parent->right = par;
+      par->parent = tar->parent->parent;
+    }
+    else{	//tar->parent is root
+      par->parent = NULL;
+      root = par;
+    }
+    delete tar->parent;
+  }
+  par->left = tar;
+  par->right = sbj;
+  tar->parent = par;
+  sbj->parent = par;
+  par->point = tar->metric(sbj);
+  if(sbj->parent->parent != NULL){	//propagate up
+    sbj = sbj->parent;
+    branch(sbj->parent->right, sbj->parent->left);
+  }
 }
 
 void Network::matching(Node* sbj, Node* tar){
-	if(tar == NULL){	//tar is root
-		root = sbj;
-	}
-	else if(tar->T == NULL){	//not leaf
-		if(sbj->metric(tar) > 0){	//has contracted bonds
-		  if(!(tar->left != NULL && tar->right != NULL)){
-          std::ostringstream err;
-          err<<"Fatal error(code = N1). Please contact the developer of the uni10 library.";
-          throw std::runtime_error(exception_msg(err.str()));
+  if(tar == NULL){	//tar is root
+    root = sbj;
+  }
+  else if(tar->T == NULL){	//not leaf
+    if(sbj->metric(tar) > 0){	//has contracted bonds
+      if(!(tar->left != NULL && tar->right != NULL)){
+	std::ostringstream err;
+	err<<"Fatal error(code = N1). Please contact the developer of the uni10 library.";
+	throw std::runtime_error(exception_msg(err.str()));
       }
-			float tar_p = tar->point;
-			float lft_p = 0, rht_p = 0;
-			if((lft_p = sbj->metric(tar->left)) > tar_p || (rht_p = sbj->metric(tar->right)) > tar_p){	//go deeper comparison to the children
-				if(lft_p > rht_p)
-					matching(sbj, tar->left);
-				else
-					matching(sbj, tar->right);
-			}
-			else	//contract
-				branch(sbj, tar);
-		}
-		else	//contract
-			branch(sbj, tar);
-	}
-	else{	//contract
-		branch(sbj, tar);
-	}
+      float tar_p = tar->point;
+      float lft_p = 0, rht_p = 0;
+      if((lft_p = sbj->metric(tar->left)) > tar_p || (rht_p = sbj->metric(tar->right)) > tar_p){	//go deeper comparison to the children
+	if(lft_p > rht_p)
+	  matching(sbj, tar->left);
+	else
+	  matching(sbj, tar->right);
+      }
+      else	//contract
+	branch(sbj, tar);
+    }
+    else	//contract
+      branch(sbj, tar);
+  }
+  else{	//contract
+    branch(sbj, tar);
+  }
 }
 
 void Network::clean(Node* nd){
@@ -703,8 +703,8 @@ UniTensor Network::launch(const std::string& _name){
       construct();
     for(int t = 0; t < tensors.size(); t++)
       if(Qnum::isFermionic() && !swapflags[t]){
-        tensors[t]->addGate(swaps_arr[t]);
-        swapflags[t] = true;
+	tensors[t]->addGate(swaps_arr[t]);
+	swapflags[t] = true;
       }
     UniTensor UniT = merge(root);
     int idx = label_arr.size() - 1;
@@ -720,35 +720,35 @@ UniTensor Network::launch(const std::string& _name){
 }
 
 UniTensor Network::merge(Node* nd){
-	if(nd->left->T == NULL){
-		UniTensor lftT = merge(nd->left);
-		if(nd->right->T == NULL){
-			UniTensor rhtT = merge(nd->right);
-			return contract(lftT, rhtT, true);
-		}
-		else{
-			return contract(lftT, *(nd->right->T), true);
-		}
-	}
-	else{
-		if(nd->right->T == NULL){
-			UniTensor rhtT = merge(nd->right);
-			return contract(*(nd->left->T), rhtT, true);
-		}
-		else{
-			return contract(*(nd->left->T), *(nd->right->T), true);
-		}
-	}
+  if(nd->left->T == NULL){
+    UniTensor lftT = merge(nd->left);
+    if(nd->right->T == NULL){
+      UniTensor rhtT = merge(nd->right);
+      return contract(lftT, rhtT, true);
+    }
+    else{
+      return contract(lftT, *(nd->right->T), true);
+    }
+  }
+  else{
+    if(nd->right->T == NULL){
+      UniTensor rhtT = merge(nd->right);
+      return contract(*(nd->left->T), rhtT, true);
+    }
+    else{
+      return contract(*(nd->left->T), *(nd->right->T), true);
+    }
+  }
 }
 
 Network::~Network(){
   try{
-	if(load)
-		destruct();
-	for(int i = 0; i < leafs.size(); i++)
-		delete leafs[i];
-	for(int i = 0; i < tensors.size(); i++)
-		delete tensors[i];
+    if(load)
+      destruct();
+    for(int i = 0; i < leafs.size(); i++)
+      delete leafs[i];
+    for(int i = 0; i < tensors.size(); i++)
+      delete tensors[i];
   }
   catch(const std::exception& e){
     propogate_exception(e, "In destructor Network::~Network():");
