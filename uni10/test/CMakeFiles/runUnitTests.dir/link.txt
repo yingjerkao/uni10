@@ -1,1 +1,0 @@
-/usr/bin/c++   -O3 -std=c++11    CMakeFiles/runUnitTests.dir/testSource/testQnum.cpp.o  -o runUnitTests -rdynamic -lpthread -lgtest -lgtest_main -luni10 

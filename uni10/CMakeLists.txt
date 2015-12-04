@@ -30,7 +30,14 @@
 ######################################################################
 ### CMAKE VERSION
 ######################################################################
+if(APPLE)
+  # OS X requires 2.8.12 for rpath
 cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
+else()
+  # For RHEL/CentOS 7
+cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
+endif()
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 
@@ -289,6 +296,10 @@ WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 COMMENT "Generating API documentation with Doxygen" VERBATIM
 )
 endif(DOXYGEN_FOUND) 
+
+
+
+
 ######################################################################
 ### INSTALL
 ######################################################################

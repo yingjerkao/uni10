@@ -23,9 +23,8 @@
 #  @brief Specification file for CMake
 #  @author Ying-Jer Kao
 #  @date 2014-05-06
-#  @since 0.1.0
+#  @since 0.9.0
 ###
-cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 
 
 ######################################################################
@@ -39,7 +38,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 ################################
 
 SET(CMAKE_CXX_FLAGS "-O3 -std=c++11")
-set(test_sources testSource/testQnum.cpp)
+set(test_sources testQnum.cpp testBond.cpp testBlock.cpp testUniTensor.cpp)
 # Add test cpp file
 add_executable( runUnitTests ${test_sources})
 # Link test executable against gtest & gtest_main

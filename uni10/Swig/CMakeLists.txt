@@ -26,7 +26,6 @@
 #  @since 0.9.0
 ###
 
-cmake_minimum_required(VERSION 2.8.12)
 
 FIND_PACKAGE(SWIG REQUIRED)
 INCLUDE(${SWIG_USE_FILE})
