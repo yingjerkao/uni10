@@ -341,7 +341,7 @@ namespace uni10{
         randomize(CTYPE);
       else if(typeID() == 0){
         std::ostringstream err;
-        err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
+        err<<"Haven't defined the type of matrix." << std::endl << "In the file Matrix.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
     }
@@ -738,7 +738,7 @@ namespace uni10{
     try{
       if(typeID() == 0){
         std::ostringstream err;
-        err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
+        err<<"Haven't defined the type of matrix." << std::endl << "In the file Matrix.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
       if(!ongpu)
@@ -1092,7 +1092,7 @@ namespace uni10{
     try{
       if(typeID() == 0){
         std::ostringstream err;
-        err<<"Haven't defined the type of matrix." << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
+        err<<"Haven't defined the type of matrix." << std::endl << "In the file Matrix.cpp, line(" << __LINE__ << ")";
         throw std::runtime_error(exception_msg(err.str()));
       }
       if(!ongpu)

@@ -24,10 +24,11 @@
 *  @brief Implementation file for the ARPACK wrappers
 *  @author Chen-Yen Lai
 *  @date 2016-01-22
-*  @since 0.1.0
+*  @since 0.9.2
 *
 *****************************************************************************/
 #include <iostream>
+#include <cstring>
 #ifdef MKL
     #define MKL_Complex8 std::complex<float>
     #define MKL_Complex16 std::complex<double>
@@ -36,6 +37,8 @@
     #include <uni10/numeric/uni10_lapack_wrapper.h>
 #endif
 #include <uni10/numeric/uni10_arpack_wrapper.h>
+
+namespace uni10{
 
 bool arpackEigh(double* A, double* psi, size_t n, size_t& max_iter,
     double& eigVal, double* eigVec, bool ongpu, double err_tol, int nev){
@@ -65,7 +68,9 @@ bool arpackEigh(double* A, double* psi, size_t n, size_t& max_iter,
     double *workd = new double[3*dim];
     int lworkl = ncv*(ncv+8);// LWORKL must be at least NCV**2 + 8*NCV .
     double *workl = new double[lworkl];
-    int info = 1;
+    int info = 1;//If INFO .EQ. 0, a randomly initial residual vector is used.
+                 //If INFO .NE. 0, RESID contains the initial residual vector,
+                 //                possibly from a previous run.
     // Parameters for zgemv
     double alpha = 1.0e0;
     double beta = 0.0e0;
@@ -131,7 +136,7 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     iparam[0] = 1;
     iparam[2] = max_iter;
     iparam[6] = 1;
-    int *ipntr = new int[14];
+    int *ipntr = new int[14];// Different from real version
     std::complex<double> *workd = new std::complex<double>[3*dim];
     int lworkl = 3*ncv*(ncv+2);// LWORKL must be at least 3*NCV**2 + 5*NCV.*/
     std::complex<double> *workl = new std::complex<double>[lworkl];
@@ -141,7 +146,7 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     std::complex<double> alpha = 1.0e0;
     std::complex<double> beta = 0.0e0;
     int inc = 1;
-    // Begin iterations
+    // std::cout << "Begin iterations" << std::endl;
     znaupd_(&ido, &bmat, &dim, &which[0], &nev, &err_tol, resid, &ncv, v, &ldv,
             iparam, ipntr, workd, workl, &lworkl, rwork, &info);
     while( ido != 99 ){
@@ -158,6 +163,7 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     else if ( info == 3 )
         std::cerr << "No shifts could be applied during implicit Arnoldi update," <<
                      " try increasing NCV." << std::endl;
+    // zneupd Parameters
     int rvec = 1;
     char howmny = 'A';
     int *select = new int[ncv];
@@ -186,3 +192,5 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     if( info == 0 ) return 1;
     else return 0;
 }
+
+};/* end of namespace uni10 */

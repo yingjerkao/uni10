@@ -25,12 +25,14 @@
 *  @brief Header file for Arapack wrapping functions
 *  @author Chen-Yen Lai
 *  @date 2016-01-22
-*  @since 0.1.0
+*  @since 0.9.2
 *
 *****************************************************************************/
 #ifndef UNI10_ARPACK_H
 #define UNI10_ARPACK_H
 #include <complex>
+
+namespace uni10{
 
 bool arpackEigh(double* A, double* psi, size_t n, size_t& max_iter,
     double& eigVal, double* eigVec, bool ongpu, double err_tol=0.0e0, int nev=1);
@@ -39,4 +41,5 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     size_t& max_iter, double& eigVal, std::complex<double>* eigVec, bool ongpu,
     double err_tol=0.0e0, int nev=1);
 
+}; /* end of namespace uni10 */
 #endif /* end of include guard: UNI10_ARPACK_H */

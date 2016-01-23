@@ -20,10 +20,10 @@
 *    You should have received a copy of the GNU Lesser General Public License
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
-*  @brief C wrapper functions for fortran Blas and Lapack libraries
+*  @brief C wrapper functions for Arpack libraries
 *  @author Chen-Yen Lai
 *  @date 2016-01-22
-*  @since 0.1.0
+*  @since 0.9.2
 *
 *****************************************************************************/
 #ifndef UNI10_ARPACK_H

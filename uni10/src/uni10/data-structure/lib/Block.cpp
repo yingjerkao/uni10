@@ -1452,7 +1452,6 @@ namespace uni10{
         }
       }
       size_t iter = max_iter;
-      // if(!lanczosEV(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, err_tol, E0, psi.m_elem, ori_mat.ongpu)){
       if(!arpackEigh(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, E0, psi.m_elem, ori_mat.ongpu)){
         std::ostringstream err;
         err<<"Lanczos algorithm fails in converging.";;
@@ -1485,7 +1484,7 @@ namespace uni10{
         }
       }
       size_t iter = max_iter;
-      if(!lanczosEV(ori_mat.cm_elem, psi.cm_elem, ori_mat.Rnum, iter, err_tol, E0, psi.cm_elem, ori_mat.ongpu)){
+      if(!arpackEigh(ori_mat.cm_elem, psi.cm_elem, ori_mat.Rnum, iter, E0, psi.cm_elem, ori_mat.ongpu)){
         std::ostringstream err;
         err<<"Lanczos algorithm fails in converging.";;
         throw std::runtime_error(exception_msg(err.str()));

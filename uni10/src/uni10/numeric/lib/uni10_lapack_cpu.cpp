@@ -1004,7 +1004,7 @@ void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
   free(work);
 }
 void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R){
-  
+
   std::complex<double>* Mij = (std::complex<double>*)malloc(M*N*sizeof(std::complex<double>));
   memcpy(Mij, Mij_ori, M*N*sizeof(std::complex<double>));
   std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
@@ -1034,7 +1034,7 @@ void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
 }
 
 void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L){
-  
+
   std::complex<double>* Mij = (std::complex<double>*)malloc(M*N*sizeof(std::complex<double>));
   memcpy(Mij, Mij_ori, M*N*sizeof(std::complex<double>));
   std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
