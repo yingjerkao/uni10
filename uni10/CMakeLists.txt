@@ -47,16 +47,16 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 ######################################################################
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-  message(FATAL_ERROR 
+  message(FATAL_ERROR
     "
      In-source builds not allowed.\n
      Please\n
        1) make a build directory by:
-            mkdir -p path/to/my/build/directory\n 
+            mkdir -p path/to/my/build/directory\n
        2) run CMake in that build directory:
             cd path/to/my/build/directory
-            cmake path/to/my/src/directory 
-         
+            cmake path/to/my/src/directory
+
      You have to first remove the file \"CMakeCache.txt\" by:
          rm CMakeCache.txt
     "
@@ -76,7 +76,7 @@ set(UNI10_VERSION
 
 
 
- 
+
 ######################################################################
 ### COMMAND LINE OPTIONS
 ######################################################################
@@ -101,7 +101,7 @@ if (BUILD_WITH_INTEL_COMPILERS)
   find_program(CMAKE_CXX_COMPILER NAMES icpc)
   find_program(CMAKE_AR NAMES xiar)
   find_program(CMAKE_LINKER NAMES xild)
- 
+
   if (NOT (CMAKE_C_COMPILER AND
            CMAKE_CXX_COMPILER AND
            CMAKE_AR AND
@@ -124,20 +124,20 @@ endif ()
 project(uni10)
 
 ######################################################################
-### CMAKE INSTALL OPTIONS 
+### CMAKE INSTALL OPTIONS
 ######################################################################
-if(UNIX) 
+if(UNIX)
   if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	set(CMAKE_INSTALL_PREFIX "/usr/local/uni10" 
-		CACHE PATH "UNI10 install prefix" 
+	set(CMAKE_INSTALL_PREFIX "/usr/local/uni10"
+		CACHE PATH "UNI10 install prefix"
    		FORCE
 	)
   endif()
 endif()
 if(WIN32)
   if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(CMAKE_INSTALL_PREFIX "C:\\Program Files\\uni10" 
-                CACHE PATH "UNI10 install prefix" 
+        set(CMAKE_INSTALL_PREFIX "C:\\Program Files\\uni10"
+                CACHE PATH "UNI10 install prefix"
                 FORCE
         )
   endif()
@@ -152,7 +152,17 @@ set(CMAKE_BUILD_TYPE Release)
 
 
 
-
+######################################################################
+### Find ARPACK
+######################################################################
+if( NOT (DEFINED ARPACK_LIBRARIES) )
+  find_package( ARPACK REQUIRED )
+  set(ARPACK_LIBRARIES ${ARPACK_LIBRARY})
+  # message( STATUS "ARPACK: ${ARPACK_LIBRARY}")
+else()
+  set(ARPACK_LIBRARIES  ${ARPACK_LIBRARIES})
+  message( STATUS "ARPACK found: ${ARPACK_LIBRARIES}")
+endif()
 ######################################################################
 ### Find BLAS and LAPACK
 ######################################################################
@@ -160,7 +170,7 @@ if( NOT (DEFINED BLAS_LIBRARIES AND DEFINED LAPACK_LIBRARIES))
   if (BUILD_WITH_MKL)
      find_package( MKL REQUIRED)
      ADD_DEFINITIONS("-DMKL")
-     
+
      set(LAPACK_LIBRARIES ${MKL_MINIMAL_LIBRARY})
      message("MKL: ${MKL_MINIMAL_LIBRARY}")
   else()
@@ -182,7 +192,7 @@ else()
   message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}")
 endif()
 
-if(CUDA) 
+if(CUDA)
   find_package(CUDA)
   set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
   cuda_compile(VECADD_O vecadd.cu)
@@ -190,19 +200,19 @@ endif()
 ######################################################################
 ### FLAGS
 ######################################################################
-if(UNIX ) 
+if(UNIX )
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 endif()
 if(MKL_MLT)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif()
-if( UNIX OR MINGW OR CYGWIN) 
+if( UNIX OR MINGW OR CYGWIN)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
-elseif (WINDOWS) 
+elseif (WINDOWS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Qstd=c++0x")
 endif()
 
-if (MKL_MLT) 
+if (MKL_MLT)
   set(CMAKE_EXE_LINKER_FLAGS "-pthread")
 endif()
 
@@ -235,8 +245,8 @@ if (BUILD_PYTHON_WRAPPER)
   add_subdirectory(Swig pyUni10 )
 endif()
 
-add_subdirectory(gtest-1.7.0)
-add_subdirectory(test)
+# add_subdirectory(gtest-1.7.0)
+# add_subdirectory(test)
 ######################################################################
 ### ADD LIBRARY
 ######################################################################
@@ -272,6 +282,8 @@ else()
 endif()
 target_link_libraries(uni10 ${LAPACK_LIBRARIES})
 target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
+target_link_libraries(uni10 ${ARPACK_LIBRARIES})
+target_link_libraries(uni10-static ${ARPACK_LIBRARIES})
 ######################################################################
 ### RPATH SETTINGS
 ######################################################################
@@ -295,7 +307,7 @@ ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Uni10Doxyfile
 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 COMMENT "Generating API documentation with Doxygen" VERBATIM
 )
-endif(DOXYGEN_FOUND) 
+endif(DOXYGEN_FOUND)
 
 
 
@@ -304,11 +316,11 @@ endif(DOXYGEN_FOUND)
 ### INSTALL
 ######################################################################
 install(TARGETS uni10 uni10-static
-        LIBRARY 
-        DESTINATION lib 
+        LIBRARY
+        DESTINATION lib
         COMPONENT libraries
         ARCHIVE
-        DESTINATION lib 
+        DESTINATION lib
         COMPONENT libraries)
 
 
@@ -318,9 +330,9 @@ install(TARGETS uni10 uni10-static
 ######################################################################
 
 install(DIRECTORY src/
-	DESTINATION include 
+	DESTINATION include
         COMPONENT headers
-	FILES_MATCHING PATTERN 		"*.h*"	
+	FILES_MATCHING PATTERN 		"*.h*"
 )
 
 ######################################################################
@@ -344,11 +356,11 @@ endif()
 ######################################################################
 if(DOXYGEN_FOUND)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/
-	DESTINATION doc 
+	DESTINATION doc
         COMPONENT documentation
 )
 endif()
-install(FILES INSTALL README GPL LGPL ChangeLog 
+install(FILES INSTALL README GPL LGPL ChangeLog
         DESTINATION .
         COMPONENT common)
 

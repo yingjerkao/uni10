@@ -29,6 +29,7 @@
 *
 *****************************************************************************/
 #include <uni10/numeric/uni10_lapack.h>
+#include <uni10/numeric/uni10_arpack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/tensor-network/CMatrix.h>
@@ -1451,7 +1452,8 @@ namespace uni10{
         }
       }
       size_t iter = max_iter;
-      if(!lanczosEV(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, err_tol, E0, psi.m_elem, ori_mat.ongpu)){
+      // if(!lanczosEV(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, err_tol, E0, psi.m_elem, ori_mat.ongpu)){
+      if(!arpackEigh(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, E0, psi.m_elem, ori_mat.ongpu)){
         std::ostringstream err;
         err<<"Lanczos algorithm fails in converging.";;
         throw std::runtime_error(exception_msg(err.str()));

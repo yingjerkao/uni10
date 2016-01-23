@@ -35,6 +35,7 @@ cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 
 set(numeric_lib_sources
   uni10_lapack_cpu.cpp
+  uni10_arpack.cpp
 )
 
 ######################################################################
@@ -49,5 +50,3 @@ add_library(uni10-numeric OBJECT ${numeric_lib_sources})
 ######################################################################
 
 #install(TARGETS uni10-numeric DESTINATION lib COMPONENT libraries)
-
-
