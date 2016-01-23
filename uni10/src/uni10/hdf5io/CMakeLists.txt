@@ -4,7 +4,7 @@
 #    Copyright (c) 2013-2014
 #    National Taiwan University
 #    National Tsing-Hua University
-
+ 
 #
 #    This file is part of Uni10, the Universal Tensor Network Library.
 #
@@ -21,22 +21,19 @@
 #    You should have received a copy of the GNU Lesser General Public License
 #    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 #  @endlicense
-#  @brief Main specification file for CMake
+#  @brief Specification file for CMake
 #  @author Ying-Jer Kao
 #  @date 2014-05-06
 #  @since 0.1.0
 ###
-#  Copyright Uni10 2014.
+#  Copyright Uni10  2014.
 cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 
 
 ######################################################################
-### ADD SUB-DIRECTORIES
+### ADD SUBDIRECTORIES
 ######################################################################
 
-add_subdirectory(datatype)
-add_subdirectory(data-structure)
-add_subdirectory(numeric)
-add_subdirectory(tensor-network)
-add_subdirectory(tools)
-add_subdirectory(hdf5io)
+add_subdirectory(lib)
+
+

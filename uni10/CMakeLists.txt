@@ -200,6 +200,19 @@ if(CUDA)
   cuda_compile(VECADD_O vecadd.cu)
 endif()
 ######################################################################
+### Find HDF5 Library and Include dirs
+######################################################################
+if( NOT (DEFINED HDF5_C_LIBRARIES AND DEFINED HDF5_CXX_LIBRARIES AND DEFINED HDF5_INCLUDE_DIRS))
+  find_package(HDF5 REQUIRED COMPONENTS C CXX)
+  set(HDF5_LIBRARIES ${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})
+  set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})
+  #TODO: Need win32
+else()
+  set(HDF5_LIBRARIES ${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})
+  set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})
+  message( STATUS "HDF5 found: ${HDF5_LIBRARIES}")
+endif()
+######################################################################
 ### FLAGS
 ######################################################################
 if(UNIX )
@@ -234,6 +247,7 @@ endif()
 
 # path to include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
+include_directories(${HDF5_INCLUDE_DIRS})
 
 ######################################################################
 ### ADD SUBDIRECTORIES
@@ -258,6 +272,7 @@ $<TARGET_OBJECTS:uni10-data-structure>
 $<TARGET_OBJECTS:uni10-tools>
 $<TARGET_OBJECTS:uni10-tensor-network>
 $<TARGET_OBJECTS:uni10-numeric>
+$<TARGET_OBJECTS:uni10-hdf5io>
 )
 IF( BUILD_ARPACK_SUPPORT )
   set(uni10-objects ${uni10-objects}
@@ -292,6 +307,8 @@ IF( BUILD_ARPACK_SUPPORT )
   target_link_libraries(uni10 ${ARPACK_LIBRARIES})
   target_link_libraries(uni10-static ${ARPACK_LIBRARIES})
 ENDIF()
+target_link_libraries(uni10 ${HDF5_LIBRARIES})
+target_link_libraries(uni10-static ${HDF5_LIBRARIES})
 ######################################################################
 ### RPATH SETTINGS
 ######################################################################
@@ -392,6 +409,8 @@ message(STATUS " CXX Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS " CXX Flags: ${CMAKE_CXX_FLAGS}")
 message(STATUS " BLAS and LAPACK Libraries: ${LAPACK_LIBRARIES}")
 message(STATUS " ARPACK Libraries: ${ARPACK_LIBRARIES}")
+message(STATUS " HDF5 Libraries: ${HDF5_LIBRARIES}")
+message(STATUS " HDF5 Includes: ${HDF5_INCLUDE_DIRS}")
 if(BUILD_EXAMPLES)
   message(STATUS " Build Examples: YES")
 else()
