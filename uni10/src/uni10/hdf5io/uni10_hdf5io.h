@@ -34,6 +34,9 @@
 #include <complex>
 #include <vector>
 #include <H5Cpp.h>
+#include <uni10/datatype/Qnum.h>
+#include <uni10/data-structure/Bond.h>
+#include <uni10/data-structure/Block.h>
 
 namespace uni10{
 
@@ -42,6 +45,10 @@ private:
     std::string FileName;
     H5::CompType ComplexDataType;
     const H5::CompType initCompexDataType(void);
+    H5::EnumType ParityEnumType;
+    const H5::EnumType initParityEnumType(void);
+    H5::EnumType ParityFEnumType;
+    const H5::EnumType initParityFEnumType(void);
     H5::EnumType BondEnumType;
     const H5::EnumType initBondEnumType(void);
     H5::EnumType BlockRflagEnumType;
@@ -67,9 +74,9 @@ public:
     void saveStdVector(const std::string& GroupName, const std::string& Name, const std::vector<double>& V);
     void saveStdVector(const std::string& GroupName, const std::string& Name, const std::vector<std::complex<double> >& V);
 
-    // void saveRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, const int* x);
-    // void saveRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, const double* x);
-    // void saveRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, const std::complex<double>* x);
+    void saveRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, const int* x);
+    void saveRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, const double* x);
+    void saveRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, const std::complex<double>* x);
 
     int loadInt(const std::string& GroupName, const std::string& Name);
     size_t loadUlong(const std::string& GroupName, const std::string& Name);
@@ -80,9 +87,21 @@ public:
     void loadStdVector(const std::string& GroupName, const std::string& Name, std::vector<double>& V);
     void loadStdVector(const std::string& GroupName, const std::string& Name, std::vector<std::complex<double> >& V);
 
-    // void loadRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, int* x);
-    // void loadRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, double* x);
-    // void loadRawBuffer(const std::string& GroupName, const std::string& Name, const size_t dim, std::complex<double>* x);
+    void loadRawBuffer(const std::string& GroupName, const std::string& Name, size_t& dim, int*& x);
+    void loadRawBuffer(const std::string& GroupName, const std::string& Name, size_t& dim, double*& x);
+    void loadRawBuffer(const std::string& GroupName, const std::string& Name, size_t& dim, std::complex<double>*& x);
+
+    // uni10 properties
+    void saveParity(const std::string& GroupName, const std::string& Name, const parityType& _bt);
+    void saveParityF(const std::string& GroupName, const std::string& Name, const parityFType& _bt);
+    void saveBond(const std::string& GroupName, const std::string& Name, const bondType& _bt);
+    void saveRflag(const std::string& GroupName, const std::string& Name, const rflag& _rf);
+    void saveCflag(const std::string& GroupName, const std::string& Name, const cflag& _cf);
+    void loadParity(const std::string& GroupName, const std::string& Name, parityType& _bt);
+    void loadParityF(const std::string& GroupName, const std::string& Name, parityFType& _bt);
+    void loadBond(const std::string& GroupName, const std::string& Name, bondType& _bt);
+    void loadRflag(const std::string& GroupName, const std::string& Name, rflag& _rf);
+    void loadCflag(const std::string& GroupName, const std::string& Name, cflag& _cf);
 };
 
 }; /* end of namespace uni10 */

@@ -3,11 +3,11 @@
 *  Universal Tensor Network Library (Uni10)
 *  @file
 *  egU1.cpp
-* 
+*
 *  @license
-*  Copyright (C) 2013-2014 
+*  Copyright (C) 2013-2014
 *  This file is part of Uni10
-*  
+*
 *  Uni10 is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU Lesser General Public License as published by
 *  the Free Software Foundation, either version 3 of the License, or
@@ -87,6 +87,9 @@ int main(){
 
 	// Write out tensor
 	H_U1.save("egU1_H_U1");
+	H_U1.h5save("egU1_H_U1.h5");
 
+	uni10::UniTensor H_U1_read("egU1_H_U1.h5", true);
+	std::cout << H_U1_read << std::endl;
 	return 0;
 }

@@ -223,7 +223,10 @@ namespace uni10 {
         ///
         /// @param fname Filename to be read in
         UniTensor(const std::string& fname);
-
+        /// @brief Create a UniTensor from a HDF5 file
+        ///
+        /// @param fname Filename to be read in
+        UniTensor(const std::string& fname, const bool hdf5);
         /// @brief Create a UniTensor from a Block
         UniTensor(const Block& UniT);
 
@@ -430,7 +433,11 @@ namespace uni10 {
         /// Saves UniTensor to a file named \c fname.
         /// @param fname filename
         void save(const std::string& fname);
-
+        /// @brief Save UniTensor to HDF5 file
+        ///
+        /// Saves UniTensor to a HDF5 file named \c fname.
+        /// @param fname filename
+        void h5save(const std::string& fname);
         /// @brief Transpose  block elements
         ///
         /// Transpose each quantum number block. The bonds are changed from incoming to outcoming and vice versa

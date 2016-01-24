@@ -32,8 +32,7 @@
 #include <exception>
 #include <stdexcept>
 #include <sstream>
-#include <uni10/data-structure/Bond.h>
-#include <uni10/data-structure/Block.h>
+#include <cstdlib>
 #include <uni10/hdf5io/uni10_hdf5io.h>
 
 namespace uni10{
@@ -50,7 +49,33 @@ const H5::CompType HDF5IO::initCompexDataType(){
     return Type;
 }
 
-/*NOTE: Can I combine all these enum types initilization into single function? */
+const H5::EnumType HDF5IO::initParityEnumType(){
+    H5::EnumType Type( sizeof(int) );
+    parityType pt = PRT_EVEN;
+    Type.insert("PRT_EVEN", &pt);
+    pt = PRT_ODD;
+    Type.insert("PRT_ODD", &pt);
+    try {
+        Type.commit(*this, "parityType");
+    } catch(H5::DataTypeIException){};
+    return Type;
+}
+
+const H5::EnumType HDF5IO::initParityFEnumType(){
+    H5::EnumType Type( sizeof(int) );
+    parityFType pt = PRTF_EVEN;
+    Type.insert("PRTF_EVEN", &pt);
+    pt = PRTF_ODD;
+    Type.insert("PRTF_ODD", &pt);
+    try {
+        Type.commit(*this, "parityFType");
+    } catch(H5::DataTypeIException){};
+    return Type;
+}
+
+/*NOTE: Can I combine all these enum types initilization into single function?
+        Can I build a compond type for bond and qnum?
+*/
 const H5::EnumType HDF5IO::initBondEnumType(){
     H5::EnumType Type( sizeof(int) );
     bondType bond = BD_IN;
@@ -101,8 +126,10 @@ FileName(fn),
 H5File(fn.c_str(), fileExists(fn) ? H5F_ACC_RDWR : H5F_ACC_TRUNC),
 ComplexDataType(initCompexDataType()),
 BondEnumType(initBondEnumType()),
+BlockRflagEnumType(initBlockRflagEnumType()),
 BlockCflagEnumType(initBlockCflagEnumType()),
-BlockRflagEnumType(initBlockRflagEnumType()){
+ParityEnumType(initParityEnumType()),
+ParityFEnumType(initParityFEnumType()){
     std::cout << "Open Hdf5 file - " << FileName << std::endl;
 }
 
@@ -111,8 +138,10 @@ FileName(fn),
 H5File(fn.c_str(), H5F_ACC_TRUNC),
 ComplexDataType(initCompexDataType()),
 BondEnumType(initBondEnumType()),
+BlockRflagEnumType(initBlockRflagEnumType()),
 BlockCflagEnumType(initBlockCflagEnumType()),
-BlockRflagEnumType(initBlockRflagEnumType()){
+ParityEnumType(initParityEnumType()),
+ParityFEnumType(initParityFEnumType()){
     std::cout << "Force opend HDF5 file - " << FileName << std::endl;
 }
 
@@ -249,21 +278,21 @@ void HDF5IO::saveNumber(const std::string& GroupName, const std::string& Name,
 }
 
 std::complex<double> HDF5IO::loadComplex(const std::string& GroupName,
-  const std::string& Name){
-  try{
-      H5::CompType ComplexDataType = this->openCompType("complex");
-      H5::Group FG = getGroup( GroupName );
-      H5::DataSet DataSet = FG.openDataSet(Name.c_str());
-      std::complex<double> C;
-      double RealImag[2];
-      DataSet.read(RealImag, ComplexDataType);
-      FG.close();
-      return std::complex<double>(RealImag[0],RealImag[1]);
-  }catch( H5::GroupIException not_found_error ){
-      std::cout << "In Group - " << GroupName << ", and Name is "
-                << Name << std::endl;
-      throw std::runtime_error("No dataset found in loadComplex. ");
-  }
+    const std::string& Name){
+    try{
+        H5::CompType ComplexDataType = this->openCompType("complex");
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet(Name.c_str());
+        std::complex<double> C;
+        double RealImag[2];
+        DataSet.read(RealImag, ComplexDataType);
+        FG.close();
+        return std::complex<double>(RealImag[0],RealImag[1]);
+    }catch( H5::GroupIException not_found_error ){
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("No dataset found in loadComplex. ");
+    }
 }
 
 /* Load/Save std::vector */
@@ -339,7 +368,7 @@ void HDF5IO::saveStdVector(const std::string& GroupName, const std::string& Name
 void HDF5IO::saveStdVector(const std::string& GroupName, const std::string& Name,
     const std::vector<std::complex<double> >& V){
     try{
-        H5::CompType ComplexDataType = openCompType("complex");
+        H5::CompType ComplexDataType = this->openCompType("complex");
         hsize_t Dim[1] = {hsize_t(V.size())};
         H5::DataSpace dataspace(1,Dim);
         H5::Group FG = getGroup( GroupName.c_str() );
@@ -432,12 +461,298 @@ void HDF5IO::loadStdVector(const std::string& GroupName, const std::string& Name
           throw(H5::DataSpaceIException("HDF5IO::loadComplexVector()",
                             "Unexpected multidimentional dataspace."));
         V.resize(DataSpace.getSimpleExtentNpoints());
-        DataSet.read(V.data(),ComplexDataType);
+        DataSet.read(V.data(), ComplexDataType);
         FG.close();
     } catch( const H5::Exception err ){
         std::cout << "In Group - " << GroupName << ", and Name is "
                   << Name << std::endl;
-        throw std::runtime_error("HDF5IO::loadComplexStdVector");
+        throw std::runtime_error("HDF5IO::loadComplexStdVector ");
+    }
+}
+
+/* Load/Save C/C++ raw buffer */
+void HDF5IO::saveRawBuffer(const std::string& GroupName, const std::string& Name,
+    const size_t dim, const int* x){
+    try{
+        H5::Exception::dontPrint();
+        hsize_t Dim[1] = {hsize_t(dim)};
+        H5::DataSpace dspace(1,Dim);
+        H5::Group FG = getGroup( GroupName );
+        try{
+            H5::DataSet dset = FG.openDataSet(Name.c_str());
+            dset.write(x, H5::PredType::NATIVE_INT, dspace);
+        } catch ( const H5::GroupIException not_found_error ){
+            H5::DataSet dset = FG.createDataSet(Name.c_str(),
+                           H5::PredType::NATIVE_DOUBLE, dspace);
+            dset.write(x, H5::PredType::NATIVE_INT);
+        }
+        FG.close();
+    }catch ( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO:: ");
+    }
+}
+
+void HDF5IO::saveRawBuffer(const std::string& GroupName, const std::string& Name,
+    const size_t dim, const double* x){
+    try{
+        H5::Exception::dontPrint();
+        hsize_t Dim[1] = {hsize_t(dim)};
+        H5::DataSpace dspace(1,Dim);
+        H5::Group FG = getGroup( GroupName );
+        try{
+            H5::DataSet dset = FG.openDataSet(Name.c_str());
+            dset.write(x, H5::PredType::NATIVE_DOUBLE, dspace);
+        } catch ( const H5::GroupIException not_found_error ){
+            H5::DataSet dset = FG.createDataSet(Name.c_str(),
+                           H5::PredType::NATIVE_DOUBLE, dspace);
+            dset.write(x, H5::PredType::NATIVE_DOUBLE);
+        }
+        FG.close();
+    }catch ( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO:: ");
+    }
+}
+
+void HDF5IO::saveRawBuffer(const std::string& GroupName, const std::string& Name,
+    const size_t dim, const std::complex<double>* x){
+    try{
+        H5::CompType Type = this->openCompType("complex");
+        H5::Exception::dontPrint();
+        hsize_t Dim[1] = {hsize_t(dim)};
+        H5::DataSpace dspace(1,Dim);
+        H5::Group FG = getGroup( GroupName );
+        try{
+            H5::DataSet dset = FG.openDataSet(Name.c_str());
+            dset.write(x, Type, dspace);
+        } catch ( const H5::GroupIException not_found_error ){
+            H5::DataSet dset = FG.createDataSet(Name.c_str(), Type, dspace);
+            dset.write(x, Type);
+        }
+        FG.close();
+    }catch ( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO:: ");
+    }
+}
+
+void HDF5IO::loadRawBuffer(const std::string& GroupName, const std::string& Name,
+    size_t& dim, int*& x){
+    try{
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet(Name.c_str());
+        H5::DataSpace DataSpace = DataSet.getSpace();
+        if( DataSpace.getSimpleExtentNdims() != 1)
+            throw(H5::DataSpaceIException("HDF5IO::loadRawBuffer",
+                  "A dataspace must be precisely one-dimensional."));
+        hsize_t Dims[1];
+        DataSpace.getSimpleExtentDims(Dims);
+        x = (int*)malloc( Dims[0] * sizeof(int));
+        dim = Dims[0];
+        DataSet.read(x, H5::PredType::NATIVE_INT);
+        FG.close();
+    }catch ( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO:: ");
+    }
+}
+
+void HDF5IO::loadRawBuffer(const std::string& GroupName, const std::string& Name,
+    size_t& dim, double*& x){
+    try{
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet(Name.c_str());
+        H5::DataSpace DataSpace = DataSet.getSpace();
+        if( DataSpace.getSimpleExtentNdims() != 1)
+            throw(H5::DataSpaceIException("HDF5IO::loadRawBuffer",
+                  "A dataspace must be precisely one-dimensional."));
+        hsize_t Dims[1];
+        DataSpace.getSimpleExtentDims(Dims);
+        x = (double*)malloc( Dims[0] * sizeof(double));
+        dim = Dims[0];
+        DataSet.read(x, H5::PredType::NATIVE_DOUBLE);
+        FG.close();
+    }catch ( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO:: ");
+    }
+}
+
+void HDF5IO::loadRawBuffer(const std::string& GroupName, const std::string& Name,
+    size_t& dim, std::complex<double>*& x){
+    try{
+        H5::CompType Type = this->openCompType("complex");
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet(Name.c_str());
+        H5::DataSpace DataSpace = DataSet.getSpace();
+        if( DataSpace.getSimpleExtentNdims() != 1)
+            throw(H5::DataSpaceIException("HDF5IO::loadRawBuffer",
+                  "A dataspace must be precisely one-dimensional."));
+        hsize_t Dims[1];
+        DataSpace.getSimpleExtentDims(Dims);
+        x = (std::complex<double>*)malloc(Dims[0] * sizeof(std::complex<double>));
+        dim = Dims[0];
+        DataSet.read(x, Type);
+        FG.close();
+    }catch ( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO:: ");
+    }
+}
+
+/* Load/Save uni10 properties */
+void HDF5IO::saveParity(const std::string& GroupName, const std::string& Name, const parityType& _pt){
+    H5::EnumType Type = this->openEnumType("parityType");
+    H5::Group FG = getGroup( GroupName );
+    try{
+        H5::Exception::dontPrint();
+        H5::DataSet dset = FG.openDataSet(Name.c_str());
+        dset.write(&_pt, Type);
+    }catch( H5::GroupIException not_found_error ) {
+        H5::DataSet dset = FG.createDataSet(Name.c_str(), Type, H5::DataSpace());
+        dset.write(&_pt, Type);
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::saveParity ");
+    }
+}
+void HDF5IO::saveParityF(const std::string& GroupName, const std::string& Name, const parityFType& _pt){
+    H5::EnumType Type = this->openEnumType("parityFType");
+    H5::Group FG = getGroup( GroupName );
+    try{
+        H5::Exception::dontPrint();
+        H5::DataSet dset = FG.openDataSet(Name.c_str());
+        dset.write(&_pt, Type);
+    }catch( H5::GroupIException not_found_error ) {
+        H5::DataSet dset = FG.createDataSet(Name.c_str(), Type, H5::DataSpace());
+        dset.write(&_pt, Type);
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::saveParityF ");
+    }
+}
+void HDF5IO::saveBond(const std::string& GroupName, const std::string& Name, const bondType& _bt){
+    H5::EnumType Type = this->openEnumType("bondType");
+    H5::Group FG = getGroup( GroupName );
+    try{
+        H5::Exception::dontPrint();
+        H5::DataSet dset = FG.openDataSet(Name.c_str());
+        dset.write(&_bt, Type);
+    }catch( H5::GroupIException not_found_error ) {
+        H5::DataSet dset = FG.createDataSet(Name.c_str(), Type, H5::DataSpace());
+        dset.write(&_bt, Type);
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::saveBond ");
+    }
+}
+void HDF5IO::saveRflag(const std::string& GroupName, const std::string& Name,
+    const rflag& _rf){
+    H5::EnumType Type = this->openEnumType("rflag");
+    H5::Group FG = getGroup( GroupName );
+    try{
+        H5::Exception::dontPrint();
+        H5::DataSet dset = FG.openDataSet(Name.c_str());
+        dset.write(&_rf, Type);
+    }catch( H5::GroupIException not_found_error ) {
+        H5::DataSet dset = FG.createDataSet(Name.c_str(), Type, H5::DataSpace());
+        dset.write(&_rf, Type);
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::saveRflag ");
+    }
+}
+void HDF5IO::saveCflag(const std::string& GroupName, const std::string& Name, const cflag& _cf){
+    H5::EnumType Type = this->openEnumType("cflag");
+    H5::Group FG = getGroup( GroupName );
+    try{
+        H5::Exception::dontPrint();
+        H5::DataSet dset = FG.openDataSet(Name.c_str());
+        dset.write(&_cf, Type);
+    }catch( H5::GroupIException not_found_error ) {
+        H5::DataSet dset = FG.createDataSet(Name.c_str(), Type, H5::DataSpace());
+        dset.write(&_cf, Type);
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::saveCflag ");
+    }
+}
+
+void HDF5IO::loadParity(const std::string& GroupName, const std::string& Name, parityType& _pt){
+    try{
+        H5::EnumType Type = this->openEnumType("parityType");
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet( Name.c_str() );
+        DataSet.read(&_pt, Type);
+        FG.close();
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::loadParity ");
+    }
+}
+void HDF5IO::loadParityF(const std::string& GroupName, const std::string& Name, parityFType& _pt){
+    try{
+        H5::EnumType Type = this->openEnumType("parityFType");
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet( Name.c_str() );
+        DataSet.read(&_pt, Type);
+        FG.close();
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::loadFParity ");
+    }
+}
+void HDF5IO::loadBond(const std::string& GroupName, const std::string& Name, bondType& _bt){
+    try{
+        H5::EnumType Type = this->openEnumType("bondType");
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet( Name.c_str() );
+        DataSet.read(&_bt, Type);
+        FG.close();
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::loadBond ");
+    }
+}
+void HDF5IO::loadRflag(const std::string& GroupName, const std::string& Name, rflag& _rf){
+    try{
+        H5::EnumType Type = this->openEnumType("rflag");
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet( Name.c_str() );
+        DataSet.read(&_rf, Type);
+        FG.close();
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::loadRflag ");
+    }
+}
+void HDF5IO::loadCflag(const std::string& GroupName, const std::string& Name, cflag& _cf){
+    try{
+        H5::EnumType Type = this->openEnumType("cflag");
+        H5::Group FG = getGroup( GroupName );
+        H5::DataSet DataSet = FG.openDataSet( Name.c_str() );
+        DataSet.read(&_cf, Type);
+        FG.close();
+    }catch( const H5::Exception ) {
+        std::cout << "In Group - " << GroupName << ", and Name is "
+                  << Name << std::endl;
+        throw std::runtime_error("HDF5IO::loadCflag ");
     }
 }
 

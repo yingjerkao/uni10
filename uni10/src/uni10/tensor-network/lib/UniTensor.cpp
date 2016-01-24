@@ -35,6 +35,7 @@
 #include <uni10/tensor-network/CMatrix.h>
 #include <uni10/tensor-network/CUniTensor.h>
 #include <uni10/tensor-network/UniTensor.h>
+#include <uni10/hdf5io/uni10_hdf5io.h>
 
 typedef double Real;
 typedef std::complex<double> Complex;
@@ -615,6 +616,70 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
   }
   exit(0);
 }
+UniTensor::UniTensor(const std::string& fname, const bool hdf5): status(0){ //GPU
+  try{
+    HDF5IO h5f(fname.c_str());
+    h5f.loadRflag("Type", "rflag", r_flag);
+    h5f.loadCflag("Type", "cflag", c_flag);
+    int st = h5f.loadInt("Type", "status");
+    int bondNum = h5f.loadInt("Bonds", "bondNum");
+    for(int b = 0; b < bondNum; b++){
+      std::string gname = "Bonds/bond-";
+      gname.append(std::to_string((unsigned long long)b));
+      int num_q = h5f.loadInt(gname, "numQnums");
+      bondType tp;
+      h5f.loadBond(gname, "bondType", tp);
+      std::vector<Qnum> qnums;
+      for (size_t cnt_q = 0; cnt_q < num_q; cnt_q++) {
+        std::string gname2 = gname;
+        gname2.append("/Qnum-");
+        gname2.append(std::to_string((unsigned long long)cnt_q));
+        int m_U1 = h5f.loadInt(gname2, "U1");
+        parityType m_prt;
+        h5f.loadParity(gname2, "parity", m_prt);
+        parityFType m_prtF;
+        h5f.loadParityF(gname2, "parityF", m_prtF);
+        qnums.push_back(Qnum(m_prtF, m_U1, m_prt));
+      }
+      std::vector<int> qdegs;
+      h5f.loadStdVector(gname, "degs", qdegs);
+      std::vector<Qnum> tot_qnums;
+      for(int q = 0; q < num_q; q++)
+        for(int d = 0; d < qdegs[q]; d++)
+          tot_qnums.push_back(qnums[q]);
+      Bond bd(tp, tot_qnums);
+      bonds.push_back(bd);
+    }
+    initUniT(typeID());// from rflag and cflag
+    int num_l = h5f.loadInt("Bonds", "num_label");
+    if(!(num_l == bonds.size())){
+      std::ostringstream err;
+      err<<"Error in reading file '"<<fname<<"' in.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    labels.assign(num_l, 0);
+    h5f.loadStdVector("Bonds", "labels", labels);
+    if(typeID() == 1){
+      if(st & HAVEELEM){
+        double* work;
+        h5f.loadRawBuffer("Block", "m_elem", m_elemNum, work);
+        setElem(work, ongpu);
+        status |= HAVEELEM;
+      }
+    }
+    if(typeID() == 2){
+      if(st & HAVEELEM){
+        Complex* work;
+        h5f.loadRawBuffer("Block", "m_elem", m_elemNum, work);
+        setElem(work, ongpu);
+        status |= HAVEELEM;
+      }
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In constructor UniTensor::UniTensor(std::string&, bool):");
+  }
+}
 
 
 int UniTensor::typeID()const{
@@ -987,6 +1052,54 @@ void UniTensor::save(const std::string& fname){
       }
     }
     fclose(fp);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::save(std::string&):");
+  }
+}
+
+void UniTensor::h5save(const std::string& fname){
+  try{
+    if((status & HAVEBOND) == 0){   //If not INIT, NO NEED to write out to file
+      throw std::runtime_error(exception_msg("Saving a tensor without bonds(scalar) is not supported."));
+    }
+    HDF5IO h5f(fname.c_str());
+    h5f.saveRflag("Type", "rflag", r_flag);
+    h5f.saveCflag("Type", "cflag", c_flag);
+    h5f.saveNumber("Type", "status", status);
+    int bondNum = bonds.size();
+    h5f.saveNumber("Bonds", "bondNum", bondNum);
+    // size_t qnum_sz = sizeof(Qnum);
+    // fwrite(&qnum_sz, 1, sizeof(size_t), fp);	//OUT: sizeof(Qnum)
+    for(int b = 0; b < bondNum; b++){
+      int num_q = bonds[b].Qnums.size();
+      std::string gname = "Bonds/bond-";
+      gname.append(std::to_string((unsigned long long)b));
+      h5f.saveNumber(gname, "numQnums", num_q);
+      h5f.saveBond(gname, "bondType", bonds[b].m_type);
+      h5f.saveStdVector(gname, "degs", bonds[b].Qdegs);
+      for (size_t cnt_q = 0; cnt_q < num_q; cnt_q++) {
+          std::string gname2 = gname;
+          gname2.append("/Qnum-");
+          gname2.append(std::to_string((unsigned long long)cnt_q));
+          h5f.saveParity(gname2, "parity", bonds[b].Qnums[cnt_q].prt());
+          h5f.saveParityF(gname2, "parityF", bonds[b].Qnums[cnt_q].prtF());
+          h5f.saveNumber(gname2, "U1", bonds[b].Qnums[cnt_q].U1());
+      }
+    }
+    int num_l = labels.size();
+    h5f.saveNumber("Bonds", "num_label", num_l);
+    h5f.saveStdVector("Bonds", "labels", labels);
+    if(typeID() == 1){
+        if(status & HAVEELEM){
+            h5f.saveRawBuffer("Block", "m_elem", m_elemNum, elem);
+        }
+    }
+    if(typeID() == 2){
+        if(status & HAVEELEM){
+            h5f.saveRawBuffer("Block", "m_elem", m_elemNum, c_elem);
+        }
+    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::save(std::string&):");
