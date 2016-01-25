@@ -143,8 +143,8 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     double *rwork = new double[ncv];
     int info = 1;
     // Parameters for zgemv
-    std::complex<double> alpha = 1.0e0;
-    std::complex<double> beta = 0.0e0;
+    std::complex<double> alpha(1.0e0, 0.0e0);
+    std::complex<double> beta(0.0e0, 0.0e0);
     int inc = 1;
     // std::cout << "Begin iterations" << std::endl;
     znaupd_(&ido, &bmat, &dim, &which[0], &nev, &err_tol, resid, &ncv, v, &ldv,
@@ -170,7 +170,7 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     std::complex<double> *d = new std::complex<double>[nev+1];
     std::complex<double> *z = new std::complex<double>[dim*nev];
     std::complex<double> sigma;
-    std::complex<double> *workev = new std::complex<double>[3*ncv];
+    std::complex<double> *workev = new std::complex<double>[2*ncv];
     zneupd_(&rvec, &howmny, select, d, z, &ldv, &sigma, workev,
             &bmat, &dim, &which[0], &nev, &err_tol, resid, &ncv, v, &ldv, iparam, ipntr,
             workd, workl, &lworkl, rwork, &info);
