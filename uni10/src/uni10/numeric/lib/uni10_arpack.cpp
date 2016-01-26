@@ -29,6 +29,7 @@
 *****************************************************************************/
 #include <iostream>
 #include <cstring>
+#include <uni10/numeric/uni10_arpack_wrapper.h>
 #ifdef MKL
     #define MKL_Complex8 std::complex<float>
     #define MKL_Complex16 std::complex<double>
@@ -36,7 +37,6 @@
 #else
     #include <uni10/numeric/uni10_lapack_wrapper.h>
 #endif
-#include <uni10/numeric/uni10_arpack_wrapper.h>
 
 namespace uni10{
 
@@ -99,8 +99,9 @@ bool arpackEigh(double* A, double* psi, size_t n, size_t& max_iter,
     double *d = new double[nev];
     double *z = new double[dim*nev];
     double sigma;
-    dseupd_(&rvec, &howmny, select, d, z, &ldv, &sigma, &bmat, &dim, which, &nev,
-            &err_tol, resid, &ncv, v, &ldv, iparam, ipntr, workd, workl, &lworkl, &info);
+    dseupd_(&rvec, &howmny, select, d, z, &ldv, &sigma,
+            &bmat, &dim, which, &nev, &err_tol, resid, &ncv, v, &ldv,
+            iparam, ipntr, workd, workl, &lworkl, &info);
     if ( info != 0 )
         std::cerr << "Error with dseupd, info = " << info << std::endl;
     eigVal = d[0];
@@ -114,8 +115,7 @@ bool arpackEigh(double* A, double* psi, size_t n, size_t& max_iter,
     delete [] d;
     delete [] z;
     delete [] select;
-    if( info == 0 ) return 1;
-    else return 0;
+    return (info == 0);
 }
 
 bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
@@ -125,34 +125,42 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     int ido = 0;
     char bmat = 'I';
     char which[] = {'S','R'};// smallest real part
-    std::complex<double> *resid = new std::complex<double>[dim];
+    // std::complex<double> *resid = new std::complex<double>[dim];
+    std::complex<double> *resid = (std::complex<double>*)malloc(dim*sizeof(std::complex<double>));
     memcpy(resid, psi, dim * sizeof(std::complex<double>));
     int ncv = 42;
     if( dim < ncv )
         ncv = dim;
     int ldv = dim;
-    std::complex<double> *v = new std::complex<double>[ldv*ncv];
-    int *iparam = new int[11];
+    // std::complex<double> *v = new std::complex<double>[ldv*ncv];
+    std::complex<double> *v = (std::complex<double>*)malloc(ldv*ncv*sizeof(std::complex<double>));
+    // int *iparam = new int[11];
+    int *iparam = (int*)malloc(11*sizeof(int));
     iparam[0] = 1;
     iparam[2] = max_iter;
     iparam[6] = 1;
-    int *ipntr = new int[14];// Different from real version
-    std::complex<double> *workd = new std::complex<double>[3*dim];
+    // int *ipntr = new int[14];// Different from real version
+    int *ipntr = (int*)malloc(14*sizeof(int));
+    // std::complex<double> *workd = new std::complex<double>[3*dim];
+    std::complex<double> *workd = (std::complex<double>*)malloc(3*dim*sizeof(std::complex<double>));
     int lworkl = 3*ncv*(ncv+2);// LWORKL must be at least 3*NCV**2 + 5*NCV.*/
-    std::complex<double> *workl = new std::complex<double>[lworkl];
-    double *rwork = new double[ncv];
+    // std::complex<double> *workl = new std::complex<double>[lworkl];
+    std::complex<double> *workl = (std::complex<double>*)malloc(lworkl*sizeof(std::complex<double>));
+    // double *rwork = new double[ncv];
+    double *rwork = (double*)malloc(ncv*sizeof(double));
     int info = 1;
     // Parameters for zgemv
     std::complex<double> alpha(1.0e0, 0.0e0);
     std::complex<double> beta(0.0e0, 0.0e0);
     int inc = 1;
-    // std::cout << "Begin iterations" << std::endl;
     znaupd_(&ido, &bmat, &dim, &which[0], &nev, &err_tol, resid, &ncv, v, &ldv,
             iparam, ipntr, workd, workl, &lworkl, rwork, &info);
     while( ido != 99 ){
         zgemv((char*)"T", &dim, &dim, &alpha, A, &dim, workd+ipntr[0]-1, &inc, &beta,
               workd+ipntr[1]-1, &inc);
-        // mvprod(workd+ipntr[0]-1, workd+ipntr[1]-1, 0.0e0);
+        // zgemv((char*)"T", &dim, &dim, &alpha, A, &dim, &workd[ipntr[0]-1], &inc, &beta,
+        //       &workd[ipntr[1]-1], &inc);
+        // mvprod(dim, A, workd+ipntr[0]-1, workd+ipntr[1]-1);
         znaupd_(&ido, &bmat, &dim, &which[0], &nev, &err_tol, resid, &ncv, v, &ldv,
                 iparam, ipntr, workd, workl, &lworkl, rwork, &info);
     }
@@ -166,14 +174,18 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     // zneupd Parameters
     int rvec = 1;
     char howmny = 'A';
-    int *select = new int[ncv];
-    std::complex<double> *d = new std::complex<double>[nev+1];
-    std::complex<double> *z = new std::complex<double>[dim*nev];
+    // int *select = new int[ncv];
+    int *select = (int*)malloc(ncv*sizeof(int));
+    // std::complex<double> *d = new std::complex<double>[nev+1];
+    std::complex<double> *d = (std::complex<double>*)malloc((nev+1)*sizeof(std::complex<double>));
+    // std::complex<double> *z = new std::complex<double>[dim*nev];
+    std::complex<double> *z = (std::complex<double>*)malloc(dim*nev*sizeof(std::complex<double>));
     std::complex<double> sigma;
-    std::complex<double> *workev = new std::complex<double>[2*ncv];
+    // std::complex<double> *workev = new std::complex<double>[2*ncv];
+    std::complex<double> *workev = (std::complex<double>*)malloc(2*ncv*sizeof(std::complex<double>));
     zneupd_(&rvec, &howmny, select, d, z, &ldv, &sigma, workev,
-            &bmat, &dim, &which[0], &nev, &err_tol, resid, &ncv, v, &ldv, iparam, ipntr,
-            workd, workl, &lworkl, rwork, &info);
+            &bmat, &dim, &which[0], &nev, &err_tol, resid, &ncv, v, &ldv,
+            iparam, ipntr, workd, workl, &lworkl, rwork, &info);
     if ( info != 0 )
         std::cerr << "Error with dneupd, info = " << info << std::endl;
     eigVal = d[0].real();
@@ -189,8 +201,7 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     delete [] iparam;
     delete [] v;
     delete [] resid;
-    if( info == 0 ) return 1;
-    else return 0;
+    return (info == 0);
 }
 
 };/* end of namespace uni10 */
