@@ -40,21 +40,33 @@
 
 namespace uni10{
 
+typedef struct uni10_qnum_hdf5 {
+    int m_U1;
+    parityType m_prt;
+    parityFType m_prtF;
+} uni10_qnum_hdf5;
+
+typedef struct uni10_rcflag_hdf5 {
+    rflag r_flag;
+    cflag c_flag;
+} uni10_rcflag_hdf5;
+
 class HDF5IO: public H5::H5File {
 private:
     std::string FileName;
+    H5::Group Uni10TypeGroup;
     H5::CompType ComplexDataType;
     const H5::CompType initCompexDataType(void);
-    H5::EnumType ParityEnumType;
     const H5::EnumType initParityEnumType(void);
-    H5::EnumType ParityFEnumType;
     const H5::EnumType initParityFEnumType(void);
+    H5::CompType QnumCompType;
+    const H5::CompType initQnumCompType(void);
     H5::EnumType BondEnumType;
     const H5::EnumType initBondEnumType(void);
-    H5::EnumType BlockRflagEnumType;
     const H5::EnumType initBlockRflagEnumType(void);
-    H5::EnumType BlockCflagEnumType;
     const H5::EnumType initBlockCflagEnumType(void);
+    H5::CompType RCflagType;
+    const H5::CompType initRCflagType(void);
     bool fileExists(const std::string &FileName);
 
 public:
@@ -92,16 +104,12 @@ public:
     void loadRawBuffer(const std::string& GroupName, const std::string& Name, size_t& dim, std::complex<double>*& x);
 
     // uni10 properties
-    void saveParity(const std::string& GroupName, const std::string& Name, const parityType& _bt);
-    void saveParityF(const std::string& GroupName, const std::string& Name, const parityFType& _bt);
     void saveBond(const std::string& GroupName, const std::string& Name, const bondType& _bt);
-    void saveRflag(const std::string& GroupName, const std::string& Name, const rflag& _rf);
-    void saveCflag(const std::string& GroupName, const std::string& Name, const cflag& _cf);
-    void loadParity(const std::string& GroupName, const std::string& Name, parityType& _bt);
-    void loadParityF(const std::string& GroupName, const std::string& Name, parityFType& _bt);
+    void saveFlag(const std::string& GroupName, const std::string& Name, const rflag& _rf, const cflag& _cf);
+    void saveQnum(const std::string& GroupName, const std::string& Name, const int &_U1, const parityType &_pt, const parityFType &_ptf);
     void loadBond(const std::string& GroupName, const std::string& Name, bondType& _bt);
-    void loadRflag(const std::string& GroupName, const std::string& Name, rflag& _rf);
-    void loadCflag(const std::string& GroupName, const std::string& Name, cflag& _cf);
+    void loadFlag(const std::string& GroupName, const std::string& Name, rflag& _rf, cflag& _cf);
+    void loadQnum(const std::string& GroupName, const std::string& Name, int &_U1, parityType &_pt, parityFType &_ptf);
 };
 
 }; /* end of namespace uni10 */
