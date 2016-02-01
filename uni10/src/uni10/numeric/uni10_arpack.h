@@ -34,10 +34,10 @@
 
 namespace uni10{
 
-bool arpackEigh(double* A, double* psi, size_t n, size_t& max_iter,
+bool arpackEigh(const double* A, const double* psi, size_t n, size_t& max_iter,
     double& eigVal, double* eigVec, bool ongpu, double err_tol=0.0e0, int nev=1);
 
-bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
+bool arpackEigh(const std::complex<double>* A, const std::complex<double>* psi, size_t n,
     size_t& max_iter, double& eigVal, std::complex<double>* eigVec, bool ongpu,
     double err_tol=0.0e0, int nev=1);
 

@@ -32,7 +32,7 @@
 ### BUILD SHARED LIBRARY
 ######################################################################
 include_directories(${CMAKE_SOURCE_DIR})
-set(EXAMPLES egQ1 egQ2 egB1 egB2 egN1 egM1 egM2 egU1 egU2 egU3)
+set(EXAMPLES egQ1 egQ2 egB1 egB2 egN1 egM1 egM2 egU1 egU2 egU3 egAP)
 foreach( EXAMPLE ${EXAMPLES} )
     add_executable(${EXAMPLE} ${EXAMPLE}.cpp)
     target_link_libraries(${EXAMPLE}  ${LAPACK_LIBRIARIES} uni10-static)

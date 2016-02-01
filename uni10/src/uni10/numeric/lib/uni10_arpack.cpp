@@ -40,7 +40,7 @@
 
 namespace uni10{
 
-bool arpackEigh(double* A, double* psi, size_t n, size_t& max_iter,
+bool arpackEigh(const double* A, const double* psi, size_t n, size_t& max_iter,
     double& eigVal, double* eigVec, bool ongpu, double err_tol, int nev){
     /* Arpack diagonalization - Real type
           Please see
