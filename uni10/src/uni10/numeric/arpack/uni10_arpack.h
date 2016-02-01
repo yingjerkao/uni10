@@ -31,15 +31,22 @@
 #ifndef UNI10_ARPACK_H
 #define UNI10_ARPACK_H
 #include <complex>
+#include <uni10/data-structure/Block.h>
+#include <uni10/tensor-network/Matrix.h>
 
 namespace uni10{
 
+size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+
 bool arpackEigh(const double* A, const double* psi, size_t n, size_t& max_iter,
-    double& eigVal, double* eigVec, bool ongpu, double err_tol=0.0e0, int nev=1);
+  double& eigVal, double* eigVec, bool ongpu, double err_tol=0.0e0, int nev=1);
 
 bool arpackEigh(const std::complex<double>* A, const std::complex<double>* psi, size_t n,
-    size_t& max_iter, double& eigVal, std::complex<double>* eigVec, bool ongpu,
-    double err_tol=0.0e0, int nev=1);
+  size_t& max_iter, double& eigVal, std::complex<double>* eigVec, bool ongpu,
+  double err_tol=0.0e0, int nev=1);
+
 
 }; /* end of namespace uni10 */
 #endif /* end of include guard: UNI10_ARPACK_H */

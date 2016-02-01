@@ -155,13 +155,16 @@ set(CMAKE_BUILD_TYPE Release)
 ######################################################################
 ### Find ARPACK
 ######################################################################
-if( NOT (DEFINED ARPACK_LIBRARIES) )
-  find_package( ARPACK REQUIRED )
-  set(ARPACK_LIBRARIES ${ARPACK_LIBRARY})
-else()
-  set(ARPACK_LIBRARIES  ${ARPACK_LIBRARIES})
-  message( STATUS "ARPACK found: ${ARPACK_LIBRARIES}")
-endif()
+option(BUILD_ARPACK_SUPPORT "Build the arpack wrapper " OFF)
+IF( BUILD_ARPACK_SUPPORT )
+  if( NOT (DEFINED ARPACK_LIBRARIES) )
+    find_package( ARPACK REQUIRED )
+    set(ARPACK_LIBRARIES ${ARPACK_LIBRARY})
+  else()
+    set(ARPACK_LIBRARIES  ${ARPACK_LIBRARIES})
+    message( STATUS "ARPACK found: ${ARPACK_LIBRARIES}")
+  endif()
+ENDIF()
 ######################################################################
 ### Find BLAS and LAPACK
 ######################################################################
@@ -256,7 +259,11 @@ $<TARGET_OBJECTS:uni10-tools>
 $<TARGET_OBJECTS:uni10-tensor-network>
 $<TARGET_OBJECTS:uni10-numeric>
 )
-
+IF( BUILD_ARPACK_SUPPORT )
+  set(uni10-objects ${uni10-objects}
+  $<TARGET_OBJECTS:uni10-arpack>
+  )
+ENDIF()
 
 
 if ("${CMAKE_GENERATOR}" STREQUAL "Xcode")
@@ -281,8 +288,10 @@ else()
 endif()
 target_link_libraries(uni10 ${LAPACK_LIBRARIES})
 target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
-target_link_libraries(uni10 ${ARPACK_LIBRARIES})
-target_link_libraries(uni10-static ${ARPACK_LIBRARIES})
+IF( BUILD_ARPACK_SUPPORT )
+  target_link_libraries(uni10 ${ARPACK_LIBRARIES})
+  target_link_libraries(uni10-static ${ARPACK_LIBRARIES})
+ENDIF()
 ######################################################################
 ### RPATH SETTINGS
 ######################################################################

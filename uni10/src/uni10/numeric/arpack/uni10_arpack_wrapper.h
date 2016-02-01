@@ -26,8 +26,8 @@
 *  @since 0.9.2
 *
 *****************************************************************************/
-#ifndef UNI10_ARPACK_H
-#define UNI10_ARPACK_H
+#ifndef UNI10_ARPACK_WRAPPER_H
+#define UNI10_ARPACK_WRAPPER_H
 #include <complex>
 
 extern "C" {
@@ -58,4 +58,4 @@ void dseupd_(int *rvec, char *All, int *select, double *d,
             double *workl, int *lworkl, int *info);
 }
 
-#endif /* end of include guard: UNI10_ARPACK_H */
+#endif /* end of include guard: UNI10_ARPACK_WRAPPER_H */

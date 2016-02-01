@@ -3,6 +3,7 @@
 #include <map>
 #include <time.h>
 #include "uni10.hpp"
+#include "uni10/numeric/arpack/uni10_arpack.h"
 using namespace uni10;
 
 int main(){

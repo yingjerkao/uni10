@@ -33,10 +33,10 @@
   #define MKL_Complex16 std::complex<double>
   #include "mkl.h"
 #else
-  #include <uni10/numeric/uni10_lapack_wrapper.h>
+  #include <uni10/numeric/lapack/uni10_lapack_wrapper.h>
 #endif
 #include <string.h>
-#include <uni10/numeric/uni10_lapack.h>
+#include <uni10/numeric/lapack/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <iostream>
 namespace uni10{

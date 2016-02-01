@@ -26,32 +26,12 @@
 #  @date 2014-05-06
 #  @since 0.1.0
 ###
+#  Copyright Uni10  2014.
 cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 
 
 ######################################################################
-### LIST OF FILES
-######################################################################
-IF(BUILD_ARPACK_SUPPORT)
-  set(numeric_lib_sources
-    uni10_lapack_cpu.cpp
-    uni10_arpack.cpp
-  )
-ELSE()
-  set(numeric_lib_sources
-    uni10_lapack_cpu.cpp
-  )
-ENDIF()
-
-######################################################################
-### BUILD SHARED LIBRARY
+### ADD SUBDIRECTORIES
 ######################################################################
 
-add_library(uni10-numeric OBJECT ${numeric_lib_sources})
-
-
-######################################################################
-### INSTALL
-######################################################################
-
-#install(TARGETS uni10-numeric DESTINATION lib COMPONENT libraries)
+add_subdirectory(lib)

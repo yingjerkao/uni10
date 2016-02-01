@@ -28,8 +28,7 @@
 *  @since 0.1.0
 *
 *****************************************************************************/
-#include <uni10/numeric/uni10_lapack.h>
-#include <uni10/numeric/uni10_arpack.h>
+#include <uni10/numeric/lapack/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/tensor-network/CMatrix.h>
@@ -1431,90 +1430,90 @@ namespace uni10{
 
 
   Real* Block::getElem()const{return m_elem;}
-
-  size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
-    try{
-      if(!(ori_mat.Rnum == ori_mat.Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(!(ori_mat.Rnum == psi.elemNum())){
-        std::ostringstream err;
-        err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(ori_mat.ongpu && !psi.ongpu){
-        if(!psi.toGPU()){
-          std::ostringstream err;
-          err<<"Error when allocating GPU global memory.";
-          throw std::runtime_error(exception_msg(err.str()));
-        }
-      }
-      size_t iter = max_iter;
-      if(!arpackEigh(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, E0, psi.m_elem, ori_mat.ongpu, err_tol)){
-        std::ostringstream err;
-        err<<"Lanczos algorithm fails in converging.";;
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      return iter;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-      return 0;
-    }
-  }
-  size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
-    try{
-      if(!(ori_mat.Rnum == ori_mat.Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(!(ori_mat.Rnum == psi.elemNum())){
-        std::ostringstream err;
-        err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(ori_mat.ongpu && !psi.ongpu){
-        if(!psi.toGPU()){
-          std::ostringstream err;
-          err<<"Error when allocating GPU global memory.";
-          throw std::runtime_error(exception_msg(err.str()));
-        }
-      }
-      size_t iter = max_iter;
-      if(!arpackEigh(ori_mat.cm_elem, psi.cm_elem, ori_mat.Rnum, iter, E0, psi.cm_elem, ori_mat.ongpu, err_tol)){
-        std::ostringstream err;
-        err<<"Lanczos algorithm fails in converging.";;
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      return iter;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-      return 0;
-    }
-  }
-
-  size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
-    try{
-      if(ori_mat.typeID() == 0){
-        std::ostringstream err;
-        err<<"Cannot perform lanczos decomposition on an EMPTY matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      else if(ori_mat.typeID() == 1)
-        return lanczosEigh(RTYPE, ori_mat, E0, psi, max_iter, err_tol);
-      else if(ori_mat.typeID() == 2)
-        return lanczosEigh(CTYPE, ori_mat, E0, psi, max_iter, err_tol);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-      return 0;
-    }
-    return 0;
-  }
+  //
+  // size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
+  //   try{
+  //     if(!(ori_mat.Rnum == ori_mat.Cnum)){
+  //       std::ostringstream err;
+  //       err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
+  //       throw std::runtime_error(exception_msg(err.str()));
+  //     }
+  //     if(!(ori_mat.Rnum == psi.elemNum())){
+  //       std::ostringstream err;
+  //       err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
+  //       throw std::runtime_error(exception_msg(err.str()));
+  //     }
+  //     if(ori_mat.ongpu && !psi.ongpu){
+  //       if(!psi.toGPU()){
+  //         std::ostringstream err;
+  //         err<<"Error when allocating GPU global memory.";
+  //         throw std::runtime_error(exception_msg(err.str()));
+  //       }
+  //     }
+  //     size_t iter = max_iter;
+  //     if(!arpackEigh(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, E0, psi.m_elem, ori_mat.ongpu, err_tol)){
+  //       std::ostringstream err;
+  //       err<<"Lanczos algorithm fails in converging.";;
+  //       throw std::runtime_error(exception_msg(err.str()));
+  //     }
+  //     return iter;
+  //   }
+  //   catch(const std::exception& e){
+  //     propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+  //     return 0;
+  //   }
+  // }
+  // size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
+  //   try{
+  //     if(!(ori_mat.Rnum == ori_mat.Cnum)){
+  //       std::ostringstream err;
+  //       err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
+  //       throw std::runtime_error(exception_msg(err.str()));
+  //     }
+  //     if(!(ori_mat.Rnum == psi.elemNum())){
+  //       std::ostringstream err;
+  //       err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
+  //       throw std::runtime_error(exception_msg(err.str()));
+  //     }
+  //     if(ori_mat.ongpu && !psi.ongpu){
+  //       if(!psi.toGPU()){
+  //         std::ostringstream err;
+  //         err<<"Error when allocating GPU global memory.";
+  //         throw std::runtime_error(exception_msg(err.str()));
+  //       }
+  //     }
+  //     size_t iter = max_iter;
+  //     if(!arpackEigh(ori_mat.cm_elem, psi.cm_elem, ori_mat.Rnum, iter, E0, psi.cm_elem, ori_mat.ongpu, err_tol)){
+  //       std::ostringstream err;
+  //       err<<"Lanczos algorithm fails in converging.";;
+  //       throw std::runtime_error(exception_msg(err.str()));
+  //     }
+  //     return iter;
+  //   }
+  //   catch(const std::exception& e){
+  //     propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+  //     return 0;
+  //   }
+  // }
+  //
+  // size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
+  //   try{
+  //     if(ori_mat.typeID() == 0){
+  //       std::ostringstream err;
+  //       err<<"Cannot perform lanczos decomposition on an EMPTY matrix.";
+  //       throw std::runtime_error(exception_msg(err.str()));
+  //     }
+  //     else if(ori_mat.typeID() == 1)
+  //       return lanczosEigh(RTYPE, ori_mat, E0, psi, max_iter, err_tol);
+  //     else if(ori_mat.typeID() == 2)
+  //       return lanczosEigh(CTYPE, ori_mat, E0, psi, max_iter, err_tol);
+  //   }
+  //   catch(const std::exception& e){
+  //     propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+  //     return 0;
+  //   }
+  //   return 0;
+  // }
 
 };	/* namespace uni10 */
 #ifdef Block

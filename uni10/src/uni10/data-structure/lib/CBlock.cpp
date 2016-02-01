@@ -28,8 +28,8 @@
 *  @since 0.1.0
 *
 *****************************************************************************/
-#include <uni10/numeric/uni10_lapack.h>
-#include <uni10/numeric/uni10_arpack.h>
+#include <uni10/numeric/lapack/uni10_lapack.h>
+// #include <uni10/numeric/uni10_arpack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/tensor-network/CMatrix.h>
@@ -251,39 +251,39 @@ CMatrix CBlock::inverse()const{
   }
 }
 
-size_t CBlock::lanczosEigh(double& E0, CMatrix& psi, size_t max_iter, double err_tol)const{
-  try{
-    if(!(Rnum == Cnum)){
-      std::ostringstream err;
-      err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(!(Rnum == psi.elemNum())){
-      std::ostringstream err;
-      err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(ongpu && !psi.ongpu){
-      if(!psi.toGPU()){
-        std::ostringstream err;
-        err<<"Error when allocating GPU global memory.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-    }
-    size_t iter = max_iter;
-    // if(!lanczosEV(m_elem, psi.m_elem, Rnum, iter, err_tol, E0, psi.m_elem, ongpu)){
-    if(!arpackEigh(m_elem, psi.m_elem, Rnum, iter, E0, psi.m_elem, ongpu)){
-      std::ostringstream err;
-      err<<"Lanczos algorithm fails in converging.";;
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    return iter;
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-    return 0;
-  }
-}
+// size_t CBlock::lanczosEigh(double& E0, CMatrix& psi, size_t max_iter, double err_tol)const{
+//   try{
+//     if(!(Rnum == Cnum)){
+//       std::ostringstream err;
+//       err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
+//       throw std::runtime_error(exception_msg(err.str()));
+//     }
+//     if(!(Rnum == psi.elemNum())){
+//       std::ostringstream err;
+//       err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
+//       throw std::runtime_error(exception_msg(err.str()));
+//     }
+//     if(ongpu && !psi.ongpu){
+//       if(!psi.toGPU()){
+//         std::ostringstream err;
+//         err<<"Error when allocating GPU global memory.";
+//         throw std::runtime_error(exception_msg(err.str()));
+//       }
+//     }
+//     size_t iter = max_iter;
+//     // if(!lanczosEV(m_elem, psi.m_elem, Rnum, iter, err_tol, E0, psi.m_elem, ongpu)){
+//     if(!arpackEigh(m_elem, psi.m_elem, Rnum, iter, E0, psi.m_elem, ongpu)){
+//       std::ostringstream err;
+//       err<<"Lanczos algorithm fails in converging.";;
+//       throw std::runtime_error(exception_msg(err.str()));
+//     }
+//     return iter;
+//   }
+//   catch(const std::exception& e){
+//     propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+//     return 0;
+//   }
+// }
 
 double CBlock::norm()const{
   try{

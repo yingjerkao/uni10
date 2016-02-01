@@ -4,7 +4,7 @@
 #    Copyright (c) 2013-2014
 #    National Taiwan University
 #    National Tsing-Hua University
- 
+
 #
 #    This file is part of Uni10, the Universal Tensor Network Library.
 #
@@ -33,7 +33,8 @@ cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 ######################################################################
 ### ADD SUBDIRECTORIES
 ######################################################################
+add_subdirectory(lapack)
 
-add_subdirectory(lib)
-
-
+IF( BUILD_ARPACK_SUPPORT )
+  add_subdirectory(arpack)
+ENDIF()

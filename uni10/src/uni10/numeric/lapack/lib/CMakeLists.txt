@@ -32,16 +32,9 @@ cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 ######################################################################
 ### LIST OF FILES
 ######################################################################
-IF(BUILD_ARPACK_SUPPORT)
-  set(numeric_lib_sources
-    uni10_lapack_cpu.cpp
-    uni10_arpack.cpp
-  )
-ELSE()
-  set(numeric_lib_sources
-    uni10_lapack_cpu.cpp
-  )
-ENDIF()
+set(numeric_lib_sources
+  uni10_lapack_cpu.cpp
+)
 
 ######################################################################
 ### BUILD SHARED LIBRARY

@@ -175,8 +175,8 @@ namespace uni10{
 	    bool ongpu;
     };
     void RtoC(Block& mat);
-    size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
-    size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
-    size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+    // size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+    // size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+    // size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
 };
 #endif /* BLOCK_H */

@@ -28,7 +28,7 @@
 *****************************************************************************/
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/tensor-network/CMatrix.h>
-#include <uni10/numeric/uni10_lapack.h>
+#include <uni10/numeric/lapack/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 
 namespace uni10{
