@@ -118,36 +118,36 @@ bool arpackEigh(const double* A, const double* psi, size_t n, size_t& max_iter,
     return (info == 0);
 }
 
-bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
+bool arpackEigh(const std::complex<double>* A, const std::complex<double>* psi, size_t n,
     size_t& max_iter, double& eigVal, std::complex<double>* eigVec, bool ongpu,
     double err_tol, int nev){
     int dim = n;
     int ido = 0;
     char bmat = 'I';
     char which[] = {'S','R'};// smallest real part
-    // std::complex<double> *resid = new std::complex<double>[dim];
-    std::complex<double> *resid = (std::complex<double>*)malloc(dim*sizeof(std::complex<double>));
+    std::complex<double> *resid = new std::complex<double>[dim];
+    // std::complex<double> *resid = (std::complex<double>*)malloc(dim*sizeof(std::complex<double>));
     memcpy(resid, psi, dim * sizeof(std::complex<double>));
     int ncv = 42;
     if( dim < ncv )
         ncv = dim;
     int ldv = dim;
-    // std::complex<double> *v = new std::complex<double>[ldv*ncv];
-    std::complex<double> *v = (std::complex<double>*)malloc(ldv*ncv*sizeof(std::complex<double>));
-    // int *iparam = new int[11];
-    int *iparam = (int*)malloc(11*sizeof(int));
+    std::complex<double> *v = new std::complex<double>[ldv*ncv];
+    // std::complex<double> *v = (std::complex<double>*)malloc(ldv*ncv*sizeof(std::complex<double>));
+    int *iparam = new int[11];
+    // int *iparam = (int*)malloc(11*sizeof(int));
     iparam[0] = 1;
     iparam[2] = max_iter;
     iparam[6] = 1;
-    // int *ipntr = new int[14];// Different from real version
-    int *ipntr = (int*)malloc(14*sizeof(int));
-    // std::complex<double> *workd = new std::complex<double>[3*dim];
-    std::complex<double> *workd = (std::complex<double>*)malloc(3*dim*sizeof(std::complex<double>));
+    int *ipntr = new int[14];// Different from real version
+    // int *ipntr = (int*)malloc(14*sizeof(int));
+    std::complex<double> *workd = new std::complex<double>[3*dim];
+    // std::complex<double> *workd = (std::complex<double>*)malloc(3*dim*sizeof(std::complex<double>));
     int lworkl = 3*ncv*(ncv+2);// LWORKL must be at least 3*NCV**2 + 5*NCV.*/
-    // std::complex<double> *workl = new std::complex<double>[lworkl];
-    std::complex<double> *workl = (std::complex<double>*)malloc(lworkl*sizeof(std::complex<double>));
-    // double *rwork = new double[ncv];
-    double *rwork = (double*)malloc(ncv*sizeof(double));
+    std::complex<double> *workl = new std::complex<double>[lworkl];
+    // std::complex<double> *workl = (std::complex<double>*)malloc(lworkl*sizeof(std::complex<double>));
+    double *rwork = new double[ncv];
+    // double *rwork = (double*)malloc(ncv*sizeof(double));
     int info = 1;
     // Parameters for zgemv
     std::complex<double> alpha(1.0e0, 0.0e0);
@@ -174,15 +174,15 @@ bool arpackEigh(std::complex<double>* A, std::complex<double>* psi, size_t n,
     // zneupd Parameters
     int rvec = 1;
     char howmny = 'A';
-    // int *select = new int[ncv];
-    int *select = (int*)malloc(ncv*sizeof(int));
-    // std::complex<double> *d = new std::complex<double>[nev+1];
-    std::complex<double> *d = (std::complex<double>*)malloc((nev+1)*sizeof(std::complex<double>));
-    // std::complex<double> *z = new std::complex<double>[dim*nev];
-    std::complex<double> *z = (std::complex<double>*)malloc(dim*nev*sizeof(std::complex<double>));
+    int *select = new int[ncv];
+    // int *select = (int*)malloc(ncv*sizeof(int));
+    std::complex<double> *d = new std::complex<double>[nev+1];
+    // std::complex<double> *d = (std::complex<double>*)malloc((nev+1)*sizeof(std::complex<double>));
+    std::complex<double> *z = new std::complex<double>[dim*nev];
+    // std::complex<double> *z = (std::complex<double>*)malloc(dim*nev*sizeof(std::complex<double>));
     std::complex<double> sigma;
-    // std::complex<double> *workev = new std::complex<double>[2*ncv];
-    std::complex<double> *workev = (std::complex<double>*)malloc(2*ncv*sizeof(std::complex<double>));
+    std::complex<double> *workev = new std::complex<double>[2*ncv];
+    // std::complex<double> *workev = (std::complex<double>*)malloc(2*ncv*sizeof(std::complex<double>));
     zneupd_(&rvec, &howmny, select, d, z, &ldv, &sigma, workev,
             &bmat, &dim, &which[0], &nev, &err_tol, resid, &ncv, v, &ldv,
             iparam, ipntr, workd, workl, &lworkl, rwork, &info);
