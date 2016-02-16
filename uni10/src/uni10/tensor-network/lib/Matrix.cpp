@@ -1374,5 +1374,16 @@ Matrix exp(const Block& mat){
 Matrix exph(const Block& mat){
   return exph(1.0, mat);
 }
+    
+    
+Matrix takeExp(double a, const Block& mat){
+    try{
+        return exph(a, mat);
+    }
+    catch(const std::exception& e){
+        propogate_exception(e, "In function takeExp(double, uni10::Matrix&):");
+        return Matrix();
+    }
+}
 
 };	/* namespace uni10 */
