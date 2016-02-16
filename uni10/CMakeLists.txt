@@ -66,10 +66,10 @@ endif()
 ######################################################################
 # Version information
 ######################################################################
-set(UNI10_VERSION_MAJOR 0)
-set(UNI10_VERSION_MINOR 9)
-set(UNI10_VERSION_PATCH 2)
-set(UNI10_VERSION COUNT 5)
+set(UNI10_VERSION_MAJOR 1)
+set(UNI10_VERSION_MINOR 0)
+set(UNI10_VERSION_PATCH 0)
+set(UNI10_VERSION COUNT 6)
 set(UNI10_VERSION
   ${UNI10_VERSION_MAJOR}.${UNI10_VERSION_MINOR}.${UNI10_VERSION_PATCH}
 )
