@@ -40,8 +40,7 @@
 #include <sstream>
 #include <cstdio>
 #include <uni10/data-structure/Block.h>
-#include <uni10/data-structure/CBlock.h>
-//Type of Matrix
+
 namespace uni10{
 
 /// @class Matrix
@@ -54,7 +53,6 @@ namespace uni10{
 /// The Matrix follows the C convention that the memory storage is row-major and indices start from 0.
 class Matrix:public Block {
 public:
-    Matrix(const CBlock& _b);
 	  /*********************  OPERATOR **************************/
 
     /// @brief Assign to Matrix

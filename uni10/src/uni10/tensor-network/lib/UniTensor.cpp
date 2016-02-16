@@ -32,8 +32,6 @@
 #include <uni10/data-structure/uni10_struct.h>
 #include <uni10/data-structure/Bond.h>
 #include <uni10/tensor-network/Matrix.h>
-#include <uni10/tensor-network/CMatrix.h>
-#include <uni10/tensor-network/CUniTensor.h>
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/hdf5io/uni10_hdf5io.h>
 

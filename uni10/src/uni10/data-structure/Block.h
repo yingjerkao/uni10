@@ -55,7 +55,18 @@ namespace uni10{
 
     class UniTensor;
     class Matrix;
-    class CMatrix;
+/// @brief The Block class holds the reference to a Matrix.
+///
+/// A bond is defined from the quantum states specified by quantum numbers defined by the Qnum class.
+/// For example, a bond representing the states of a spin-1 particle with local basis states of \f$|-1\rangle,
+/// |0\rangle, |1\rangle\f$. In this case, the dimension of the bond is three. Each state of the bond carries
+///    a Qnum, which is the eigenvalue of the symmetry operators.
+///
+///  For example, For a spin system with \f$U(1)\f$ symmetry which conserves the total \f$S_z\f$, we can
+/// define a bond with three distinct Qnum with \f$S_z= -1, 0, 1\f$.
+///
+/// @see \ref bondType, Qnum, UniTensor
+
     class Block{
 	public:
 
@@ -158,10 +169,8 @@ namespace uni10{
 
 	    /**********************************************************/
 	    friend class UniTensor;
-	    friend class CUniTensor;
-	    friend class CBlock;
 	    friend class Matrix;
-	    friend class CMatrix;
+	
 	    /********************************************************************************/
 
 	protected:

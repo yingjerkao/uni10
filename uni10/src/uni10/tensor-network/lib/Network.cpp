@@ -31,9 +31,7 @@
 #include <algorithm>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/UniTensor.h>
-#include <uni10/tensor-network/CUniTensor.h>
 #include <uni10/tensor-network/Network.h>
-#include <uni10/tensor-network/CNetwork.h>
 
 typedef double Real;
 namespace uni10{
