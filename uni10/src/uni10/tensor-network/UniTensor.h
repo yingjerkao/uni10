@@ -66,10 +66,7 @@ namespace uni10 {
     /// @example egU2.cpp
     /// @example egU3.cpp
     class Block;
-    class CBlock;
     class Matrix;
-    class CMatrix;
-    class CUniTensor;
     class UniTensor {
 
     public:
