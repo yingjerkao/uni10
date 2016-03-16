@@ -105,7 +105,7 @@ Build Options
  Option                       | Description (Default value)
 ----------------------------- | -------------------------------------------
  BUILD_WITH_MKL               | Use Intel MKL for lapack and blas (off)
- BUILD_WITH_INTEL_COMPILER    | Use Intel C++ compiler  (off)
+ BUILD_WITH_INTEL_COMPILERS   | Use Intel C++ compiler  (off)
  BUILD_PYTHON_WRAPPER         | Build pyUni10 wrapper (off)
  BUILD_EXAMPLES               | Build C++ examples (on)
  CMAKE_INSTALL_PREFIX         | Installation location (/usr/local/uni10)
