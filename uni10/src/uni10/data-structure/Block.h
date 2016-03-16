@@ -42,30 +42,28 @@
 
 
 namespace uni10{
-
+    
+//! Real datatype flag
     enum rflag{
-	RNULL = 0,
-	RTYPE = 1
+	RNULL = 0, ///< Real datatype not defined
+	RTYPE = 1 ///< Real datatype defined
     };
 
+//! Complex datatype flag
     enum cflag{
-	CNULL = 0,
-	CTYPE = 2
+	CNULL = 0,///< Complex datatype not defined
+	CTYPE = 2 ///< Complex datatype defined
     };
 
     class UniTensor;
     class Matrix;
-/// @brief The Block class holds the reference to a Matrix.
+/// @class Block
+/// @brief Block class is the base class for Matrix.
 ///
-/// A bond is defined from the quantum states specified by quantum numbers defined by the Qnum class.
-/// For example, a bond representing the states of a spin-1 particle with local basis states of \f$|-1\rangle,
-/// |0\rangle, |1\rangle\f$. In this case, the dimension of the bond is three. Each state of the bond carries
-///    a Qnum, which is the eigenvalue of the symmetry operators.
+/// A Block holds a reference to a Matrix. The Block constructor does not allocate memory. Memory allocation
+/// should be done through Matrix.
 ///
-///  For example, For a spin system with \f$U(1)\f$ symmetry which conserves the total \f$S_z\f$, we can
-/// define a bond with three distinct Qnum with \f$S_z= -1, 0, 1\f$.
-///
-/// @see \ref bondType, Qnum, UniTensor
+/// @see \ref Matrix, UniTensor
 
     class Block{
 	public:
@@ -83,12 +81,35 @@ namespace uni10{
 	    friend bool operator!=(const Block& m1, const Block& m2){return !(m1 == m2);};
 
 	    /*********************  NO TYPE **************************/
-
+        
+        ///
+        /// @brief Default constructor
+        ///
 	    Block();
-	    Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
+        ///
+        /// @brief Create a Block
+        ///
+        /// Create a Block of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true)
+        /// without allocating memeories
+        ///
+        /// @param _typeID Real or Complex datatype. If not present, defaults to Real.
+        /// @param _Rnum Number of Rows
+        /// @param _Cnum Number of Columns
+        /// @param _diag Set \c true for diagonal matrix, defaults to \c false
 	    Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag = false);
-	    Block(const Block& _b);
+        /// @overload
+        Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
+        
+        /// @brief Copy constructor
+        ///
+        Block(const Block& _b);
 	    virtual ~Block();
+        
+        /// @brief Create a Block
+        ///
+        /// Create a Block of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true)
+        /// without allocating memeories
+        ///
 	    size_t row()const;
 	    size_t col()const;
 	    bool isDiag()const;
@@ -113,11 +134,13 @@ namespace uni10{
 	    friend size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
 	    std::complex<double> operator[](size_t idx)const;
 	    std::complex<double> at(size_t i, size_t j)const;
-
 	    /*********************  REAL **********************/
-
+       
 	    Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
 	    void save(rflag _tp, const std::string& fname)const;
+        /// @brief Performs QR decomposition of Block
+        ///
+        ///
 	    std::vector<Matrix> qr(rflag _tp)const;
 	    std::vector<Matrix> rq(rflag _tp)const;
 	    std::vector<Matrix> ql(rflag _tp)const;
@@ -134,7 +157,6 @@ namespace uni10{
 	    double* getElem(rflag _tp)const;     //rename -> getRealElem() && getComplexElem();
 	    double at(rflag _tp, size_t i, size_t j)const;
 	    friend size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
-
 	    /*********************  COMPLEX **********************/
 
 	    Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
@@ -176,8 +198,8 @@ namespace uni10{
 	protected:
 	    rflag r_flag;
 	    cflag c_flag;
-	    double* m_elem;
-	    std::complex<double>* cm_elem;
+	    double* m_elem;     // pointer to a real matrix
+	    std::complex<double>* cm_elem; // pointer to a complex matrix
 	    size_t Rnum;		//number of rows of the block
 	    size_t Cnum;		//number of columns of the block
 	    bool diag;

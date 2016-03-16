@@ -2,10 +2,9 @@
 *  @file Block.cpp
 *  @license
 *    Universal Tensor Network Library
-*    Copyright (c) 2013-2014
+*    Copyright (c) 2013-2016
 *    National Taiwan University
 *    National Tsing-Hua University
-
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -23,8 +22,8 @@
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
 *  @brief Implementation file of Block class
-*  @author Yun-Da Hsieh
-*  @date 2014-05-06
+*  @author Yun-Da Hsieh, Yun-Hsuan Chou
+*  @date 2016-02-26
 *  @since 0.1.0
 *
 *****************************************************************************/
@@ -1516,12 +1515,3 @@ namespace uni10{
   // }
 
 };	/* namespace uni10 */
-#ifdef Block
-#undef Block
-#endif
-#ifdef Matrix
-#undef Matrix
-#endif
-#ifdef Real
-#undef Real
-#endif
