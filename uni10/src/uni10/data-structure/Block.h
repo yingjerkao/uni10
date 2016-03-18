@@ -104,17 +104,31 @@ namespace uni10{
         ///
         Block(const Block& _b);
 	    virtual ~Block();
-        
-        /// @brief Create a Block
         ///
-        /// Create a Block of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true)
-        /// without allocating memeories
+        /// @brief Returns the number of column of Block
         ///
+        /// @return number of column
 	    size_t row()const;
+        ///
+        /// @brief Returns the number of column of Block
+        ///
+        /// @return number of column
 	    size_t col()const;
+        ///
+        /// @brief Returns the number of column of Block
+        ///
+        /// @return True if Block is diagonal, false otherwise
 	    bool isDiag()const;
 	    bool isOngpu()const;
+        ///
+        /// @brief Returns the number of elements of Block
+        ///
+        /// @return number of elements
 	    size_t elemNum()const;
+        ///
+        /// @brief Returns the datatype ID
+        ///
+        /// @return datatype ID
 	    int typeID()const;
 	    void save(const std::string& fname)const;
 	    void savePrototype(const std::string& fname)const;
