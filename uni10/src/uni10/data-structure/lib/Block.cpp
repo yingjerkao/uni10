@@ -2,9 +2,10 @@
 *  @file Block.cpp
 *  @license
 *    Universal Tensor Network Library
-*    Copyright (c) 2013-2016
+*    Copyright (c) 2013-2014
 *    National Taiwan University
 *    National Tsing-Hua University
+
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -22,33 +23,20 @@
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
 *  @brief Implementation file of Block class
-*  @author Yun-Da Hsieh, Yun-Hsuan Chou
-*  @date 2016-02-26
+*  @author Yun-Da Hsieh
+*  @date 2014-05-06
 *  @since 0.1.0
 *
 *****************************************************************************/
-#include <uni10/numeric/lapack/uni10_lapack.h>
+#include <uni10/numeric/uni10_lapack.h>
 #include <uni10/tools/uni10_tools.h>
 #include <uni10/tensor-network/Matrix.h>
-
 
 typedef double Real;
 typedef std::complex<double> Complex;
 
 namespace uni10{
 
-  void Block::printElemIsNULL() const{
-    if(m_elem == NULL && cm_elem == NULL)
-      std::cout << std::endl << "REAL elem is NULL, COMPLEX elem is NULL. "<< std::endl << std::endl;
-    if(m_elem != NULL && cm_elem == NULL)
-      std::cout << std::endl << "REAL elem isn't NULL, COMPLEX elem is NULL. "<< std::endl << std::endl;
-    if(m_elem == NULL && cm_elem != NULL)
-      std::cout << std::endl << "REAL elem is NULL, COMPLEX elem isn't NULL. "<< std::endl << std::endl;
-    if(m_elem != NULL && cm_elem != NULL)
-      std::cout << std::endl << "REAL elem isn't NULL, COMPLEX elem isn't NULL. "<< std::endl << std::endl;
-  }
-
-  /*********************  OPERATOR **************************/
   std::ostream& operator<< (std::ostream& os, const Block& b){
     try{
       os << b.Rnum << " x " << b.Cnum << " = " << b.elemNum();
@@ -402,44 +390,19 @@ namespace uni10{
     return Block();
   }
 
-  Complex Block::operator[](size_t idx)const{
-    try{
-      if(!(idx < elemNum())){
-        std::ostringstream err;
-        err<<"Index exceeds the number of elements("<<elemNum()<<").";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(typeID() == 0){
-        std::ostringstream err;
-        err<<"This matrix is EMPTY";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      else if(typeID() == 1)
-        return Complex(getElemAt(idx, m_elem, ongpu), 0);
-      else if(typeID() == 2)
-        return getElemAt(idx, cm_elem, ongpu);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::operator[](size_t):");
-      return 0;
-    }
-    return Complex();
-  }
+  // Default Real
+  Block::Block():r_flag(RTYPE), c_flag(CNULL), m_elem(NULL), cm_elem(NULL), Rnum(0), Cnum(0), diag(false), ongpu(false){}
 
-  /*********************  NO TYPE **************************/
+  Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RTYPE), c_flag(CNULL), m_elem(NULL), cm_elem(NULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false){}
 
-  Block::Block():r_flag(RNULL), c_flag(CNULL), Rnum(0), Cnum(0), diag(false), ongpu(false), m_elem(NULL), cm_elem(NULL){}
-
-  Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(CNULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
-
-  Block::Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(CNULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){
+  Block::Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(CNULL), m_elem(NULL), cm_elem(NULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false){
     if(_typeID == 1)
       r_flag = RTYPE;
     else if(_typeID == 2)
       c_flag = CTYPE;
   }
 
-  Block::Block(const Block& _b): r_flag(_b.r_flag), c_flag(_b.c_flag), Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu), m_elem(_b.m_elem), cm_elem(_b.cm_elem){}
+  Block::Block(const Block& _b): r_flag(_b.r_flag), c_flag(_b.c_flag), m_elem(_b.m_elem), cm_elem(_b.cm_elem), Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu){}
 
   Block::~Block(){}
 
@@ -482,9 +445,7 @@ namespace uni10{
 
   void Block::save(const std::string& fname)const{
     try{
-      if(typeID() == 0)
-        savePrototype(fname);
-      else if(typeID() == 1)
+      if(typeID() == 1)
         save(RTYPE, fname);
       else if(typeID() == 2)
         save(CTYPE, fname);
@@ -495,7 +456,6 @@ namespace uni10{
   }
 
   std::vector<Matrix> Block::qr()const{
-    std::vector<Matrix> outs;
     try{
       if(Rnum < Cnum){
         std::ostringstream err;
@@ -506,21 +466,14 @@ namespace uni10{
         return qr(RTYPE);
       else if(typeID() == 2)
         return qr(CTYPE);
-      else if(typeID() == 0){
-        std::ostringstream err;
-        err<<"Cannot perform QR decomposition on EMPTY matrix . Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::qr():");
     }
-    return outs;
+    return std::vector<Matrix>();
   }
 
-
   std::vector<Matrix> Block::rq()const{
-    std::vector<Matrix> outs;
     try{
       if(Rnum > Cnum){
         std::ostringstream err;
@@ -531,20 +484,14 @@ namespace uni10{
         return rq(RTYPE);
       else if(typeID() == 2)
         return rq(CTYPE);
-      else if(typeID() == 0){
-        std::ostringstream err;
-        err<<"Cannot perform RQ decomposition on EMPTY matrix . Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::rq():");
     }
-    return outs;
+    return std::vector<Matrix>();
   }
 
   std::vector<Matrix> Block::ql()const{
-    std::vector<Matrix> outs;
     try{
       if(Rnum < Cnum){
         std::ostringstream err;
@@ -555,20 +502,14 @@ namespace uni10{
         return ql(RTYPE);
       else if(typeID() == 2)
         return ql(CTYPE);
-      else if(typeID() == 0){
-        std::ostringstream err;
-        err<<"Cannot perform QL decomposition on EMPTY matrix . Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::ql():");
     }
-    return outs;
+    return std::vector<Matrix>();
   }
 
   std::vector<Matrix> Block::lq()const{
-    std::vector<Matrix> outs;
     try{
       if(Rnum > Cnum){
         std::ostringstream err;
@@ -579,37 +520,25 @@ namespace uni10{
         return lq(RTYPE);
       else if(typeID() == 2)
         return lq(CTYPE);
-      else if(typeID() == 0){
-        std::ostringstream err;
-        err<<"Cannot perform LQ decomposition on EMPTY matrix . Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::lq():");
     }
-    return outs;
+    return std::vector<Matrix>();
   }
 
   std::vector<Matrix> Block::svd()const{
-    std::vector<Matrix> outs;
     try{
       if(typeID() == 1)
         return svd(RTYPE);
       else if(typeID() == 2)
         return svd(CTYPE);
-      else if(typeID() == 0){
-        std::ostringstream err;
-        err<<"Cannot perform SVD decomposition on EMPTY matrix . Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::svd():");
     }
-    return outs;
+    return std::vector<Matrix>();
   }
-
 
   Real Block::norm()const{
     try{
@@ -617,15 +546,9 @@ namespace uni10{
         return vectorNorm(m_elem, elemNum(), 1, ongpu);
       else if(typeID() == 2)
         return vectorNorm(cm_elem, elemNum(), 1, ongpu);
-      else if(typeID() == 0){
-        std::ostringstream err;
-        err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::norm():");
-      return 0;
     }
     return 0;
   }
@@ -637,23 +560,15 @@ namespace uni10{
         err<<"Cannot perform inversion on a non-square matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      if(typeID() == 0){
-        std::ostringstream err;
-        err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      Matrix invM(*this);
-      assert(ongpu == invM.isOngpu());
       if(typeID() == 1)
-        matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
+        return inverse(RTYPE); 
       else if(typeID() == 2)
-        matrixInv(invM.cm_elem, Rnum, invM.diag, invM.ongpu);
-      return invM;
+        return inverse(CTYPE);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::inverse():");
-      return Matrix();
     }
+    return Matrix();
   }
 
   Matrix Block::getDiag()const{
@@ -663,11 +578,6 @@ namespace uni10{
         return getDiag(RTYPE);
       else if(_typeID == 2)
         return getDiag(CTYPE);
-      else if(_typeID == 0){
-        std::ostringstream err;
-        err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::getDiag():");
@@ -676,7 +586,7 @@ namespace uni10{
     return Matrix();
   }
 
-  Complex Block::trace()const{
+  Real Block::trace()const{
     try{
       if(!(Rnum == Cnum)){
         std::ostringstream err;
@@ -684,38 +594,32 @@ namespace uni10{
         throw std::runtime_error(exception_msg(err.str()));
       }
       if(typeID() == 1)
-        return Complex(trace(RTYPE), 0);
-      else if(typeID() == 2)
-        return trace(CTYPE);
-      else if(typeID() == 0){
+        return trace(RTYPE);
+      else if(typeID() == 2){
         std::ostringstream err;
-        err<<"Cannot perform trace on an EMPTY matrix.";
+        err<<"This matrix is Complex. Please use trace(uni10::cflag) instead.";
         throw std::runtime_error(exception_msg(err.str()));
       }
     }catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::trace():");
-      return 0;
     }
     return 0;
   }
 
-  Complex Block::sum()const{
+  Real Block::sum()const{
     try{
       if(typeID() == 1)
-        return Complex(vectorSum(m_elem, elemNum(), 1, ongpu), 0);
-      else if(typeID() == 2)
-        return vectorSum(cm_elem, elemNum(), 1, ongpu);
-      else if(typeID() == 0){
+        return vectorSum(m_elem, elemNum(), 1, ongpu);
+      else if(typeID() == 2){
         std::ostringstream err;
-        err<<"Cannot perform trace on an EMPTY matrix.";
+        err<<"This matrix is Complex. Please use sum(uni10::cflag) instead.";
         throw std::runtime_error(exception_msg(err.str()));
       }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::sum():");
-      return 0;
     }
-    return Complex();
+    return 0.;
   }
 
   std::vector<Matrix> Block::eig()const{
@@ -724,11 +628,6 @@ namespace uni10{
         return eig(RTYPE);
       else if(typeID() == 2)
         return eig(CTYPE);
-      else if(typeID() == 0){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on an EMPTY matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::eig():");
@@ -742,11 +641,6 @@ namespace uni10{
         return eigh(RTYPE);
       else if(typeID() == 2)
         return eigh(CTYPE);
-      else if(typeID() == 0){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on an EMPTY matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Matrix::eigh():");
@@ -754,764 +648,116 @@ namespace uni10{
     return std::vector<Matrix>();
   }
 
-
-  Complex Block::at(size_t r, size_t c)const{
+  Real Block::at(size_t r, size_t c)const{
     try{
       if(typeID() == 1)
-        return Complex(at(RTYPE, r, c), 0);
-      else if(typeID() == 2)
-        return at(CTYPE, r, c);
-      else if(typeID() == 0){
+        return at(RTYPE, r, c);
+      else if(typeID() == 2){
         std::ostringstream err;
-        err<<"This matrix is EMPTY.";
+        err<<"This matrix is Complex. Please use at(uni10::cflag, size_t, size_t) instead.";
         throw std::runtime_error(exception_msg(err.str()));
       }
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function Block::at(size_t, size_t):");
-      return 0;
     }
-    return Complex();
-  }
-  /*********************NEE*****************************/
-  /*********************  REAL **********************/
-
-  Block::Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(_tp), c_flag(CNULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
-
-  Real* Block::getElem(rflag _tp)const{return m_elem;}
-
-  void Block::save(rflag _tp, const std::string& fname)const{
-    try{
-      FILE *fp = fopen(fname.c_str(), "w");
-      if(!(fp != NULL)){
-        std::ostringstream err;
-        err<<"Error in writing to file '"<<fname<<"'.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-  //    fwrite(&m_type, sizeof(m_type), 1, fp);
-      fwrite(&r_flag, sizeof(r_flag), 1, fp);
-      fwrite(&c_flag, sizeof(c_flag), 1, fp);
-      fwrite(&Rnum, sizeof(Rnum), 1, fp);
-      fwrite(&Cnum, sizeof(Cnum), 1, fp);
-      fwrite(&diag, sizeof(diag), 1, fp);
-      fwrite(&ongpu, sizeof(ongpu), 1, fp);
-      Real* elem = m_elem;
-      if(ongpu){
-        elem = (Real*)malloc(elemNum() * sizeof(Real));
-        elemCopy(elem, m_elem, elemNum() * sizeof(Real), false, ongpu);
-      }
-      fwrite(elem, sizeof(Real), elemNum(), fp);
-      if(ongpu)
-        free(elem);
-      fclose(fp);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::save(std::string&):");
-    }
+    return 0;
   }
 
-  std::vector<Matrix> Block::qr(rflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(Rnum < Cnum){
-        std::ostringstream err;
-        err<<"Cannot perform QR decomposition when Rnum < Cnum. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu));
-      outs.push_back(Matrix(RTYPE, Cnum, Cnum, false, ongpu));
-      if(!diag)
-          matrixQR(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
-      else{
-        size_t min = std::min(Rnum, Cnum);
-        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        for(int i = 0; i < min; i++)
-          tmpR[i*min+i] = m_elem[i];
-        matrixQR(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
-        free(tmpR);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::qr():");
-    }
-    return outs;
-  }
+  bool Block::isCelemNULL()const{return cm_elem == NULL;}
 
-  std::vector<Matrix> Block::rq(rflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(Rnum > Cnum){
-        std::ostringstream err;
-        err<<"Cannot perform RQ decomposition when Rnum > Cnum. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      outs.push_back(Matrix(RTYPE, Rnum, Rnum, false, ongpu)); //r
-      outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu)); //q
-      if(!diag){
-          matrixRQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
-      }else{
-        size_t min = std::min(Rnum, Cnum);
-        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        for(int i = 0; i < min; i++)
-          tmpR[i*min+i] = m_elem[i];
-        matrixRQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem);
-        free(tmpR);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::rq():");
-    }
-    return outs;
-  }
+  bool Block::isRelemNULL()const{return m_elem == NULL;}
 
-  std::vector<Matrix> Block::lq(rflag _tp)const{
-    std::vector<Matrix> outs;
+  size_t lanczosEigh(rflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
     try{
-      if(Rnum > Cnum){
+      throwTypeError(tp);
+      if(!(ori_mat.Rnum == ori_mat.Cnum)){
         std::ostringstream err;
-        err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
+        err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      outs.push_back(Matrix(RTYPE, Rnum, Rnum, false, ongpu));
-      outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu));
-      if(!diag){
-        matrixLQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
-      }else{
-        size_t min = std::min(Rnum, Cnum);
-        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        for(int i = 0; i < min; i++)
-          tmpR[i*min+i] = m_elem[i];
-        matrixLQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem);
-        free(tmpR);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::lq():");
-    }
-    return outs;
-  }
-
-  std::vector<Matrix> Block::ql(rflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(Rnum < Cnum){
+      if(!(ori_mat.Rnum == psi.elemNum())){
         std::ostringstream err;
-        err<<"Cannot perform QL decomposition when Rnum < Cnum. Nothing to do.";
+        err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu));
-      outs.push_back(Matrix(RTYPE, Cnum, Cnum, false, ongpu));
-      if(!diag){
-        matrixQL(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
-      }else{
-        size_t min = std::min(Rnum, Cnum);
-        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        for(int i = 0; i < min; i++)
-          tmpR[i*min+i] = m_elem[i];
-        matrixQL(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
-        free(tmpR);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::ql():");
-    }
-    return outs;
-  }
-
-  std::vector<Matrix> Block::svd(rflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-    /*
-      if(diag){
-        std::ostringstream err;
-        err<<"Cannot perform singular value decomposition on a diagonal matrix. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-    */
-      size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
-      //GPU_NOT_READY
-      outs.push_back(Matrix(RTYPE, Rnum, min, false, ongpu));
-      outs.push_back(Matrix(RTYPE, min, min, true, ongpu));
-      outs.push_back(Matrix(RTYPE, min, Cnum, false, ongpu));
-      if(!diag){
-          matrixSVD(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
-      }else{
-        size_t min = std::min(Rnum, Cnum);
-        Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
-        for(int i = 0; i < min; i++)
-          tmpR[i*min+i] = m_elem[i];
-        matrixSVD(tmpR, min, min, outs[0].m_elem, outs[1].m_elem, outs[2].m_elem, ongpu);
-        free(tmpR);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::svd():");
-    }
-    return outs;
-  }
-
-  Real Block::norm(rflag _tp)const{
-    try{
-      if(typeID() == 0){
-        std::ostringstream err;
-        err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      return vectorNorm(m_elem, elemNum(), 1, ongpu);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::norm():");
-      return 0;
-    }
-  }
-
-  Matrix Block::inverse(rflag _tp)const{
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform inversion on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      Matrix invM(*this);
-      assert(ongpu == invM.isOngpu());
-      matrixInv(invM.m_elem, Rnum, invM.diag, invM.ongpu);
-      return invM;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::inverse():");
-      return Matrix();
-    }
-  }
-
-  Matrix Block::getDiag(rflag _tp)const{
-    try{
-      if(diag)
-        return *this;
-      else{
-        Matrix D(RTYPE, Rnum, Cnum, true, ongpu);
-        ::uni10::getDiag(m_elem, D.getElem(RTYPE), Rnum, Cnum, D.elemNum(), ongpu, D.isOngpu());
-        return D;
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::getDiag():");
-      return Matrix();
-    }
-  }
-
-  Real Block::trace(rflag _tp)const{
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform trace on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(diag)
-        return vectorSum(m_elem, elemNum(), 1, ongpu);
-      else
-        return vectorSum(m_elem, Cnum, Cnum + 1, ongpu);
-    }catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::trace():");
-      return 0;
-    }
-  }
-
-  Real Block::sum(rflag _tp)const{
-    try{
-      return vectorSum(m_elem, elemNum(), 1, ongpu);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::sum():");
-      return 0;
-    }
-  }
-
-  std::vector<Matrix> Block::eig(rflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(diag){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      //GPU_NOT_READY
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, true, ongpu));
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
-      eigDecompose(m_elem, Rnum, outs[0].cm_elem, outs[1].cm_elem, ongpu);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::eig():");
-    }
-    return outs;
-  }
-
-  std::vector<Matrix> Block::eigh(rflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(diag){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      //GPU_NOT_READY
-      outs.push_back(Matrix(RTYPE, Rnum, Cnum, true, ongpu));
-      outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu));
-      Matrix Eig(RTYPE, Rnum, Cnum, true, ongpu);
-      eigSyDecompose(m_elem, Rnum, Eig.m_elem, outs[1].m_elem, ongpu);
-      outs[0] = Eig;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::eigh():");
-    }
-    return outs;
-  }
-
-  Real Block::at(rflag _tp, size_t r, size_t c)const{
-    try{
-      if(!((r < Rnum) && (c < Cnum))){
-        std::ostringstream err;
-        err<<"The input indices are out of range.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(diag){
-        if(!(r == c && r < elemNum())){
+      if(ori_mat.ongpu && !psi.ongpu){
+        if(!psi.toGPU()){
           std::ostringstream err;
-          err<<"The matrix is diagonal, there is no off-diagonal element.";
+          err<<"Error when allocating GPU global memory.";
           throw std::runtime_error(exception_msg(err.str()));
         }
-        return getElemAt(r, m_elem, ongpu);
       }
-      else
-        return getElemAt(r * Cnum + c, m_elem, ongpu);
+      size_t iter = max_iter;
+      if(!lanczosEV(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, err_tol, E0, psi.m_elem, ori_mat.ongpu)){
+        std::ostringstream err;
+        err<<"Lanczos algorithm fails in converging.";;
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      return iter;
     }
     catch(const std::exception& e){
-      propogate_exception(e, "In function Block::at(size_t, size_t):");
-      return 0;
+      propogate_exception(e, "In function Matrix::lanczosEigh(uni10::rflag, double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
     }
-  }
-  /*********************REE*****************************/
-  /*********************  COMPLEX **********************/
-
-  Block::Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(_tp), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false), m_elem(NULL), cm_elem(NULL){}
-
-  Complex* Block::getElem(cflag _tp)const{return cm_elem;}
-
-  void Block::save(cflag _tp, const std::string& fname)const{
-    try{
-      FILE *fp = fopen(fname.c_str(), "w");
-      if(!(fp != NULL)){
-        std::ostringstream err;
-        err<<"Error in writing to file '"<<fname<<"'.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      fwrite(&r_flag, sizeof(r_flag), 1, fp);
-      fwrite(&c_flag, sizeof(c_flag), 1, fp);
-      fwrite(&Rnum, sizeof(Rnum), 1, fp);
-      fwrite(&Cnum, sizeof(Cnum), 1, fp);
-      fwrite(&diag, sizeof(diag), 1, fp);
-      fwrite(&ongpu, sizeof(ongpu), 1, fp);
-      Complex* elem = cm_elem;
-      if(ongpu){
-        elem = (Complex*)malloc(elemNum() * sizeof(Complex));
-        elemCopy(elem, cm_elem, elemNum() * sizeof(Complex), false, ongpu);
-      }
-      fwrite(elem, sizeof(Complex), elemNum(), fp);
-      if(ongpu)
-        free(elem);
-      fclose(fp);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::save(std::string&):");
-    }
+    return 0;
   }
 
-  std::vector<Matrix> Block::qr(cflag _tp)const{
-    std::vector<Matrix> outs;
+  size_t lanczosEigh(cflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
     try{
-      if(Rnum < Cnum){
+      throwTypeError(tp);
+      if(!(ori_mat.Rnum == ori_mat.Cnum)){
         std::ostringstream err;
-        err<<"Cannot perform QR decomposition when Rnum < Cnum. Nothing to do.";
+        err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
-      outs.push_back(Matrix(CTYPE, Cnum, Cnum, false, ongpu));
-      if(!diag)
-          matrixQR(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
-      else{
-        size_t min = std::min(Rnum, Cnum);
-        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
-        for(int i = 0; i < min; i++)
-          tmpC[i*min+i] = cm_elem[i];
-        matrixQR(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
-        free(tmpC);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::qr():");
-    }
-    return outs;
-  }
-
-  std::vector<Matrix> Block::rq(cflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(Rnum > Cnum){
+      if(!(ori_mat.Rnum == psi.elemNum())){
         std::ostringstream err;
-        err<<"Cannot perform RQ decomposition when Rnum > Cnum. Nothing to do.";
+        err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
         throw std::runtime_error(exception_msg(err.str()));
       }
-      outs.push_back(Matrix(CTYPE, Rnum, Rnum, false, ongpu)); //r
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu)); //q
-      if(!diag){
-        matrixRQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem);
-      }else{
-        size_t min = std::min(Rnum, Cnum);
-        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
-        for(int i = 0; i < min; i++)
-          tmpC[i*min+i] = cm_elem[i];
-        matrixRQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem);
-        free(tmpC);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::rq():");
-    }
-    return outs;
-  }
-
-  std::vector<Matrix> Block::lq(cflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(Rnum > Cnum){
-        std::ostringstream err;
-        err<<"Cannot perform LQ decomposition when Rnum > Cnum. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      outs.push_back(Matrix(CTYPE, Rnum, Rnum, false, ongpu));
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
-      if(!diag){
-        matrixLQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem);
-      }else{
-        size_t min = std::min(Rnum, Cnum);
-        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
-        for(int i = 0; i < min; i++)
-          tmpC[i*min+i] = cm_elem[i];
-        matrixLQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem);
-        free(tmpC);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::lq():");
-    }
-    return outs;
-  }
-
-  std::vector<Matrix> Block::ql(cflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(Rnum < Cnum){
-        std::ostringstream err;
-        err<<"Cannot perform QL decomposition when Rnum < Cnum. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
-      outs.push_back(Matrix(CTYPE, Cnum, Cnum, false, ongpu));
-      if(!diag){
-        matrixQL(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
-      }else{
-        size_t min = std::min(Rnum, Cnum);
-        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
-        for(int i = 0; i < min; i++)
-          tmpC[i*min+i] = cm_elem[i];
-        matrixQL(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
-        free(tmpC);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::ql():");
-    }
-    return outs;
-  }
-
-  std::vector<Matrix> Block::svd(cflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-    /*
-      if(diag){
-        std::ostringstream err;
-        err<<"Cannot perform singular value decomposition on a diagonal matrix. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-    */
-      size_t min = Rnum < Cnum ? Rnum : Cnum;	//min = min(Rnum,Cnum)
-      //GPU_NOT_READY
-      outs.push_back(Matrix(CTYPE, Rnum, min, false, ongpu));
-      outs.push_back(Matrix(CTYPE, min, min, true, ongpu));
-      outs.push_back(Matrix(CTYPE, min, Cnum, false, ongpu));
-      if(!diag){
-        matrixSVD(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem, outs[2].cm_elem, ongpu);
-      }else{
-        size_t min = std::min(Rnum, Cnum);
-        Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
-        for(int i = 0; i < min; i++)
-          tmpC[i*min+i] = cm_elem[i];
-        matrixSVD(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem, outs[2].cm_elem, ongpu);
-        free(tmpC);
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::svd():");
-    }
-    return outs;
-  }
-
-  Real Block::norm(cflag _tp)const{
-    try{
-      if(typeID() == 0){
-        std::ostringstream err;
-        err<<"This matirx is empty" << std::endl << "In the file Block.cpp, line(" << __LINE__ << ")";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      return vectorNorm(cm_elem, elemNum(), 1, ongpu);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::norm():");
-      return 0;
-    }
-  }
-
-  Matrix Block::inverse(cflag _tp)const{
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform inversion on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      Matrix invM(*this);
-      assert(ongpu == invM.isOngpu());
-      matrixInv(invM.cm_elem, Rnum, invM.diag, invM.ongpu);
-      return invM;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::inverse():");
-      return Matrix();
-    }
-  }
-
-  Matrix Block::getDiag(cflag _tp)const{
-    try{
-      if(diag)
-        return *this;
-      else{
-        Matrix D(CTYPE, Rnum, Cnum, true, ongpu);
-        ::uni10::getDiag(cm_elem, D.getElem(CTYPE), Rnum, Cnum, D.elemNum(), ongpu, D.isOngpu());
-        return D;
-      }
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Block::getDiag():");
-      return Matrix();
-    }
-  }
-
-  Complex Block::trace(cflag _tp)const{
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform trace on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(diag)
-        return vectorSum(cm_elem, elemNum(), 1, ongpu);
-      else
-        return vectorSum(cm_elem, Cnum, Cnum + 1, ongpu);
-    }catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::trace():");
-      return 0;
-    }
-  }
-
-  Complex Block::sum(cflag _tp)const{
-    try{
-      return vectorSum(cm_elem, elemNum(), 1, ongpu);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::sum():");
-      return 0;
-    }
-  }
-
-  std::vector<Matrix> Block::eig(cflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(diag){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Nothing to do.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      //GPU_NOT_READY
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, true, ongpu));
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
-      eigDecompose(cm_elem, Rnum, outs[0].cm_elem, outs[1].cm_elem, ongpu);
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::eig():");
-    }
-    return outs;
-  }
-
-  std::vector<Matrix> Block::eigh(cflag _tp)const{
-    std::vector<Matrix> outs;
-    try{
-      if(!(Rnum == Cnum)){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on a non-square matrix.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(diag){
-        std::ostringstream err;
-        err<<"Cannot perform eigenvalue decomposition on a diagonal matrix. Need not to do so.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      //GPU_NOT_READY
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, true, ongpu));
-      outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
-      Matrix Eig(RTYPE, Rnum, Cnum, true, ongpu);
-      eigSyDecompose(cm_elem, Rnum, Eig.m_elem, outs[1].cm_elem, ongpu);
-      outs[0] = Eig;
-    }
-    catch(const std::exception& e){
-      propogate_exception(e, "In function Matrix::eigh():");
-    }
-    return outs;
-  }
-
-  Complex Block::at(cflag _tp, size_t r, size_t c)const{
-    try{
-      if(!((r < Rnum) && (c < Cnum))){
-        std::ostringstream err;
-        err<<"The input indices are out of range.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(diag){
-        if(!(r == c && r < elemNum())){
+      if(ori_mat.ongpu && !psi.ongpu){
+        if(!psi.toGPU()){
           std::ostringstream err;
-          err<<"The matrix is diagonal, there is no off-diagonal element.";
+          err<<"Error when allocating GPU global memory.";
           throw std::runtime_error(exception_msg(err.str()));
         }
-        return getElemAt(r, cm_elem, ongpu);
       }
-      else
-        return getElemAt(r * Cnum + c, cm_elem, ongpu);
+      size_t iter = max_iter;
+      if(!lanczosEV(ori_mat.cm_elem, psi.cm_elem, ori_mat.Rnum, iter, err_tol, E0, psi.cm_elem, ori_mat.ongpu)){
+        std::ostringstream err;
+        err<<"Lanczos algorithm fails in converging.";;
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      return iter;
     }
     catch(const std::exception& e){
-      propogate_exception(e, "In function Block::at(size_t, size_t):");
+      propogate_exception(e, "In function Matrix::lanczosEigh(uni10::cflag, double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
       return 0;
     }
   }
-  /*********************CEE*****************************/
-  /*****************************************************/
 
-
-  Real* Block::getElem()const{return m_elem;}
-  //
-  // size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
-  //   try{
-  //     if(!(ori_mat.Rnum == ori_mat.Cnum)){
-  //       std::ostringstream err;
-  //       err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
-  //       throw std::runtime_error(exception_msg(err.str()));
-  //     }
-  //     if(!(ori_mat.Rnum == psi.elemNum())){
-  //       std::ostringstream err;
-  //       err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
-  //       throw std::runtime_error(exception_msg(err.str()));
-  //     }
-  //     if(ori_mat.ongpu && !psi.ongpu){
-  //       if(!psi.toGPU()){
-  //         std::ostringstream err;
-  //         err<<"Error when allocating GPU global memory.";
-  //         throw std::runtime_error(exception_msg(err.str()));
-  //       }
-  //     }
-  //     size_t iter = max_iter;
-  //     if(!arpackEigh(ori_mat.m_elem, psi.m_elem, ori_mat.Rnum, iter, E0, psi.m_elem, ori_mat.ongpu, err_tol)){
-  //       std::ostringstream err;
-  //       err<<"Lanczos algorithm fails in converging.";;
-  //       throw std::runtime_error(exception_msg(err.str()));
-  //     }
-  //     return iter;
-  //   }
-  //   catch(const std::exception& e){
-  //     propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-  //     return 0;
-  //   }
-  // }
-  // size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
-  //   try{
-  //     if(!(ori_mat.Rnum == ori_mat.Cnum)){
-  //       std::ostringstream err;
-  //       err<<"Cannot perform Lanczos algorithm to find the lowest eigen value and eigen vector on a non-square matrix.";
-  //       throw std::runtime_error(exception_msg(err.str()));
-  //     }
-  //     if(!(ori_mat.Rnum == psi.elemNum())){
-  //       std::ostringstream err;
-  //       err<<"Error in Lanczos initial vector psi. The vector dimension does not match with the number of the columns.";
-  //       throw std::runtime_error(exception_msg(err.str()));
-  //     }
-  //     if(ori_mat.ongpu && !psi.ongpu){
-  //       if(!psi.toGPU()){
-  //         std::ostringstream err;
-  //         err<<"Error when allocating GPU global memory.";
-  //         throw std::runtime_error(exception_msg(err.str()));
-  //       }
-  //     }
-  //     size_t iter = max_iter;
-  //     if(!arpackEigh(ori_mat.cm_elem, psi.cm_elem, ori_mat.Rnum, iter, E0, psi.cm_elem, ori_mat.ongpu, err_tol)){
-  //       std::ostringstream err;
-  //       err<<"Lanczos algorithm fails in converging.";;
-  //       throw std::runtime_error(exception_msg(err.str()));
-  //     }
-  //     return iter;
-  //   }
-  //   catch(const std::exception& e){
-  //     propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-  //     return 0;
-  //   }
-  // }
-  //
-  // size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
-  //   try{
-  //     if(ori_mat.typeID() == 0){
-  //       std::ostringstream err;
-  //       err<<"Cannot perform lanczos decomposition on an EMPTY matrix.";
-  //       throw std::runtime_error(exception_msg(err.str()));
-  //     }
-  //     else if(ori_mat.typeID() == 1)
-  //       return lanczosEigh(RTYPE, ori_mat, E0, psi, max_iter, err_tol);
-  //     else if(ori_mat.typeID() == 2)
-  //       return lanczosEigh(CTYPE, ori_mat, E0, psi, max_iter, err_tol);
-  //   }
-  //   catch(const std::exception& e){
-  //     propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
-  //     return 0;
-  //   }
-  //   return 0;
-  // }
+  size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
+    try{
+      if(ori_mat.typeID() == 1)
+        return lanczosEigh(RTYPE, ori_mat, E0, psi, max_iter, err_tol);
+      else if(ori_mat.typeID() == 2)
+        return lanczosEigh(CTYPE, ori_mat, E0, psi, max_iter, err_tol);
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix::lanczosEigh(double& E0, uni10::Matrix&, size_t=200, double=5E-15):");
+    }
+    return 0;
+  }
 
 };	/* namespace uni10 */
+/*
+#ifdef Block
+#undef Block
+#endif
+#ifdef Matrix
+#undef Matrix
+#endif
+#ifdef Real
+#undef Real
+#endif
+*/

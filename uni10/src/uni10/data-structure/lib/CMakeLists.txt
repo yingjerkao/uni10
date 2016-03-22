@@ -35,6 +35,8 @@ cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 
 set(data_structure_lib_sources
   Block.cpp
+  BlockReal.cpp
+  BlockComplex.cpp
   Bond.cpp
 )
 

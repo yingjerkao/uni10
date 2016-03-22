@@ -91,5 +91,24 @@ static inline std::string &rtrim(std::string &s) {
 static inline std::string &trim(std::string &s) {
 	return ltrim(rtrim(s));
 }
+
+static inline void throwTypeError(rflag tp){
+	if(tp == RNULL){
+		std::ostringstream err;
+		err<<"Set Matrix type with wrong flag. Please use RTYPE instead of RNULL." << std::endl 
+			<< "In the file Block.cpp, line(" << __LINE__ << ")";
+		throw std::runtime_error(exception_msg(err.str()));
+	}
+}
+
+static inline void throwTypeError(cflag tp){
+	if(tp == CNULL){
+		std::ostringstream err;
+		err<<"Set Matrix type with wrong flag. Please use CTYPE instead of CNULL." << std::endl 
+			<< "In the file Block.cpp, line(" << __LINE__ << ")";
+		throw std::runtime_error(exception_msg(err.str()));
+	}
+}
+
 };	/* namespace uni10 */
 #endif /* UNI10_TOOLS_H */

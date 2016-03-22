@@ -52,9 +52,17 @@ namespace uni10{
 ///
 /// The Matrix follows the C convention that the memory storage is row-major and indices start from 0.
 class Matrix:public Block {
-public:
-	  /*********************  OPERATOR **************************/
 
+public:
+    /*********************  developping  **********************/
+
+    double* getHostElem();
+    double* getHostElem(rflag _tp);
+    std::complex<double>* getHostElem(cflag _tp);
+
+    bool toGPU();
+    
+	  /*********************  OPERATOR **************************/
     /// @brief Assign to Matrix
     ///
     /// Assigns the content of \c mat to Matrix, replacing the original content by reallocating new memory
@@ -84,14 +92,6 @@ public:
     /// Performs element by element addition and store the results in Matrix
 
     Matrix& operator+= (const Block& Mb);
-    /// @brief Access individual element
-    ///
-    /// Returns a complex value to the element at position \c idx in Matrix. The value \c idx is a serial index
-    /// counted in row-major sense from the first element (\c idx = 0) of Matrix.
-    /// @note This function works similar to member function Matrix::at().
-    /// @param idx Element index
-    /// @return Element of Matrix at position \c idx
-    std::complex<double> operator[](size_t idx); //&
 
     /*********************  NO TYPE **************************/
     ///@brief Default constructor
@@ -112,7 +112,7 @@ public:
     /// @overload
     Matrix(const Block& _b);
     // #### new
-    Matrix(const std::string& fname);
+    Matrix(std::string& fname);
     /// @brief Destructor
     ///
     /// Destroys  Matrix and freeing all the allocated memory for matrix elements.
@@ -141,6 +141,8 @@ public:
     /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand();
 
+    void normalize();
+
     /// @brief Transpose Matrix
     ///
     /// Transposes the elements of the Matrix. Exchange the row and column numbers.
@@ -166,23 +168,13 @@ public:
     /// Returns the maximum element in Matrix
     double max(bool _ongpu=false);
 
+    void assign(size_t _Rnum, size_t _Cnum);
+
     /// @brief Load Matrix from a file
     ///
     /// Loads the elements of  Matrix from a binary file \c fname.
     /// @param fname Filename
     void load(const std::string& fname);
-
-    // ##### new
-    void assign(size_t _Rnum, size_t _Cnum);
-    bool toGPU();
-
-    /// @brief Access individual element
-    ///
-    /// Returns a reference to the element in the i-th row and j-th column of Matrix.
-    /// @note The values \c i and \c j are counted from 0.
-    /// @param i,j Index of Matrix
-    /// @return Element at index \c (i,j) of Matrix
-    std::complex<double> at(size_t i, size_t j); //&
 
     /*********************  REAL **********************/
 
@@ -230,10 +222,13 @@ public:
     /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand(rflag _tp);
 
+    void normalize(rflag tp);
+
     /// @brief Transpose Matrix
     ///
     /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& transpose(rflag _tp);
+    
 
     /// @brief Transpose a complex Matrix
     ///
@@ -254,10 +249,28 @@ public:
     ///
     /// Returns the maximum element in Matrix
     double max(rflag _tp, bool _ongpu=false);
-    void assign(rflag _tp, size_t _Rnum, size_t _Cnum);
-    bool toGPU(rflag _tp);
+
+    /// @brief Access individual element
+    ///
+    /// Returns a reference to the element in the i-th row and j-th column of Matrix.
+    /// @note The values \c i and \c j are counted from 0.
+    /// @param i,j Index of Matrix
+    /// @return Element at index \c (i,j) of Matrix
+    double& at(size_t i, size_t j); //&
+
+    /// @brief Access individual element
+    ///
+    /// Returns a complex value to the element at position \c idx in Matrix. The value \c idx is a serial index
+    /// counted in row-major sense from the first element (\c idx = 0) of Matrix.
+    /// @note This function works similar to member function Matrix::at().
+    /// @param idx Element index
+    /// @return Element of Matrix at position \c idx
     double& at(rflag _tp, size_t i); //&
-    double* getHostElem(rflag _tp);
+    double& operator[](size_t idx); //&
+
+    void assign(rflag _tp, size_t _Rnum, size_t _Cnum);
+
+    bool toGPU(rflag _tp);
 
     /*********************  COMPLEX **********************/
 
@@ -305,6 +318,8 @@ public:
     /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand(cflag _tp);
 
+    void normalize(cflag tp);
+
     /// @brief Transpose Matrix
     ///
     /// Transposes the elements of the Matrix. Exchange the row and column numbers.
@@ -325,33 +340,40 @@ public:
     /// @param col New number of columns
     Matrix& resize(cflag _tp, size_t row, size_t col);
 
-    /// @brief Returns the maximum element in Matrix
+    /// @brief Access individual element
     ///
-    /// Returns the maximum element in Matrix
-    double max(cflag _tp, bool _ongpu=false);
-    void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
-    bool toGPU(cflag _tp);
+    /// Returns a complex value to the element at position \c idx in Matrix. The value \c idx is a serial index
+    /// counted in row-major sense from the first element (\c idx = 0) of Matrix.
+    /// @note This function works similar to member function Matrix::at().
+    /// @param idx Element index
+    /// @return Element of Matrix at position \c idx
+    std::complex<double>& operator()(size_t idx); //&
     std::complex<double>& at(cflag _tp, size_t i); //&
-    std::complex<double>* getHostElem(cflag _tp);
 
+    void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
+
+    bool toGPU(cflag _tp);
+
+    
     /*****************************************************/
 
-    //delete
-    double* getHostElem();
-
-
-/********************************************************************************/
 private:
     /*********************  NO TYPE **********************/
-    void melemFree();
+
+    void MelemFree();
     void setMelemBNULL();
     void init(const double* _m_elem, const std::complex<double>* _cm_elem, bool src_ongpu);
+
     /*********************  REAL **********************/
+
     void init(const double* elem, bool _ongpu);
-    void init(rflag _tp, bool togpu);
+    void init(rflag tp, bool togpu);
+
     /*********************  COMPLEX **********************/
+
     void init(const std::complex<double>* elem, bool _ongpu);
-    void init(cflag _tp, bool togpu);
+    void init(cflag tp, bool togpu);
+
     /***********************************8*****************/
 };
 

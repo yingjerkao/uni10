@@ -79,6 +79,12 @@ namespace uni10{
 	    friend Matrix operator+(const Block& Ma, const Block& Mb);
 	    friend bool operator==(const Block& m1, const Block& m2);
 	    friend bool operator!=(const Block& m1, const Block& m2){return !(m1 == m2);};
+	    friend void RtoC(Block& mat);
+	    friend void RtoC(UniTensor& UniT);
+	    friend Matrix exph(double a, const Block& mat);
+	    friend size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
+	    friend size_t lanczosEigh(rflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
+	    friend size_t lanczosEigh(cflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
 
 	    /*********************  NO TYPE **************************/
         
@@ -139,15 +145,14 @@ namespace uni10{
 	    std::vector<Matrix> svd()const;
 	    std::vector<Matrix> eig()const;
 	    std::vector<Matrix> eigh()const;
-
 	    Matrix inverse()const;
 	    double norm()const;
 	    Matrix getDiag()const;
-	    std::complex<double> trace()const;
-	    std::complex<double> sum()const;
-	    friend size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
-	    std::complex<double> operator[](size_t idx)const;
-	    std::complex<double> at(size_t i, size_t j)const;
+	    double trace()const;
+	    double sum()const;
+	    double at(size_t i, size_t j)const;
+	    bool isCelemNULL()const;
+	    bool isRelemNULL()const;
 	    /*********************  REAL **********************/
        
 	    Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
@@ -155,22 +160,23 @@ namespace uni10{
         /// @brief Performs QR decomposition of Block
         ///
         ///
-	    std::vector<Matrix> qr(rflag _tp)const;
-	    std::vector<Matrix> rq(rflag _tp)const;
-	    std::vector<Matrix> ql(rflag _tp)const;
-	    std::vector<Matrix> lq(rflag _tp)const;
-	    std::vector<Matrix> svd(rflag _tp)const;
+	    std::vector<Matrix> qr(rflag tp)const;
+	    std::vector<Matrix> rq(rflag tp)const;
+	    std::vector<Matrix> ql(rflag tp)const;
+	    std::vector<Matrix> lq(rflag tp)const;
+	    std::vector<Matrix> svd(rflag tp)const;
+	    std::vector<Matrix> eig(rflag tp)const;
+	    std::vector<Matrix> eigh(rflag tp)const;
+	    Matrix inverse(rflag tp)const;
+	    double norm(rflag tp)const;
+	    Matrix getDiag(rflag tp)const;
 
-	    std::vector<Matrix> eig(rflag _tp)const;
-	    std::vector<Matrix> eigh(rflag _tp)const;
-	    Matrix inverse(rflag _tp)const;
-	    double norm(rflag _tp)const;
-	    Matrix getDiag(rflag _tp)const;
-	    double trace(rflag _tp)const;
-	    double sum(rflag _tp)const;
-	    double* getElem(rflag _tp)const;     //rename -> getRealElem() && getComplexElem();
-	    double at(rflag _tp, size_t i, size_t j)const;
-	    friend size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
+	    double trace(rflag tp)const;
+	    double sum(rflag tp)const;
+	    double operator[](size_t idx)const;
+	    double at(rflag tp, size_t i, size_t j)const;
+	    double* getElem(rflag tp = RTYPE)const;     //rename -> getRealElem() && getComplexElem();
+
 	    /*********************  COMPLEX **********************/
 
 	    Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
@@ -180,7 +186,6 @@ namespace uni10{
 	    std::vector<Matrix> ql(cflag _tp)const;
 	    std::vector<Matrix> lq(cflag _tp)const;
 	    std::vector<Matrix> svd(cflag _tp)const;
-
 	    std::vector<Matrix> eig(cflag _tp)const;
 	    std::vector<Matrix> eigh(cflag _tp)const;
 	    Matrix inverse(cflag _tp)const;
@@ -188,26 +193,13 @@ namespace uni10{
 	    Matrix getDiag(cflag _tp)const;
 	    std::complex<double> trace(cflag _tp)const;
 	    std::complex<double> sum(cflag _tp)const;
-	    std::complex<double>* getElem(cflag _tp)const;     //rename -> getRealElem() && getComplexElem();
+	    std::complex<double> operator()(size_t idx)const;
 	    std::complex<double> at(cflag _tp, size_t i, size_t j)const;
-	    friend size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
-	    void printElemIsNULL() const;
-	    /******************Friend funcs*******************/
+	    std::complex<double>* getElem(cflag _tp)const;     //rename -> getRealElem() && getComplexElem();
 
-	    friend void RtoC(Block& mat);
-	    friend void RtoC(UniTensor& UniT);
-	    friend Matrix exph(double a, const Block& mat);
-
-	    /*****************************************************/
-
-	    double* getElem()const;     //rename -> getRealElem() && getComplexElem();
-	    //friend UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast);
-
-	    /**********************************************************/
 	    friend class UniTensor;
 	    friend class Matrix;
 	
-	    /********************************************************************************/
 
 	protected:
 	    rflag r_flag;
@@ -219,9 +211,10 @@ namespace uni10{
 	    bool diag;
 	    bool ongpu;
     };
+
     void RtoC(Block& mat);
-    // size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
-    // size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
-    // size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+    size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+    size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
+    size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
 };
 #endif /* BLOCK_H */

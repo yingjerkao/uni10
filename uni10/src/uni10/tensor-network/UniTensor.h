@@ -45,9 +45,8 @@
 #include <uni10/data-structure/Bond.h>
 #include <uni10/data-structure/Block.h>
 #include <uni10/tensor-network/Matrix.h>
+
 /// @brief Uni10 - the Universal Tensor %Network Library
-
-
 namespace uni10 {
 
     ///@class UniTensor
@@ -70,6 +69,60 @@ namespace uni10 {
     class UniTensor {
 
     public:
+
+        /*******************  developping ************************/
+
+        /// @brief Access single element
+        ///
+        /// Returns the element at position specified by the indices \c idxs.
+        /// The size of the array \c idxs is equal to the total number of bonds
+        /// @param idxs  An array of indices
+        /// @return The element at indices \c idxs.
+
+        /// @brief High-order SVD
+        ///
+        /// Performs High order SVD of UniTensor.
+        /// @param modeNum Number of output modes
+        /// @param fixedNum Number of bonds to remain unchanged
+        std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum = 0)const;
+        /// @overload
+        std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
+        /// @overload
+        std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        /// @overload
+        std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
+        /// @overload
+        std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+
+        /// @brief High-order SVD
+        ///
+        /// Performs High order SVD of UniTensor.
+        /// @param modeNum Number of output modes
+        /// @param fixedNum Number of bonds to remain unchanged
+        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, size_t fixedNum = 0)const;
+        /// @overload
+        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
+        /// @overload
+        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        /// @overload
+        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, std::vector<Matrix>& Ls)const;
+        /// @overload
+        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+
+        /// @brief High-order SVD
+        ///
+        /// Performs High order SVD of UniTensor.
+        /// @param modeNum Number of output modes
+        /// @param fixedNum Number of bonds to remain unchanged
+            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum = 0)const;
+        /// @overload
+            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
+        /// @overload
+            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        /// @overload
+            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, std::vector<Matrix>& Ls)const;
+        /// @overload
+            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
 
         /*********************  OPERATOR **************************/
 
@@ -200,7 +253,7 @@ namespace uni10 {
         ///
         /// @param val Value of the scalar
         UniTensor(const std::vector<Bond>& _bonds, const std::string& _name = "");
-        UniTensor(const std::string _tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(const std::string tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
 
         /// @brief Create a UniTensor from a list of Bond's
         /// @param _bonds List of bonds
@@ -220,10 +273,12 @@ namespace uni10 {
         ///
         /// @param fname Filename to be read in
         UniTensor(const std::string& fname);
+
         /// @brief Create a UniTensor from a HDF5 file
         ///
         /// @param fname Filename to be read in
         UniTensor(const std::string& fname, const bool hdf5);
+
         /// @brief Create a UniTensor from a Block
         UniTensor(const Block& UniT);
 
@@ -254,6 +309,8 @@ namespace uni10 {
 
         int typeID()const;
 
+        /// 
+        void setLabel(const int newLabel, const size_t idx);
         /// @brief Assign labels to bonds in UniTensor
         ///
         /// Assigns the labels \c newLabels to each bond of  UniTensor, replacing the origin labels on the bonds.
@@ -280,7 +337,7 @@ namespace uni10 {
         /// @brief Access name
         ///
         /// Return the name of the UniTensor.
-        std::string getName();
+        std::string getName() const;
 
         /// @brief Assign name
         ///
@@ -425,6 +482,19 @@ namespace uni10 {
         /// @param qnum Block quantum number
         void orthoRand(const Qnum& qnum);
 
+        /// 
+        /// 
+        /// 
+        double norm() const;
+        double norm(rflag tp) const;
+        double norm(cflag tp) const;
+        ///
+        ///
+        ///
+        void normalize();
+        void normalize(rflag tp);
+        void normalize(cflag tp);
+
         /// @brief Save UniTensor to file
         ///
         /// Saves UniTensor to a file named \c fname.
@@ -435,6 +505,7 @@ namespace uni10 {
         /// Saves UniTensor to a HDF5 file named \c fname.
         /// @param fname filename
         void h5save(const std::string& fname);
+
         /// @brief Transpose  block elements
         ///
         /// Transpose each quantum number block. The bonds are changed from incoming to outcoming and vice versa
@@ -476,20 +547,6 @@ namespace uni10 {
         /// @param Ta,Tb Tensors to perform tensor product.
         friend UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
 
-        /// @brief High-order SVD
-        ///
-        /// Performs High order SVD of UniTensor.
-        /// @param modeNum Number of output modes
-        /// @param fixedNum Number of bonds to remain unchanged
-        std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum = 0)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
 
         /// @brief Combine bonds
         ///
@@ -555,14 +612,6 @@ namespace uni10 {
         /// @param la,lb Labels of the bonds to be traced out
         UniTensor& partialTrace(int la, int lb);
 
-        /// @brief Access individual element
-        ///
-        /// Returns the element at linear position \c idx. The first bond’s dimension is the most significant
-        ////dimension.
-        ///
-        /// @param    idx linear position of element
-        /// @return Element at index \c idx.
-        std::complex<double> operator[](size_t idx) const;
 
         /// @brief Access single element
         ///
@@ -570,15 +619,6 @@ namespace uni10 {
         /// The size of the array \c idxs is equal to the total number of bonds
         /// @param idxs  An array of indices
         /// @return The element at indices \c idxs.
-        std::complex<double> at(const std::vector<int>& idxs)const;
-
-        /// @brief Access single element
-        ///
-        /// Returns the element at position specified by the indices \c idxs.
-        /// The size of the array \c idxs is equal to the total number of bonds
-        /// @param idxs  An array of indices
-        /// @return The element at indices \c idxs.
-        std::complex<double> at(const std::vector<size_t>& idxs)const;
 
         Matrix getRawElem()const;
 
@@ -589,8 +629,8 @@ namespace uni10 {
         /// @param _bond array of bonds
         UniTensor& assign(const std::vector<Bond>& _bond);
 
-        bool isCelemEmpty();
-        bool isElemEmpty();
+        bool isCelemNULL();
+        bool isRelemNULL();
 
         /// @brief Test if two tensors are similar
         ///
@@ -613,9 +653,9 @@ namespace uni10 {
         /*********************  REAL **********************/
 
         UniTensor(double val);
-        UniTensor(rflag _tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
-        UniTensor(rflag _tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
-        UniTensor(rflag _tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
+        UniTensor(rflag tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(rflag tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+        UniTensor(rflag tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
 
         /// @brief Assign raw elements
         ///
@@ -628,7 +668,7 @@ namespace uni10 {
         /// @overload
         void setRawElem(const double* rawElem);
         /// @overload
-        void setRawElem(rflag _tp, const Block& blk);
+        void setRawElem(rflag tp, const Block& blk);
 
         /// @brief Assign elements to a block
         ///
@@ -636,7 +676,7 @@ namespace uni10 {
         /// elements. \par
         /// If \c mat is diagonal,  all the off-diagonal elements are set to zero.
         /// @param mat The matrix elements to be assigned
-        void putBlock(rflag _tp, const Block& mat);
+        void putBlock(rflag tp, const Block& mat);
         /// @brief Assign elements to a block
         ///
         /// Assigns elements of the  matrix \c mat to the  Qnum(0) block, for non-symmetry tensors.
@@ -644,7 +684,7 @@ namespace uni10 {
         /// If \c mat is diagonal,  all the off-diagonal elements are set to zero.
         /// @param qnum quantum number of the block
         /// @param mat The matrix elements to be assigned
-        void putBlock(rflag _tp, const Qnum& qnum, const Block& mat);
+        void putBlock(rflag tp, const Qnum& qnum, const Block& mat);
 
         /// @brief Copy elements
         ///
@@ -661,7 +701,7 @@ namespace uni10 {
         ///  a map from a composite Qnum to a corresponding element block as Matrix
         ///
         /// @return   Map from Qnum to Matrix
-        std::map<Qnum, Matrix> getBlocks(rflag _tp)const;
+        std::map<Qnum, Matrix> getBlocks(rflag tp)const;
 
         /// @brief Get elements in a block
         ///
@@ -669,39 +709,39 @@ namespace uni10 {
         /// only  diagonal elements in the block will be copied to a diagonal Matrix.
         /// @param diag Set \c true to save only the diagonal elements
         /// @return A Matrix of Qnum(0) block
-        Matrix getBlock(rflag _tp, bool diag = false)const;
+        Matrix getBlock(rflag tp, bool diag = false)const;
         /// @brief Get elements in a block
         ///
         /// Returns the block elements of a quantum number \c qnum as a Matrix. If the \c diag flag is set,
         /// only  diagonal elements in the block will be copied to a diagonal Matrix.
         /// @param diag Set \c true to save only the diagonal elements
         /// @return A Matrix of \c qnum block
-        Matrix getBlock(rflag _tp, const Qnum& qnum, bool diag = false)const;
+        Matrix getBlock(rflag tp, const Qnum& qnum, bool diag = false)const;
 
         /// @brief Assign elements
         ///
         /// Set all  elements to zero.
-        void set_zero(rflag _tp);
+        void set_zero(rflag tp);
         /// @brief Assign elements
         ///
         /// Set all  elements in the block with quantum number \c qnum to zero.
         /// @param qnum Block quantum number
-        void set_zero(rflag _tp, const Qnum& qnum);
+        void set_zero(rflag tp, const Qnum& qnum);
         /// @brief Assign elements
         ///
         /// Set diagonal elements of blocks to one.
-        void identity(rflag _tp);
+        void identity(rflag tp);
 
         /// @brief Assign elements
         ///
         /// Set diagonal elements of block with \c qnum to one.
         /// @param qnum Block quantum number
-        void identity(rflag _tp, const Qnum& qnum);
+        void identity(rflag tp, const Qnum& qnum);
 
         /// @brief Assign elements
         ///
         /// Assigns random numbers in [0, 1) to the elements.
-        void randomize(rflag _tp);
+        void randomize(rflag tp);
 
         /// @brief Assign elements
         ///
@@ -712,37 +752,35 @@ namespace uni10 {
         /// If the <tt> Nr < Nc </tt>, randomly generates \c Nr orthogonal basis row vectors of dimension \c Nc.
         /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of
         /// dimension \c Nr.
-        void orthoRand(rflag _tp);
+        void orthoRand(rflag tp);
 
         /// @brief Assign elements
         ///
         /// Assigns randomly generated orthogonal bases to the elements of \c qnum block.
         /// @param qnum Block quantum number
-        void orthoRand(rflag _tp, const Qnum& qnum);
+        void orthoRand(rflag tp, const Qnum& qnum);
 
         /// @brief Transpose  block elements
         ///
         /// Transpose each quantum number block. The bonds are changed from incoming to outcoming and vice versa
         /// without changing the quantum numbers on the bonds.
-        UniTensor& transpose(rflag _tp);
+        UniTensor& transpose(rflag tp);
 
         /// @brief Permute the order of bonds
         ///
         /// Permutes the order of bonds to the order according to \c newLabels with \c inBondNum incoming bonds.
         /// @param newLabels list of new labels
         /// @param inBondNum Number of incoming bonds after permutation
-        UniTensor& permute(rflag _tp, const std::vector<int>& newLabels, int inBondNum);
+        UniTensor& permute(rflag tp, const std::vector<int>& newLabels, int inBondNum);
         /// @overload
-        UniTensor& permute(rflag _tp, int* newLabels, int inBondNum);
+        UniTensor& permute(rflag tp, int* newLabels, int inBondNum);
         /// @brief Permute the order of bonds
         ///
         /// Rearranges the number of incoming and outgoing bonds without changing the order of the bonds.
         /// It assigns the first \c inBondNum bonds as incoming bonds and leaving the remaining bonds as
         /// outgoing bonds
         /// @param inBondNum Number of incoming bonds after permutation
-        UniTensor& permute(rflag _tp, int inBondNum);
-
-        double at(rflag _tp, size_t idx)const;
+        UniTensor& permute(rflag tp, int inBondNum);
 
         /// @brief Perform contraction of UniTensor
         ///
@@ -755,65 +793,48 @@ namespace uni10 {
         /// @return Ta,Tb Tensors to be contracted.
         /// @param fast A flag to set if permuted back to origin labels.  If \c true, two tensor are not
         /// permuted back. Defaults to \c false
-        friend UniTensor contract(rflag _tp, UniTensor& Ta, UniTensor& Tb, bool fast);
+        friend UniTensor contract(rflag tp, UniTensor& Ta, UniTensor& Tb, bool fast);
 
         /// @brief Tensor product of two tensors
         ///
         /// Performs tensor product of \c Ta and \c Tb.
         /// @param Ta,Tb Tensors to perform tensor product.
-        friend UniTensor otimes(rflag _tp, const UniTensor& Ta, const UniTensor& Tb);
-
-        /// @brief High-order SVD
-        ///
-        /// Performs High order SVD of UniTensor.
-        /// @param modeNum Number of output modes
-        /// @param fixedNum Number of bonds to remain unchanged
-        std::vector<UniTensor> hosvd(rflag _tp, size_t modeNum, size_t fixedNum = 0)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(rflag _tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(rflag _tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(rflag _tp, size_t modeNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(rflag _tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        friend UniTensor otimes(rflag tp, const UniTensor& Ta, const UniTensor& Tb);
 
         /// @brief Combine bonds
         ///
         /// Combines  bonds with labels in \c combined_labels.
         /// The resulting bond has the same label and bondType as the bond with the first label.
         /// @param combined_labels labels to be combined
-        UniTensor& combineBond(rflag _tp, const std::vector<int>& combined_labels);
-        void addGate(rflag _tp, const std::vector<_Swap>& swaps);
+        UniTensor& combineBond(rflag tp, const std::vector<int>& combined_labels);
+        void addGate(rflag tp, const std::vector<_Swap>& swaps);
 
         /// @brief Access elements
         ///
         /// Returns a pointer  to  UniTensor elements.
         /// @return Pointer to UniTensor elements
-        double* getElem(rflag _tp);
+        double* getElem(rflag tp);
 
         /// @brief Access raw elements
         ///
         /// Returns the elements of Real UniTensor in the non-block-diagonal form (raw elements) as a Matrix.
         /// The row(or column) bases of the elements are defined by the incoming bonds(or outgoing) bonds.
         /// @return Matrix of raw elements
-        Matrix getRawElem(rflag _tp)const;
+        Matrix getRawElem(rflag tp)const;
 
         /// @brief Trace
         /// Traces all bonds and returns the trace value.
         /// @return Trace of UniTensor
-        double trace(rflag _tp)const;
-        UniTensor& partialTrace(rflag _tp, int la, int lb);
-        UniTensor& assign(rflag _tp, const std::vector<Bond>& _bond);
-        double at(rflag _tp, const std::vector<int>& idxs)const;
-        double at(rflag _tp, const std::vector<size_t>& idxs)const;
+        double trace(rflag tp)const;
+        UniTensor& partialTrace(rflag tp, int la, int lb);
+        UniTensor& assign(rflag tp, const std::vector<Bond>& _bond);
 
         /*********************  COMPLEX **********************/
 
         UniTensor(std::complex<double> val);
-        UniTensor(cflag _tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
-        UniTensor(cflag _tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
-        UniTensor(cflag _tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
+        UniTensor(cflag tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
+        UniTensor(cflag tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
+        UniTensor(cflag tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
 
         /// @brief Assign raw elements
         ///
@@ -826,7 +847,7 @@ namespace uni10 {
         /// @overload
         void setRawElem(const std::complex<double>* rawElem);
         /// @overload
-        void setRawElem(cflag _tp, const Block& blk);
+        void setRawElem(cflag tp, const Block& blk);
 
         /// @brief Assign elements to a block
         ///
@@ -834,7 +855,7 @@ namespace uni10 {
         /// elements. \par
         /// If \c mat is diagonal,  all the off-diagonal elements are set to zero.
         /// @param mat The matrix elements to be assigned
-        void putBlock(cflag _tp, const Block& mat);
+        void putBlock(cflag tp, const Block& mat);
 
         /// @brief Assign elements to a block
         ///
@@ -843,7 +864,7 @@ namespace uni10 {
         /// If \c mat is diagonal,  all the off-diagonal elements are set to zero.
         /// @param qnum quantum number of the block
         /// @param mat The matrix elements to be assigned
-        void putBlock(cflag _tp, const Qnum& qnum, const Block& mat);
+        void putBlock(cflag tp, const Qnum& qnum, const Block& mat);
 
         /// @brief Copy elements
         ///
@@ -860,7 +881,7 @@ namespace uni10 {
         ///  a map from a composite Qnum to a corresponding element block as Matrix
         ///
         /// @return   Map from Qnum to Matrix
-        std::map<Qnum, Matrix> getBlocks(cflag _tp)const;
+        std::map<Qnum, Matrix> getBlocks(cflag tp)const;
 
         /// @brief Get elements in a block
         ///
@@ -868,7 +889,7 @@ namespace uni10 {
         /// only  diagonal elements in the block will be copied to a diagonal Matrix.
         /// @param diag Set \c true to save only the diagonal elements
         /// @return A Matrix of Qnum(0) block
-        Matrix getBlock(cflag _tp, bool diag = false)const;
+        Matrix getBlock(cflag tp, bool diag = false)const;
 
         /// @brief Get elements in a block
         ///
@@ -876,34 +897,34 @@ namespace uni10 {
         /// only  diagonal elements in the block will be copied to a diagonal Matrix.
         /// @param diag Set \c true to save only the diagonal elements
         /// @return A Matrix of \c qnum block
-        Matrix getBlock(cflag _tp, const Qnum& qnum, bool diag = false)const;
+        Matrix getBlock(cflag tp, const Qnum& qnum, bool diag = false)const;
 
         /// @brief Assign elements
         ///
         /// Set all  elements to zero.
-        void set_zero(cflag _tp);
+        void set_zero(cflag tp);
 
         /// @brief Assign elements
         ///
         /// Set all  elements in the block with quantum number \c qnum to zero.
         /// @param qnum Block quantum number
-        void set_zero(cflag _tp, const Qnum& qnum);
+        void set_zero(cflag tp, const Qnum& qnum);
 
         /// @brief Assign elements
         ///
         /// Set diagonal elements of blocks to one.
-        void identity(cflag _tp);
+        void identity(cflag tp);
 
         /// @brief Assign elements
         ///
         /// Set diagonal elements of block with \c qnum to one.
         /// @param qnum Block quantum number
-        void identity(cflag _tp, const Qnum& qnum);
+        void identity(cflag tp, const Qnum& qnum);
 
         /// @brief Assign elements
         ///
         /// Assigns random numbers in [0, 1) to the elements.
-        void randomize(cflag _tp);
+        void randomize(cflag tp);
 
         /// @brief Assign elements
         ///
@@ -914,37 +935,36 @@ namespace uni10 {
         /// If the <tt> Nr < Nc </tt>, randomly generates \c Nr orthogonal basis row vectors of dimension \c Nc.
         /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of
         /// dimension \c Nr.
-        void orthoRand(cflag _tp);
+        void orthoRand(cflag tp);
 
         /// @brief Assign elements
         ///
         /// Assigns randomly generated orthogonal bases to the elements of \c qnum block.
         /// @param qnum Block quantum number
-        void orthoRand(cflag _tp, const Qnum& qnum);
+        void orthoRand(cflag tp, const Qnum& qnum);
 
         /// @brief Transpose  block elements
         ///
         /// Transpose each quantum number block. The bonds are changed from incoming to outcoming and vice versa
         /// without changing the quantum numbers on the bonds.
-        UniTensor& transpose(cflag _tp);
+        UniTensor& transpose(cflag tp);
 
         /// @brief Permute the order of bonds
         ///
         /// Permutes the order of bonds to the order according to \c newLabels with \c inBondNum incoming bonds.
         /// @param newLabels list of new labels
         /// @param inBondNum Number of incoming bonds after permutation
-        UniTensor& permute(cflag _tp, const std::vector<int>& newLabels, int inBondNum);
+        UniTensor& permute(cflag tp, const std::vector<int>& newLabels, int inBondNum);
         /// @overload
-        UniTensor& permute(cflag _tp, int* newLabels, int inBondNum);
+        UniTensor& permute(cflag tp, int* newLabels, int inBondNum);
         /// @brief Permute the order of bonds
         ///
         /// Rearranges the number of incoming and outgoing bonds without changing the order of the bonds.
         /// It assigns the first \c inBondNum bonds as incoming bonds and leaving the remaining bonds as
         /// outgoing bonds
         /// @param inBondNum Number of incoming bonds after permutation
-        UniTensor& permute(cflag _tp, int inBondNum);
+        UniTensor& permute(cflag tp, int inBondNum);
 
-        std::complex<double> at(cflag _tp, size_t idx)const;
 
         /// @brief Perform contraction of UniTensor
         ///
@@ -957,63 +977,68 @@ namespace uni10 {
         /// @return Ta,Tb Tensors to be contracted.
         /// @param fast A flag to set if permuted back to origin labels.  If \c true, two tensor are not
         /// permuted back. Defaults to \c false
-        friend UniTensor contract(cflag _tp, UniTensor& Ta, UniTensor& Tb, bool fast);
+        friend UniTensor contract(cflag tp, UniTensor& Ta, UniTensor& Tb, bool fast);
 
         /// @brief Tensor product of two tensors
         ///
         /// Performs tensor product of \c Ta and \c Tb.
         /// @param Ta,Tb Tensors to perform tensor product.
-        friend UniTensor otimes(cflag _tp, const UniTensor& Ta, const UniTensor& Tb);
-
-        /// @brief High-order SVD
-        ///
-        /// Performs High order SVD of UniTensor.
-        /// @param modeNum Number of output modes
-        /// @param fixedNum Number of bonds to remain unchanged
-            std::vector<UniTensor> hosvd(cflag _tp, size_t modeNum, size_t fixedNum = 0)const;
-        /// @overload
-            std::vector<UniTensor> hosvd(cflag _tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-            std::vector<UniTensor> hosvd(cflag _tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
-        /// @overload
-            std::vector<UniTensor> hosvd(cflag _tp, size_t modeNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-            std::vector<UniTensor> hosvd(cflag _tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        friend UniTensor otimes(cflag tp, const UniTensor& Ta, const UniTensor& Tb);
 
         /// @brief Combine bonds
         ///
         /// Combines  bonds with labels in \c combined_labels.
         /// The resulting bond has the same label and bondType as the bond with the first label.
         /// @param combined_labels labels to be combined
-        UniTensor& combineBond(cflag _tp, const std::vector<int>& combined_labels);
-        void addGate(cflag _tp, const std::vector<_Swap>& swaps);
+        UniTensor& combineBond(cflag tp, const std::vector<int>& combined_labels);
+        void addGate(cflag tp, const std::vector<_Swap>& swaps);
 
         /// @brief Access raw elements
         ///
         /// Returns the elements of REAL UniTensor in the non-block-diagonal form (raw elements) as a Matrix.
         /// The row(or column) bases of the elements are defined by the incoming bonds(or outgoing) bonds.
         /// @return Matrix of raw elements
-        std::complex<double>* getElem(cflag _tp);
+        std::complex<double>* getElem(cflag tp);
 
-        Matrix getRawElem(cflag _tp)const;
-        std::complex<double> trace(cflag _tp)const;
-        UniTensor& partialTrace(cflag _tp, int la, int lb);
-        UniTensor& assign(cflag _tp, const std::vector<Bond>& _bond);
-        std::complex<double> at(cflag _tp, const std::vector<int>& idxs)const;
-        std::complex<double> at(cflag _tp, const std::vector<size_t>& idxs)const;
+        Matrix getRawElem(cflag tp)const;
+        std::complex<double> trace(cflag tp)const;
+        UniTensor& partialTrace(cflag tp, int la, int lb);
+        UniTensor& assign(cflag tp, const std::vector<Bond>& _bond);
 
         /******************Friend funcs*******************/
 
         friend void RtoC(UniTensor& UniT);
 
-        /*****************************************************/
-        //double* getElem();
-        friend class CUniTensor;
+        /**********   new functions  *********/
+
+        double at(size_t idx)const;
+        double at(const std::vector<int>& idxs)const;
+        double at(const std::vector<size_t>& idxs)const;
+        double at(rflag tp, size_t idx)const;
+        double at(rflag tp, const std::vector<int>& idxs)const;
+        double at(rflag tp, const std::vector<size_t>& idxs)const;
+        std::complex<double> at(cflag tp, size_t idx)const;
+        std::complex<double> at(cflag tp, const std::vector<int>& idxs)const;
+        std::complex<double> at(cflag tp, const std::vector<size_t>& idxs)const;
+        double* getElem();
+        
+        /// @brief Access individual element
+        ///
+        /// Returns the element at linear position \c idx. The first bond’s dimension is the most significant
+        ////dimension.
+        ///
+        /// @param    idx linear position of element
+        /// @return Element at index \c idx.
+        double operator[](size_t idx) const;
+        std::complex<double> operator()(size_t idx) const;
+
+        /*************************************/
+
+        
         friend class Node;
         friend class Network;
 
     private:
-      //  muType u_type;
 
         rflag r_flag;
         cflag c_flag;
@@ -1043,33 +1068,32 @@ namespace uni10 {
 
         //Private Functions
         /*********************  NO TYPE **************************/
-        void initUniT();
-        void initUniT(int _typeID);
+        void initUniT(int typeID);
         size_t grouping();
-        void uelemFree();
+        void TelemFree();
         std::vector<UniTensor> _hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
         /*********************  REAL **********************/
-        void initUniT(rflag _tp);
-        size_t grouping(rflag _tp);
-        void uelemAlloc(rflag _tp);
-        void initBlocks(rflag _tp);
-        void uelemBzero(rflag _tp);
-        std::vector<UniTensor> _hosvd(rflag _tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
+        void initUniT(rflag tp);
+        size_t grouping(rflag tp);
+        void initBlocks(rflag tp);
+        void TelemAlloc(rflag tp);
+        void TelemBzero(rflag tp);
+        std::vector<UniTensor> _hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
         /*********************  COMPLEX **********************/
-        void initUniT(cflag _tp);
-        size_t grouping(cflag _tp);
-        void uelemAlloc(cflag _tp);
-        void initBlocks(cflag _tp);
-        void uelemBzero(cflag _tp);
-        std::vector<UniTensor> _hosvd(cflag _tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const; //have bug
+        void initUniT(cflag tp);
+        size_t grouping(cflag tp);
+        void initBlocks(cflag tp);
+        void TelemAlloc(cflag tp);
+        void TelemBzero(cflag tp);
+        std::vector<UniTensor> _hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const; //have bug
         /*****************************************************/
 
         static const int HAVEBOND = 1;        /**< A flag for initialization */
         static const int HAVEELEM = 2;        /**< A flag for having element assigned */
     };
     UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
-    UniTensor contract(rflag _tp, UniTensor& Ta, UniTensor& Tb, bool fast = false);
-    UniTensor contract(cflag _tp, UniTensor& Ta, UniTensor& Tb, bool fast = false);
+    UniTensor contract(rflag tp, UniTensor& Ta, UniTensor& Tb, bool fast = false);
+    UniTensor contract(cflag tp, UniTensor& Ta, UniTensor& Tb, bool fast = false);
     UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
     void RtoC(UniTensor& UniT);
 };  /* namespace uni10 */

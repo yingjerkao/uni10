@@ -33,6 +33,8 @@
 #include <cstdint>
 #include <string>
 #include <stdexcept>
+#include <vector>
+#include <uni10/data-structure/Block.h>
 namespace uni10{
 typedef struct{
 	int b1;
@@ -64,31 +66,6 @@ private:
     int64_t cal_elemNum(std::vector<Bond>& _bonds);
     void delink();
 };
-
-//class CNode {
-//public:
-//    CNode();
-//    CNode(CUniTensor* Tp);
-//    CNode(const CNode& nd);
-//    CNode(std::vector<Bond>& _bonds, std::vector<int>& _labels);
-//    ~CNode();
-//    CNode contract(CNode* nd);
-//    float metric(CNode* nd);
-//    friend std::ostream& operator<< (std::ostream& os, const CNode& nd);
-//    friend class CNetwork;
-//private:
-//    CUniTensor* T;   //if T != NULL, it is leaf node
-//    std::vector<int> labels;
-//    std::vector<Bond> bonds;
-//    int64_t elemNum;
-//    std::string name;
-//    CNode* parent;
-//    CNode* left;
-//    CNode* right;
-//    float point;
-//    int64_t cal_elemNum(std::vector<Bond>& _bonds);
-//    void delink();
-//};
 
 }; /* namespace uni10 */
 

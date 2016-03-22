@@ -152,8 +152,6 @@ void eigSyDecompose(double* Kij, int N, double* Eig, double* EigVec, bool ongpu)
 	free(work);
 }
 
-/**** real qr rq lq ql ****/
-
 void matrixQR(double* Mij_ori, int M, int N, double* Q, double* R){
   assert(M >= N);
   double* Mij = (double*)malloc(N*M*sizeof(double));
@@ -168,20 +166,22 @@ void matrixQR(double* Mij_ori, int M, int N, double* Q, double* R){
   dgelqf(&N, &M, Mij, &lda, tau, &worktestdge, &lwork, &info);
   dorglq(&N, &M, &K, Mij, &lda, tau, &worktestdor, &lwork, &info);
   lwork = (int)worktestdge;
-  double* work = (double*)malloc(lwork*sizeof(double));
-  dgelqf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  double* workdge = (double*)malloc(lwork*sizeof(double));
+  dgelqf(&N, &M, Mij, &lda, tau, workdge, &lwork, &info);
   //getQ
   lwork = (int)worktestdor;
-  work = (double*)malloc(lwork*sizeof(double));
-  dorglq(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  double* workdor = (double*)malloc(lwork*sizeof(double));
+  dorglq(&N, &M, &K, Mij, &lda, tau, workdor, &lwork, &info);
   memcpy(Q, Mij, N*M*sizeof(double));
   //getR
   double alpha = 1, beta = 0;
   dgemm((char*)"N", (char*)"T", &N, &N, &M, &alpha, Mij_ori, &N, Mij, &N, &beta, R, &N);
   free(Mij);
   free(tau);
-  free(work);
+  free(workdge);
+  free(workdor);
 }
+
 void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R){
   assert(N >= M);
   double* Mij = (double*)malloc(M*N*sizeof(double));
@@ -198,6 +198,7 @@ void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R){
   lwork = (int)worktestdge;
   double* work = (double*)malloc(lwork*sizeof(double));
   dgeqlf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  free(work);
   ///getQ
   lwork = (int)worktestdor;
   work = (double*)malloc(lwork*sizeof(double));
@@ -210,6 +211,7 @@ void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R){
   free(tau);
   free(work);
 }
+
 void matrixLQ(double* Mij_ori, int M, int N, double* Q, double* L){
   assert(N >= M);
   double* Mij = (double*)malloc(M*N*sizeof(double));
@@ -224,20 +226,22 @@ void matrixLQ(double* Mij_ori, int M, int N, double* Q, double* L){
   dgeqrf(&N, &M, Mij, &lda, tau, &worktestdge, &lwork, &info);
   dorgqr(&N, &M, &K, Mij, &lda, tau, &worktestdor, &lwork, &info);
   lwork = (int)worktestdge;
-  double* work = (double*)malloc(lwork*sizeof(double));
-  dgeqrf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  double* workdge = (double*)malloc(lwork*sizeof(double));
+  dgeqrf(&N, &M, Mij, &lda, tau, workdge, &lwork, &info);
   //getQ
   lwork = (int)worktestdor;
-  work = (double*)malloc(lwork*sizeof(double));
-  dorgqr(&N, &M, &K, Mij, &lda, tau, work, &lwork, &info);
+  double* workdor = (double*)malloc(lwork*sizeof(double));
+  dorgqr(&N, &M, &K, Mij, &lda, tau, workdor, &lwork, &info);
   memcpy(Q, Mij, N*M*sizeof(double));
   //getR
   double alpha = 1, beta = 0;
   dgemm((char*)"T", (char*)"N", &M, &M, &N, &alpha, Mij, &N, Mij_ori, &N, &beta, L, &M);
   free(Mij);
   free(tau);
-  free(work);
+  free(workdge);
+  free(workdor);
 }
+
 void matrixQL(double* Mij_ori, int M, int N, double* Q, double* R){
   assert(M >= N);
   double* Mij = (double*)malloc(N*M*sizeof(double));
@@ -254,6 +258,7 @@ void matrixQL(double* Mij_ori, int M, int N, double* Q, double* R){
   lwork = (int)worktestdge;
   double* work = (double*)malloc(lwork*sizeof(double));
   dgerqf(&N, &M, Mij, &lda, tau, work, &lwork, &info);
+  free(work);
   //getQ
   lwork = (int)worktestdor;
   work = (double*)malloc(lwork*sizeof(double));
@@ -267,7 +272,6 @@ void matrixQL(double* Mij_ori, int M, int N, double* Q, double* R){
   free(work);
 }
 
-/**************************/
 void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, bool ongpu){
 	double* Mij = (double*)malloc(M * N * sizeof(double));
 	memcpy(Mij, Mij_ori, M * N * sizeof(double));
