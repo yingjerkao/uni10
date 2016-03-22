@@ -240,19 +240,10 @@ Matrix& Matrix::transpose(rflag tp){
 
 Matrix& Matrix::cTranspose(rflag tp){
   try{
-    throwTypeError(tp);
-    if(!ongpu)
-      m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
-    if(diag || Rnum == 1 || Cnum == 1)
-      this->conj();
-    else
-      setCTranspose(m_elem, Rnum, Cnum, ongpu);
-    size_t tmp = Rnum;
-    Rnum = Cnum;
-    Cnum = tmp;
+    transpose(tp);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::transpose(uni10::rflag ):");
+    propogate_exception(e, "In function Matrix::cTranspose(uni10::rflag ):");
   }
   return *this;
 }

@@ -53,8 +53,12 @@ namespace uni10{
 /// The Matrix follows the C convention that the memory storage is row-major and indices start from 0.
 class Matrix:public Block {
 
+
 public:
+
+    friend void RtoC(Matrix& mat);
     /*********************  developping  **********************/
+
 
     double* getHostElem();
     double* getHostElem(rflag _tp);
@@ -377,13 +381,18 @@ private:
     /***********************************8*****************/
 };
 
+void RtoC(Matrix& mat);
 Matrix takeExp(double a, const Block& mat);
+Matrix exph(double a, const Block& mat);
+Matrix exph(rflag tp, double a, const Block& mat);
+Matrix exph(cflag tp,double a, const Block& mat);
 Matrix exp(double a, const Block& mat);
 Matrix exp(const std::complex<double>& a, const Block& mat);
-Matrix exph(double a, const Block& mat);
 Matrix exp(const Block& mat);
 Matrix exph(const Block& mat);
+
 Matrix otimes(const Block& Ma, const Block& Mb);
+
 
 /// @example egM1.cpp
 /// @example egM2.cpp

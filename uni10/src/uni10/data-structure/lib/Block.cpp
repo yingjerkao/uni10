@@ -395,13 +395,6 @@ namespace uni10{
 
   Block::Block(size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RTYPE), c_flag(CNULL), m_elem(NULL), cm_elem(NULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false){}
 
-  Block::Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag): r_flag(RNULL), c_flag(CNULL), m_elem(NULL), cm_elem(NULL), Rnum(_Rnum), Cnum(_Cnum), diag(_diag), ongpu(false){
-    if(_typeID == 1)
-      r_flag = RTYPE;
-    else if(_typeID == 2)
-      c_flag = CTYPE;
-  }
-
   Block::Block(const Block& _b): r_flag(_b.r_flag), c_flag(_b.c_flag), m_elem(_b.m_elem), cm_elem(_b.cm_elem), Rnum(_b.Rnum), Cnum(_b.Cnum), diag(_b.diag), ongpu(_b.ongpu){}
 
   Block::~Block(){}
@@ -664,9 +657,9 @@ namespace uni10{
     return 0;
   }
 
-  bool Block::isCelemNULL()const{return cm_elem == NULL;}
+  bool Block::CelemIsNULL()const{return cm_elem == NULL;}
 
-  bool Block::isRelemNULL()const{return m_elem == NULL;}
+  bool Block::RelemIsNULL()const{return m_elem == NULL;}
 
   size_t lanczosEigh(rflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol){
     try{

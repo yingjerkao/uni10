@@ -72,6 +72,8 @@ namespace uni10 {
 
         /*******************  developping ************************/
 
+        friend void RtoC(UniTensor& UniT);
+
         /// @brief Access single element
         ///
         /// Returns the element at position specified by the indices \c idxs.
@@ -629,8 +631,8 @@ namespace uni10 {
         /// @param _bond array of bonds
         UniTensor& assign(const std::vector<Bond>& _bond);
 
-        bool isCelemNULL();
-        bool isRelemNULL();
+        bool CelemIsNULL();
+        bool RelemIsNULL();
 
         /// @brief Test if two tensors are similar
         ///
@@ -1005,11 +1007,7 @@ namespace uni10 {
         UniTensor& partialTrace(cflag tp, int la, int lb);
         UniTensor& assign(cflag tp, const std::vector<Bond>& _bond);
 
-        /******************Friend funcs*******************/
-
-        friend void RtoC(UniTensor& UniT);
-
-        /**********   new functions  *********/
+        /*************************************/
 
         double at(size_t idx)const;
         double at(const std::vector<int>& idxs)const;
@@ -1033,7 +1031,6 @@ namespace uni10 {
         std::complex<double> operator()(size_t idx) const;
 
         /*************************************/
-
         
         friend class Node;
         friend class Network;
@@ -1091,10 +1088,10 @@ namespace uni10 {
         static const int HAVEBOND = 1;        /**< A flag for initialization */
         static const int HAVEELEM = 2;        /**< A flag for having element assigned */
     };
+    void RtoC(UniTensor& UniT);
     UniTensor contract(UniTensor& Ta, UniTensor& Tb, bool fast = false);
     UniTensor contract(rflag tp, UniTensor& Ta, UniTensor& Tb, bool fast = false);
     UniTensor contract(cflag tp, UniTensor& Ta, UniTensor& Tb, bool fast = false);
     UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
-    void RtoC(UniTensor& UniT);
 };  /* namespace uni10 */
 #endif /* UNITENSOR_H */

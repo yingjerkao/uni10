@@ -228,8 +228,10 @@ Matrix::Matrix(std::string stp, size_t _Rnum, size_t _Cnum, bool _diag, bool _on
   }
 }
 
-Matrix::Matrix(const Matrix& _m): Block(_m.typeID(), _m.Rnum, _m.Cnum, _m.diag){
+Matrix::Matrix(const Matrix& _m): Block(_m.Rnum, _m.Cnum, _m.diag){
   try{
+    r_flag = _m.r_flag;
+    c_flag = _m.c_flag;
     init(_m.m_elem, _m.cm_elem, _m.ongpu);
   }
   catch(const std::exception& e){
@@ -510,93 +512,6 @@ double* Matrix::getHostElem(){
     propogate_exception(e, "In function Matrix::getHostElem():");
   }
   return m_elem;
-}
-
-Matrix takeExp(double a, const Block& mat){
-  try{
-    return exph(a, mat);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function takeExp(double, uni10::Matrix&):");
-    return Matrix();
-  }
-}
-
-Matrix exp(double a, const Block& mat){
-  try{
-    std::vector<Matrix> rets = mat.eig();
-    Matrix Uinv = rets[1].inverse();
-    vectorExp(a, rets[0].getElem(CTYPE), rets[0].row(), rets[0].isOngpu());
-    return Uinv * (rets[0] * rets[1]);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function exp(double, uni10::Matrix&):");
-    return Matrix();
-  }
-}
-
-Matrix exph(rflag tp, double a, const Block& mat){
-  try{
-    throwTypeError(tp);
-    std::vector<Matrix> rets = mat.eigh();
-    Matrix UT(rets[1]);
-    UT.cTranspose();
-    vectorExp(a, rets[0].getElem(RTYPE), rets[0].row(), rets[0].isOngpu());
-    return UT * (rets[0] * rets[1]);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function exph(uni10::rflag, double, uni10::Matrix&):");
-    return Matrix();
-  }
-}
-
-Matrix exph(cflag tp, double a, const Block& mat){
-  try{
-    throwTypeError(tp);
-    std::vector<Matrix> rets = mat.eigh();
-    Matrix UT(rets[1]);
-    UT.cTranspose();
-    vectorExp(a, rets[0].getElem(CTYPE), rets[0].row(), rets[0].isOngpu());
-    return UT * (rets[0] * rets[1]);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function exph(uni10::cflag, double, uni10::Matrix&):");
-  }
-  return Matrix();
-}
-
-Matrix exph(double a, const Block& mat){
-  try{
-    if(mat.typeID() == 1)
-      return  exph(RTYPE, a, mat);
-    else if(mat.typeID() == 2)
-      return  exph(CTYPE, a, mat);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function exph(double, uni10::Matrix&):");
-  }
-  return Matrix();
-}
-
-Matrix exp(const std::complex<double>& a, const Block& mat){
-  try{
-    std::vector<Matrix> rets = mat.eig();
-    Matrix Uinv = rets[1].inverse();
-    vectorExp(a, rets[0].getElem(CTYPE), rets[0].row(), rets[0].isOngpu());
-    return Uinv * (rets[0] * rets[1]);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function exp(std::complex<double>, uni10::Matrix&):");
-  }
-  return Matrix();
-}
-
-Matrix exp(const Block& mat){
-  return exp(1.0, mat);
-}
-
-Matrix exph(const Block& mat){
-  return exph(1.0, mat);
 }
 
 };	/* namespace uni10 */

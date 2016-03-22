@@ -79,9 +79,6 @@ namespace uni10{
 	    friend Matrix operator+(const Block& Ma, const Block& Mb);
 	    friend bool operator==(const Block& m1, const Block& m2);
 	    friend bool operator!=(const Block& m1, const Block& m2){return !(m1 == m2);};
-	    friend void RtoC(Block& mat);
-	    friend void RtoC(UniTensor& UniT);
-	    friend Matrix exph(double a, const Block& mat);
 	    friend size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
 	    friend size_t lanczosEigh(rflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
 	    friend size_t lanczosEigh(cflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
@@ -98,11 +95,10 @@ namespace uni10{
         /// Create a Block of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true)
         /// without allocating memeories
         ///
-        /// @param _typeID Real or Complex datatype. If not present, defaults to Real.
+        /// @param Real or Complex datatype. If not present, defaults to Real.
         /// @param _Rnum Number of Rows
         /// @param _Cnum Number of Columns
         /// @param _diag Set \c true for diagonal matrix, defaults to \c false
-	    Block(int _typeID, size_t _Rnum, size_t _Cnum, bool _diag = false);
         /// @overload
         Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
         
@@ -151,8 +147,8 @@ namespace uni10{
 	    double trace()const;
 	    double sum()const;
 	    double at(size_t i, size_t j)const;
-	    bool isCelemNULL()const;
-	    bool isRelemNULL()const;
+	    bool CelemIsNULL()const;
+	    bool RelemIsNULL()const;
 	    /*********************  REAL **********************/
        
 	    Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
@@ -199,7 +195,6 @@ namespace uni10{
 
 	    friend class UniTensor;
 	    friend class Matrix;
-	
 
 	protected:
 	    rflag r_flag;
@@ -212,7 +207,6 @@ namespace uni10{
 	    bool ongpu;
     };
 
-    void RtoC(Block& mat);
     size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
     size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
     size_t lanczosEigh(cflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);

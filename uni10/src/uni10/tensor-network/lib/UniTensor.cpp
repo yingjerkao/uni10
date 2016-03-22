@@ -1648,10 +1648,10 @@ UniTensor& UniTensor::assign(const std::vector<Bond>& _bond){
   return *this;
 }
 
-bool UniTensor::isCelemNULL(){
+bool UniTensor::CelemIsNULL(){
   return c_elem == NULL;
 }
-bool UniTensor::isRelemNULL(){
+bool UniTensor::RelemIsNULL(){
   return elem == NULL;
 }
 
@@ -1659,7 +1659,7 @@ bool UniTensor::similar(const UniTensor& Tb)const{
   try{
     if(bonds.size() != Tb.bonds.size())
       return false;
-    for(int b = 0; b < bonds.size(); b++){
+    for(size_t b = 0; b < bonds.size(); b++){
       if(bonds[b] == Tb.bonds[b]);
       else return false;
     }
@@ -1756,10 +1756,10 @@ Real* UniTensor::getElem(){
 
 /**************** Private Functions ***********************/
 
-void UniTensor::initUniT(int _typeID){
-  if(_typeID == 1)
+void UniTensor::initUniT(int typeID){
+  if(typeID == 1)
     initUniT(RTYPE);
-  else if(_typeID == 2)
+  else if(typeID == 2)
     initUniT(CTYPE);
 }
 
@@ -1949,49 +1949,17 @@ std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::v
 
 void RtoC(UniTensor& UniT){
   try{
-    if(UniT.typeID() == 0){
-      std::ostringstream err;
-      err<<"This matrix is EMPTY. Nothing to do.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
     if(UniT.typeID() == 1){
       UniT.r_flag = RNULL;
       UniT.c_flag = CTYPE;
       UniT.c_elem = (Complex*)elemAlloc( UniT.m_elemNum * sizeof(Complex), UniT.ongpu);
       elemCast(UniT.c_elem, UniT.elem, UniT.m_elemNum, UniT.ongpu, UniT.ongpu);
-      size_t offset = 0;
-      for(std::map<Qnum, Block>::iterator it = UniT.blocks.begin() ; it != UniT.blocks.end(); it++ ){
-        RtoC(it->second);
-        it->second.cm_elem = &(UniT.c_elem[offset]);
-        it->second.ongpu = UniT.ongpu;
-        offset += it->second.Rnum * it->second.Cnum;
-      }
+      UniT.initBlocks(CTYPE);
       UniT.elem = NULL;
     }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In constructor UniTensor::RtoC( )");
-  }
-}
-void RtoC(Block& mat){
-  try{
-    if(mat.typeID() == 0){
-      std::ostringstream err;
-      err<<"This matrix is EMPTY. Nothing to do.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(mat.typeID() == 1){
-      mat.r_flag = RNULL;
-      mat.c_flag = CTYPE;
-      mat.cm_elem = (Complex*)elemAlloc(mat.elemNum() * sizeof(Complex), mat.ongpu);
-      elemCast(mat.cm_elem, mat.m_elem, mat.elemNum(), mat.ongpu, mat.ongpu);
-      if(mat.m_elem != NULL)
-        elemFree(mat.m_elem, mat.elemNum() * sizeof(Real), mat.ongpu);
-      mat.m_elem = NULL;
-    }
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Block::RtoC():");
   }
 }
 

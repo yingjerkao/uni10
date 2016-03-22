@@ -33,13 +33,14 @@ cmake_minimum_required(VERSION 2.8.0 FATAL_ERROR)
 ######################################################################
 
 set(tensor_network_lib_sources
-  Network.cpp
-  UniTensor.cpp
-  UniTensorReal.cpp
-  UniTensorComplex.cpp
   Matrix.cpp
   MatrixReal.cpp
   MatrixComplex.cpp
+  MatrixTools.cpp
+  UniTensor.cpp
+  UniTensorReal.cpp
+  UniTensorComplex.cpp
+  Network.cpp
 )
 
 
