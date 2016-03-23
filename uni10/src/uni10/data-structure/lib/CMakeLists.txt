@@ -37,6 +37,7 @@ set(data_structure_lib_sources
   Block.cpp
   BlockReal.cpp
   BlockComplex.cpp
+  BlockTools.cpp
   Bond.cpp
 )
 

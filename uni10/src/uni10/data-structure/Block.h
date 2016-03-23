@@ -79,6 +79,14 @@ namespace uni10{
 	    friend Matrix operator+(const Block& Ma, const Block& Mb);
 	    friend bool operator==(const Block& m1, const Block& m2);
 	    friend bool operator!=(const Block& m1, const Block& m2){return !(m1 == m2);};
+	    friend Matrix RDotR(const Block& Ma, const Block& Mb);
+	    friend Matrix CDotR(const Block& Ma, const Block& Mb);
+	    friend Matrix RDotC(const Block& Ma, const Block& Mb);
+	    friend Matrix CDotC(const Block& Ma, const Block& Mb);
+	    friend Matrix RAddR(const Block& Ma, const Block& Mb);
+	    friend Matrix CAddR(const Block& Ma, const Block& Mb);
+	    friend Matrix RAddC(const Block& Ma, const Block& Mb);
+	    friend Matrix CAddC(const Block& Ma, const Block& Mb);
 	    friend size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
 	    friend size_t lanczosEigh(rflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
 	    friend size_t lanczosEigh(cflag tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter, double err_tol );
@@ -206,6 +214,16 @@ namespace uni10{
 	    bool diag;
 	    bool ongpu;
     };
+
+    Matrix RDotR(const Block& Ma, const Block& Mb);
+    Matrix CDotR(const Block& Ma, const Block& Mb);
+    Matrix RDotC(const Block& Ma, const Block& Mb);
+    Matrix CDotC(const Block& Ma, const Block& Mb);
+
+    Matrix RAddR(const Block& Ma, const Block& Mb);
+    Matrix CAddR(const Block& Ma, const Block& Mb);
+    Matrix RAddC(const Block& Ma, const Block& Mb);
+    Matrix CAddC(const Block& Ma, const Block& Mb);
 
     size_t lanczosEigh(Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);
     size_t lanczosEigh(rflag _tp, Matrix& ori_mat, double& E0, Matrix& psi, size_t max_iter=1000, double err_tol = 5E-15);

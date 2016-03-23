@@ -135,123 +135,14 @@ namespace uni10{
 
   Matrix operator* (const Block& Ma, const Block& Mb){
     try{
-      if(!(Ma.Cnum == Mb.Rnum)){
-        std::ostringstream err;
-        err<<"The dimensions of the two matrices do not match for matrix multiplication.";
-        throw std::runtime_error(exception_msg(err.str()));
-      }
-      if(Ma.typeID() == 1 && Mb.typeID() == 1){
-        if((!Ma.diag) && (!Mb.diag)){
-          Matrix Mc(RTYPE, Ma.Rnum, Mb.Cnum);
-          matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else if(Ma.diag && (!Mb.diag)){
-          Matrix Mc(Mb);
-          Mc.resize(Ma.Rnum, Mb.Cnum);
-          diagRowMul(Mc.m_elem, Ma.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else if((!Ma.diag) && Mb.diag){
-          Matrix Mc(Ma);
-          Mc.resize(Ma.Rnum, Mb.Cnum);
-          diagColMul(Mc.m_elem, Mb.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else{
-          Matrix Mc(RTYPE, Ma.Rnum, Mb.Cnum, true);
-          Mc.set_zero(RTYPE);
-          size_t min = std::min(Ma.elemNum(), Mb.elemNum());
-          elemCopy(Mc.m_elem, Ma.m_elem, min * sizeof(Real), Mc.ongpu, Ma.ongpu);
-          vectorMul(Mc.m_elem, Mb.m_elem, min, Mc.ongpu, Mb.ongpu);
-          return Mc;
-        }
-      }else if(Ma.typeID() == 2 && Mb.typeID() == 2){
-        if((!Ma.diag) && (!Mb.diag)){
-          Matrix Mc(CTYPE, Ma.Rnum, Mb.Cnum);
-          matrixMul(Ma.cm_elem, Mb.cm_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.cm_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else if(Ma.diag && (!Mb.diag)){
-          Matrix Mc(Mb);
-          Mc.resize(Ma.Rnum, Mb.Cnum);
-          diagRowMul(Mc.cm_elem, Ma.cm_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else if((!Ma.diag) && Mb.diag){
-          Matrix Mc(Ma);
-          Mc.resize(Ma.Rnum, Mb.Cnum);
-          diagColMul(Mc.cm_elem, Mb.cm_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else{
-          Matrix Mc(CTYPE, Ma.Rnum, Mb.Cnum, true);
-          Mc.set_zero(CTYPE);
-          size_t min = std::min(Ma.elemNum(), Mb.elemNum());
-          elemCopy(Mc.cm_elem, Ma.cm_elem, min * sizeof(Complex), Mc.ongpu, Ma.ongpu);
-          vectorMul(Mc.cm_elem, Mb.cm_elem, min, Mc.ongpu, Mb.ongpu);
-          return Mc;
-        }
-      }
-
-      if(Ma.typeID() == 1 && Mb.typeID() == 2){  //R*C
-        Matrix _Ma(Ma);
-        RtoC(_Ma);
-        if((!_Ma.diag) && (!Mb.diag)){
-          Matrix Mc(CTYPE, _Ma.Rnum, Mb.Cnum);
-          matrixMul(_Ma.cm_elem, Mb.cm_elem, _Ma.Rnum, Mb.Cnum, _Ma.Cnum, Mc.cm_elem, _Ma.ongpu, Mb.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else if(_Ma.diag && (!Mb.diag)){
-          Matrix Mc(Mb);
-          Mc.resize(_Ma.Rnum, Mb.Cnum);
-          diagRowMul(Mc.cm_elem, _Ma.cm_elem, Mc.Rnum, Mc.Cnum, _Ma.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else if((!_Ma.diag) && Mb.diag){
-          Matrix Mc(_Ma);
-          Mc.resize(_Ma.Rnum, Mb.Cnum);
-          diagColMul(Mc.cm_elem, Mb.cm_elem, Mc.Rnum, Mc.Cnum, _Ma.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else{
-          Matrix Mc(CTYPE, _Ma.Rnum, Mb.Cnum, true);
-          Mc.set_zero(CTYPE);
-          size_t min = std::min(_Ma.elemNum(), Mb.elemNum());
-          elemCopy(Mc.cm_elem, _Ma.cm_elem, min * sizeof(Complex), Mc.ongpu, _Ma.ongpu);
-          vectorMul(Mc.cm_elem, Mb.cm_elem, min, Mc.ongpu, Mb.ongpu);
-          return Mc;
-        }
-      }
-      if(Ma.typeID() == 2 && Mb.typeID() == 1){
-        Matrix _Mb(Mb);
-        RtoC(_Mb);
-        if((!Ma.diag) && (!_Mb.diag)){
-          Matrix Mc(CTYPE, Ma.Rnum, _Mb.Cnum);
-          matrixMul(Ma.cm_elem, _Mb.cm_elem, Ma.Rnum, _Mb.Cnum, Ma.Cnum, Mc.cm_elem, Ma.ongpu, _Mb.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else if(Ma.diag && (!_Mb.diag)){
-          Matrix Mc(_Mb);
-          Mc.resize(Ma.Rnum, _Mb.Cnum);
-          diagRowMul(Mc.cm_elem, Ma.cm_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else if((!Ma.diag) && _Mb.diag){
-          Matrix Mc(Ma);
-          Mc.resize(Ma.Rnum, _Mb.Cnum);
-          diagColMul(Mc.cm_elem, _Mb.cm_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
-          return Mc;
-        }
-        else{
-          Matrix Mc(CTYPE, Ma.Rnum, _Mb.Cnum, true);
-          Mc.set_zero(CTYPE);
-          size_t min = std::min(Ma.elemNum(), _Mb.elemNum());
-          elemCopy(Mc.cm_elem, Ma.cm_elem, min * sizeof(Complex), Mc.ongpu, Ma.ongpu);
-          vectorMul(Mc.cm_elem, _Mb.cm_elem, min, Mc.ongpu, _Mb.ongpu);
-          return Mc;
-        }
-      }
+      if(Ma.typeID() == 1 && Mb.typeID() == 1)
+        return RDotR(Ma, Mb);
+      else if(Ma.typeID() == 2 && Mb.typeID() == 2)
+        return CDotC(Ma, Mb);
+      else if(Ma.typeID() == 1 && Mb.typeID() == 2)
+        return RDotC(Ma, Mb);
+      else if(Ma.typeID() == 2 && Mb.typeID() == 1)
+        return CDotR(Ma, Mb);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function operator*(uni10::Matrix&, uni10::Matrix&):");
@@ -272,6 +163,7 @@ namespace uni10{
       return Block();
     }
   }
+
   Matrix operator*(double a, const Block& Ma){return Ma * a;}
 
   Matrix operator*(const Block& Ma, const std::complex<double>& a){
@@ -300,88 +192,16 @@ namespace uni10{
       };*/
 
     try{
-      if(Ma.typeID() == 1 && Mb.typeID() == 1){
-        if (Ma.diag && !Mb.diag) {
-          //std::cout << "Ma is diagonal."<<std::endl;
-          Matrix Mc(RTYPE, Ma.Rnum,Ma.Cnum);
-          setDiag(Mc.m_elem,Ma.m_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
-          vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-          return Mc;
-        } else if (Mb.diag && !Ma.diag) {
-          //std::cout << "Mb is diagonal."<<std::endl;
-          Matrix Mc(RTYPE, Mb.Rnum, Mb.Cnum);
-          setDiag(Mc.m_elem,Mb.m_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
-          //std::cout << Mc ;
-          vectorAdd(Mc.m_elem, Ma.m_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
-          return Mc;
-        } else {
-          Matrix Mc(Ma);
-          vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-          return Mc;
-        }
-      }else if(Ma.typeID() == 2 && Mb.typeID() == 2){
-        if (Ma.diag && !Mb.diag) {
-          //std::cout << "Ma is diagonal."<<std::endl;
-          Matrix Mc(CTYPE, Ma.Rnum,Ma.Cnum);
-          setDiag(Mc.cm_elem,Ma.cm_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
-          vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-          return Mc;
-        } else if (Mb.diag && !Ma.diag) {
-          //std::cout << "Mb is diagonal."<<std::endl;
-          Matrix Mc(CTYPE, Mb.Rnum,Mb.Cnum);
-          setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
-          //std::cout << Mc ;
-          vectorAdd(Mc.cm_elem, Ma.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
-          return Mc;
-        } else {
-          Matrix Mc(Ma);
-          vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-          return Mc;
-        }
-      }else if(Ma.typeID() == 1 && Mb.typeID() == 2){
-        Matrix _Ma(Ma);
-        RtoC(_Ma);
-        if (_Ma.diag && !Mb.diag) {
-          //std::cout << "Ma is diagonal."<<std::endl;
-          Matrix Mc(CTYPE, _Ma.Rnum,_Ma.Cnum);
-          setDiag(Mc.cm_elem,_Ma.cm_elem,Mc.Rnum,Mc.Cnum,_Ma.Rnum,Mc.ongpu,_Ma.ongpu);
-          vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-          return Mc;
-        } else if (Mb.diag && !_Ma.diag) {
-          //std::cout << "Mb is diagonal."<<std::endl;
-          Matrix Mc(CTYPE, Mb.Rnum,Mb.Cnum);
-          setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
-          //std::cout << Mc ;
-          vectorAdd(Mc.cm_elem, _Ma.cm_elem, Mc.elemNum(), Mc.ongpu, _Ma.ongpu);
-          return Mc;
-        } else {
-          Matrix Mc(_Ma);
-          vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-          return Mc;
-        }
-      }
-      if(Ma.typeID() == 2 && Mb.typeID() == 1){
-        Matrix _Mb(Mb);
-        RtoC(_Mb);
-        if (Ma.diag && !_Mb.diag) {
-          //std::cout << "Ma is diagonal."<<std::endl;
-          Matrix Mc(CTYPE, Ma.Rnum,Ma.Cnum);
-          setDiag(Mc.cm_elem,Ma.cm_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
-          vectorAdd(Mc.cm_elem, _Mb.cm_elem, Mc.elemNum(), Mc.ongpu, _Mb.ongpu);
-          return Mc;
-        } else if (_Mb.diag && !Ma.diag) {
-          //std::cout << "Mb is diagonal."<<std::endl;
-          Matrix Mc(CTYPE, _Mb.Rnum,_Mb.Cnum);
-          setDiag(Mc.cm_elem,_Mb.cm_elem,Mc.Rnum,Mc.Cnum,_Mb.Cnum,Mc.ongpu,_Mb.ongpu);
-          //std::cout << Mc ;
-          vectorAdd(Mc.cm_elem, Ma.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
-          return Mc;
-        } else {
-          Matrix Mc(Ma);
-          vectorAdd(Mc.cm_elem, _Mb.cm_elem, Mc.elemNum(), Mc.ongpu, _Mb.ongpu);
-          return Mc;
-        }
-      }
+
+      if(Ma.typeID() == 1 && Mb.typeID() == 1)
+        return RAddR(Ma, Mb);
+      else if(Ma.typeID() == 2 && Mb.typeID() == 2)
+        return CAddC(Ma, Mb);
+      else if(Ma.typeID() == 1 && Mb.typeID() == 2)
+        return RAddC(Ma, Mb);
+      else if(Ma.typeID() == 2 && Mb.typeID() == 1)
+        return CAddR(Ma, Mb);
+
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");

@@ -1,0 +1,206 @@
+/****************************************************************************
+ *  @file Block.cpp
+ *  @license
+ *    Universal Tensor Network Library
+ *    Copyright (c) 2013-2014
+ *    National Taiwan University
+ *    National Tsing-Hua University
+
+ *
+ *    This file is part of Uni10, the Universal Tensor Network Library.
+ *
+ *    Uni10 is free software: you can redistribute it and/or modify
+ *    it under the terms of the GNU Lesser General Public License as published by
+ *    the Free Software Foundation, either version 3 of the License, or
+ *    (at your option) any later version.
+ *
+ *    Uni10 is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *    GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License
+ *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
+ *  @endlicense
+ *  @brief Implementation file of Block class
+ *  @author Yun-Da Hsieh
+ *  @date 2014-05-06
+ *  @since 0.1.0
+ *
+ *****************************************************************************/
+#include <uni10/numeric/uni10_lapack.h>
+#include <uni10/tools/uni10_tools.h>
+#include <uni10/tensor-network/Matrix.h>
+
+typedef double Real;
+typedef std::complex<double> Complex;
+
+namespace uni10{
+
+  Matrix RDotR(const Block& Ma, const Block& Mb){
+    try{
+      if(!(Ma.Cnum == Mb.Rnum)){
+        std::ostringstream err;
+        err<<"The dimensions of the two matrices do not match for matrix multiplication.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      if((!Ma.diag) && (!Mb.diag)){
+        Matrix Mc(RTYPE, Ma.Rnum, Mb.Cnum);
+        matrixMul(Ma.m_elem, Mb.m_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.m_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
+        return Mc;
+      }
+      else if(Ma.diag && (!Mb.diag)){
+        Matrix Mc(Mb);
+        Mc.resize(Ma.Rnum, Mb.Cnum);
+        diagRowMul(Mc.m_elem, Ma.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
+        return Mc;
+      }
+      else if((!Ma.diag) && Mb.diag){
+        Matrix Mc(Ma);
+        Mc.resize(Ma.Rnum, Mb.Cnum);
+        diagColMul(Mc.m_elem, Mb.m_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
+        return Mc;
+      }
+      else{
+        Matrix Mc(RTYPE, Ma.Rnum, Mb.Cnum, true);
+        Mc.set_zero(RTYPE);
+        size_t min = std::min(Ma.elemNum(), Mb.elemNum());
+        elemCopy(Mc.m_elem, Ma.m_elem, min * sizeof(Real), Mc.ongpu, Ma.ongpu);
+        vectorMul(Mc.m_elem, Mb.m_elem, min, Mc.ongpu, Mb.ongpu);
+        return Mc;
+      }
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Matrix RDotR(const uni10::Block&, const uni10::Block&):");
+      return Block();
+    }
+    return Matrix();
+  }
+
+  Matrix CDotC(const Block& Ma, const Block& Mb){
+    if(!(Ma.Cnum == Mb.Rnum)){
+      std::ostringstream err;
+      err<<"The dimensions of the two matrices do not match for matrix multiplication.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if((!Ma.diag) && (!Mb.diag)){
+      Matrix Mc(CTYPE, Ma.Rnum, Mb.Cnum);
+      matrixMul(Ma.cm_elem, Mb.cm_elem, Ma.Rnum, Mb.Cnum, Ma.Cnum, Mc.cm_elem, Ma.ongpu, Mb.ongpu, Mc.ongpu);
+      return Mc;
+    }
+    else if(Ma.diag && (!Mb.diag)){
+      Matrix Mc(Mb);
+      Mc.resize(Ma.Rnum, Mb.Cnum);
+      diagRowMul(Mc.cm_elem, Ma.cm_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
+      return Mc;
+    }
+    else if((!Ma.diag) && Mb.diag){
+      Matrix Mc(Ma);
+      Mc.resize(Ma.Rnum, Mb.Cnum);
+      diagColMul(Mc.cm_elem, Mb.cm_elem, Mc.Rnum, Mc.Cnum, Ma.ongpu, Mc.ongpu);
+      return Mc;
+    }
+    else{
+      Matrix Mc(CTYPE, Ma.Rnum, Mb.Cnum, true);
+      Mc.set_zero(CTYPE);
+      size_t min = std::min(Ma.elemNum(), Mb.elemNum());
+      elemCopy(Mc.cm_elem, Ma.cm_elem, min * sizeof(Complex), Mc.ongpu, Ma.ongpu);
+      vectorMul(Mc.cm_elem, Mb.cm_elem, min, Mc.ongpu, Mb.ongpu);
+      return Mc;
+    }
+  }
+
+  Matrix RDotC(const Block& Ma, const Block& Mb){
+
+    if(!(Ma.Cnum == Mb.Rnum)){
+      std::ostringstream err;
+      err<<"The dimensions of the two matrices do not match for matrix multiplication.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    Matrix _Ma(Ma);
+    RtoC(_Ma);
+    return CDotC(_Ma, Mb);
+
+  }
+
+  Matrix CDotR(const Block& Ma, const Block& Mb){
+
+    if(!(Ma.Cnum == Mb.Rnum)){
+      std::ostringstream err;
+      err<<"The dimensions of the two matrices do not match for matrix multiplication.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    Matrix _Mb(Mb);
+    RtoC(_Mb);
+    return CDotC(Ma, _Mb);
+
+  }
+
+  Matrix RAddR(const Block& Ma, const Block& Mb){
+
+    if (Ma.diag && !Mb.diag) {
+      Matrix Mc(RTYPE, Ma.Rnum,Ma.Cnum);
+      setDiag(Mc.m_elem,Ma.m_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
+      vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
+      return Mc;
+    } else if (Mb.diag && !Ma.diag) {
+      Matrix Mc(RTYPE, Mb.Rnum, Mb.Cnum);
+      setDiag(Mc.m_elem,Mb.m_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
+      vectorAdd(Mc.m_elem, Ma.m_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
+      return Mc;
+    } else {
+      Matrix Mc(Ma);
+      vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
+      return Mc;
+    }
+
+  }
+
+  Matrix CAddC(const Block& Ma, const Block& Mb){
+
+    if (Ma.diag && !Mb.diag) {
+      Matrix Mc(CTYPE, Ma.Rnum,Ma.Cnum);
+      setDiag(Mc.cm_elem,Ma.cm_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
+      vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
+      return Mc;
+    } else if (Mb.diag && !Ma.diag) {
+      Matrix Mc(CTYPE, Mb.Rnum,Mb.Cnum);
+      setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
+      vectorAdd(Mc.cm_elem, Ma.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
+      return Mc;
+    } else {
+      Matrix Mc(Ma);
+      vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
+      return Mc;
+    }
+
+  }
+
+  Matrix RAddC(const Block& Ma, const Block& Mb){
+
+    Matrix _Ma(Ma);
+    RtoC(_Ma);
+    return CAddC(_Ma, Mb);
+
+  }
+
+  Matrix CAddR(const Block& Ma, const Block& Mb){
+
+    Matrix _Mb(Mb);
+    RtoC(_Mb);
+    return CAddC(Ma, _Mb);
+
+  }
+
+};	/* namespace uni10 */
+/*
+#ifdef Block
+#undef Block
+#endif
+#ifdef Matrix
+#undef Matrix
+#endif
+#ifdef Real
+#undef Real
+#endif
+*/

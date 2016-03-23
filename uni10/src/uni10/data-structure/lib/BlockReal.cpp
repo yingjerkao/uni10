@@ -48,7 +48,7 @@ namespace uni10{
       }
       if(typeID() == 0 || typeID() == 2){
         std::ostringstream err;
-        err<<"This matrix is EMPTY or Complex. If it's complex, please use operator() instead of operator[].";
+        err<<"This matrix is EMPTY or COMPLEX. If it's COMPLEX, please use operator() instead of operator[].";
         throw std::runtime_error(exception_msg(err.str()));
       }
       if(typeID() == 1)
@@ -62,6 +62,17 @@ namespace uni10{
 
   Real* Block::getElem(rflag tp)const{
     throwTypeError(tp);
+    try{
+      if(typeID() == 2){
+        std::ostringstream err;
+        err<<"This matrix is COMPLEX. Please use getElem(uni10::cflag ) instead.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      return m_elem;
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Block::getElem(uni10::rflag ):");
+    }
     return m_elem;
   }
 

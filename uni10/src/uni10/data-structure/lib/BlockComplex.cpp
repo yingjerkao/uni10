@@ -62,6 +62,17 @@ namespace uni10{
 
   Complex* Block::getElem(cflag tp)const{
     throwTypeError(tp);
+    try{
+      if(typeID() == 1){
+        std::ostringstream err;
+        err<<"This matrix is REAL. Please use getElem() or getElem(uni10::rflag ) instead.";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+      return cm_elem;
+    }
+    catch(const std::exception& e){
+      propogate_exception(e, "In function Block::getElem(uni10::cflag ):");
+    }
     return cm_elem;
   }
 

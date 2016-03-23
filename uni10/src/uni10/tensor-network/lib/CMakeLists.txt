@@ -40,6 +40,7 @@ set(tensor_network_lib_sources
   UniTensor.cpp
   UniTensorReal.cpp
   UniTensorComplex.cpp
+  UniTensorTools.cpp
   Network.cpp
 )
 

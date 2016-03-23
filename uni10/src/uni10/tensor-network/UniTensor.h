@@ -116,15 +116,15 @@ namespace uni10 {
         /// Performs High order SVD of UniTensor.
         /// @param modeNum Number of output modes
         /// @param fixedNum Number of bonds to remain unchanged
-            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum = 0)const;
+        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum = 0)const;
         /// @overload
-            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
+        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
         /// @overload
-            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
         /// @overload
-            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, std::vector<Matrix>& Ls)const;
+        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, std::vector<Matrix>& Ls)const;
         /// @overload
-            std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
 
         /*********************  OPERATOR **************************/
 
@@ -1093,5 +1093,7 @@ namespace uni10 {
     UniTensor contract(rflag tp, UniTensor& Ta, UniTensor& Tb, bool fast = false);
     UniTensor contract(cflag tp, UniTensor& Ta, UniTensor& Tb, bool fast = false);
     UniTensor otimes(const UniTensor& Ta, const UniTensor& Tb);
+    UniTensor otimes(rflag tp, const UniTensor& Ta, const UniTensor& Tb);
+    UniTensor otimes(cflag tp, const UniTensor& Ta, const UniTensor& Tb);
 };  /* namespace uni10 */
 #endif /* UNITENSOR_H */

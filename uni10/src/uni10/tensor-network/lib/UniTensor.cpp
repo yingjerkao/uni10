@@ -1201,60 +1201,6 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
   return *this;
 }
 
-UniTensor contract(UniTensor& _Ta, UniTensor& _Tb, bool fast){
-  try{
-    if(_Ta.typeID() == 0 || _Tb.typeID() == 0){
-      std::ostringstream err;
-      err<<"This tensor is EMPTY ";
-      throw std::runtime_error(exception_msg(err.str()));
-    }else if(_Ta.typeID() == 1 && _Tb.typeID() == 1)
-      return contract(RTYPE, _Ta, _Tb, fast);
-    else if(_Ta.typeID() == 2 && _Tb.typeID() == 2)
-      return contract(CTYPE, _Ta, _Tb, fast);
-    else if(_Ta.typeID() == 1 && _Tb.typeID() == 2){
-      UniTensor Ta(_Ta);
-      RtoC(Ta);
-      return contract(CTYPE, Ta, _Tb, fast);
-    }else{
-      UniTensor Tb(_Tb);
-      RtoC(Tb);
-      return contract(CTYPE, _Ta, Tb, fast);
-    }
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function contract(uni10::UniTensor&, uni10::UniTensor, bool):");
-    return UniTensor();
-  }
-}
-
-UniTensor otimes(const UniTensor & Ta, const UniTensor& Tb){
-  try{
-    UniTensor T1 = Ta;
-    UniTensor T2 = Tb;
-    std::vector<int> label1(T1.bondNum());
-    std::vector<int> label2(T2.bondNum());
-    for(size_t i = 0; i < T1.bondNum(); i++){
-      if(i < T1.inBondNum())
-        label1[i] = i;
-      else
-        label1[i] = T2.inBondNum() + i;
-    }
-    for(size_t i = 0; i < T2.bondNum(); i++){
-      if(i < T2.inBondNum())
-        label2[i] = i + T1.inBondNum();
-      else
-        label2[i] = i + T1.bondNum();
-    }
-    T1.setLabel(label1);
-    T2.setLabel(label2);
-    return contract(T1, T2, true);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function otimes(uni10::UniTensor&, uni10::UniTensor&):");
-    return UniTensor();
-  }
-}
-
 std::vector<UniTensor> UniTensor::hosvd(size_t modeNum, size_t fixedNum)const{
   try{
     std::vector<std::map<Qnum, Matrix> > symLs;
@@ -1945,22 +1891,6 @@ std::vector<UniTensor> UniTensor::_hosvd(size_t modeNum, size_t fixedNum, std::v
   S.permute(out_labels, fixedNum);
   Us.push_back(S);
   return Us;
-}
-
-void RtoC(UniTensor& UniT){
-  try{
-    if(UniT.typeID() == 1){
-      UniT.r_flag = RNULL;
-      UniT.c_flag = CTYPE;
-      UniT.c_elem = (Complex*)elemAlloc( UniT.m_elemNum * sizeof(Complex), UniT.ongpu);
-      elemCast(UniT.c_elem, UniT.elem, UniT.m_elemNum, UniT.ongpu, UniT.ongpu);
-      UniT.initBlocks(CTYPE);
-      UniT.elem = NULL;
-    }
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In constructor UniTensor::RtoC( )");
-  }
 }
 
 }; /* namespace uni10 */
