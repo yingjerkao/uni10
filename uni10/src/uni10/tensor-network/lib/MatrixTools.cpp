@@ -66,10 +66,11 @@ namespace uni10{
 
   Matrix exph(double a, const Block& mat){
     try{
-      if(mat.typeID() == 1)
-        return  exph(RTYPE, a, mat);
-      else if(mat.typeID() == 2)
-        return  exph(CTYPE, a, mat);
+      std::vector<Matrix> rets = mat.eigh();
+      Matrix UT(rets[1]);
+      UT.cTranspose();
+      vectorExp(a, rets[0].getElem(RTYPE), rets[0].row(), rets[0].isOngpu());
+      return UT * (rets[0] * rets[1]);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function exph(double, uni10::Matrix&):");
@@ -80,26 +81,18 @@ namespace uni10{
   Matrix exph(rflag tp, double a, const Block& mat){
     try{
       throwTypeError(tp);
-      std::vector<Matrix> rets = mat.eigh();
-      Matrix UT(rets[1]);
-      UT.transpose();
-      vectorExp(a, rets[0].getElem(RTYPE), rets[0].row(), rets[0].isOngpu());
-      return UT * (rets[0] * rets[1]);
+      return exph(a, mat);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function exph(uni10::rflag, double, uni10::Matrix&):");
-      return Matrix();
     }
+    return Matrix();
   }
 
   Matrix exph(cflag tp, double a, const Block& mat){
     try{
       throwTypeError(tp);
-      std::vector<Matrix> rets = mat.eigh();
-      Matrix UT(rets[1]);
-      UT.cTranspose();
-      vectorExp(a, rets[0].getElem(CTYPE), rets[0].row(), rets[0].isOngpu());
-      return UT * (rets[0] * rets[1]);
+      return exph(a, mat);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function exph(uni10::cflag, double, uni10::Matrix&):");
@@ -112,12 +105,12 @@ namespace uni10{
       std::vector<Matrix> rets = mat.eig();
       Matrix Uinv = rets[1].inverse();
       vectorExp(a, rets[0].getElem(CTYPE), rets[0].row(), rets[0].isOngpu());
-      return Uinv * (rets[0] * rets[1]);
+      return Uinv * CDotC(rets[0], rets[1]);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function exp(double, uni10::Matrix&):");
-      return Matrix();
     }
+    return Matrix();
   }
 
   Matrix exp(const std::complex<double>& a, const Block& mat){
@@ -125,7 +118,7 @@ namespace uni10{
       std::vector<Matrix> rets = mat.eig();
       Matrix Uinv = rets[1].inverse();
       vectorExp(a, rets[0].getElem(CTYPE), rets[0].row(), rets[0].isOngpu());
-      return Uinv * (rets[0] * rets[1]);
+      return Uinv * CDotC(rets[0], rets[1]);
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function exp(std::complex<double>, uni10::Matrix&):");

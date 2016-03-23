@@ -112,11 +112,6 @@ namespace uni10{
 
   Matrix RDotC(const Block& Ma, const Block& Mb){
 
-    if(!(Ma.Cnum == Mb.Rnum)){
-      std::ostringstream err;
-      err<<"The dimensions of the two matrices do not match for matrix multiplication.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
     Matrix _Ma(Ma);
     RtoC(_Ma);
     return CDotC(_Ma, Mb);
@@ -125,11 +120,6 @@ namespace uni10{
 
   Matrix CDotR(const Block& Ma, const Block& Mb){
 
-    if(!(Ma.Cnum == Mb.Rnum)){
-      std::ostringstream err;
-      err<<"The dimensions of the two matrices do not match for matrix multiplication.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
     Matrix _Mb(Mb);
     RtoC(_Mb);
     return CDotC(Ma, _Mb);
