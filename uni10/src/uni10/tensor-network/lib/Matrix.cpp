@@ -123,11 +123,23 @@ Matrix& Matrix::operator*= (Complex a){
 
 Matrix& Matrix::operator+= (const Block& Mb){
   try{
+    if ((Rnum != Mb.Rnum) || (Cnum != Mb.Cnum) ){
+      std::ostringstream err;
+      err<<"These two matrix has different shape do not match for matrix add. ";
+      throw std::runtime_error(exception_msg(err.str())); ;
+    };
     if(!ongpu && typeID() == 1)
       m_elem = (Real*)mvGPU(m_elem, elemNum() * sizeof(Real), ongpu);
     if(!ongpu && typeID() == 2)
       cm_elem = (Complex*)mvGPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
-    *this = *this + Mb;
+    if(typeID() == 1 && Mb.typeID() == 1)
+      RAddR(*this, Mb);
+    else if(typeID() == 2 && Mb.typeID() == 2)
+      CAddC(*this, Mb);
+    else if(typeID() == 1 && Mb.typeID() == 2)
+      RAddC(*this,Mb);
+    else if(typeID() == 2 && Mb.typeID() == 1)
+      CAddR(*this, Mb);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::operator+=(uni10::Matrix&):");

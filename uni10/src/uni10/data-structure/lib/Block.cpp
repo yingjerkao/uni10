@@ -185,23 +185,10 @@ namespace uni10{
   Matrix operator*(const std::complex<double>& a, const Block& Ma){return Ma * a;}
 
   Matrix operator+(const Block& Ma, const Block& Mb){
-    /*if ((Ma.diag && !Mb.diag) || (!Ma.diag && Mb.diag) ){
-      std::ostringstream err;
-      err<<"Fatal error(code = T1). Addition of a diagonal and a regular matrices is not implemented.";
-      throw std::runtime_error(exception_msg(err.str())); ;
-      };*/
-
     try{
-
-      if(Ma.typeID() == 1 && Mb.typeID() == 1)
-        return RAddR(Ma, Mb);
-      else if(Ma.typeID() == 2 && Mb.typeID() == 2)
-        return CAddC(Ma, Mb);
-      else if(Ma.typeID() == 1 && Mb.typeID() == 2)
-        return RAddC(Ma, Mb);
-      else if(Ma.typeID() == 2 && Mb.typeID() == 1)
-        return CAddR(Ma, Mb);
-
+      Matrix Mc = Ma;
+      Mc += Mb; 
+      return Mc;
     }
     catch(const std::exception& e){
       propogate_exception(e, "In function operator+(uni10::Matrix&, uni10::Matrix&):");

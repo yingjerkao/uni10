@@ -126,62 +126,6 @@ namespace uni10{
 
   }
 
-  Matrix RAddR(const Block& Ma, const Block& Mb){
-
-    if (Ma.diag && !Mb.diag) {
-      Matrix Mc(RTYPE, Ma.Rnum,Ma.Cnum);
-      setDiag(Mc.m_elem,Ma.m_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
-      vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-      return Mc;
-    } else if (Mb.diag && !Ma.diag) {
-      Matrix Mc(RTYPE, Mb.Rnum, Mb.Cnum);
-      setDiag(Mc.m_elem,Mb.m_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
-      vectorAdd(Mc.m_elem, Ma.m_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
-      return Mc;
-    } else {
-      Matrix Mc(Ma);
-      vectorAdd(Mc.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-      return Mc;
-    }
-
-  }
-
-  Matrix CAddC(const Block& Ma, const Block& Mb){
-
-    if (Ma.diag && !Mb.diag) {
-      Matrix Mc(CTYPE, Ma.Rnum,Ma.Cnum);
-      setDiag(Mc.cm_elem,Ma.cm_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
-      vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-      return Mc;
-    } else if (Mb.diag && !Ma.diag) {
-      Matrix Mc(CTYPE, Mb.Rnum,Mb.Cnum);
-      setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
-      vectorAdd(Mc.cm_elem, Ma.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
-      return Mc;
-    } else {
-      Matrix Mc(Ma);
-      vectorAdd(Mc.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
-      return Mc;
-    }
-
-  }
-
-  Matrix RAddC(const Block& Ma, const Block& Mb){
-
-    Matrix _Ma(Ma);
-    RtoC(_Ma);
-    return CAddC(_Ma, Mb);
-
-  }
-
-  Matrix CAddR(const Block& Ma, const Block& Mb){
-
-    Matrix _Mb(Mb);
-    RtoC(_Mb);
-    return CAddC(Ma, _Mb);
-
-  }
-
 };	/* namespace uni10 */
 /*
 #ifdef Block

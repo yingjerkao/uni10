@@ -57,6 +57,10 @@ class Matrix:public Block {
 public:
 
     friend void RtoC(Matrix& mat);
+    friend void RAddR(Matrix& Ma, const Matrix& Mb);
+    friend void CAddR(Matrix& Ma, const Matrix& Mb);
+    friend void RAddC(Matrix& Ma, const Matrix& Mb);
+    friend void CAddC(Matrix& Ma, const Matrix& Mb);
     /*********************  developping  **********************/
 
 
@@ -382,6 +386,10 @@ private:
 };
 
 void RtoC(Matrix& mat);
+void RAddR(Matrix& Ma, const Matrix& Mb);
+void CAddR(Matrix& Ma, const Matrix& Mb);
+void RAddC(Matrix& Ma, const Matrix& Mb);
+void CAddC(Matrix& Ma, const Matrix& Mb);
 Matrix takeExp(double a, const Block& mat);
 Matrix exph(double a, const Block& mat);
 Matrix exph(rflag tp, double a, const Block& mat);

@@ -54,6 +54,53 @@ namespace uni10{
     }
   }
 
+  void RAddR(Matrix& Ma, const Matrix& Mb){
+
+    if (Ma.diag && !Mb.diag) {
+      Matrix Mc(RTYPE, Ma.Rnum,Ma.Cnum);
+      setDiag(Mc.m_elem,Ma.m_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
+      Ma = Mc;
+      vectorAdd(Ma.m_elem, Mb.m_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
+    } else if (Mb.diag && !Ma.diag) {
+      Matrix Mc(RTYPE, Mb.Rnum, Mb.Cnum);
+      setDiag(Mc.m_elem,Mb.m_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
+      vectorAdd(Ma.m_elem, Mc.m_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
+    } else 
+      vectorAdd(Ma.m_elem, Mb.m_elem, Ma.elemNum(), Ma.ongpu, Mb.ongpu);
+
+  }
+
+  void CAddC(Matrix& Ma, const Matrix& Mb){
+
+    if (Ma.diag && !Mb.diag) {
+      Matrix Mc(CTYPE, Ma.Rnum,Ma.Cnum);
+      setDiag(Mc.cm_elem,Ma.cm_elem,Mc.Rnum,Mc.Cnum,Ma.Rnum,Mc.ongpu,Ma.ongpu);
+      Ma = Mc;
+      vectorAdd(Ma.cm_elem, Mb.cm_elem, Mc.elemNum(), Mc.ongpu, Mb.ongpu);
+    } else if (!Ma.diag && Mb.diag) {
+      Matrix Mc(CTYPE, Mb.Rnum,Mb.Cnum);
+      setDiag(Mc.cm_elem,Mb.cm_elem,Mc.Rnum,Mc.Cnum,Mb.Cnum,Mc.ongpu,Mb.ongpu);
+      vectorAdd(Ma.cm_elem, Mc.cm_elem, Mc.elemNum(), Mc.ongpu, Ma.ongpu);
+    } else 
+      vectorAdd(Ma.cm_elem, Mb.cm_elem, Ma.elemNum(), Ma.ongpu, Mb.ongpu);
+
+  }
+
+  void RAddC(Matrix& Ma, const Matrix& Mb){
+
+    RtoC(Ma);
+    return CAddC(Ma, Mb);
+
+  }
+
+  void CAddR(Matrix& Ma, const Matrix& Mb){
+
+    Matrix _Mb(Mb);
+    RtoC(_Mb);
+    return CAddC(Ma, _Mb);
+
+  }
+
   Matrix takeExp(double a, const Block& mat){
     try{
       return exph(a, mat);
