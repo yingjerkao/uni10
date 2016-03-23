@@ -38,7 +38,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 ################################
 
 SET(CMAKE_CXX_FLAGS "-O3 -std=c++11")
-set(test_sources testQnum.cpp testBond.cpp testTools.cpp testUniTensor.cpp testNetwork.cpp)
+set(test_sources testQnum.cpp testBond.cpp testTools.cpp testMatrix.cpp testUniTensor.cpp testNetwork.cpp)
 # Add test cpp file
 add_executable( runUnitTests ${test_sources})
 # Link test executable against gtest & gtest_main

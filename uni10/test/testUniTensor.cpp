@@ -21,6 +21,37 @@ TEST(UniTensor,DefaultConstructor){
 
 }
 
+TEST(UniTensor,setElem){
+    std::vector<Bond> bondsA(3, Bond(BD_OUT, 2));
+    bondsA[0] = Bond(BD_IN, 3);
+    UniTensor A(bondsA);
+    A.randomize();
+    double* elem = (double*)malloc(sizeof(double)*A.elemNum());
+    memcpy(elem, A.getElem(), sizeof(double)*A.elemNum());
+    UniTensor B(bondsA);
+    B.setRawElem(elem);
+    UniTensor C(bondsA);
+    C.setElem(elem);
+
+    Matrix M(3, 4);
+    M.setElem(elem);
+    UniTensor D(bondsA);
+    D.putBlock(M);
+    for(size_t i = 0; i < A.elemNum(); i++){
+        ASSERT_EQ(A.at(i), B.at(i));
+        ASSERT_EQ(C.at(i), C.at(i));
+        ASSERT_EQ(C.at(i), D.at(i));
+    }
+}
+
+TEST(UniTensor,setRawElem){
+
+    UniTensor A;
+    ASSERT_EQ(A.typeID(), 1);
+    ASSERT_EQ(A.bondNum(), 0);
+
+}
+
 TEST(UniTensor, putBlock){
     
     Matrix MA(4, 9);  

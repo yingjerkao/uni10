@@ -14,7 +14,7 @@
 #include <vector>
 using namespace uni10;
 
-TEST(Matrix, RDotR){
+TEST(Tools, RDotR){
 
     Matrix A(4, 3);
     A.randomize();
@@ -24,7 +24,7 @@ TEST(Matrix, RDotR){
 
 }
 
-TEST(Matrix, RDotC){
+TEST(Tools, RDotC){
 
     Matrix A(4, 3);
     A.randomize();
@@ -34,7 +34,7 @@ TEST(Matrix, RDotC){
 
 }
 
-TEST(Matrix, CDotR){
+TEST(Tools, CDotR){
 
     Matrix A(CTYPE, 4, 3);
     A.randomize();
@@ -44,7 +44,7 @@ TEST(Matrix, CDotR){
 
 }
 
-TEST(Matrix, CDotC){
+TEST(Tools, CDotC){
 
     Matrix A(CTYPE, 4, 3);
     A.randomize();
@@ -54,7 +54,7 @@ TEST(Matrix, CDotC){
 
 }
 
-TEST(Matrix, RAddR){
+TEST(Tools, RAddR){
     
     Matrix A(10, 10);
     A.randomize();
@@ -64,7 +64,8 @@ TEST(Matrix, RAddR){
     memcpy(elemA, A.getElem(), sizeof(double)*A.elemNum());
     double* elemB = (double*)malloc(sizeof(double)*B.elemNum());
     memcpy(elemB, B.getElem(), sizeof(double)*B.elemNum());
-    Matrix C0 = RAddR(A, B);
+    Matrix C0 = A;
+    RAddR(C0, B);
     for(size_t i = 0; i < A.elemNum(); i++)
         ASSERT_EQ(C0[i], elemA[i] + elemB[i]);
 
@@ -73,7 +74,8 @@ TEST(Matrix, RAddR){
     Ad.randomize();
     double* elemAd = (double*)malloc(sizeof(double)*Ad.elemNum());
     memcpy(elemAd, Ad.getElem(), sizeof(double)*Ad.elemNum());
-    Matrix C1 = RAddR(Ad, B);
+    Matrix C1 = Ad;
+    RAddR(C1, B);
     int row = 0;
     for(size_t i = 0; i < C1.elemNum(); i++){
         if(i == 0 || i % (row*C1.col()+row) == 0){
@@ -88,7 +90,8 @@ TEST(Matrix, RAddR){
     Bd.randomize();
     double* elemBd = (double*)malloc(sizeof(double)*Bd.elemNum());
     memcpy(elemBd, Bd.getElem(), sizeof(double)*Bd.elemNum());
-    Matrix C2 = RAddR(A, Bd);
+    Matrix C2 = A;
+    RAddR(C2, Bd);
     row = 0;
     for(size_t i = 0; i < C2.elemNum(); i++){
         if(i == 0 || i % (row*C2.col()+row) == 0){
@@ -99,7 +102,8 @@ TEST(Matrix, RAddR){
     }
 
     // If A adn B are diagonal 
-    Matrix C3 = RAddR(Ad, Bd);
+    Matrix C3 = Ad;
+    RAddR(C3, Bd);
     ASSERT_EQ(C3.isDiag(), true);
 
     for(size_t i = 0; i < C3.elemNum(); i++)
@@ -111,7 +115,7 @@ TEST(Matrix, RAddR){
     free(elemBd);
 }
 
-TEST(Matrix, CAddC){
+TEST(Tools, CAddC){
 
     Matrix A(CTYPE, 10, 10);
     A.randomize();
@@ -121,8 +125,8 @@ TEST(Matrix, CAddC){
     memcpy(elemA, A.getElem(CTYPE), sizeof(std::complex<double>)*A.elemNum());
     std::complex<double>* elemB = (std::complex<double>*)malloc(sizeof(std::complex<double>)*B.elemNum());
     memcpy(elemB, B.getElem(CTYPE), sizeof(std::complex<double>)*B.elemNum());
-
-    Matrix C0 = CAddC(A, B);
+    Matrix C0 = A;
+    CAddC(C0, B);
     for(size_t i = 0; i < A.elemNum(); i++)
         ASSERT_EQ(C0(i), elemA[i] + elemB[i]);
 
@@ -131,7 +135,8 @@ TEST(Matrix, CAddC){
     Ad.randomize();
     std::complex<double>* elemAd = (std::complex<double>*)malloc(sizeof(std::complex<double>)*Ad.elemNum());
     memcpy(elemAd, Ad.getElem(CTYPE), sizeof(std::complex<double>)*Ad.elemNum());
-    Matrix C1 = CAddC(Ad, B);
+    Matrix C1 = Ad;
+    CAddC(C1, B);
     int row = 0;
     for(size_t i = 0; i < C1.elemNum(); i++){
         if(i == 0 || i % (row*C1.col()+row) == 0){
@@ -146,7 +151,8 @@ TEST(Matrix, CAddC){
     Bd.randomize();
     std::complex<double>* elemBd = (std::complex<double>*)malloc(sizeof(std::complex<double>)*Bd.elemNum());
     memcpy(elemBd, Bd.getElem(CTYPE), sizeof(std::complex<double>)*Bd.elemNum());
-    Matrix C2 = CAddC(A, Bd);
+    Matrix C2 = A;
+    CAddC(C2, Bd);
     row = 0;
     for(size_t i = 0; i < C2.elemNum(); i++){
         if(i == 0 || i % (row*C2.col()+row) == 0){
@@ -157,7 +163,8 @@ TEST(Matrix, CAddC){
     }
 
     // If A adn B are diagonal 
-    Matrix C3 = CAddC(Ad, Bd);
+    Matrix C3 = Ad;
+    CAddC(C3, Bd);
     ASSERT_EQ(C3.isDiag(), true);
 
     for(size_t i = 0; i < C3.elemNum(); i++)
@@ -170,7 +177,7 @@ TEST(Matrix, CAddC){
 
 }
 
-TEST(Matrix, RAddC){
+TEST(Tools, RAddC){
 
     Matrix A(10, 10);
     A.randomize();
@@ -181,7 +188,8 @@ TEST(Matrix, RAddC){
     std::complex<double>* elemB = (std::complex<double>*)malloc(sizeof(std::complex<double>)*B.elemNum());
     memcpy(elemB, B.getElem(CTYPE), sizeof(std::complex<double>)*B.elemNum());
 
-    Matrix C0 = RAddC(A, B);
+    Matrix C0 = A;
+    RAddC(C0, B);
     for(size_t i = 0; i < A.elemNum(); i++)
         ASSERT_EQ(C0(i), elemA[i] + elemB[i]);
 
@@ -190,7 +198,8 @@ TEST(Matrix, RAddC){
     Ad.randomize();
     double* elemAd = (double*)malloc(sizeof(double)*Ad.elemNum());
     memcpy(elemAd, Ad.getElem(), sizeof(double)*Ad.elemNum());
-    Matrix C1 = RAddC(Ad, B);
+    Matrix C1 = Ad;
+    RAddC(C1, B);
     int row = 0;
     for(size_t i = 0; i < C1.elemNum(); i++){
         if(i == 0 || i % (row*C1.col()+row) == 0){
@@ -205,7 +214,8 @@ TEST(Matrix, RAddC){
     Bd.randomize();
     std::complex<double>* elemBd = (std::complex<double>*)malloc(sizeof(std::complex<double>)*Bd.elemNum());
     memcpy(elemBd, Bd.getElem(CTYPE), sizeof(std::complex<double>)*Bd.elemNum());
-    Matrix C2 = RAddC(A, Bd);
+    Matrix C2 = A;
+    RAddC(C2, Bd);
     row = 0;
     for(size_t i = 0; i < C2.elemNum(); i++){
         if(i == 0 || i % (row*C2.col()+row) == 0){
@@ -216,7 +226,8 @@ TEST(Matrix, RAddC){
     }
 
     // If A adn B are diagonal 
-    Matrix C3 = RAddC(Ad, Bd);
+    Matrix C3 = Ad;
+    RAddC(C3, Bd);
     ASSERT_EQ(C3.isDiag(), true);
 
     for(size_t i = 0; i < C3.elemNum(); i++)
@@ -229,7 +240,7 @@ TEST(Matrix, RAddC){
 
 }
 
-TEST(Matrix, CAddR){
+TEST(Tools, CAddR){
 
     Matrix A(CTYPE, 10, 10);
     A.randomize();
@@ -240,7 +251,8 @@ TEST(Matrix, CAddR){
     double* elemB = (double*)malloc(sizeof(double)*B.elemNum());
     memcpy(elemB, B.getElem(), sizeof(double)*B.elemNum());
 
-    Matrix C0 = CAddR(A, B);
+    Matrix C0 = A;
+    CAddR(C0, B);
     for(size_t i = 0; i < A.elemNum(); i++)
         ASSERT_EQ(C0(i), elemA[i] + elemB[i]);
 
@@ -249,7 +261,8 @@ TEST(Matrix, CAddR){
     Ad.randomize();
     std::complex<double>* elemAd = (std::complex<double>*)malloc(sizeof(std::complex<double>)*Ad.elemNum());
     memcpy(elemAd, Ad.getElem(CTYPE), sizeof(std::complex<double>)*Ad.elemNum());
-    Matrix C1 = CAddR(Ad, B);
+    Matrix C1 = Ad;
+    CAddR(C1, B);
     int row = 0;
     for(size_t i = 0; i < C1.elemNum(); i++){
         if(i == 0 || i % (row*C1.col()+row) == 0){
@@ -264,7 +277,8 @@ TEST(Matrix, CAddR){
     Bd.randomize();
     double* elemBd = (double*)malloc(sizeof(double)*Bd.elemNum());
     memcpy(elemBd, Bd.getElem(), sizeof(double)*Bd.elemNum());
-    Matrix C2 = CAddR(A, Bd);
+    Matrix C2 = A;
+    CAddR(C2, Bd);
     row = 0;
     for(size_t i = 0; i < C2.elemNum(); i++){
         if(i == 0 || i % (row*C2.col()+row) == 0){
@@ -275,7 +289,8 @@ TEST(Matrix, CAddR){
     }
 
     // If A adn B are diagonal 
-    Matrix C3 = CAddR(Ad, Bd);
+    Matrix C3 = Ad;
+    CAddR(C3, Bd);
     ASSERT_EQ(C3.isDiag(), true);
 
     for(size_t i = 0; i < C3.elemNum(); i++)
