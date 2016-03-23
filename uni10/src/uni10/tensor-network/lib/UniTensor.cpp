@@ -163,7 +163,7 @@ UniTensor& UniTensor::operator*= (double a){
       throw std::runtime_error(exception_msg(err.str()));
     }
     *this = *this * a;
-//    vectorScal(a, elem, m_elemNum, ongpu);
+    //vectorScal(a, elem, m_elemNum, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::operator*=(double):");
@@ -179,6 +179,7 @@ UniTensor& UniTensor::operator*= (Complex a){
       throw std::runtime_error(exception_msg(err.str()));
     }
     *this = *this * a;
+    //vectorScal(a, c_elem, m_elemNum, ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::operator*=(std::complex<double>):");
@@ -276,16 +277,10 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
     std::map<Qnum, Block>::const_iterator it2;
     std::map< const Block* , Block*> blkmap;
 
-    if(typeID() == 0){
-      for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-        it2 = UniT.blocks.find(it->first);
-        blkmap[(&(it2->second))] = &(it->second);
-      }
-    }else if(typeID() == 1){
+    if(typeID() == 1){
       TelemAlloc(RTYPE);
       for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
         it->second.m_elem = &(elem[it->second.m_elem - UniT.elem]);
-
         it2 = UniT.blocks.find(it->first);
         blkmap[&(it2->second)] = &(it->second);
       }
@@ -293,7 +288,6 @@ UniTensor& UniTensor::operator=(const UniTensor& UniT){ //GPU
       TelemAlloc(CTYPE);
       for (std::map<Qnum, Block>::iterator it = blocks.begin(); it != blocks.end(); it++ ){ // blocks here is UniT.blocks
         it->second.cm_elem = &(c_elem[it->second.cm_elem - UniT.c_elem]);
-
         it2 = UniT.blocks.find(it->first);
         blkmap[&(it2->second)] = &(it->second);
       }
@@ -451,13 +445,6 @@ bonds(UniT.bonds), blocks(UniT.blocks), labels(UniT.labels), \
 
       std::map<Qnum, Block>::const_iterator it2;
       std::map<const Block* , Block*> blkmap;
-
-      if(typeID() == 0){
-        for (std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
-          it2 = UniT.blocks.find(it->first);
-          blkmap[(&(it2->second))] = &(it->second);
-        }
-      }
 
       if(typeID() == 1){
         TelemAlloc(RTYPE);
@@ -831,11 +818,6 @@ std::map<Qnum, Matrix> UniTensor::getBlocks()const{
       return getBlocks(RTYPE);
     else if(typeID() == 2)
       return getBlocks(CTYPE);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"This tensor is EMPTY ";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlocks():");
@@ -849,11 +831,6 @@ Matrix UniTensor::getBlock(bool diag)const{
       return getBlock(RTYPE, diag);
     else if(typeID() == 2)
       return getBlock(CTYPE, diag);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"This tensor is EMPTY ";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlock(bool=false):");
@@ -868,11 +845,6 @@ Matrix UniTensor::getBlock(const Qnum& qnum, bool diag)const{
       return getBlock(RTYPE, qnum, diag);
     else if(typeID() == 2)
       return getBlock(CTYPE, qnum, diag);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"This tensor is EMPTY ";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getBlock(uni10::Qnum&):");
@@ -887,11 +859,6 @@ void UniTensor::set_zero(){
       set_zero(RTYPE);
     else if(typeID() == 2)
       set_zero(CTYPE);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't set zeros in EMPTY tensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::set_zero():");
@@ -904,11 +871,6 @@ void UniTensor::set_zero(const Qnum& qnum){
       set_zero(RTYPE, qnum);
     else if(typeID() == 2)
       set_zero(CTYPE, qnum);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't set zeros in EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::set_zero(std::Qnum&):");
@@ -921,11 +883,6 @@ void UniTensor::identity(){
       identity(RTYPE);
     else if(typeID() == 2)
       identity(CTYPE);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't set identity in EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::identity():");
@@ -938,11 +895,6 @@ void UniTensor::identity(const Qnum& qnum){
       identity(RTYPE, qnum);
     else if(typeID() == 2)
       identity(CTYPE, qnum);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't set identity in EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::identity(std::Qnum&):");
@@ -955,11 +907,6 @@ void UniTensor::randomize(){
       randomize(RTYPE);
     else if(typeID() == 2)
       randomize(CTYPE);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't set randomize in EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::randomize():");
@@ -972,11 +919,6 @@ void UniTensor::orthoRand(){
       orthoRand(RTYPE);
     else if(typeID() == 2)
       orthoRand(CTYPE);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't set orthoRand in EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::orthoRand():");
@@ -989,11 +931,6 @@ void UniTensor::orthoRand(const Qnum& qnum){
       orthoRand(RTYPE, qnum);
     else if(typeID() == 2)
       orthoRand(CTYPE, qnum);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't set orthoRand in EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::orthoRand(std::Qnum&):");
@@ -1134,11 +1071,6 @@ UniTensor& UniTensor::transpose(){
       return transpose(RTYPE);
     else if(typeID() == 2)
       return transpose(CTYPE);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't set orthoRand in EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::transpose():");
@@ -1152,11 +1084,6 @@ UniTensor& UniTensor::permute(int rowBondNum){
       return permute(RTYPE, rowBondNum);
     else if(typeID() == 2)
       return permute(CTYPE, rowBondNum);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't permute in EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::permute(int):");
@@ -1171,11 +1098,6 @@ UniTensor& UniTensor::permute(int* newLabels, int rowBondNum){
       return permute(RTYPE, newLabels, rowBondNum);
     else if(typeID() == 2)
       return permute(CTYPE, newLabels, rowBondNum);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't permute an EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::permute(int*, int):");
@@ -1189,11 +1111,6 @@ UniTensor& UniTensor::permute(const std::vector<int>& newLabels, int rowBondNum)
       return permute(RTYPE, newLabels, rowBondNum);
     else if(typeID() == 2)
       return permute(CTYPE, newLabels, rowBondNum);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't permute an EMPTY block";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::permute(std::vector<int>&, int):");
@@ -1274,11 +1191,6 @@ UniTensor& UniTensor::combineBond(const std::vector<int>&cmbLabels){
       return combineBond(RTYPE, cmbLabels);
     else if(typeID() == 2)
       return combineBond(CTYPE, cmbLabels);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't perform combineBond on and EMPTY tensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::combineBond(std::vector<int>&):");
@@ -1384,11 +1296,6 @@ void UniTensor::setRawElem(const Block& blk){
       setRawElem(RTYPE, blk);
     else if(blk.typeID() == 2)
       setRawElem(CTYPE, blk);
-    else if(blk.typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't put an EMPTY　block in UniTensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::setRawElem(uni10::Block&):");
@@ -1401,11 +1308,6 @@ void UniTensor::putBlock(const Block& mat){
       putBlock(RTYPE, mat);
     else if(mat.typeID() == 2)
       putBlock(CTYPE, mat);
-    else if(mat.typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't put an EMPTY　block in UniTensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::putBlock(uni10::Block&):");
@@ -1476,11 +1378,6 @@ void UniTensor::addGate(const std::vector<_Swap>& swaps){
       addGate(RTYPE, swaps);
     else if(typeID() == 2)
       addGate(CTYPE, swaps);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't addGate on an EMPTY block in UniTensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::addGate(std::vector<_Swap>&):");
@@ -1493,11 +1390,6 @@ Complex UniTensor::trace()const{
       return Complex(trace(RTYPE), 0);
     else if(typeID() == 2)
       return trace(CTYPE);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't perform trace on an EMPTY block in UniTensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::trace():");
@@ -1512,11 +1404,6 @@ UniTensor& UniTensor::partialTrace(int la, int lb){
       return partialTrace(RTYPE, la, lb);
     else if(typeID() == 2)
       return partialTrace(CTYPE, la, lb);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"Can't perform partialTrace on an EMPTY block in UniTensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::partialTrace(int, int):");
@@ -1530,9 +1417,10 @@ Real UniTensor::operator[](size_t idx)const{
       std::ostringstream err;
       err<<"Index exceeds the number of elements("<<m_elemNum<<").";
       throw std::runtime_error(exception_msg(err.str()));
-    }else if(typeID() == 0 || typeID() == 2){
+    }
+    if(typeID() == 2){
       std::ostringstream err;
-      err<<"This Tensor is EMPTY or COMPLEX. If it's COMPLEX, please use UniTensor::at(cflag, const vector<size_t>&) instead";
+      err<<"This Tensor is COMPLEX. Please use UniTensor::operator()(size_t idx) instead";
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(typeID() == 1)
@@ -1550,9 +1438,10 @@ Complex UniTensor::operator()(size_t idx)const{
       std::ostringstream err;
       err<<"Index exceeds the number of elements("<<m_elemNum<<").";
       throw std::runtime_error(exception_msg(err.str()));
-    }else if(typeID() == 0 || typeID() == 1){
+    }
+    if(typeID() == 1){
       std::ostringstream err;
-      err<<"This Tensor is EMPTY or REAL. If it's REAL, please use UniTensor::operator[](size_t) instead";
+      err<<"This Tensor is REAL. Please use UniTensor::operator[](size_t) instead";
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(typeID() == 2)
@@ -1570,11 +1459,6 @@ Matrix UniTensor::getRawElem()const{
       return getRawElem(RTYPE);
     else if(typeID() == 2)
       return getRawElem(CTYPE);
-    else if(typeID() == 0){
-      std::ostringstream err;
-      err<<"This Tensor is EMPTY.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::getRawElem():");
@@ -1618,11 +1502,6 @@ bool UniTensor::similar(const UniTensor& Tb)const{
 
 bool UniTensor::elemCmp(const UniTensor& _UniT)const{
   try{
-    if(typeID() == 0 || _UniT.typeID() == 0){
-      std::ostringstream err;
-      err<<"This Tensor is EMPTY.";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
     UniTensor Ta(*this);
     UniTensor UniT(_UniT);
     if(Ta.typeID() != UniT.typeID())
@@ -1663,8 +1542,8 @@ Real UniTensor::at(size_t idx)const{
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::at(size_t):");
+    return 0;
   }
-  return 0;
 }
 
 Real UniTensor::at(const std::vector<int>& idxs)const{
@@ -1676,27 +1555,31 @@ Real UniTensor::at(const std::vector<int>& idxs)const{
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::at(std::vector<int>&):");
+    return 0;
   }
-  return 0;
 }
 
 Real UniTensor::at(const std::vector<size_t>& idxs)const{
   try{
-    if(typeID() == 1)
-      return at(RTYPE, idxs);
-    else if(typeID() == 0 || typeID() == 2){
+    return at(RTYPE, idxs);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::at(std::vector<size_t>&):");
+    return 0;
+  }
+}
+
+Real* UniTensor::getElem(){
+  try{
+    if(typeID() == 2){
       std::ostringstream err;
-      err<<"This Tensor is EMPTY or COMPLEX. If it's COMPLEX, please use UniTensor::at(cflag, const vector<size_t>&) instead";
+      err<<"This Tensor is COMPLEX. Please use UniTensor::getElem(uni10::cflag ) instead";
       throw std::runtime_error(exception_msg(err.str()));
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::at(std::vector<size_t>&):");
+    propogate_exception(e, "In function UniTensor::getElem():");
   }
-  return 0;
-}
-
-Real* UniTensor::getElem(){
   return elem;
 }
 
@@ -1712,7 +1595,7 @@ void UniTensor::initUniT(int typeID){
 void UniTensor::TelemFree(){
   if(elem != NULL)
     elemFree(elem, sizeof(Real) * m_elemNum, ongpu);
-  if(c_elem != NULL)
+  else if(c_elem != NULL)
     elemFree(c_elem, sizeof(Complex) * m_elemNum, ongpu);
 }
 

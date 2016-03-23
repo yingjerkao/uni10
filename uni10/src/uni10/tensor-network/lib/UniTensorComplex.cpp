@@ -51,30 +51,33 @@ UniTensor::UniTensor(Complex val): status(0){ //GPU
 
 UniTensor::UniTensor(cflag _tp, const std::vector<Bond>& _bonds, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
+    throwTypeError(_tp);
     initUniT(_tp);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::string& = \"\"):");
+    propogate_exception(e, "In constructor UniTensor::UniTensor(uni10::cflag, std::vector<Bond>&, std::string& = \"\"):");
   }
 }
 
 UniTensor::UniTensor(cflag _tp, const std::vector<Bond>& _bonds, std::vector<int>& _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
+    throwTypeError(_tp);
     initUniT(_tp);
     setLabel(_labels);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, std::vector<int>&, std::string& = \"\"):");
+    propogate_exception(e, "In constructor UniTensor::UniTensor(uni10::cflag, std::vector<Bond>&, std::vector<int>&, std::string& = \"\"):");
   }
 }
 
 UniTensor::UniTensor(cflag _tp, const std::vector<Bond>& _bonds, int* _labels, const std::string& _name): name(_name), status(0), bonds(_bonds){
   try{
+    throwTypeError(_tp);
     initUniT(_tp);
     setLabel(_labels);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In constructor UniTensor::UniTensor(std::vector<Bond>&, int*, std::string& = \"\"):");
+    propogate_exception(e, "In constructor UniTensor::UniTensor(uni10::cflag, std::vector<Bond>&, int*, std::string& = \"\"):");
   }
 }
 
@@ -83,7 +86,17 @@ void UniTensor::setRawElem(const std::vector<Complex>& rawElem){
     setRawElem(&rawElem[0]);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::setRawElem(std::vector<double>&):");
+    propogate_exception(e, "In function UniTensor::setRawElem(std::vector<std::complex<double>>&):");
+  }
+}
+
+void UniTensor::setRawElem(cflag tp, const Block& blk){
+  try{
+    throwTypeError(tp);
+    setRawElem(blk.getElem(CTYPE));
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::setRawElem(uni10::cflag, uni10::Block&):");
   }
 }
 
@@ -94,17 +107,9 @@ void UniTensor::setRawElem(const Complex* rawElem){
       err<<"Setting elements to a tensor without bonds is not supported.";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(typeID() == 1){
-      std::ostringstream err;
-      err<<"Can't set complex<double>* in a real tensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(typeID() == 0){
-      r_flag = RNULL;
-      c_flag = CTYPE;
-      TelemAlloc(CTYPE);
-      initBlocks(CTYPE);
-    }
+    if(typeID() == 1)
+      this->assign(CTYPE, this->bond());
+
     int bondNum = bonds.size();
     std::vector<int> Q_idxs(bondNum, 0);
     std::vector<int> Q_Bdims(bondNum, 0);
@@ -169,28 +174,19 @@ void UniTensor::setRawElem(const Complex* rawElem){
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::setRawElem(double*):");
+    propogate_exception(e, "In function UniTensor::setRawElem(uni10::cflag, std::complex<double>*):");
   }
 }
 
 void UniTensor::setElem(const Complex* _elem, bool _ongpu){
   try{
-    if(typeID() == 1){
-      std::ostringstream err;
-      err<<"Can't set complex<double>* in a real tensor";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    else if(typeID() == 0){
-      r_flag = RNULL;
-      c_flag = CTYPE;
-      TelemAlloc(CTYPE);
-      initBlocks(CTYPE);
-    }
+    if(typeID() == 1)
+      this->assign(CTYPE, this->bond());
     elemCopy(c_elem, _elem, m_elemNum * sizeof(Complex), ongpu, _ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::setElem(double*, bool=false):");
+    propogate_exception(e, "In function UniTensor::setElem(std::complex<double>*, bool=false):");
   }
 }
 
@@ -203,33 +199,136 @@ void UniTensor::setElem(const std::vector<Complex>& _elem, bool _ongpu){
   }
 }
 
-std::map<Qnum, Matrix> UniTensor::getBlocks(cflag _tp)const{
+void UniTensor::putBlock(cflag tp, const Block& mat){
+  try{
+    throwTypeError(tp);
+    Qnum q0(0);
+    putBlock(CTYPE, q0, mat);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::putBlock(uni10::cflag, uni10::Block&):");
+  }
+}
+
+void UniTensor::putBlock(cflag tp, const Qnum& qnum, const Block& mat){
+  try{
+    throwTypeError(tp);
+    std::map<Qnum, Block>::iterator it;
+    if(!((it = blocks.find(qnum)) != blocks.end())){
+      std::ostringstream err;
+      err<<"There is no block with the given quantum number "<<qnum;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(!(mat.row() == it->second.Rnum && mat.col() == it->second.Cnum)){
+      std::ostringstream err;
+      err<<"The dimension of input matrix does not match for the dimension of the block with quantum number "<<qnum<<std::endl;
+      err<<"  Hint: Use Matrix::resize(int, int)";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(typeID() == 1)
+      this->assign(CTYPE, this->bond());
+
+    if(mat.cm_elem != it->second.cm_elem){
+      if(mat.isDiag()){
+        elemBzero(it->second.cm_elem, it->second.Rnum * it->second.Cnum * sizeof(Complex), ongpu);
+        setDiag(it->second.cm_elem, mat.getElem(CTYPE), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+      }
+      else
+        elemCopy(it->second.cm_elem, mat.getElem(CTYPE), it->second.Rnum * it->second.Cnum * sizeof(Complex), ongpu, mat.isOngpu());
+    }
+    status |= HAVEELEM;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::putBlock(uni10::cflag, uni10::Qnum&, uni10::Block&):");
+  }
+}
+
+Matrix UniTensor::getRawElem(cflag tp)const{
+  try{
+    throwTypeError(tp);
+    if(status & HAVEBOND && status & HAVEELEM){
+      int bondNum = bonds.size();
+      size_t rowNum = 1;
+      size_t colNum = 1;
+      for(std::vector<Bond>::const_iterator it = bonds.begin(); it != bonds.end(); ++it){
+        if(it->type() == BD_IN)
+          rowNum *= it->dim();
+        else
+          colNum *= it->dim();
+      }
+      std::vector<size_t> idxs(bondNum, 0);
+      int bend;
+      std::vector<Complex> rawElem;
+      while(1){
+        rawElem.push_back(at(CTYPE, idxs));
+        for(bend = bondNum - 1; bend >= 0; bend--){
+          idxs[bend]++;
+          if(idxs[bend] < bonds[bend].dim())
+            break;
+          else
+            idxs[bend] = 0;
+        }
+        if(bend < 0)
+          break;
+      }
+      return Matrix(rowNum, colNum, &rawElem[0]);
+    }
+    else if(status & HAVEELEM)
+      return Matrix(CTYPE, 1, 1, c_elem);
+    else
+      return Matrix();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::getRawElem(uni10::cflag ):");
+    return Matrix();
+  }
+}
+
+Complex* UniTensor::getElem(cflag tp){
+  try{
+    throwTypeError(tp);
+    if(typeID() == 1){
+      std::ostringstream err;
+      err<<"This Tensor is REAL. Please use UniTensor::getElem(uni10::rflag ) instead";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::getElem(uni10::cflag ):");
+  }
+  return c_elem;
+}
+
+std::map<Qnum, Matrix> UniTensor::getBlocks(cflag tp)const{
   std::map<Qnum, Matrix> mats;
   try{
+    throwTypeError(tp);
     for(std::map<Qnum, Block>::const_iterator it = blocks.begin(); it != blocks.end(); it++){
       Matrix mat(it->second.Rnum, it->second.Cnum, it->second.cm_elem, false, ongpu);
       mats.insert(std::pair<Qnum, Matrix>(it->first, mat));
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::getBlocks():");
+    propogate_exception(e, "In function UniTensor::getBlocks(uni10::cflag ):");
   }
   return mats;
 }
 
-Matrix UniTensor::getBlock(cflag _tp, bool diag)const{
+Matrix UniTensor::getBlock(cflag tp, bool diag)const{
   try{
+    throwTypeError(tp);
     Qnum q0(0);
     return getBlock(CTYPE, q0, diag);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::getBlock(bool=false):");
+    propogate_exception(e, "In function UniTensor::getBlock(uni10::cflag, bool=false):");
     return Matrix();
   }
 }
 
-Matrix UniTensor::getBlock(cflag _tp, const Qnum& qnum, bool diag)const{
+Matrix UniTensor::getBlock(cflag tp, const Qnum& qnum, bool diag)const{
   try{
+    throwTypeError(tp);
     std::map<Qnum, Block>::const_iterator it = blocks.find(qnum);
     if(it == blocks.end()){
       std::ostringstream err;
@@ -244,23 +343,25 @@ Matrix UniTensor::getBlock(cflag _tp, const Qnum& qnum, bool diag)const{
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::getBlock(uni10::Qnum&):");
-    return Matrix(0, 0);
+    propogate_exception(e, "In function UniTensor::getBlock(uni10::cflag, uni10::Qnum&):");
+    return Matrix();
   }
 }
 
-void UniTensor::set_zero(cflag _tp){
+void UniTensor::set_zero(cflag tp){
   try{
+    throwTypeError(tp);
     elemBzero(c_elem, m_elemNum * sizeof(Complex), ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::set_zero():");
+    propogate_exception(e, "In function UniTensor::set_zero(uni10::cflag ):");
   }
 }
 
-void UniTensor::set_zero(cflag _tp, const Qnum& qnum){
+void UniTensor::set_zero(cflag tp, const Qnum& qnum){
   try{
+    throwTypeError(tp);
     std::map<Qnum, Block>::iterator it = blocks.find(qnum);
     if(it == blocks.end()){
       std::ostringstream err;
@@ -272,24 +373,26 @@ void UniTensor::set_zero(cflag _tp, const Qnum& qnum){
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::set_zero(std::Qnum&):");
+    propogate_exception(e, "In function UniTensor::set_zero(uni10::cflag, std::Qnum&):");
   }
 }
 
-void UniTensor::identity(cflag _tp){
+void UniTensor::identity(cflag tp){
   try{
+    throwTypeError(tp);
     std::map<Qnum, Block>::iterator it;
     for ( it = blocks.begin() ; it != blocks.end(); it++ )
       setIdentity(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::identity():");
+    propogate_exception(e, "In function UniTensor::identity(uni10::cflag ):");
   }
 }
 
-void UniTensor::identity(cflag _tp, const Qnum& qnum){
+void UniTensor::identity(cflag tp, const Qnum& qnum){
   try{
+    throwTypeError(tp);
     std::map<Qnum, Block>::iterator it = blocks.find(qnum);
     if(it == blocks.end()){
       std::ostringstream err;
@@ -301,34 +404,37 @@ void UniTensor::identity(cflag _tp, const Qnum& qnum){
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::identity(std::Qnum&):");
+    propogate_exception(e, "In function UniTensor::identity(uni10::cflag, std::Qnum&):");
   }
 }
 
-void UniTensor::randomize(cflag _tp){
+void UniTensor::randomize(cflag tp){
   try{
+    throwTypeError(tp);
     elemRand(c_elem, m_elemNum, ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::randomize():");
+    propogate_exception(e, "In function UniTensor::randomize(uni10::cflag ):");
   }
 }
 
-void UniTensor::orthoRand(cflag _tp){
+void UniTensor::orthoRand(cflag tp){
   try{
+    throwTypeError(tp);
     std::map<Qnum, Block>::iterator it;
     for ( it = blocks.begin() ; it != blocks.end(); it++ )
       orthoRandomize(it->second.cm_elem, it->second.Rnum, it->second.Cnum, ongpu);
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::orthoRand():");
+    propogate_exception(e, "In function UniTensor::orthoRand(uni10::cflag ):");
   }
 }
 
-void UniTensor::orthoRand(cflag _tp, const Qnum& qnum){
+void UniTensor::orthoRand(cflag tp, const Qnum& qnum){
   try{
+    throwTypeError(tp);
     std::map<Qnum, Block>::iterator it = blocks.find(qnum);
     if(it == blocks.end()){
       std::ostringstream err;
@@ -340,12 +446,13 @@ void UniTensor::orthoRand(cflag _tp, const Qnum& qnum){
     status |= HAVEELEM;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::orthoRand(std::Qnum&):");
+    propogate_exception(e, "In function UniTensor::orthoRand(uni10::cflag, std::Qnum&):");
   }
 }
 
-UniTensor& UniTensor::transpose(cflag _tp){
+UniTensor& UniTensor::transpose(cflag tp){
   try{
+    throwTypeError(tp);
     if(!(status & HAVEBOND)){
       std::ostringstream err;
       err<<"There is no bond in the tensor(scalar) to perform transposition.";
@@ -398,35 +505,38 @@ UniTensor& UniTensor::transpose(cflag _tp){
     *this = UniTout;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::transpose():");
+    propogate_exception(e, "In function UniTensor::transpose(uni10::cflag ):");
   }
   return *this;
 }
 
-UniTensor& UniTensor::permute(cflag _tp, int rowBondNum){
+UniTensor& UniTensor::permute(cflag tp, int rowBondNum){
   try{
+    throwTypeError(tp);
     std::vector<int> ori_labels = labels;
     this->permute(CTYPE, ori_labels, rowBondNum);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::permute(int):");
+    propogate_exception(e, "In function UniTensor::permute(uni10::cflag, int):");
   }
   return *this;
 }
 
-UniTensor& UniTensor::permute(cflag _tp, int* newLabels, int rowBondNum){
+UniTensor& UniTensor::permute(cflag tp, int* newLabels, int rowBondNum){
   try{
+    throwTypeError(tp);
     std::vector<int> _labels(newLabels, newLabels + bonds.size());
     this->permute(CTYPE, _labels, rowBondNum);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::permute(int*, int):");
+    propogate_exception(e, "In function UniTensor::permute(uni10::clfag, int*, int):");
   }
   return *this;
 }
 
-UniTensor& UniTensor::permute(cflag _tp, const std::vector<int>& newLabels, int rowBondNum){
+UniTensor& UniTensor::permute(cflag tp, const std::vector<int>& newLabels, int rowBondNum){
   try{
+    throwTypeError(tp);
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
       err<<"There is no bond in the tensor(scalar) to permute.";
@@ -467,7 +577,7 @@ UniTensor& UniTensor::permute(cflag _tp, const std::vector<int>& newLabels, int 
         if(bonds[b].Qnums.size() != 1)
           withoutSymmetry = false;
       }
-      for(int b = 0; b < bonds.size(); b++){
+      for(size_t b = 0; b < bonds.size(); b++){
         if(b < rowBondNum)
           outBonds[b].change(BD_IN);
         else
@@ -546,7 +656,7 @@ UniTensor& UniTensor::permute(cflag _tp, const std::vector<int>& newLabels, int 
           }
         }
         else{
-          double sign = 1.0;
+          Real sign = 1.0;
           //For Fermionic system
           std::vector<_Swap> swaps;
           if(Qnum::isFermionic()){
@@ -657,32 +767,34 @@ UniTensor& UniTensor::permute(cflag _tp, const std::vector<int>& newLabels, int 
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::permute(std::vector<int>&, int):");
+    propogate_exception(e, "In function UniTensor::permute(uni10::cflag, std::vector<int>&, int):");
   }
   return *this;
 }
 
-Complex UniTensor::at(cflag _tp, size_t idx)const{
+Complex UniTensor::at(cflag tp, size_t idx)const{
   try{
+    throwTypeError(tp);
     if(!(idx < m_elemNum)){
       std::ostringstream err;
       err<<"Index exceeds the number of elements("<<m_elemNum<<").";
       throw std::runtime_error(exception_msg(err.str()));
-    }else if(typeID() == 0 || typeID() == 1){
+    }else if(typeID() == 1){
       std::ostringstream err;
-      err<<"This Tensor is EMPTY or REAL. If it's REAL, please use UniTensor::at(rflag, size_t) or UniTensor::at(size_t) instead ";
+      err<<"This Tensor is REAL. Please use UniTensor::at(rflag, size_t) or UniTensor::at(size_t) instead ";
       throw std::runtime_error(exception_msg(err.str()));
     }
     return getElemAt(idx, c_elem, ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::at(cflag, size_t):");
+    propogate_exception(e, "In function UniTensor::at(uni10::cflag, size_t):");
     return 0;
   }
 }
 
 UniTensor& UniTensor::combineBond(cflag tp, const std::vector<int>&cmbLabels){
   try{
+    throwTypeError(tp);
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
       err<<"There is no bond in the tensor to be combined.";
@@ -696,8 +808,8 @@ UniTensor& UniTensor::combineBond(cflag tp, const std::vector<int>&cmbLabels){
 
     std::vector<int> marked(labels.size(), 0);
     std::vector<int> picked(cmbLabels.size(), 0);
-    for(int p = 0; p < cmbLabels.size(); p++){
-      for(int l = 0; l < labels.size(); l++){
+    for(size_t p = 0; p < cmbLabels.size(); p++){
+      for(size_t l = 0; l < labels.size(); l++){
         if(cmbLabels[p] == labels[l]){
           picked[p] = l;
           marked[l] = 1;
@@ -706,7 +818,7 @@ UniTensor& UniTensor::combineBond(cflag tp, const std::vector<int>&cmbLabels){
       }
     }
     int mark = 0;
-    for(int m = 0; m < marked.size(); m++)
+    for(size_t m = 0; m < marked.size(); m++)
       if(marked[m])
         mark++;
     if(!(mark == cmbLabels.size())){
@@ -718,14 +830,14 @@ UniTensor& UniTensor::combineBond(cflag tp, const std::vector<int>&cmbLabels){
     int enc_r = 0;
     std::vector<Bond> newBonds;
     int RBnum = 0;
-    for(int l = 0; l < labels.size(); l++){
+    for(size_t l = 0; l < labels.size(); l++){
       if(marked[l] && l == picked[0]){
-        for(int ll = 0; ll < cmbLabels.size(); ll++){
+        for(size_t ll = 0; ll < cmbLabels.size(); ll++){
           rsp_labels[enc] = cmbLabels[ll];
           enc++;
         }
         std::vector<Bond> tmpBonds;
-        for(int p = 0; p < picked.size(); p++)
+        for(size_t p = 0; p < picked.size(); p++)
           tmpBonds.push_back(bonds[picked[p]]);
         if(bonds[picked[0]].type() == BD_IN)
           RBnum += picked.size();
@@ -752,64 +864,14 @@ UniTensor& UniTensor::combineBond(cflag tp, const std::vector<int>&cmbLabels){
     *this = Tout;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::combineBond(std::vector<int>&):");
+    propogate_exception(e, "In function UniTensor::combineBond(uni10::cflag, std::vector<int>&):");
   }
   return *this;
 }
 
-void UniTensor::setRawElem(cflag _tp, const Block& blk){
+void UniTensor::addGate(cflag tp, const std::vector<_Swap>& swaps){
   try{
-    setRawElem(blk.getElem(CTYPE));
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::setRawElem(uni10::Block&):");
-  }
-}
-
-void UniTensor::putBlock(cflag _tp, const Block& mat){
-  try{
-    Qnum q0(0);
-    putBlock(CTYPE, q0, mat);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::putBlock(uni10::Block&):");
-  }
-}
-
-void UniTensor::putBlock(cflag _tp, const Qnum& qnum, const Block& mat){
-  try{
-    std::map<Qnum, Block>::iterator it;
-    if(!((it = blocks.find(qnum)) != blocks.end())){
-      std::ostringstream err;
-      err<<"There is no block with the given quantum number "<<qnum;
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(!(mat.row() == it->second.Rnum && mat.col() == it->second.Cnum)){
-      std::ostringstream err;
-      err<<"The dimension of input matrix does not match for the dimension of the block with quantum number "<<qnum<<std::endl;
-      err<<"  Hint: Use Matrix::resize(int, int)";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(typeID() == 0 || typeID() == 1)
-      this->assign(CTYPE, this->bond());
-
-    if(mat.cm_elem != it->second.cm_elem){
-      if(mat.isDiag()){
-        elemBzero(it->second.cm_elem, it->second.Rnum * it->second.Cnum * sizeof(Complex), ongpu);
-        setDiag(it->second.cm_elem, mat.getElem(CTYPE), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
-      }
-      else
-        elemCopy(it->second.cm_elem, mat.getElem(CTYPE), it->second.Rnum * it->second.Cnum * sizeof(Complex), ongpu, mat.isOngpu());
-    }
-    status |= HAVEELEM;
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::putBlock(uni10::Qnum&, uni10::Block&):");
-  }
-}
-
-void UniTensor::addGate(cflag _tp, const std::vector<_Swap>& swaps){
-  try{
+    throwTypeError(tp);
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
       err<<"Adding swap gates to a tensor without bonds(scalar).";
@@ -848,7 +910,7 @@ void UniTensor::addGate(cflag _tp, const std::vector<_Swap>& swaps){
       sB_cDim = CQidx2Dim[CQoff];
 
       int sign01 = 0;
-      for(int i = 0; i < swaps.size(); i++)
+      for(size_t i = 0; i < swaps.size(); i++)
         sign01 ^= (bonds[swaps[i].b1].Qnums[Q_idxs[swaps[i].b1]].prtF() & bonds[swaps[i].b2].Qnums[Q_idxs[swaps[i].b2]].prtF());
       sign = sign01 ? -1 : 1;
 
@@ -858,23 +920,19 @@ void UniTensor::addGate(cflag _tp, const std::vector<_Swap>& swaps){
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::addGate(std::vector<_Swap>&):");
+    propogate_exception(e, "In function UniTensor::addGate(uni10::cflag, std::vector<_Swap>&):");
   }
 }
 
-Complex* UniTensor::getElem(cflag _tp){
-  return c_elem;
-}
-
-Complex UniTensor::trace(cflag _tp)const{
+Complex UniTensor::trace(cflag tp)const{
   try{
+    throwTypeError(tp);
     if(!(status & HAVEELEM)){
       std::ostringstream err;
       err<<"Cannot trace a tensor before setting its elements.";
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(status & HAVEBOND){
-      size_t Rnum;
       Complex trVal(0, 0);
       for(std::map<Qnum, Block>::const_iterator it = blocks.begin() ; it != blocks.end(); it++ ){
         if(!(it->second.Rnum == it->second.Cnum)){
@@ -891,13 +949,14 @@ Complex UniTensor::trace(cflag _tp)const{
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::trace():");
+    propogate_exception(e, "In function UniTensor::trace(uni10::cflag ):");
     return 0;
   }
 }
 
-UniTensor& UniTensor::partialTrace(cflag _tp, int la, int lb){
+UniTensor& UniTensor::partialTrace(cflag tp, int la, int lb){
   try{
+    throwTypeError(tp);
     if(!(status & HAVEELEM)){
       std::ostringstream err;
       err<<"Cannot trace bonds of a tensor before setting its elements.";
@@ -914,7 +973,7 @@ UniTensor& UniTensor::partialTrace(cflag _tp, int la, int lb){
     std::vector<int>rsp_labels(bondNum);
     int ia, ib;
     int enc = 0;
-    for(int l = 0; l < labels.size(); l++){
+    for(size_t l = 0; l < labels.size(); l++){
       if(labels[l] == la)
         ia = l;
       else if(labels[l] == lb)
@@ -1009,89 +1068,58 @@ UniTensor& UniTensor::partialTrace(cflag _tp, int la, int lb){
     *this = Tt;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::partialTrace(int, int):");
+    propogate_exception(e, "In function UniTensor::partialTrace(uni10::cflag, int, int):");
   }
   return *this;
 }
 
-Matrix UniTensor::getRawElem(cflag _tp)const{
+UniTensor& UniTensor::assign(cflag tp, const std::vector<Bond>& _bond){
   try{
-    if(status & HAVEBOND && status & HAVEELEM){
-      int bondNum = bonds.size();
-      size_t rowNum = 1;
-      size_t colNum = 1;
-      for(std::vector<Bond>::const_iterator it = bonds.begin(); it != bonds.end(); ++it){
-        if(it->type() == BD_IN)
-          rowNum *= it->dim();
-        else
-          colNum *= it->dim();
-      }
-      std::vector<size_t> idxs(bondNum, 0);
-      int bend;
-      std::vector<Complex> rawElem;
-      while(1){
-        rawElem.push_back(at(CTYPE, idxs));
-        for(bend = bondNum - 1; bend >= 0; bend--){
-          idxs[bend]++;
-          if(idxs[bend] < bonds[bend].dim())
-            break;
-          else
-            idxs[bend] = 0;
-        }
-        if(bend < 0)
-          break;
-      }
-      return Matrix(rowNum, colNum, &rawElem[0]);
-    }
-    else if(status & HAVEELEM)
-      return Matrix(CTYPE, 1, 1, c_elem);
-    else
-      return Matrix();
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::getRawElem():");
-    return Matrix();
-  }
-}
-
-UniTensor& UniTensor::assign(cflag _tp, const std::vector<Bond>& _bond){
-  try{
+    throwTypeError(tp);
     UniTensor T(CTYPE, _bond);
     *this = T;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::assign(std::vector<Bond>&):");
+    propogate_exception(e, "In function UniTensor::assign(uni10::cflag, std::vector<Bond>&):");
   }
   return *this;
 }
 
-Complex UniTensor::at(cflag _tp, const std::vector<int>& idxs)const{
+Complex UniTensor::at(cflag tp, const std::vector<int>& idxs)const{
   try{
+    throwTypeError(tp);
+    if(typeID() == 1){
+      std::ostringstream err;
+      err<<"This Tensor is REAL. Please use UniTensor::at(cflag, size_t) or UniTensor::at(size_t) instead ";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
     std::vector<size_t> _idxs(idxs.size());
-    for(int i = 0; i < idxs.size(); i++)
+    for(size_t i = 0; i < idxs.size(); i++)
       _idxs[i] = idxs[i];
     return at(CTYPE, _idxs);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::at(std::vector<int>&):");
+    propogate_exception(e, "In function UniTensor::at(std::cflag, std::vector<int>&):");
     return 0;
   }
 }
 
-Complex UniTensor::at(cflag _tp, const std::vector<size_t>& idxs)const{
+Complex UniTensor::at(cflag tp, const std::vector<size_t>& idxs)const{
   try{
+    throwTypeError(tp);
     if((status & HAVEBOND) == 0){
       std::ostringstream err;
-      err<<"The tensor is a scalar. Use UniTensor::operator[] instead.";
+      err<<"The tensor is a scalar. Use UniTensor::operator() instead.";
       throw std::runtime_error(exception_msg(err.str()));
     }
     if(!(idxs.size() == bonds.size())){
       std::ostringstream err;
       err<<"The size of input indices array does not match with the number of the bonds.";
       throw std::runtime_error(exception_msg(err.str()));
-    }else if(typeID() == 0 || typeID() == 1){
+    }
+    if(typeID() == 1){
       std::ostringstream err;
-      err<<"This Tensor is EMPTY or REAL. If it's REAL, please use UniTensor::at(rflag, const vector<size_t>&) or UniTensor::at(const vector<size_t>& ) instead ";
+      err<<"This Tensor is REAL. Please use UniTensor::at(rflag, const vector<size_t>&) or UniTensor::at(const vector<size_t>& ) instead ";
       throw std::runtime_error(exception_msg(err.str()));
     }
 
@@ -1139,22 +1167,35 @@ Complex UniTensor::at(cflag _tp, const std::vector<size_t>& idxs)const{
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::at(cflag, const std::vector<size_t>&):");
+    propogate_exception(e, "In function UniTensor::at(uni10::cflag, const std::vector<size_t>&):");
     return 0;
   }
 }
 
-Real UniTensor::norm(cflag _tp) const{
-  return this->norm();
+Real UniTensor::norm(cflag tp) const{
+  try{
+    throwTypeError(tp);
+    return this->norm();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::norm(uni10::cflag ):");
+    return 0;
+  }
 }
 
-void UniTensor::normalize(cflag _tp){
-  this->normalize();
+void UniTensor::normalize(cflag tp){
+  try{
+    throwTypeError(tp);
+    this->normalize();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::normalize(uni10::cflag ):");
+  }
 }
 
 /*********************  Private **********************/
 
-void UniTensor::initUniT(cflag _tp){ //GPU
+void UniTensor::initUniT(cflag tp){ //GPU
   r_flag= RNULL;
   c_flag= CTYPE;
   if(bonds.size()){
@@ -1162,12 +1203,12 @@ void UniTensor::initUniT(cflag _tp){ //GPU
     if(!(blocks.size() > 0)){ //No block in Tensor, Error!
       std::ostringstream err;
       err<<"There is no symmetry block with the given bonds:\n";
-      for(int b = 0; b < bonds.size(); b++)
+      for(size_t b = 0; b < bonds.size(); b++)
         err<<"    "<<bonds[b];
       throw std::runtime_error(exception_msg(err.str()));
     }
     labels.assign(bonds.size(), 0);
-    for(int b = 0; b < bonds.size(); b++)
+    for(size_t b = 0; b < bonds.size(); b++)
       labels[b] = b;
     status |= HAVEBOND;
   }
@@ -1195,14 +1236,14 @@ void UniTensor::initUniT(cflag _tp){ //GPU
   TelemBzero(CTYPE);
 }
 
-size_t UniTensor::grouping(cflag _tp){
+size_t UniTensor::grouping(cflag tp){
   blocks.clear();
   int row_bondNum = 0;
   int col_bondNum = 0;
   RQdim = 1;
   CQdim = 1;
   bool IN_BONDS_BEFORE_OUT_BONDS = true;
-  for(int i = 0; i < bonds.size(); i++){
+  for(size_t i = 0; i < bonds.size(); i++){
     if(bonds[i].type() == BD_IN){
       if(!(IN_BONDS_BEFORE_OUT_BONDS == true)){
         std::ostringstream err;
@@ -1325,9 +1366,9 @@ size_t UniTensor::grouping(cflag _tp){
     Block* blkptr = &(blocks[it->first]);
     std::vector<int>& tmpRQidx = row_Qnum2Qidx[it->first];
     std::vector<int>& tmpCQidx = col_Qnum2Qidx[it->first];
-    for(int i = 0; i < tmpRQidx.size(); i++){
+    for(size_t i = 0; i < tmpRQidx.size(); i++){
       RQidx2Blk[tmpRQidx[i]] = blkptr;
-      for(int j = 0; j < tmpCQidx.size(); j++){
+      for(size_t j = 0; j < tmpCQidx.size(); j++){
         RQidx2Dim[tmpRQidx[i]] = tmpRQidx2Dim[tmpRQidx[i]];
         RQidx2Off[tmpRQidx[i]] = tmpRQidx2Off[tmpRQidx[i]];
         CQidx2Dim[tmpCQidx[j]] = tmpCQidx2Dim[tmpCQidx[j]];
@@ -1349,7 +1390,7 @@ size_t UniTensor::grouping(cflag _tp){
   return off;
 }
 
-void UniTensor::initBlocks(cflag _tp){
+void UniTensor::initBlocks(cflag tp){
   size_t offset = 0;
   for(std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
     it->second.r_flag = RNULL;
@@ -1360,11 +1401,11 @@ void UniTensor::initBlocks(cflag _tp){
   }
 }
 
-void UniTensor::TelemAlloc(cflag _tp){
+void UniTensor::TelemAlloc(cflag tp){
   c_elem = (Complex*)elemAlloc(sizeof(Complex) * m_elemNum, ongpu);
 }
 
-void UniTensor::TelemBzero(cflag _tp){
+void UniTensor::TelemBzero(cflag tp){
   elemBzero(c_elem, sizeof(Complex) * m_elemNum, ongpu);
 }
 

@@ -154,7 +154,7 @@ void Matrix::setElem(const std::vector<Real>& elem, bool _ongpu){
 
 void Matrix::setElem(const Real* elem, bool _ongpu){
   try{
-    if(typeID() == 0 || typeID() == 2){
+    if(typeID() == 2){
       r_flag = RTYPE;
       c_flag = CNULL;
       init(elem, _ongpu);
@@ -162,7 +162,7 @@ void Matrix::setElem(const Real* elem, bool _ongpu){
     elemCopy(m_elem, elem, elemNum() * sizeof(Real), ongpu, _ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::setElem(double*, bool=false):");
+    propogate_exception(e, "In function Matrix::setElem(const double*, bool=false):");
   }
 }
 

@@ -157,7 +157,7 @@ void Matrix::setElem(const std::vector<Complex>& elem, bool _ongpu){
 
 void Matrix::setElem(const Complex* elem, bool _ongpu){
   try{
-    if(typeID() == 0 || typeID() == 1){
+    if(typeID() == 1){
       r_flag = RNULL;
       c_flag = CTYPE;
       init(elem, _ongpu);
@@ -165,7 +165,7 @@ void Matrix::setElem(const Complex* elem, bool _ongpu){
     elemCopy(cm_elem, elem, elemNum() * sizeof(Complex), ongpu, _ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::setElem(Complex*, bool=false):");
+    propogate_exception(e, "In function Matrix::setElem(const Complex*, bool=false):");
   }
 }
 

@@ -154,14 +154,13 @@ Real& Matrix::operator[](size_t idx){
       err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(typeID() == 0 || typeID() == 2){
+    if(typeID() == 2){
       std::ostringstream err;
-      err<<"This matrix is EMPTY or COMPLEX. If it's COMPLEX, please use operator() instead of operator[]." << std::endl << "In the file Matrix.cpp, line(" << __LINE__ << ")";
+      err<<"This matrix is COMPLEX. Please use operator()." << std::endl << "In the file Matrix.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
     else if(typeID() == 1)
       m_elem = (Real*)mvCPU(m_elem, elemNum() * sizeof(Real), ongpu);
-    return m_elem[idx];
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::opeartor[](size_t):");
@@ -176,17 +175,16 @@ Complex& Matrix::operator()(size_t idx){
       err<<"Index exceeds the number of the matrix elements("<<elemNum()<<").";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(typeID() == 0 || typeID() == 1){
+    if(typeID() == 1){
       std::ostringstream err;
-      err<<"This matrix is EMPTY or REAL. If it's REAL, please use operator[] instead of operator()." << std::endl << "In the file Matrix.cpp, line(" << __LINE__ << ")";
+      err<<"This matrix is REAL. Please use operator[] instead." << std::endl << "In the file Matrix.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    else if(typeID() == 2)
+    if(typeID() == 2)
       cm_elem = (Complex*)mvCPU(cm_elem, elemNum() * sizeof(Complex), ongpu);
-    return cm_elem[idx];
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::opeartor[](size_t):");
+    propogate_exception(e, "In function Matrix::opeartor()(size_t):");
   }
   return cm_elem[idx];
 }
@@ -464,10 +462,10 @@ void Matrix::load(const std::string& fname){
 
 void Matrix::assign(size_t _Rnum, size_t _Cnum){
   try{
-    if(typeID() == 0 || typeID() == 1)
-      assign(RTYPE, _Rnum, _Cnum);
+    if(typeID() == 1)
+      this->assign(RTYPE, _Rnum, _Cnum);
     else if(typeID() == 2)
-      assign(CTYPE, _Rnum, _Cnum);
+      this->assign(CTYPE, _Rnum, _Cnum);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::assign(size_t ,size_t ):");
