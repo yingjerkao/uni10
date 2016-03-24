@@ -34,6 +34,7 @@
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/hdf5io/uni10_hdf5io.h>
+#include <deque>
 
 typedef double Real;
 typedef std::complex<double> Complex;
@@ -44,6 +45,68 @@ int64_t UniTensor::ELEMNUM = 0;
 int UniTensor::COUNTER = 0;
 size_t UniTensor::MAXELEMNUM = 0;
 size_t UniTensor::MAXELEMTEN = 0;
+
+/*********************  DEVELOP **************************/
+
+std::vector<UniTensor> UniTensor::hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
+  throwTypeError(tp);
+  if((status & HAVEBOND) == 0){
+    std::ostringstream err;
+    err<<"Cannot perform higher order SVD on a tensor without bonds(scalar).";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  if((status & HAVEELEM) == 0){
+    std::ostringstream err;
+    err<<"Cannot perform higher order SVD on a tensor before setting its elements.";
+    throw std::runtime_error(exception_msg(err.str()));
+  }
+  UniTensor T(*this);
+  T.permute(group_labels, groups[0]);
+  for(size_t i = 0; i < T.bondNum(); i++)
+    T.labels[i] = i;
+
+  size_t groupElemNum=0;
+  for(size_t n = 0; n < groups.size(); n++)
+    groupElemNum+=groups[n];
+
+  if(returnL)
+    Ls.assign(groups.size(), std::map<Qnum, Matrix>());
+  std::vector<UniTensor> Us;
+  UniTensor S(T);
+  std::vector<int> lrsp_labels = T.labels;
+  std::vector<int> rsp_labels = T.labels;
+
+  for(size_t m = 0; m < groups.size(); m++){
+    int pos=0, Uidx =0;
+    for(size_t l = 0; l < groupElemNum; l++){
+      if(m >= groupElemNum-groups[m])
+        rsp_labels[pos] = lrsp_labels[l-(groupElemNum-groups[m])];
+      else
+        rsp_labels[pos] = lrsp_labels[l+groups[m]];
+      pos++;
+    }
+    T.permute(RTYPE, lrsp_labels, groups[m]);
+    std::vector<Bond> bonds(T.bonds.begin(), T.bonds.begin() + groups[m]);
+    bonds.push_back(combine(bonds).dummy_change(BD_OUT));
+    Us.push_back(UniTensor(RTYPE, bonds));
+    for(std::map<Qnum, Block>::iterator it = T.blocks.begin(); it != T.blocks.end(); it++){
+      std::vector<Matrix> svd = it->second.svd(RTYPE);
+      Us[m].putBlock(it->first, svd[0]);
+      if(returnL)
+        Ls[m][it->first] = svd[1];
+    }
+    for(int c = 0; c < groups[m]; c++){
+      Us[m].labels[c] = Uidx;
+      Uidx++;
+    }
+    Us[m].labels[groups[m]] = -m - 1;
+    UniTensor UT = Us[m];
+    S *= UT.transpose(RTYPE);
+    lrsp_labels = rsp_labels;
+  } 
+  Us.push_back(S);
+  return Us;
+}
 
 /*********************  OPERATOR **************************/
 
@@ -1598,6 +1661,7 @@ void UniTensor::TelemFree(){
   else if(c_elem != NULL)
     elemFree(c_elem, sizeof(Complex) * m_elemNum, ongpu);
 }
+
 
 std::vector<UniTensor> UniTensor::_hosvd(rflag _tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
   if((status & HAVEBOND) == 0){

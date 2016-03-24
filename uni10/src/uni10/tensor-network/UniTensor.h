@@ -34,6 +34,7 @@
 #include <cmath>
 #include <cstdio>
 #include <vector>
+#include <deque>
 #include <map>
 #include <set>
 #include <string>
@@ -69,10 +70,11 @@ namespace uni10 {
     class UniTensor {
 
     public:
+        friend void RtoC(UniTensor& UniT);
 
+        std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
         /*******************  developping ************************/
 
-        friend void RtoC(UniTensor& UniT);
 
         /// @brief Access single element
         ///
