@@ -72,8 +72,15 @@ namespace uni10 {
     public:
         friend void RtoC(UniTensor& UniT);
 
-        std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
         /*******************  developping ************************/
+        std::vector<UniTensor> hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
+
+        std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
+        std::vector<UniTensor> hosvd(cflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
+        std::vector<UniTensor> hosvd(std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
+
+        std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
+        std::vector<UniTensor> hosvd(cflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
 
 
         /// @brief Access single element
@@ -90,13 +97,9 @@ namespace uni10 {
         /// @param fixedNum Number of bonds to remain unchanged
         std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum = 0)const;
         /// @overload
-        std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
-        /// @overload
         std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
         /// @overload
-        std::vector<UniTensor> hosvd(size_t modeNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
 
         /// @brief High-order SVD
         ///
@@ -105,13 +108,9 @@ namespace uni10 {
         /// @param fixedNum Number of bonds to remain unchanged
         std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, size_t fixedNum = 0)const;
         /// @overload
-        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
-        /// @overload
         std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
         /// @overload
-        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        std::vector<UniTensor> hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
 
         /// @brief High-order SVD
         ///
@@ -120,13 +119,9 @@ namespace uni10 {
         /// @param fixedNum Number of bonds to remain unchanged
         std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum = 0)const;
         /// @overload
-        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
-        /// @overload
         std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
         /// @overload
-        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, std::vector<Matrix>& Ls)const;
-        /// @overload
-        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
+        std::vector<UniTensor> hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const;
 
         /*********************  OPERATOR **************************/
 
@@ -1068,23 +1063,20 @@ namespace uni10 {
         //Private Functions
         /*********************  NO TYPE **************************/
         void initUniT(int typeID);
-        size_t grouping();
-        void TelemFree();
         std::vector<UniTensor> _hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
+        void TelemFree();
         /*********************  REAL **********************/
-        void initUniT(rflag tp);
-        size_t grouping(rflag tp);
-        void initBlocks(rflag tp);
-        void TelemAlloc(rflag tp);
-        void TelemBzero(rflag tp);
-        std::vector<UniTensor> _hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;
+        void initUniT(rflag tp = RTYPE);
+        size_t grouping(rflag tp = RTYPE);
+        void initBlocks(rflag tp = RTYPE);
+        void TelemAlloc(rflag tp = RTYPE);
+        void TelemBzero(rflag tp = RTYPE);
         /*********************  COMPLEX **********************/
         void initUniT(cflag tp);
         size_t grouping(cflag tp);
         void initBlocks(cflag tp);
         void TelemAlloc(cflag tp);
         void TelemBzero(cflag tp);
-        std::vector<UniTensor> _hosvd(cflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const; //have bug
         /*****************************************************/
 
         static const int HAVEBOND = 1;        /**< A flag for initialization */

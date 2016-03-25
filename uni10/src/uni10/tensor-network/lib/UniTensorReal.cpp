@@ -1380,7 +1380,7 @@ void UniTensor::initUniT(rflag tp){ //GPU
 
   ELEMNUM += m_elemNum;
   COUNTER++;
-  if(ELEMNUM > MAXELEMNUM)
+  if((size_t)ELEMNUM > MAXELEMNUM)
     MAXELEMNUM = ELEMNUM;
   if(m_elemNum > MAXELEMTEN)
     MAXELEMTEN = m_elemNum;
@@ -1389,7 +1389,7 @@ void UniTensor::initUniT(rflag tp){ //GPU
   TelemBzero(RTYPE);
 }
 
-void UniTensor::initBlocks(rflag _tp){
+void UniTensor::initBlocks(rflag tp){
   size_t offset = 0;
   for(std::map<Qnum, Block>::iterator it = blocks.begin() ; it != blocks.end(); it++ ){
     it->second.r_flag = RTYPE;
@@ -1400,83 +1400,148 @@ void UniTensor::initBlocks(rflag _tp){
   }
 }
 
-void UniTensor::TelemAlloc(rflag _tp){
+void UniTensor::TelemAlloc(rflag tp){
   elem = (Real*)elemAlloc(sizeof(Real) * m_elemNum, ongpu);
 }
 
-void UniTensor::TelemBzero(rflag _tp){
+void UniTensor::TelemBzero(rflag tp){
   elemBzero(elem, sizeof(Real) * m_elemNum, ongpu);
 }
 
 /************* developping *************/
 
-std::vector<UniTensor> UniTensor::hosvd(rflag _tp, size_t modeNum, size_t fixedNum)const{
+std::vector<UniTensor> UniTensor::hosvd(rflag tp, int* _group_labels, int* _groups, size_t _groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
+  try{
+    std::vector<int> group_labels(_group_labels, _group_labels+this->bondNum());
+    std::vector<int> groups(_groups, _groups+_groupsSize);
+    return hosvd(tp, group_labels, groups, Ls, returnL);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::hosvd(uni10::rflag ,int* ,int* ,size_t ,std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const;");
+    return std::vector<UniTensor>();
+  }
+}
+
+std::vector<UniTensor> UniTensor::hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
+  throwTypeError(tp);
+  try{
+    if((status & HAVEBOND) == 0){
+      std::ostringstream err;
+      err<<"Cannot perform higher order SVD on a tensor without bonds(scalar).";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if((status & HAVEELEM) == 0){
+      std::ostringstream err;
+      err<<"Cannot perform higher order SVD on a tensor before setting its elements.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(group_labels.size() != this->bondNum()){
+      std::ostringstream err;
+      err<<"The size of Group labels is not match to the number of tensor's bond.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+
+    UniTensor T(*this);
+    size_t groupElemNum=0;
+    for(size_t n = 0; n < groups.size(); n++)
+      groupElemNum+=groups[n];
+
+    if(returnL)
+      Ls.assign(groups.size(), std::map<Qnum, Matrix>());
+    std::vector<UniTensor> Us;
+    UniTensor S(T);
+
+    std::vector<int> lrsp_labels = group_labels;
+    std::vector<int> rsp_labels = group_labels;
+
+    int min = *std::min_element(rsp_labels.begin(), rsp_labels.end());
+
+    for(size_t m = 0; m < groups.size(); m++){
+      int pos=0;
+      for(size_t l = 0; l < groupElemNum; l++){
+        if(l >= groupElemNum-groups[m])
+          rsp_labels[pos] = lrsp_labels[l-(groupElemNum-groups[m])];
+        else
+          rsp_labels[pos] = lrsp_labels[l+groups[m]];
+        pos++;
+      }
+      T.permute(RTYPE, lrsp_labels, groups[m]);
+      std::vector<Bond> bonds(T.bonds.begin(), T.bonds.begin() + groups[m]);
+      bonds.push_back(combine(bonds).dummy_change(BD_OUT));
+      Us.push_back(UniTensor(RTYPE, bonds));
+      for(std::map<Qnum, Block>::iterator it = T.blocks.begin(); it != T.blocks.end(); it++){
+        std::vector<Matrix> svd = it->second.svd(RTYPE);
+        Us[m].putBlock(it->first, svd[0]);
+        if(returnL)
+          Ls[m][it->first] = svd[1];
+      }
+      for(int c = 0; c < groups[m]; c++)
+        Us[m].labels[c] = lrsp_labels[c];
+      Us[m].labels[groups[m]] = min -m - 1;
+      UniTensor UT = Us[m];
+      S *= UT.transpose(RTYPE);
+      lrsp_labels = rsp_labels;
+    } 
+    Us.push_back(S);
+    return Us;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::hosvd(uni10::rflag , std::vector<int>& , std::vector<int>& , std::vector<std::map<Qnum, Matrix> >& , bool returnL)const:");
+    return std::vector<UniTensor>();
+  }
+}
+
+std::vector<UniTensor> UniTensor::hosvd(rflag tp, size_t modeNum, size_t fixedNum)const{
   try{
     std::vector<std::map<Qnum, Matrix> > symLs;
-    return _hosvd(RTYPE, modeNum, fixedNum, symLs, false);
+    std::vector<int> group_labels=this->labels;
+    std::vector<int> groups(modeNum, (this->bondNum()-fixedNum)/modeNum);
+    return hosvd(tp, group_labels, groups, symLs, false);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t = 0):");
+    propogate_exception(e, "In function UniTensor::hosvd(uni10::rflag, size_t, size_t = 0):");
     return std::vector<UniTensor>();
   }
 }
 
-std::vector<UniTensor> UniTensor::hosvd(rflag _tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const{
+std::vector<UniTensor> UniTensor::hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const{
   try{
-    return _hosvd(RTYPE, modeNum, fixedNum, Ls, true);
+    std::vector<std::map<Qnum, Matrix> > symLs;
+    std::vector<int> group_labels=this->labels;
+    std::vector<int> groups(modeNum, (this->bondNum()-fixedNum)/modeNum );
+    return hosvd(tp, group_labels, groups, Ls, true);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t, std::vector<std::map<uni10::Qnum, uni10::Matrix> >&):");
+    propogate_exception(e, "In function UniTensor::hosvd(uni10::rflag, size_t, size_t, std::vector<std::map<uni10::Qnum, uni10::Matrix> >&):");
     return std::vector<UniTensor>();
   }
 }
 
-std::vector<UniTensor> UniTensor::hosvd(rflag _tp, size_t modeNum, std::vector<std::map<Qnum, Matrix> >& Ls)const{
-  try{
-    return _hosvd(RTYPE, modeNum, 0, Ls, true);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::hosvd(size_t, std::vector<std::map<uni10::Qnum, uni10::Matrix> >&):");
-    return std::vector<UniTensor>();
-  }
-}
-
-std::vector<UniTensor> UniTensor::hosvd(rflag _tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const{
+std::vector<UniTensor> UniTensor::hosvd(rflag tp, size_t modeNum, size_t fixedNum, std::vector<Matrix>& Ls)const{
   try{
     bool withoutSymmetry = true;
-    for(int b = 0; b < bonds.size(); b++){
+    for(size_t b = 0; b < bonds.size(); b++){
       if(bonds[b].Qnums.size() != 1)
         withoutSymmetry = false;
     }
     if(!withoutSymmetry){
       std::ostringstream err;
       err<<"The tensor has symmetry quantum numbers. Cannot use non-symmetry version hosvd(size_t, std::vector<uni10::Matrix>&)";
-      err<<"\n  Hint: Use UniTensor::hosvd(size_t, size_t, std::vector<std::map<uni10::Qnum, uni10::Matrix> >&)";
+      err<<"\n  Hint: Use UniTensor::hosvd(uni10::rflag, size_t, size_t, std::vector<std::map<uni10::Qnum, uni10::Matrix> >&)";
       throw std::runtime_error(exception_msg(err.str()));
     }
     std::vector<std::map<Qnum, Matrix> > symLs;
-    const std::vector<UniTensor>& outs = _hosvd(RTYPE , modeNum, fixedNum, symLs, true);
+    const std::vector<UniTensor>& outs = hosvd(tp , modeNum, fixedNum, symLs);
     Ls.clear();
     Qnum q0(0);
-    for(int i = 0; i < symLs.size(); i++)
+    for(size_t i = 0; i < symLs.size(); i++)
       Ls.push_back(symLs[i][q0]);
     return outs;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::hosvd(size_t, size_t, std::vector<Matrix>&):");
+    propogate_exception(e, "In function UniTensor::hosvd(uni10::rflag, size_t, size_t, std::vector<Matrix>&):");
     return std::vector<UniTensor>();
   }
 }
-
-std::vector<UniTensor> UniTensor::hosvd(rflag _tp, size_t modeNum, std::vector<Matrix>& Ls)const{
-  try{
-    return hosvd(RTYPE, modeNum, 0, Ls);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::hosvd(size_t, std::vector<Matrix>&):");
-    return std::vector<UniTensor>();
-  }
-}
-
 
 }; /* namespace uni10 */
