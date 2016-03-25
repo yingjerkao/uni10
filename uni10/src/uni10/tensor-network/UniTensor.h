@@ -73,6 +73,7 @@ namespace uni10 {
         friend void RtoC(UniTensor& UniT);
 
         /*******************  developping ************************/
+
         std::vector<UniTensor> hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
 
         std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
@@ -82,6 +83,8 @@ namespace uni10 {
         std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
         std::vector<UniTensor> hosvd(cflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
 
+        UniTensor& cTranspose();
+        UniTensor& cTranspose(cflag tp);
 
         /// @brief Access single element
         ///

@@ -1480,7 +1480,7 @@ std::vector<UniTensor> UniTensor::hosvd(cflag tp, std::vector<int>& group_labels
         Us[m].labels[c] = lrsp_labels[c];
       Us[m].labels[groups[m]] = min -m - 1;
       UniTensor UT = Us[m];
-      S *= UT;
+      S *= UT.cTranspose(CTYPE);
       lrsp_labels = rsp_labels;
     } 
     Us.push_back(S);

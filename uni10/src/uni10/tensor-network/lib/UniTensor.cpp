@@ -1537,6 +1537,82 @@ void UniTensor::TelemFree(){
 
 /************* developping *************/
 
+UniTensor& UniTensor::cTranspose(){
+  try{
+    if(typeID() == 1)
+      return this->transpose(RTYPE); 
+    else if(typeID() == 2)
+      return this->cTranspose(CTYPE);
+    
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::cTranspose():");
+  }
+  return *this;
+}
+
+
+UniTensor& UniTensor::cTranspose(cflag tp){
+  try{
+    throwTypeError(tp);
+    if(!(status & HAVEBOND)){
+      std::ostringstream err;
+      err<<"There is no bond in the tensor(scalar) to perform transposition.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    int bondNum = bonds.size();
+    std::vector<int> rsp_outin(bondNum);
+    int rbondNum = 0;
+    for(int b = 0; b < bondNum; b++)
+      if(bonds[b].type() == BD_IN)
+        rbondNum++;
+      else
+        break;
+    int cbondNum = bondNum - rbondNum;
+    for(int b = 0; b < bondNum; b++)
+      if(b < cbondNum)
+        rsp_outin[b] = rbondNum + b;
+      else
+        rsp_outin[b] = b - cbondNum;
+    std::vector<int> outLabels(bondNum, 0);
+    std::vector<Bond> outBonds;
+    for(size_t b = 0; b < bonds.size(); b++){
+      outBonds.push_back(bonds[rsp_outin[b]]);
+      outLabels[b] = labels[rsp_outin[b]];
+    }
+    for(int b = 0; b < bondNum; b++){
+      if(b < cbondNum)
+        outBonds[b].m_type = BD_IN;
+      else
+        outBonds[b].m_type = BD_OUT;
+    }
+    UniTensor UniTout(CTYPE, outBonds, name);
+    UniTout.setLabel(outLabels);
+    if(status & HAVEELEM){
+      std::map<Qnum, Block>::iterator it_in;
+      std::map<Qnum, Block>::iterator it_out;
+      Complex* elem_in;
+      Complex* elem_out;
+      size_t Rnum, Cnum;
+      for ( it_in = blocks.begin() ; it_in != blocks.end(); it_in++ ){
+        it_out = UniTout.blocks.find((it_in->first));
+        Rnum = it_in->second.Rnum;
+        Cnum = it_in->second.Cnum;
+        elem_in = it_in->second.cm_elem;
+        elem_out = it_out->second.cm_elem;
+        setCTranspose(elem_in, Rnum, Cnum, elem_out, ongpu, UniTout.ongpu);
+      }
+      UniTout.status |= HAVEELEM;
+    }
+    *this = UniTout;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::cTranspose(uni10::cflag ):");
+  }
+  return *this;
+
+}
+
 std::vector<UniTensor> UniTensor::hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
   try{
     if(typeID() == 1)
