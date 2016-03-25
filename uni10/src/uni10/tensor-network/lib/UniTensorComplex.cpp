@@ -1472,6 +1472,45 @@ void UniTensor::TelemBzero(cflag tp){
 
 /************* developping *************/
 
+std::vector<UniTensor> UniTensor::hosvd(cflag tp, int* _group_labels, int* _groups, size_t _groupsSize, std::vector<Matrix>& Ls)const{
+  try{
+    std::vector<int> group_labels(_group_labels, _group_labels+this->bondNum());
+    std::vector<int> groups(_groups, _groups+_groupsSize);
+    return hosvd(tp, group_labels, groups, Ls);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::hosvd(uni10::cflag ,int* ,int* ,size_t ,std::vector<uni10::Matrix>& Ls)const;");
+    return std::vector<UniTensor>();
+  }
+}
+
+std::vector<UniTensor> UniTensor::hosvd(cflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const{
+  try{
+    bool withoutSymmetry = true;
+    for(size_t b = 0; b < bonds.size(); b++){
+      if(bonds[b].Qnums.size() != 1)
+        withoutSymmetry = false;
+    }
+    if(!withoutSymmetry){
+      std::ostringstream err;
+      err<<"The tensor has symmetry quantum numbers. Cannot use non-symmetry version hosvd(size_t, std::vector<uni10::Matrix>&)";
+      err<<"\n  Hint: Use UniTensor::hosvd(uni10::cflag, std::vector<int>&, std::vector<int>&, std::vector<uni10::Matrix> >&)";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    std::vector<std::map<Qnum, Matrix> > symLs;
+    const std::vector<UniTensor>& outs = hosvd(tp , group_labels, groups, symLs, true);
+    Ls.clear();
+    Qnum q0(0);
+    for(size_t i = 0; i < symLs.size(); i++)
+      Ls.push_back(symLs[i][q0]);
+    return outs;
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::hosvd(uni10::cflag, std::vector<int>, std::vector<int>, std::vector<Matrix>&):");
+    return std::vector<UniTensor>();
+  }
+}
+
 std::vector<UniTensor> UniTensor::hosvd(cflag tp, int* _group_labels, int* _groups, size_t _groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
   try{
     std::vector<int> group_labels(_group_labels, _group_labels+this->bondNum());

@@ -74,6 +74,15 @@ namespace uni10 {
 
         /*******************  developping ************************/
 
+        void printGraphy()const;
+        std::vector<UniTensor> hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
+        std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
+        std::vector<UniTensor> hosvd(cflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
+        std::vector<UniTensor> hosvd(std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const ;
+        std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const ;
+        std::vector<UniTensor> hosvd(cflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const ;
+
+
         std::vector<UniTensor> hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
 
         std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;

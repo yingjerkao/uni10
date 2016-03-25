@@ -54,20 +54,16 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
   try{
     if(!(UniT.status & UniT.HAVEBOND)){
       if(UniT.ongpu){
-        if(UniT.typeID() == 0)
-          os<<"This Tensor is EMPTY";
         if(UniT.typeID() == 1)
           os<<"\nScalar: " << getElemAt(0, UniT.elem, UniT.ongpu);
-        if(UniT.typeID() == 2)
+        else if(UniT.typeID() == 2)
           os<<"\nScalar: " << getElemAt(0, UniT.c_elem, UniT.ongpu);
         os<<", onGPU";
       }
       else{
-        if(UniT.typeID() == 0)
-          os<<"This Tensor is EMPTY";
         if(UniT.typeID() == 1)
           os<<"\nScalar: " << UniT.elem[0];
-        if(UniT.typeID() == 2)
+        else if(UniT.typeID() == 2)
           os<<"\nScalar: " << UniT.c_elem[0];
       }
       os<<"\n\n";
@@ -91,11 +87,9 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
     for(int s = 0; s < star; s++)
       os<<"*";
     os<<std::endl;
-    if(UniT.typeID() == 0)
-      os << "EMPTY" << std::endl;
     if(UniT.typeID() == 1)
       os << "REAL" << std::endl;
-    if(UniT.typeID() == 2)
+    else if(UniT.typeID() == 2)
       os << "COMPLEX" << std::endl;
     if(UniT.ongpu)
       os<<"\n                 onGPU";
@@ -1537,6 +1531,87 @@ void UniTensor::TelemFree(){
 
 /************* developping *************/
 
+void UniTensor::printGraphy()const{
+  try{
+    if(!(status & HAVEBOND)){
+      if(ongpu){
+        if(typeID() == 1)
+          std::cout <<"\nScalar: " << getElemAt(0, elem, ongpu);
+        if(typeID() == 2)
+          std::cout <<"\nScalar: " << getElemAt(0, c_elem, ongpu);
+        std::cout<<", onGPU";
+      }
+      else{
+        if(typeID() == 1)
+          std::cout<<"\nScalar: " << elem[0];
+        if(typeID() == 2)
+          std::cout<<"\nScalar: " << c_elem[0];
+      }
+      std::cout<<"\n\n";
+    }else{
+      int row = 0;
+      int col = 0;
+      std::vector<Bond>bonds = bond();
+      for(size_t i = 0; i < bonds.size(); i++)
+        if(bonds[i].type() == BD_IN)
+          row++;
+        else
+          col++;
+      int layer = std::max(row, col);
+      int nmlen = name.length() + 2;
+      int star = 12 + (14 - nmlen) / 2;
+      for(int s = 0; s < star; s++)
+        std::cout << "*";
+      if(name.length() > 0)
+        std::cout << " " << name << " ";
+      for(int s = 0; s < star; s++)
+        std::cout<<"*";
+      std::cout<<std::endl;
+      if(typeID() == 1)
+        std::cout << "REAL" << std::endl;
+      else if(typeID() == 2)
+        std::cout << "COMPLEX" << std::endl;
+      if(ongpu)
+        std::cout<<"\n                 onGPU";
+      std::cout << "\n             ____________\n";
+      std::cout << "            |            |\n";
+      int llab = 0;
+      int rlab = 0;
+      char buf[128];
+      for(int l = 0; l < layer; l++){
+        if(l < row && l < col){
+          llab = labels[l];
+          rlab = labels[row + l];
+          sprintf(buf, "    %5d___|%-4d    %4d|___%-5d\n", llab, bonds[l].dim(), bonds[row + l].dim(), rlab);
+          std::cout<<buf;
+        }
+        else if(l < row){
+          llab = labels[l];
+          sprintf(buf, "    %5d___|%-4d    %4s|\n", llab, bonds[l].dim(), "");
+          std::cout<<buf;
+        }
+        else if(l < col){
+          rlab = labels[row + l];
+          sprintf(buf, "    %5s   |%4s    %4d|___%-5d\n", "", "", bonds[row + l].dim(), rlab);
+          std::cout << buf;
+        }
+        std::cout << "            |            |   \n";
+      }
+      std::cout << "            |____________|\n";
+
+      std::cout << "\n================BONDS===============\n";
+      for(size_t b = 0; b < bonds.size(); b++){
+        std::cout << bonds[b];
+      }
+      std::cout << "***************** END ****************\n\n";
+    }
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::printGraphy():");
+  }
+
+}
+
 UniTensor& UniTensor::cTranspose(){
   try{
     if(typeID() == 1)
@@ -1549,6 +1624,32 @@ UniTensor& UniTensor::cTranspose(){
     propogate_exception(e, "In function UniTensor::cTranspose():");
   }
   return *this;
+}
+
+std::vector<UniTensor> UniTensor::hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const{
+  try{
+    if(typeID() == 1)
+      return hosvd(RTYPE, group_labels, groups, groupsSize, Ls);
+    else if(typeID() == 2)
+      return hosvd(CTYPE, group_labels, groups, groupsSize, Ls);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::hosvd(int* ,int* ,size_t ,std::vector<Matrix>& Ls)const;");
+    return std::vector<UniTensor>();
+  }
+}
+
+std::vector<UniTensor> UniTensor::hosvd(std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const{
+  try{
+    if(typeID() == 1)
+      return hosvd(RTYPE, group_labels, groups, Ls);
+    else if(typeID() == 2)
+      return hosvd(CTYPE, group_labels, groups, Ls);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::hosvd(std::vector<int>, std::vector<int>, std::vector<Matrix>&):");
+    return std::vector<UniTensor>();
+  }
 }
 
 std::vector<UniTensor> UniTensor::hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
