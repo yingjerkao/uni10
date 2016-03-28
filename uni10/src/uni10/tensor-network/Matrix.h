@@ -61,8 +61,17 @@ public:
     friend void CAddR(Matrix& Ma, const Matrix& Mb);
     friend void RAddC(Matrix& Ma, const Matrix& Mb);
     friend void CAddC(Matrix& Ma, const Matrix& Mb);
-    /*********************  developping  **********************/
 
+    /*********************  developping  **********************/
+    
+    double absMax(bool _ongpu=false);
+    double absMax(rflag tp, bool _ongpu=false);
+
+    Matrix& maxNorm();
+    Matrix& maxNorm(rflag tp);
+
+    Matrix& absMaxNorm();
+    Matrix& absMaxNorm(rflag tp);
 
     double* getHostElem();
     double* getHostElem(rflag _tp);
@@ -149,7 +158,7 @@ public:
     /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand();
 
-    void normalize();
+    Matrix& normalize();
 
     /// @brief Transpose Matrix
     ///
@@ -230,7 +239,7 @@ public:
     /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand(rflag _tp);
 
-    void normalize(rflag tp);
+    Matrix& normalize(rflag tp);
 
     /// @brief Transpose Matrix
     ///
@@ -326,7 +335,7 @@ public:
     /// If the <tt> Nr > Nc </tt>, randomly generates \c Nc orthogonal basis column vectors of dimension \c Nr.
     void orthoRand(cflag _tp);
 
-    void normalize(cflag tp);
+    Matrix& normalize(cflag tp);
 
     /// @brief Transpose Matrix
     ///

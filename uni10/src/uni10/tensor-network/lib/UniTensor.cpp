@@ -934,30 +934,6 @@ void UniTensor::orthoRand(const Qnum& qnum){
   }
 }
 
-Real UniTensor::norm() const{
-  try{
-    Real norm = 0;
-    std::map<Qnum, Block>::const_iterator it = blocks.begin();
-    if(blocks.size() == 0){
-      std::ostringstream err;
-      err<<"There is no block in this tensor ";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    for(; it != blocks.end(); it++)
-      norm += pow(it->second.norm(),2);
-    return sqrt(norm);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::norm():");
-  }
-  return 0.;
-}
-
-void UniTensor::normalize(){
-  Real norm = this->norm();
-  *this *= (1./norm);
-}
-
 void UniTensor::save(const std::string& fname){
   try{
     if((status & HAVEBOND) == 0){   //If not INIT, NO NEED to write out to file
@@ -1530,6 +1506,106 @@ void UniTensor::TelemFree(){
 }
 
 /************* developping *************/
+Real UniTensor::max() const{
+  try{
+    if(blocks.size() == 0){
+      std::ostringstream err;
+      err<<"There is no block in this tensor ";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    else if(typeID() == 2){
+      std::ostringstream err;
+      err<< "Can't Comparison. The type of matirx is COMPLEX." << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return this->max(RTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::max():");
+  }
+  return 0.;
+}
+
+Real UniTensor::absMax() const{
+  try{
+    if(blocks.size() == 0){
+      std::ostringstream err;
+      err<<"There is no block in this tensor ";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    else if(typeID() == 2){
+      std::ostringstream err;
+      err<< "Can't Comparison. The type of matirx is COMPLEX." << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return this->absMax(RTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::absMax():");
+    return 0.;
+  }
+}
+
+Real UniTensor::norm() const{
+  try{
+    if(blocks.size() == 0){
+      std::ostringstream err;
+      err<<"There is no block in this tensor ";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(typeID() == 1)
+      return this->norm(RTYPE);
+    else if(typeID() == 2)
+      return this->norm(CTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::norm():");
+  }
+  return 0.;
+}
+
+UniTensor& UniTensor::normalize(){
+  try{
+    if(typeID() == 1)
+      return this->normalize(RTYPE);
+    else if(typeID() == 2)
+      return this->normalize(CTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::normalize():");
+  }
+  return *this;
+}
+
+UniTensor& UniTensor::absMaxNorm(){
+  try{
+    if(typeID() == 2){
+      std::ostringstream err;
+      err<< "Can't perform UniTensor::absMaxNorm() on this matrix. The type of matirx is COMPLEX.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return this->absMaxNorm(RTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::absMaxNorm():");
+  }
+  return *this;
+}
+
+UniTensor& UniTensor::maxNorm(){
+  try{
+    if(typeID() == 2){
+      std::ostringstream err;
+      err<< "Can't perform UniTensor::maxNorm() on this matrix. The type of matirx is COMPLEX.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return this->maxNorm(RTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::maxNorm():");
+  }
+  return *this;
+}
 
 void UniTensor::printGraphy()const{
   try{

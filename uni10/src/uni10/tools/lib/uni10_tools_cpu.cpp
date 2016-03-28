@@ -109,6 +109,27 @@ double  elemMax(double* elem, size_t elemNum, bool ongpu){
     }
 }
 
+double  elemAbsMax(double* elem, size_t elemNum, bool ongpu){
+    
+    if (ongpu) {
+        // GPU not implemented
+        std::ostringstream err;
+        err<<"Fatal error(code = T1). GPU version is not implemented.";
+        throw std::runtime_error(exception_msg(err.str()));
+    } else {
+	
+	size_t idx = 0;
+        double max = fabs(elem[0]);
+        
+        for (size_t i=1; i<elemNum; i++)
+        if (max < fabs(elem[i])){
+	  max=fabs(elem[i]);
+	  idx = i;
+	}
+        return elem[idx];
+    }
+}
+
 /***** Complex version *****/
 std::complex<double> getElemAt(size_t idx, std::complex<double>* elem, bool ongpu){
 	return elem[idx];

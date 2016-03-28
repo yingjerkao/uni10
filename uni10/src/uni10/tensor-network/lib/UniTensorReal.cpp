@@ -1171,27 +1171,6 @@ Real UniTensor::at(rflag tp, const std::vector<size_t>& idxs)const{
   }
 }
 
-Real UniTensor::norm(rflag tp) const{
-  try{
-    throwTypeError(tp);
-    return this->norm();
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::norm(uni10::rflag ):");
-    return 0;
-  }
-}
-
-void UniTensor::normalize(rflag tp){
-  try{
-    throwTypeError(tp);
-    this->normalize();
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UiTensor::normalize(uni10::rflag ):");
-  }
-}
-
 /*********************  Private **********************/
 
 size_t UniTensor::grouping(rflag tp){
@@ -1409,6 +1388,75 @@ void UniTensor::TelemBzero(rflag tp){
 }
 
 /************* developping *************/
+
+Real UniTensor::norm(rflag tp) const{
+  try{
+    throwTypeError(tp);
+    return vectorNorm(elem, elemNum(), 1, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::norm(uni10::rflag ):");
+    return 0;
+  }
+}
+
+Real UniTensor::max(rflag tp) const{
+  try{
+    throwTypeError(tp);
+    return elemMax(elem, elemNum(), ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::max(uni10::rflag ):");
+    return 0;
+  }
+}
+
+Real UniTensor::absMax(rflag tp) const{
+  try{
+    throwTypeError(tp);
+    return elemAbsMax(elem, elemNum(), ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::absMax(uni10::rflag ):");
+    return 0;
+  }
+}
+
+UniTensor& UniTensor::normalize(rflag tp){
+  try{
+    throwTypeError(tp);
+    Real norm = vectorNorm(elem, elemNum(), 1, ongpu);
+    vectorScal((1./norm), elem, elemNum(), ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UiTensor::normalize(uni10::rflag ):");
+  }
+  return *this;
+}
+
+UniTensor& UniTensor::maxNorm(rflag tp){
+  try{
+    throwTypeError(tp);
+    Real max = elemMax(elem, elemNum(), ongpu);
+    vectorScal((1./max), elem, elemNum(), ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UiTensor::maxNorm(uni10::rflag ):");
+  }
+  return *this;
+}
+
+UniTensor& UniTensor::absMaxNorm(rflag tp){
+  try{
+    throwTypeError(tp);
+    Real absMax = elemAbsMax(elem, elemNum(), ongpu);
+    vectorScal((1./absMax), elem, elemNum(), ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UiTensor::absMaxNorm(uni10::rflag ):");
+  }
+  return *this;
+}
 
 std::vector<UniTensor> UniTensor::hosvd(rflag tp, int* _group_labels, int* _groups, size_t _groupsSize, std::vector<Matrix>& Ls)const{
   try{

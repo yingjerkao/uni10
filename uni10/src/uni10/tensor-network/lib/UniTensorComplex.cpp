@@ -1233,27 +1233,6 @@ Complex UniTensor::at(cflag tp, const std::vector<size_t>& idxs)const{
   }
 }
 
-Real UniTensor::norm(cflag tp) const{
-  try{
-    throwTypeError(tp);
-    return this->norm();
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::norm(uni10::cflag ):");
-    return 0;
-  }
-}
-
-void UniTensor::normalize(cflag tp){
-  try{
-    throwTypeError(tp);
-    this->normalize();
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::normalize(uni10::cflag ):");
-  }
-}
-
 /*********************  Private **********************/
 
 void UniTensor::initUniT(cflag tp){ //GPU
@@ -1471,6 +1450,28 @@ void UniTensor::TelemBzero(cflag tp){
 }
 
 /************* developping *************/
+
+Real UniTensor::norm(cflag tp) const{
+  try{
+    throwTypeError(tp);
+    return vectorNorm(c_elem, elemNum(), 1, ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::norm(uni10::cflag ):");
+    return 0;
+  }
+}
+
+UniTensor& UniTensor::normalize(cflag tp){
+  try{
+    throwTypeError(tp);
+    return this->normalize();
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function UniTensor::normalize(uni10::cflag ):");
+  }
+}
+
 
 std::vector<UniTensor> UniTensor::hosvd(cflag tp, int* _group_labels, int* _groups, size_t _groupsSize, std::vector<Matrix>& Ls)const{
   try{

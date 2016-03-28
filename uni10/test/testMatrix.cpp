@@ -43,3 +43,94 @@ TEST(Matrix, OperationAdd){
     }
 
 }
+
+TEST(Matrix, absMax){
+    
+    double elem1[12] = {9, 10, 29, -2, -100, 392, 33, -400, -12, -32, 12, 1};
+    double elem2[12] = {9, 10, 29, -2, -100, 401, 33, -400, -12, -32, 12, 1};
+    // R + R
+    Matrix A1(4, 3, elem1);
+    ASSERT_EQ(A1.absMax(), -400);
+    Matrix A2(3, 4, elem2);
+    ASSERT_EQ(A2.absMax(), 401);
+
+}
+
+TEST(Matrix, normalize){
+
+    bool flag;
+    Matrix A(3, 8);
+    A.randomize();
+
+    double* elem = (double*)malloc(sizeof(double)*A.elemNum());
+    memcpy(elem, A.getElem(), A.elemNum()*sizeof(double));
+    double norm = A.norm(); 
+    Matrix B = A.normalize();
+    for(size_t i = 0; i < A.elemNum(); i++){
+        flag = fabs(A[i] - B[i]) < 1E-8;
+        ASSERT_EQ(flag, true); 
+        flag = fabs(A[i] - elem[i] / norm) < 1E-8;
+        ASSERT_EQ(flag, true);
+        flag = fabs(B.norm() - 1.) < 1E-8;
+        ASSERT_EQ(flag, true);
+    }
+
+}
+
+TEST(Matrix, absMaxNorm){
+
+    bool flag;
+    Matrix A(3, 8);
+    A.randomize();
+    
+    double* elem = (double*)malloc(sizeof(double)*A.elemNum());
+    memcpy(elem, A.getElem(), A.elemNum()*sizeof(double));
+
+    double absMaxTmp = fabs(elem[0]);
+    size_t idx = 0;
+    for(size_t i = 0; i < A.elemNum(); i++)
+        if(absMaxTmp < fabs(elem[i])){
+            absMaxTmp = fabs(elem[i]) ;
+            idx = i;
+        }
+    
+    double absMax = A.absMax(); 
+    ASSERT_EQ(absMaxTmp, absMax); 
+
+    Matrix B = A.absMaxNorm();
+
+    for(size_t i = 0; i < A.elemNum(); i++){
+        flag = fabs(A[i] - B[i]) < 1E-8;
+        ASSERT_EQ(flag, true); 
+        flag = fabs(A[i] - elem[i] / absMax) < 1E-8;
+        ASSERT_EQ(flag, true);
+    }
+
+}
+
+TEST(Matrix, maxNorm){
+
+    bool flag;
+    Matrix A(3, 8);
+    A.randomize();
+
+    double* elem = (double*)malloc(sizeof(double)*A.elemNum());
+    memcpy(elem, A.getElem(), A.elemNum()*sizeof(double));
+    
+    double maxTmp = elem[0];
+    for(size_t i = 0; i < A.elemNum(); i++)
+        if(maxTmp < elem[i])
+            maxTmp = elem[i];
+
+    double max = A.max(); 
+    ASSERT_EQ(maxTmp, max); 
+
+    Matrix B = A.maxNorm();
+    
+    for(size_t i = 0; i < A.elemNum(); i++){
+        flag = fabs(A[i] - B[i]) < 1E-8;
+        ASSERT_EQ(flag, true); 
+        flag = fabs(A[i] - elem[i] / max) < 1E-8;
+        ASSERT_EQ(flag, true);
+    }
+}

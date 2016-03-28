@@ -224,7 +224,7 @@ void Matrix::orthoRand(cflag tp){
   }
 }
 
-void Matrix::normalize(cflag tp){
+Matrix& Matrix::normalize(cflag tp){
   try{
     throwTypeError(tp);
     Real norm = vectorNorm(cm_elem, elemNum(), 1, ongpu);
@@ -233,8 +233,8 @@ void Matrix::normalize(cflag tp){
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::normalize(uni10::cflag ):");
   }
+  return *this;
 }
-
 
 Matrix& Matrix::transpose(cflag tp){
   try{

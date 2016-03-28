@@ -74,7 +74,29 @@ namespace uni10 {
 
         /*******************  developping ************************/
 
+
+        double max() const;
+        double max(rflag tp) const;
+
+        double absMax() const;
+        double absMax(rflag tp) const;
+
+        UniTensor& maxNorm();
+        UniTensor& maxNorm(rflag tp);
+
+        UniTensor& absMaxNorm();
+        UniTensor& absMaxNorm(rflag tp);
+
+        double norm() const;
+        double norm(rflag tp) const;
+        double norm(cflag tp) const;
+
+        UniTensor& normalize();
+        UniTensor& normalize(rflag tp);
+        UniTensor& normalize(cflag tp);
+
         void printGraphy()const;
+
         std::vector<UniTensor> hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
         std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
         std::vector<UniTensor> hosvd(cflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
@@ -496,15 +518,6 @@ namespace uni10 {
         /// 
         /// 
         /// 
-        double norm() const;
-        double norm(rflag tp) const;
-        double norm(cflag tp) const;
-        ///
-        ///
-        ///
-        void normalize();
-        void normalize(rflag tp);
-        void normalize(cflag tp);
 
         /// @brief Save UniTensor to file
         ///

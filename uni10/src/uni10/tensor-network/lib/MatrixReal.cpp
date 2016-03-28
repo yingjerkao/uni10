@@ -331,17 +331,6 @@ bool Matrix::toGPU(rflag tp){
   return ongpu;
 }
 
-double Matrix::max(rflag tp, bool on_gpu){
-  try{
-    throwTypeError(tp);
-    return elemMax(m_elem,  elemNum(),  on_gpu);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::max(uni10::rflag, bool ):");
-  }
-  return 0;
-}
-
 Real& Matrix::at(rflag tp, size_t idx){
   try{
     throwTypeError(tp);
@@ -371,7 +360,31 @@ Real* Matrix::getHostElem(rflag tp){
   return m_elem;
 }
 
-void Matrix::normalize(rflag tp){
+/*********************  developping  **********************/
+
+Real Matrix::max(rflag tp, bool on_gpu){
+  try{
+    throwTypeError(tp);
+    return elemMax(m_elem,  elemNum(),  on_gpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::max(uni10::rflag, bool ):");
+  }
+  return 0;
+}
+
+Real Matrix::absMax(rflag tp, bool on_gpu){
+  try{
+    throwTypeError(tp);
+    return elemAbsMax(m_elem,  elemNum(),  on_gpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::absMax(uni10::rflag, bool ):");
+    return 0;
+  }
+}
+
+Matrix& Matrix::normalize(rflag tp){
   try{
     throwTypeError(tp);
     Real norm = vectorNorm(m_elem, elemNum(), 1, ongpu);
@@ -380,6 +393,32 @@ void Matrix::normalize(rflag tp){
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::normalize(uni10::rflag ):");
   }
+  return *this;
 }
+
+Matrix& Matrix::maxNorm(rflag tp){
+  try{
+    throwTypeError(tp);
+    Real max = elemMax(m_elem, elemNum(), ongpu);
+    vectorScal((1./max), m_elem, elemNum(), ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::maxNorm(uni10::rflag ):");
+  }
+  return *this;
+}
+
+Matrix& Matrix::absMaxNorm(rflag tp){
+  try{
+    throwTypeError(tp);
+    Real absMax = elemAbsMax(m_elem, elemNum(), ongpu);
+    vectorScal((1./absMax), m_elem, elemNum(), ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::absMaxNorm(uni10::rflag ):");
+  }
+  return *this;
+}
+
 
 };	/* namespace uni10 */

@@ -21,6 +21,17 @@ TEST(UniTensor,DefaultConstructor){
 
 }
 
+TEST(UniTensor,Constructor){
+
+    int chi = 10; 
+    Bond bdi_chi(BD_IN, chi); 
+    UniTensor A;
+    ASSERT_EQ(A.typeID(), 1);
+    ASSERT_EQ(A.bondNum(), 0);
+
+}
+
+
 TEST(UniTensor,setElem){
     std::vector<Bond> bondsA(3, Bond(BD_OUT, 2));
     bondsA[0] = Bond(BD_IN, 3);
@@ -138,7 +149,6 @@ TEST(UniTensor, Brackets){
     for(size_t i = 0; i < MA.elemNum(); i++)
         ASSERT_EQ(A[i], MA[i]);
 
-
 }
 
 TEST(UniTensor, Parentheses){
@@ -156,14 +166,90 @@ TEST(UniTensor, Parentheses){
 
 }
 
-TEST(UniTensor,Constructor){
+TEST(UniTensor, normalize){
 
-    int chi = 10; 
-    Bond bdi_chi(BD_IN, chi); 
-    UniTensor A;
-    ASSERT_EQ(A.typeID(), 1);
-    ASSERT_EQ(A.bondNum(), 0);
+    std::vector<Bond> bonds(3, Bond(BD_OUT, 4));
+    bonds[0] = Bond(BD_IN, 3);
+    bool flag;
+    UniTensor A(bonds);
+    A.randomize();
+
+    ASSERT_EQ(A.const_getBlock().norm(), A.norm());
+    
+    double* elem = (double*)malloc(sizeof(double)*A.elemNum());
+    memcpy(elem, A.getElem(), A.elemNum()*sizeof(double));
+    double norm = A.norm(); 
+    UniTensor B = A.normalize();
+    for(size_t i = 0; i < A.elemNum(); i++){
+        flag = fabs(A[i] - B[i]) < 1E-8;
+        ASSERT_EQ(flag, true); 
+        flag = fabs(A[i] - elem[i] / norm) < 1E-8;
+        ASSERT_EQ(flag, true);
+        flag = fabs(B.norm() - 1.) < 1E-8;
+        ASSERT_EQ(flag, true);
+    }
 
 }
 
+TEST(UniTensor, absMaxNorm){
+
+    std::vector<Bond> bonds(3, Bond(BD_OUT, 4));
+    bonds[0] = Bond(BD_IN, 3);
+    bool flag;
+    UniTensor A(bonds);
+    A.randomize();
+    
+    double* elem = (double*)malloc(sizeof(double)*A.elemNum());
+    memcpy(elem, A.getElem(), A.elemNum()*sizeof(double));
+
+    double absMaxTmp = fabs(elem[0]);
+    size_t idx = 0;
+    for(size_t i = 0; i < A.elemNum(); i++)
+        if(absMaxTmp < fabs(elem[i])){
+            absMaxTmp = fabs(elem[i]) ;
+            idx = i;
+        }
+    
+    double absMax = A.absMax(); 
+    ASSERT_EQ(absMaxTmp, absMax); 
+
+    UniTensor B = A.absMaxNorm();
+
+    for(size_t i = 0; i < A.elemNum(); i++){
+        flag = fabs(A[i] - B[i]) < 1E-8;
+        ASSERT_EQ(flag, true); 
+        flag = fabs(A[i] - elem[i] / absMax) < 1E-8;
+        ASSERT_EQ(flag, true);
+    }
+
+}
+
+TEST(UniTensor, maxNorm){
+
+    std::vector<Bond> bonds(3, Bond(BD_OUT, 4));
+    bonds[0] = Bond(BD_IN, 3);
+    bool flag;
+    UniTensor A(bonds);
+    A.randomize();
+
+    double* elem = (double*)malloc(sizeof(double)*A.elemNum());
+    memcpy(elem, A.getElem(), A.elemNum()*sizeof(double));
+    
+    double maxTmp = elem[0];
+    for(size_t i = 0; i < A.elemNum(); i++)
+        if(maxTmp < elem[i])
+            maxTmp = elem[i];
+
+    double max = A.max(); 
+    ASSERT_EQ(maxTmp, max); 
+
+    UniTensor B = A.maxNorm();
+    
+    for(size_t i = 0; i < A.elemNum(); i++){
+        flag = fabs(A[i] - B[i]) < 1E-8;
+        ASSERT_EQ(flag, true); 
+        flag = fabs(A[i] - elem[i] / max) < 1E-8;
+        ASSERT_EQ(flag, true);
+    }
+}
 

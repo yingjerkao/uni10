@@ -330,18 +330,6 @@ void Matrix::orthoRand(){
   }
 }
 
-void Matrix::normalize(){
-  try{
-    if(typeID() == 1)
-      this->normalize(RTYPE);
-    else if(typeID() == 2)
-      this->normalize(CTYPE);
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::normalize():");
-  }
-}
-
 Matrix& Matrix::transpose(){
   try{
     if(typeID() == 1)
@@ -392,22 +380,6 @@ Matrix& Matrix::resize(size_t row, size_t col){
     propogate_exception(e, "In function Matrix::resize(size_t, size_t):");
   }
   return *this;
-}
-
-double Matrix::max(bool on_gpu){
-  try{
-    if(typeID() == 1)
-      return  max(RTYPE, on_gpu);
-    else if(typeID() == 2){
-      std::ostringstream err;
-      err<< "Can't Comparison. The type of matirx is COMPLEX or EMPTY." << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-  }
-  catch(const std::exception& e){
-    propogate_exception(e, "In function Matrix::max(bool ):");
-  }
-  return 0;
 }
 
 void Matrix::load(const std::string& fname){
@@ -523,5 +495,93 @@ double* Matrix::getHostElem(){
   }
   return m_elem;
 }
+
+/*********************  developping  **********************/
+/*********************  developping  **********************/
+
+
+Real Matrix::max(bool _ongpu){
+  try{
+    if(elemNum() == 0){
+      std::ostringstream err;
+      err<<"There is no element in this matrix ";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    if(typeID() == 2){
+      std::ostringstream err;
+      err<< "Can't Comparison. The type of matirx is COMPLEX." << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return this->max(RTYPE, _ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::max():");
+  }
+  return 0.;
+}
+
+Real Matrix::absMax(bool _ongpu){
+  try{
+    if(elemNum() == 0){
+      std::ostringstream err;
+      err<<"There is no element in this matrix ";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    else if(typeID() == 2){
+      std::ostringstream err;
+      err<< "Can't Comparison. The type of matirx is COMPLEX." << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return this->absMax(RTYPE, _ongpu);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::absMax():");
+    return 0.;
+  }
+}
+
+Matrix& Matrix::normalize(){
+  try{
+    if(typeID() == 1)
+      return this->normalize(RTYPE);
+    else if(typeID() == 2)
+      return this->normalize(CTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::normalize():");
+  }
+  return *this;
+}
+
+Matrix& Matrix::absMaxNorm(){
+  try{
+    if(typeID() == 2){
+      std::ostringstream err;
+      err<< "Can't perform Matrix::absMaxNorm() on this matrix. The type of matirx is COMPLEX.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return this->absMaxNorm(RTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::absMaxNorm():");
+  }
+  return *this;
+}
+
+Matrix& Matrix::maxNorm(){
+  try{
+    if(typeID() == 2){
+      std::ostringstream err;
+      err<< "Can't perform Matrix::maxNorm() on this matrix. The type of matirx is COMPLEX.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    return this->maxNorm(RTYPE);
+  }
+  catch(const std::exception& e){
+    propogate_exception(e, "In function Matrix::maxNorm():");
+  }
+  return *this;
+}
+
 
 };	/* namespace uni10 */
