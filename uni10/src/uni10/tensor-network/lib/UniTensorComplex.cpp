@@ -1465,11 +1465,13 @@ Real UniTensor::norm(cflag tp) const{
 UniTensor& UniTensor::normalize(cflag tp){
   try{
     throwTypeError(tp);
-    return this->normalize();
+    Real norm = vectorNorm(c_elem, elemNum(), 1, ongpu);
+    vectorScal((1./norm), c_elem, elemNum(), ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::normalize(uni10::cflag ):");
   }
+  return *this;
 }
 
 

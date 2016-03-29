@@ -1711,8 +1711,8 @@ std::vector<UniTensor> UniTensor::hosvd(int* group_labels, int* groups, size_t g
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::hosvd(int* ,int* ,size_t ,std::vector<Matrix>& Ls)const;");
-    return std::vector<UniTensor>();
   }
+  return std::vector<UniTensor>();
 }
 
 std::vector<UniTensor> UniTensor::hosvd(std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const{
@@ -1724,8 +1724,8 @@ std::vector<UniTensor> UniTensor::hosvd(std::vector<int>& group_labels, std::vec
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::hosvd(std::vector<int>, std::vector<int>, std::vector<Matrix>&):");
-    return std::vector<UniTensor>();
   }
+  return std::vector<UniTensor>();
 }
 
 std::vector<UniTensor> UniTensor::hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const{
