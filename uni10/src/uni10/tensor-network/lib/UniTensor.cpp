@@ -934,7 +934,7 @@ void UniTensor::orthoRand(const Qnum& qnum){
   }
 }
 
-void UniTensor::save(const std::string& fname){
+void UniTensor::save(const std::string& fname) const{
   try{
     if((status & HAVEBOND) == 0){   //If not INIT, NO NEED to write out to file
       throw std::runtime_error(exception_msg("Saving a tensor without bonds(scalar) is not supported."));

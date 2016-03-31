@@ -523,7 +523,7 @@ namespace uni10 {
         ///
         /// Saves UniTensor to a file named \c fname.
         /// @param fname filename
-        void save(const std::string& fname);
+        void save(const std::string& fname) const;
         /// @brief Save UniTensor to HDF5 file
         ///
         /// Saves UniTensor to a HDF5 file named \c fname.

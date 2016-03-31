@@ -129,7 +129,7 @@ public:
     /// @overload
     Matrix(const Block& _b);
     // #### new
-    Matrix(std::string& fname);
+    Matrix(const std::string& fname);
     /// @brief Destructor
     ///
     /// Destroys  Matrix and freeing all the allocated memory for matrix elements.

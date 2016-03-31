@@ -258,7 +258,7 @@ Matrix::Matrix(const Block& _b): Block(_b){
   }
 }
 
-Matrix::Matrix(std::string& fname):Block(){
+Matrix::Matrix(const std::string& fname):Block(){
   try{
     if(typeID() == 1){
       Matrix tmp(RTYPE, fname);
