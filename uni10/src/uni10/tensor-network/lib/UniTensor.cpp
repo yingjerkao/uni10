@@ -123,7 +123,7 @@ std::ostream& operator<< (std::ostream& os, const UniTensor& UniT){
     for(size_t b = 0; b < bonds.size(); b++){
       os << bonds[b];
     }
-    os<<"\n===============BlockS===============\n";
+    os<<"\n===============BLOCKS===============\n";
     std::map<Qnum, Block> blocks = UniT.const_getBlocks();
     bool printElem = true;
     for (std::map<Qnum, Block>::const_iterator  it = blocks.begin() ; it != blocks.end(); it++ ){
