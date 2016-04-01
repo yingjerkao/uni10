@@ -506,11 +506,13 @@ UniTensor::~UniTensor(){
 
 UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
   try{
+    /*
     int namemax = 32;
     if(fname.size() > (size_t)namemax)
       name = fname.substr(fname.size() - namemax);
     else
       name = fname;
+    */
     FILE* fp = fopen(fname.c_str(), "r");
     if(!(fp != NULL)){
       std::ostringstream err;
@@ -519,6 +521,10 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
     }
     fread(&r_flag, 1, sizeof(r_flag), fp);
     fread(&c_flag, 1, sizeof(c_flag), fp);
+    int namelen;
+    fread(&namelen, 1, sizeof(namelen), fp);
+    name.assign(" ", namelen);
+    fread(&name[0], namelen, sizeof(name[0]), fp);
     int st;
     fread(&st, 1, sizeof(int), fp);
     int bondNum;
@@ -609,7 +615,7 @@ UniTensor::UniTensor(const std::string& fname, const bool hdf5): status(0){ //GP
       bondType tp;
       h5f.loadBond(gname, "bondType", tp);
       std::vector<Qnum> qnums;
-      for (size_t cnt_q = 0; cnt_q < num_q; cnt_q++) {
+      for (int cnt_q = 0; cnt_q < num_q; cnt_q++) {
         std::string setname = "Qnum-";
         setname.append(std::to_string((unsigned long long)cnt_q));
         int m_U1;
@@ -947,6 +953,9 @@ void UniTensor::save(const std::string& fname) const{
     }
     fwrite(&r_flag, 1, sizeof(r_flag), fp);
     fwrite(&c_flag, 1, sizeof(c_flag), fp);
+    int namelen = name.size();
+    fwrite(&namelen, 1, sizeof(namelen), fp);
+    fwrite(&name[0], namelen, sizeof(name[0]), fp);
     fwrite(&status, 1, sizeof(status), fp);	//OUT: status(4 bytes)
     int bondNum = bonds.size();
     fwrite(&bondNum, 1, sizeof(bondNum), fp);  //OUT: bondNum(4 bytes)
@@ -1014,7 +1023,7 @@ void UniTensor::h5save(const std::string& fname){
       h5f.saveNumber(gname, "numQnums", num_q);
       h5f.saveBond(gname, "bondType", bonds[b].m_type);
       h5f.saveStdVector(gname, "degs", bonds[b].Qdegs);
-      for (size_t cnt_q = 0; cnt_q < num_q; cnt_q++) {
+      for (int cnt_q = 0; cnt_q < num_q; cnt_q++) {
           std::string setname = "Qnum-";
           setname.append(std::to_string((unsigned long long)cnt_q));
           h5f.saveQnum(gname, setname, bonds[b].Qnums[cnt_q].U1(), bonds[b].Qnums[cnt_q].prt(), bonds[b].Qnums[cnt_q].prtF());
@@ -1034,7 +1043,7 @@ void UniTensor::h5save(const std::string& fname){
         }
     }
   } catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::save(std::string&):");
+    propogate_exception(e, "In function UniTensor::h5save(std::string&):");
   }
 }
 
