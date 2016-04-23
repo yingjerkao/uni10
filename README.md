@@ -7,11 +7,15 @@ network algorithms, such TEBD, PEPS and MERA. We hope the availability
 of Uni10 will make future implementation of tensor network algorithms much
 easier and less error prone.
 
-Developers:
+Developers and Maintainers:
 
-* Yun-Da Hsieh (National Taiwan University)
 * Ying-Jer Kao (National Taiwan University)
 * Pochung Chen (National Tsing-Hua University)
-* Tama Ma (Singapore National University)
-* Sukhbinder Singh (Macquarie University)
+* Yun-Hsuan Chou (National Taiwan University)
+* Chen-Yen Lai (University of California Merced)
+
+Alumni:
+* Yun-Da Hsieh 
+* Tama Ma 
+* Sukhbinder Singh 
 
