@@ -31,7 +31,7 @@ TEST(Network,SimpleContract){
     ASSERT_EQ(A.typeID(), 1);
     ASSERT_EQ(B.typeID(), 1);
 
-    Network Simple_net("../Simple.net");
+    Network Simple_net("./Simple.net");
     Simple_net.putTensor(0, A);
     Simple_net.putTensor(1, B);
     UniTensor C = Simple_net.launch();
