@@ -263,8 +263,8 @@ if (BUILD_PYTHON_WRAPPER)
   add_subdirectory(Swig pyUni10 )
 endif()
 
-# add_subdirectory(gtest-1.7.0)
-# add_subdirectory(test)
+ add_subdirectory(gtest-1.7.0)
+ add_subdirectory(test)
 ######################################################################
 ### ADD LIBRARY
 ######################################################################
@@ -309,8 +309,6 @@ IF( BUILD_ARPACK_SUPPORT )
   target_link_libraries(uni10 ${ARPACK_LIBRARIES})
   target_link_libraries(uni10-static ${ARPACK_LIBRARIES})
 ENDIF()
-target_link_libraries(uni10 ${HDF5_LIBRARIES})
-target_link_libraries(uni10-static ${HDF5_LIBRARIES})
 target_link_libraries(uni10 ${HDF5_LIBs})
 target_link_libraries(uni10-static ${HDF5_LIBs})
 ######################################################################
@@ -413,7 +411,6 @@ message(STATUS " CXX Compiler: ${CMAKE_CXX_COMPILER}")
 message(STATUS " CXX Flags: ${CMAKE_CXX_FLAGS}")
 message(STATUS " BLAS and LAPACK Libraries: ${LAPACK_LIBRARIES}")
 message(STATUS " ARPACK Libraries: ${ARPACK_LIBRARIES}")
-message(STATUS " HDF5 Libraries: ${HDF5_LIBRARIES}")
 message(STATUS " HDF5 Libraries: ${HDF5_LIBs}")
 message(STATUS " HDF5 Includes: ${HDF5_INCLUDE_DIRS}")
 if(BUILD_EXAMPLES)
