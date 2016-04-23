@@ -34,8 +34,6 @@
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/tensor-network/UniTensor.h>
 
-typedef double Real;
-typedef std::complex<double> Complex;
 
 namespace uni10{
 

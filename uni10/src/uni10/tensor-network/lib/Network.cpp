@@ -33,7 +33,7 @@
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/tensor-network/Network.h>
 
-typedef double Real;
+
 namespace uni10{
 Node::Node(): T(NULL), elemNum(0), parent(NULL), left(NULL), right(NULL), point(0){
 }

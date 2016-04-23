@@ -29,7 +29,8 @@
 
 #ifndef UNI10_DATATYPE_HPP
 #define UNI10_DATATYPE_HPP
-
+#include <complex>
 #include <uni10/datatype/Qnum.h>
-
+typedef double Real;
+typedef std::complex<double> Complex;
 #endif

@@ -35,8 +35,7 @@
 #include <uni10/tensor-network/UniTensor.h>
 #include <uni10/hdf5io/uni10_hdf5io.h>
 
-typedef double Real;
-typedef std::complex<double> Complex;
+
 
 namespace uni10{
 

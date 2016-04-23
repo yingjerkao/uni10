@@ -36,8 +36,7 @@
 #include <uni10/hdf5io/uni10_hdf5io.h>
 #include <deque>
 
-typedef double Real;
-typedef std::complex<double> Complex;
+
 
 namespace uni10{
 
