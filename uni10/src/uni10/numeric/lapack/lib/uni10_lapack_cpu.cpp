@@ -152,7 +152,11 @@ void eigSyDecompose(double* Kij, int N, double* Eig, double* EigVec, bool ongpu)
   }
 	free(work);
 }
-
+// lapack is builded by fortran which is load by column, so we use 
+// dorgqr -> lq
+// dorglq -> qr
+// dorgrq -> ql 
+// dorgql -> rq
 void matrixQR(double* Mij_ori, int M, int N, double* Q, double* R){
   assert(M >= N);
   double* Mij = (double*)malloc(N*M*sizeof(double));
