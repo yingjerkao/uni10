@@ -1,6 +1,7 @@
-#include <uni10/numeric/uni10_lapack.h>
-#include <cula.h>
-#include <cublas.h>
+#include <uni10/numeric/lapack/uni10_lapack.h>
+#include "cuda_runtime.h"
+#include "cublas_v2.h"
+//#include "cusolverDn.h"
 
 namespace uni10{
 void getRows(int M, int N, int start, int span, double* iA, double* fA, mmtype how);
@@ -15,6 +16,11 @@ void uni10Dgemm(int p, int q, int M, int N, int K, double* A, double* B, double*
 	double *subA;
 	double *subB;
 	double *subC;
+	double alpha = 1.0;
+	double beta = 0.0;
+	cublasStatus_t status;
+	cublasHandle_t handle;
+	status = cublasCreate(&handle);
 	if(how & 4)
 		assert(cudaMalloc((void**)&subA, rows * K * sizeof(double)) == cudaSuccess);
 	if(how & 2 || q > 1)
@@ -40,14 +46,14 @@ void uni10Dgemm(int p, int q, int M, int N, int K, double* A, double* B, double*
 			else
 				subB = B;
 			if(how & 1 || q > 1){
-				cublasDgemm('N', 'N', cols, rows, K, 1, subB, cols, subA, K, 0, subC, cols);
+				status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, cols, rows, K, &alpha, subB, cols, subA, K, &beta, subC, cols);
 				putBack(i * pM, j * qN, rows, cols, M, N, subC, C, how);
 			}
 			else{
 				subC = C + i * pM * N;
-				cublasDgemm('N', 'N', cols, rows, K, 1, subB, cols, subA, K, 0, subC, cols);
+				status = cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, cols, rows, K, &alpha, subB, cols, subA, K, &beta, subC, cols);
 			}
-			cublasStatus_t status = cublasGetError();
+			//cublasStatus_t status = cublasGetError();
 			assert(status == CUBLAS_STATUS_SUCCESS);
 		}
 	}

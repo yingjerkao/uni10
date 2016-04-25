@@ -250,6 +250,7 @@ __global__ void _reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_
 		newElem[newIdx] = oldElem[oldIdx];
 	}
 }
+
 void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, double* newElem){
 	size_t* D_offset;
 	assert(cudaMalloc((void**)&D_offset, 2 * sizeof(size_t) * bondNum) == cudaSuccess);
@@ -258,7 +259,6 @@ void reshapeElem(double* oldElem, int bondNum, size_t elemNum, size_t* offset, d
 	dim3 gridSize(blockNum % UNI10_BLOCKMAX, (blockNum + UNI10_BLOCKMAX - 1) / UNI10_BLOCKMAX);
 	_reshapeElem<<<gridSize, UNI10_THREADMAX>>>(oldElem, bondNum, elemNum, D_offset, newElem);
 }
-
 
 double getElemAt(size_t idx, double* elem, bool ongpu){
 	if(ongpu){
@@ -276,6 +276,86 @@ void setElemAt(size_t idx, double val, double* elem, bool ongpu){
 	}
 	else
 		elem[idx] = val;
+}
+
+double  elemMax(double* elem, size_t elemNum, bool ongpu){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+double  elemAbsMax(double* elem, size_t elemNum, bool ongpu){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+std::complex<double> getElemAt(size_t idx, std::complex<double>* elem, bool ongpu){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+void setElemAt(size_t idx, std::complex<double> val, std::complex<double>* elem, bool ongpu){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+void elemRand(std::complex<double>* elem, size_t N, bool ongpu){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+void elemCast(std::complex<double>* des, double* src, size_t N, bool des_ongpu, bool src_ongpu){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+void elemCast(double *des, std::complex<double> *src, size_t N, bool des_ongpu, bool src_ongpu){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+void setDiag(std::complex<double>* elem, std::complex<double>* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu){
+	
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+void getDiag(std::complex<double>* elem, std::complex<double>* diag_elem, size_t M, size_t N, size_t diag_N, bool ongpu, bool diag_ongpu){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
+}
+
+void reshapeElem(std::complex<double>* oldElem, int bondNum, size_t elemNum, size_t* offset, std::complex<double>* newElem){
+
+  std::ostringstream err;
+  err<<"GPU version is not ready !!!!";
+  throw std::runtime_error(exception_msg(err.str()));
+
 }
 
 };	/* namespace uni10 */

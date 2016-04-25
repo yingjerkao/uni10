@@ -496,8 +496,6 @@ double* Matrix::getHostElem(){
 }
 
 /*********************  developping  **********************/
-/*********************  developping  **********************/
-
 
 Real Matrix::max(bool _ongpu){
   try{
