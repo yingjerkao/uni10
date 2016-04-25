@@ -115,18 +115,27 @@ pyUni10 Tutorials
 
 Tutorials for pyUni10 can be found [here](http://uni10-tutorials.readthedocs.org).
 
-Developers
-==========
+Developers and Maintainers
+==========================
 
-  * Yun-Da Hsieh (National Taiwan University)
 
   * Ying-Jer Kao (National Taiwan University)
 
   * Pochung Chen (National Tsing-Hua University)
 
-  * Tama Ma (Singapore National University)
+  * Yun-Hsuan Chou (National Taiwan University)
+  
+  * Chen-Yen Lai (University of Chicago, Merced)
 
-  * Sukhbinder Singh (Macquarie University)
+
+Alumni
+======
+
+  * Yun-Da Hsieh (Code Base, GPU)
+
+  * Tama Ma (CMake)
+
+  * Sukhbinder Singh (Matlab Wrapper)
 
 
 Help and Bug Reports

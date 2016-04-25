@@ -51,18 +51,27 @@ Installation
   See INSTALL for build instructions.
 
 
-Developers
-==========
-
-  * Yun-Da Hsieh (National Taiwan University)
+Developers and Maintainers
+==========================
 
   * Ying-Jer Kao (National Taiwan University)
 
   * Pochung Chen (National Tsing-Hua University)
 
-  * Tama Ma (Singapore National University)
+  * Yun-Hsuan Chou (National Taiwan University)
 
-  * Sukhbinder Singh (Macquarie University)
+  * Chen-Yen Lai (University of Chicago, Merced)
+
+
+Alumni
+======
+
+  * Yun-Da Hsieh (Code Base, GPU)
+
+  * Tama Ma (CMake)
+
+  * Sukhbinder Singh (Matlab Wrapper)
+
 
 
 Help and Bug Reports
