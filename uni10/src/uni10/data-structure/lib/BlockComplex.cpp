@@ -117,13 +117,13 @@ namespace uni10{
       outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(CTYPE, Cnum, Cnum, false, ongpu));
       if(!diag)
-          matrixQR(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+          matrixQR(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem, ongpu);
       else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         for(size_t i = 0; i < min; i++)
           tmpC[i*min+i] = cm_elem[i];
-        matrixQR(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
+        matrixQR(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem, ongpu);
         free(tmpC);
       }
     }
@@ -145,13 +145,13 @@ namespace uni10{
       outs.push_back(Matrix(CTYPE, Rnum, Rnum, false, ongpu)); //r
       outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu)); //q
       if(!diag){
-        matrixRQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem);
+        matrixRQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem, ongpu);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         for(size_t i = 0; i < min; i++)
           tmpC[i*min+i] = cm_elem[i];
-        matrixRQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem);
+        matrixRQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem, ongpu);
         free(tmpC);
       }
     }
@@ -173,13 +173,13 @@ namespace uni10{
       outs.push_back(Matrix(CTYPE, Rnum, Rnum, false, ongpu));
       outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
       if(!diag){
-        matrixLQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem);
+        matrixLQ(cm_elem, Rnum, Cnum, outs[1].cm_elem, outs[0].cm_elem, ongpu);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         for(size_t i = 0; i < min; i++)
           tmpC[i*min+i] = cm_elem[i];
-        matrixLQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem);
+        matrixLQ(tmpC, min, min, outs[1].cm_elem, outs[0].cm_elem, ongpu);
         free(tmpC);
       }
     }
@@ -201,13 +201,13 @@ namespace uni10{
       outs.push_back(Matrix(CTYPE, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(CTYPE, Cnum, Cnum, false, ongpu));
       if(!diag){
-        matrixQL(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem);
+        matrixQL(cm_elem, Rnum, Cnum, outs[0].cm_elem, outs[1].cm_elem, ongpu);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Complex* tmpC = (Complex*)calloc(min*min , sizeof(Complex));
         for(size_t i = 0; i < min; i++)
           tmpC[i*min+i] = cm_elem[i];
-        matrixQL(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem);
+        matrixQL(tmpC, min, min, outs[0].cm_elem, outs[1].cm_elem, ongpu);
         free(tmpC);
       }
     }

@@ -117,13 +117,13 @@ namespace uni10{
       outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(RTYPE, Cnum, Cnum, false, ongpu));
       if(!diag)
-          matrixQR(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+          matrixQR(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, ongpu);
       else{
         size_t min = std::min(Rnum, Cnum);
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
         for(size_t i = 0; i < min; i++)
           tmpR[i*min+i] = m_elem[i];
-        matrixQR(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
+        matrixQR(tmpR, min, min, outs[0].m_elem, outs[1].m_elem, ongpu);
         free(tmpR);
       }
     }
@@ -145,13 +145,13 @@ namespace uni10{
       outs.push_back(Matrix(RTYPE, Rnum, Rnum, false, ongpu)); //r
       outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu)); //q
       if(!diag){
-          matrixRQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
+          matrixRQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem, ongpu);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
         for(size_t i = 0; i < min; i++)
           tmpR[i*min+i] = m_elem[i];
-        matrixRQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem);
+        matrixRQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem, ongpu);
         free(tmpR);
       }
     }
@@ -173,13 +173,13 @@ namespace uni10{
       outs.push_back(Matrix(RTYPE, Rnum, Rnum, false, ongpu));
       outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu));
       if(!diag){
-        matrixLQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem);
+        matrixLQ(m_elem, Rnum, Cnum, outs[1].m_elem, outs[0].m_elem, ongpu);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
         for(size_t i = 0; i < min; i++)
           tmpR[i*min+i] = m_elem[i];
-        matrixLQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem);
+        matrixLQ(tmpR, min, min, outs[1].m_elem, outs[0].m_elem, ongpu);
         free(tmpR);
       }
     }
@@ -201,13 +201,13 @@ namespace uni10{
       outs.push_back(Matrix(RTYPE, Rnum, Cnum, false, ongpu));
       outs.push_back(Matrix(RTYPE, Cnum, Cnum, false, ongpu));
       if(!diag){
-        matrixQL(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem);
+        matrixQL(m_elem, Rnum, Cnum, outs[0].m_elem, outs[1].m_elem, ongpu);
       }else{
         size_t min = std::min(Rnum, Cnum);
         Real* tmpR = (Real*)calloc(min*min, sizeof(Real));
         for(size_t i = 0; i < min; i++)
           tmpR[i*min+i] = m_elem[i];
-        matrixQL(tmpR, min, min, outs[0].m_elem, outs[1].m_elem);
+        matrixQL(tmpR, min, min, outs[0].m_elem, outs[1].m_elem, ongpu);
         free(tmpR);
       }
     }

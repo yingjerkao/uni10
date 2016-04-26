@@ -157,7 +157,7 @@ void eigSyDecompose(double* Kij, int N, double* Eig, double* EigVec, bool ongpu)
 // dorglq -> qr
 // dorgrq -> ql 
 // dorgql -> rq
-void matrixQR(double* Mij_ori, int M, int N, double* Q, double* R){
+void matrixQR(double* Mij_ori, int M, int N, double* Q, double* R, bool ongpu){
   assert(M >= N);
   double* Mij = (double*)malloc(N*M*sizeof(double));
   memcpy(Mij, Mij_ori, N*M*sizeof(double));
@@ -188,7 +188,7 @@ void matrixQR(double* Mij_ori, int M, int N, double* Q, double* R){
   free(workdor);
 }
 
-void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R){
+void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R, bool ongpu){
 
   assert(N >= M);
   double* Mij = (double*)malloc(M*N*sizeof(double));
@@ -222,7 +222,7 @@ void matrixRQ(double* Mij_ori, int M, int N, double* Q, double* R){
 
 }
 
-void matrixLQ(double* Mij_ori, int M, int N, double* Q, double* L){
+void matrixLQ(double* Mij_ori, int M, int N, double* Q, double* L, bool ongpu){
 
   assert(N >= M);
   double* Mij = (double*)malloc(M*N*sizeof(double));
@@ -254,7 +254,7 @@ void matrixLQ(double* Mij_ori, int M, int N, double* Q, double* L){
   free(workdor);
 }
 
-void matrixQL(double* Mij_ori, int M, int N, double* Q, double* R){
+void matrixQL(double* Mij_ori, int M, int N, double* Q, double* R, bool ongpu){
   assert(M >= N);
   double* Mij = (double*)malloc(N*M*sizeof(double));
   memcpy(Mij, Mij_ori, N*M*sizeof(double));
@@ -990,7 +990,7 @@ bool lanczosEV(std::complex<double>* A, std::complex<double>* psi, size_t dim, s
   return converged;
 }
 
-void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R){
+void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R, bool ongpu){
   std::complex<double>* Mij = (std::complex<double>*)malloc(N*M*sizeof(std::complex<double>));
   memcpy(Mij, Mij_ori, N*M*sizeof(std::complex<double>));
   std::complex<double>* tau = (std::complex<double>*)malloc(M*sizeof(std::complex<double>));
@@ -1020,7 +1020,7 @@ void matrixQR(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
   free(workzun);
 }
 
-void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R){
+void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* R, bool ongpu){
 
   std::complex<double>* Mij = (std::complex<double>*)malloc(M*N*sizeof(std::complex<double>));
   memcpy(Mij, Mij_ori, M*N*sizeof(std::complex<double>));
@@ -1052,7 +1052,7 @@ void matrixRQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
 
 }
 
-void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L){
+void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L, bool ongpu){
 
   std::complex<double>* Mij = (std::complex<double>*)malloc(M*N*sizeof(std::complex<double>));
   memcpy(Mij, Mij_ori, M*N*sizeof(std::complex<double>));
@@ -1083,7 +1083,7 @@ void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
   free(workzun);
 }
 
-void matrixQL(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L){
+void matrixQL(std::complex<double>* Mij_ori, int M, int N, std::complex<double>* Q, std::complex<double>* L, bool ongpu){
   assert(M >= N);
   std::complex<double>* Mij = (std::complex<double>*)malloc(N*M*sizeof(std::complex<double>));
   memcpy(Mij, Mij_ori, N*M*sizeof(std::complex<double>));
