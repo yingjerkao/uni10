@@ -837,7 +837,7 @@ void eigDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, s
   zgeev((char*)"N", (char*)"V", &N, A, &ldA, Eig, NULL, &ldvl, EigVec, &ldvr, &worktest, &lwork, rwork, &info);
   if(info != 0){
     std::ostringstream err;
-    err<<"Error in Lapack function 'dgeev': Lapack INFO = "<<info;
+    err<<"Error in Lapack function 'zgeev': Lapack INFO = "<<info;
     throw std::runtime_error(exception_msg(err.str()));
   }
   lwork = (int)worktest.real();
@@ -845,7 +845,7 @@ void eigDecompose(std::complex<double>* Kij, int N, std::complex<double>* Eig, s
   zgeev((char*)"N", (char*)"V", &N, A, &ldA, Eig, NULL, &ldvl, EigVec, &ldvr, work, &lwork, rwork, &info);
   if(info != 0){
     std::ostringstream err;
-    err<<"Error in Lapack function 'dgeev': Lapack INFO = "<<info;
+    err<<"Error in Lapack function 'zgeev': Lapack INFO = "<<info;
     throw std::runtime_error(exception_msg(err.str()));
   }
   free(work);
@@ -864,7 +864,7 @@ void eigSyDecompose(std::complex<double>* Kij, int N, double* Eig, std::complex<
   zheev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, &worktest, &lwork, rwork, &info);
   if(info != 0){
     std::ostringstream err;
-    err<<"Error in Lapack function 'dsyev': Lapack INFO = "<<info;
+    err<<"Error in Lapack function 'zheev': Lapack INFO = "<<info;
     throw std::runtime_error(exception_msg(err.str()));
   }
   lwork = (int)worktest.real();
@@ -872,7 +872,7 @@ void eigSyDecompose(std::complex<double>* Kij, int N, double* Eig, std::complex<
   zheev((char*)"V", (char*)"U", &N, EigVec, &ldA, Eig, work, &lwork, rwork, &info);
   if(info != 0){
     std::ostringstream err;
-    err<<"Error in Lapack function 'dsyev': Lapack INFO = "<<info;
+    err<<"Error in Lapack function 'zheev': Lapack INFO = "<<info;
     throw std::runtime_error(exception_msg(err.str()));
   }
   free(work);
