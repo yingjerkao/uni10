@@ -32,6 +32,9 @@
 #include <string.h>
 namespace uni10 {
 
+size_t MEM_USAGE = 0;
+size_t GPU_MEM_USAGE = 0;
+
 std::vector<_Swap> recSwap(std::vector<int>& _ord) { //Given the reshape order out to in.
     //int ordF[n];
     int n = _ord.size();

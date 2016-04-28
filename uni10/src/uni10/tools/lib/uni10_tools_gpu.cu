@@ -2,39 +2,39 @@
 #include <string.h>
 
 namespace uni10{
-size_t MEM_USAGE = 0;
-size_t GPU_MEM_USAGE = 0;
+  
 const size_t GPU_MEM_MAX = UNI10_GPU_GLOBAL_MEM * 2 / 3;
+
 void* elemAlloc(size_t memsize, bool& ongpu){
-	void* ptr = NULL;
-	if(GPU_MEM_USAGE + memsize <= GPU_MEM_MAX){
-		cudaError_t cuflag = cudaMalloc(&ptr, memsize);
-		assert(cuflag == cudaSuccess);
-		GPU_MEM_USAGE += memsize;
-		ongpu = true;
-	}else{
-		ptr = malloc(memsize);
-		assert(ptr != NULL);
-		MEM_USAGE += memsize;
-		ongpu = false;
-	}
-	//printf("ongpu = %d, GPU_MEM_USAGE = %u, allocate %u\n", ongpu, GPU_MEM_USAGE, memsize);
-	return ptr;
+  void* ptr = NULL;
+  if(GPU_MEM_USAGE + memsize <= GPU_MEM_MAX){
+    cudaError_t cuflag = cudaMalloc(&ptr, memsize);
+    assert(cuflag == cudaSuccess);
+    GPU_MEM_USAGE += memsize;
+    ongpu = true;
+  }else{
+    ptr = malloc(memsize);
+    assert(ptr != NULL);
+    MEM_USAGE += memsize;
+    ongpu = false;
+  }
+  //printf("ongpu = %d, GPU_MEM_USAGE = %u, allocate %u\n", ongpu, GPU_MEM_USAGE, memsize);
+  return ptr;
 }
 
 void* elemAllocForce(size_t memsize, bool ongpu){
-	void* ptr = NULL;
-	if(ongpu){
-		cudaError_t cuflag = cudaMalloc(&ptr, memsize);
-		assert(cuflag == cudaSuccess);
-		GPU_MEM_USAGE += memsize;
-	}
-	else{
-		ptr = malloc(memsize);
-		assert(ptr != NULL);
-		MEM_USAGE += memsize;
-	}
-	return ptr;
+  void* ptr = NULL;
+  if(ongpu){
+    cudaError_t cuflag = cudaMalloc(&ptr, memsize);
+    assert(cuflag == cudaSuccess);
+    GPU_MEM_USAGE += memsize;
+  }
+  else{
+    ptr = malloc(memsize);
+    assert(ptr != NULL);
+    MEM_USAGE += memsize;
+  }
+  return ptr;
 }
 
 void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool src_ongpu){

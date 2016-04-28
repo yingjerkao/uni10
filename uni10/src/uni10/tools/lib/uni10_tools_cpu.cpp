@@ -3,50 +3,49 @@
 
 namespace uni10{
 
-size_t MEM_USAGE = 0;
-
-void* elemAlloc(size_t memsize, bool& ongpu){
-	void* ptr = NULL;
-	ptr = malloc(memsize);
-  if(ptr == NULL){
-    std::ostringstream err;
-    err<<"Fails in allocating memory.";
-    throw std::runtime_error(exception_msg(err.str()));
+  void* elemAlloc(size_t memsize, bool& ongpu){
+    void* ptr = NULL;
+    ptr = malloc(memsize);
+    if(ptr == NULL){
+      std::ostringstream err;
+      err<<"Fails in allocating memory.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    MEM_USAGE += memsize;
+    ongpu = false;
+    return ptr;
   }
-	MEM_USAGE += memsize;
-	ongpu = false;
-	return ptr;
-}
 
-void* elemAllocForce(size_t memsize, bool ongpu){
-	void* ptr = NULL;
-	ptr = malloc(memsize);
-  if(ptr == NULL){
-    std::ostringstream err;
-    err<<"Fails in allocating memory.";
-    throw std::runtime_error(exception_msg(err.str()));
+  void* elemAllocForce(size_t memsize, bool ongpu){
+    void* ptr = NULL;
+    ptr = malloc(memsize);
+    if(ptr == NULL){
+      std::ostringstream err;
+      err<<"Fails in allocating memory.";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    MEM_USAGE += memsize;
+    return ptr;
   }
-	MEM_USAGE += memsize;
-	return ptr;
-}
 
-void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool src_ongpu){
-	return memcpy(des, src, memsize);
-}
+  void* elemCopy(void* des, const void* src, size_t memsize, bool des_ongpu, bool src_ongpu){
+    return memcpy(des, src, memsize);
+  }
 
-void elemFree(void* ptr, size_t memsize, bool ongpu){
-	free(ptr);
-	MEM_USAGE -= memsize;
-	ptr = NULL;
-}
-void elemBzero(void* ptr, size_t memsize, bool ongpu){
-	memset(ptr, 0, memsize);
-}
+  void elemFree(void* ptr, size_t memsize, bool ongpu){
+    free(ptr);
+    MEM_USAGE -= memsize;
+    ptr = NULL;
+  }
 
-void elemRand(double* elem, size_t N, bool ongpu){
-	for(size_t i = 0; i < N; i++)
-		elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
-}
+  void elemBzero(void* ptr, size_t memsize, bool ongpu){
+    memset(ptr, 0, memsize);
+  }
+
+  void elemRand(double* elem, size_t N, bool ongpu){
+    for(size_t i = 0; i < N; i++)
+      elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
+  }
 
 void setDiag(double* elem, double* diag_elem, size_t m, size_t n, size_t diag_n, bool ongpu, bool diag_ongpu){
 	size_t min = m < n ? m : n;

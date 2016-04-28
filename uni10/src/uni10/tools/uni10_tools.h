@@ -40,9 +40,12 @@
 #include <cctype>
 #include <locale>
 #include <sstream>
-#include <uni10/data-structure/uni10_struct.h>
 #include <complex>
+#include <uni10/data-structure/uni10_struct.h>
 namespace uni10{
+
+extern size_t MEM_USAGE;
+extern size_t GPU_MEM_USAGE;
 
 const size_t UNI10_GPU_GLOBAL_MEM = ((size_t)5) * 1<<30;
 const int UNI10_THREADMAX = 1024;
