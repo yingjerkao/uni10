@@ -50,7 +50,7 @@ void Matrix::init(rflag tp, bool _ongpu){
 }
 
 void Matrix::init(const Real* _elem, bool src_ongpu){
-  init(RTYPE, true);
+  init(RTYPE, ongpu);
   elemCopy(m_elem, _elem, elemNum() * sizeof(Real), ongpu, src_ongpu);
 }
 
@@ -66,8 +66,9 @@ Matrix::Matrix(rflag tp, size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu):Bl
   }
 }
 
-Matrix::Matrix(size_t _Rnum, size_t _Cnum, const Real* _elem, bool _diag, bool src_ongpu): Block(RTYPE, _Rnum, _Cnum, _diag){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, const Real* _elem, bool _diag, bool _ongpu, bool src_ongpu): Block(RTYPE, _Rnum, _Cnum, _diag){
   try{
+    ongpu = _ongpu;
     init(_elem, src_ongpu);
   }
   catch(const std::exception& e){
@@ -75,8 +76,9 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, const Real* _elem, bool _diag, bool s
   }
 }
 
-Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<Real>& _elem, bool _diag, bool src_ongpu): Block(RTYPE, _Rnum, _Cnum, _diag){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<Real>& _elem, bool _diag, bool _ongpu, bool src_ongpu): Block(RTYPE, _Rnum, _Cnum, _diag){
   try{
+    ongpu = _ongpu;
     if(_diag == false && _Rnum*_Cnum != _elem.size()){
       std::ostringstream err;
       err<<"Number of the input elements is: " << _elem.size() <<", and it doesn't match to the size of matrix: "\
@@ -129,7 +131,7 @@ Matrix::Matrix(rflag tp, const std::string& fname){
   }
 }
 
-void Matrix::setElem(const std::vector<Real>& elem, bool _ongpu){
+void Matrix::setElem(const std::vector<Real>& elem, bool src_ongpu){
   try{
     if(diag == false && Rnum*Cnum != elem.size() ){
       std::ostringstream err;
@@ -143,21 +145,21 @@ void Matrix::setElem(const std::vector<Real>& elem, bool _ongpu){
         << std::min(Rnum, Cnum) << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    setElem(&elem[0], _ongpu);
+    setElem(&elem[0], src_ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::setElem(std::vector<double>&, bool=false):");
   }
 }
 
-void Matrix::setElem(const Real* elem, bool _ongpu){
+void Matrix::setElem(const Real* elem, bool src_ongpu){
   try{
     if(typeID() == 2){
       r_flag = RTYPE;
       c_flag = CNULL;
-      init(elem, _ongpu);
+      init(RTYPE, ongpu);
     }
-    elemCopy(m_elem, elem, elemNum() * sizeof(Real), ongpu, _ongpu);
+    elemCopy(m_elem, elem, elemNum() * sizeof(Real), ongpu, src_ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::setElem(const double*, bool=false):");
@@ -173,9 +175,10 @@ void Matrix::identity(rflag tp){
 
     m_elem = (Real*)elemAlloc(elemNum() * sizeof(Real), ongpu);
     Real* elemI = (Real*)malloc(elemNum() * sizeof(Real));
+    
     for(size_t i = 0; i < elemNum(); i++)
       elemI[i] = 1;
-    this->setElem(elemI, false);
+    this->setElem(elemI);
     free(elemI);
   }
   catch(const std::exception& e){

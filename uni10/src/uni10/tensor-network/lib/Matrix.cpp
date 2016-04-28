@@ -43,6 +43,7 @@ Matrix& Matrix::operator=(const Matrix& _m){
     Rnum = _m.Rnum;
     Cnum = _m.Cnum;
     diag = _m.diag;
+    ongpu = _m.ongpu;
     MelemFree();
     setMelemBNULL();
     init(_m.m_elem, _m.cm_elem, _m.ongpu);
@@ -241,6 +242,7 @@ Matrix::Matrix(const Matrix& _m): Block(_m.Rnum, _m.Cnum, _m.diag){
   try{
     r_flag = _m.r_flag;
     c_flag = _m.c_flag;
+    ongpu = _m.ongpu;
     init(_m.m_elem, _m.cm_elem, _m.ongpu);
   }
   catch(const std::exception& e){

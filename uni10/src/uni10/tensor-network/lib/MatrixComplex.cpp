@@ -51,7 +51,7 @@ namespace uni10{
 
   void Matrix::init(const Complex* _elem, bool src_ongpu){
 
-    init(CTYPE, true);
+    init(CTYPE, ongpu);
     elemCopy(cm_elem, _elem, elemNum() * sizeof(Complex), ongpu, src_ongpu);
 
   }
@@ -68,8 +68,9 @@ Matrix::Matrix(cflag tp, size_t _Rnum, size_t _Cnum, bool _diag, bool _ongpu):Bl
   }
 }
 
-Matrix::Matrix(size_t _Rnum, size_t _Cnum, const Complex* _elem, bool _diag, bool src_ongpu): Block(CTYPE, _Rnum, _Cnum, _diag){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, const Complex* _elem, bool _diag, bool _ongpu, bool src_ongpu): Block(CTYPE, _Rnum, _Cnum, _diag){
   try{
+    ongpu = _ongpu;
     init(_elem, src_ongpu);
   }
   catch(const std::exception& e){
@@ -77,9 +78,9 @@ Matrix::Matrix(size_t _Rnum, size_t _Cnum, const Complex* _elem, bool _diag, boo
   }
 }
 
-
-Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<Complex>& _elem, bool _diag, bool src_ongpu): Block(CTYPE, _Rnum, _Cnum, _diag){
+Matrix::Matrix(size_t _Rnum, size_t _Cnum, const std::vector<Complex>& _elem, bool _diag, bool _ongpu, bool src_ongpu): Block(CTYPE, _Rnum, _Cnum, _diag){
   try{
+    ongpu = _ongpu;
     if(_diag == false && _Rnum*_Cnum != _elem.size() ){
       std::ostringstream err;
       err<<"Number of the input elements is: " << _elem.size() <<", and it doesn't match to the size of matrix: "\
@@ -132,7 +133,7 @@ Matrix::Matrix(cflag tp, const std::string& fname){
   }
 }
 
-void Matrix::setElem(const std::vector<Complex>& elem, bool _ongpu){
+void Matrix::setElem(const std::vector<Complex>& elem, bool src_ongpu){
   try{
     if(diag == false && Rnum*Cnum != elem.size() ){
       std::ostringstream err;
@@ -146,21 +147,21 @@ void Matrix::setElem(const std::vector<Complex>& elem, bool _ongpu){
         << std::min(Rnum, Cnum) << std::endl <<"In the file Block.cpp, line(" << __LINE__ << ")";
       throw std::runtime_error(exception_msg(err.str()));
     }
-    setElem(&elem[0], _ongpu);
+    setElem(&elem[0], src_ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::setElem(std::vector<Complex>&, bool=false):");
   }
 }
 
-void Matrix::setElem(const Complex* elem, bool _ongpu){
+void Matrix::setElem(const Complex* elem, bool src_ongpu){
   try{
     if(typeID() == 1){
       r_flag = RNULL;
       c_flag = CTYPE;
-      init(elem, _ongpu);
+      init(CTYPE, ongpu);
     }
-    elemCopy(cm_elem, elem, elemNum() * sizeof(Complex), ongpu, _ongpu);
+    elemCopy(cm_elem, elem, elemNum() * sizeof(Complex), ongpu, src_ongpu);
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function Matrix::setElem(const Complex*, bool=false):");

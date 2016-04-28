@@ -199,9 +199,9 @@ public:
     ///
     /// Allocate memory of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true) for
     /// matrix elements and copy the elements from \c _elem
-    Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
     /// @overload
-    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
     // #####new
     Matrix(rflag _tp, const std::string& fname);
 
@@ -211,10 +211,10 @@ public:
     ///
     /// Copies the first elemNum() elements from \c elem, replacing the original ones.
     /// @param elem  Matrix elements to be copied from.
-    void setElem(const double* elem, bool _ongpu = false);
+    void setElem(const double* elem, bool src_ongpu = false);
 
     /// @overload
-    void setElem(const std::vector<double>& elem, bool _ongpu = false);
+    void setElem(const std::vector<double>& elem, bool src_ongpu = false);
 
     /// @brief Set to identity
     ///
@@ -295,9 +295,9 @@ public:
     ///
     /// Allocate memory of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true) for
     /// matrix elements and copy the elements from \c _elem
-    Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
     /// @overload
-    Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
 
     Matrix(cflag _tp, const std::string& fname);
 
@@ -307,10 +307,10 @@ public:
     ///
     /// Copies the first elemNum() elements from \c elem, replacing the original ones.
     /// @param elem  Matrix elements to be copied from.
-    void setElem(const std::complex<double>* elem, bool _ongpu = false);
+    void setElem(const std::complex<double>* elem, bool src_ongpu = false);
 
     /// @overload
-    void setElem(const std::vector< std::complex<double> >& elem, bool _ongpu = false);
+    void setElem(const std::vector< std::complex<double> >& elem, bool src_ongpu = false);
 
     /// @brief Set to identity
     ///
