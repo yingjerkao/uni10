@@ -1,5 +1,5 @@
 /****************************************************************************
- *  @file Block.cpp
+ *  @file BlockTools.cpp
  *  @license
  *    Universal Tensor Network Library
  *    Copyright (c) 2013-2014
@@ -23,7 +23,7 @@
  *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
  *  @endlicense
  *  @brief Implementation file of Block class
- *  @author Yun-Da Hsieh
+ *  @author Yun-Da Hsieh, Yun-Hsuan Chou
  *  @date 2014-05-06
  *  @since 0.1.0
  *
@@ -33,9 +33,9 @@
 #include <uni10/tensor-network/Matrix.h>
 
 
-
 namespace uni10{
 
+    
   Matrix RDotR(const Block& Ma, const Block& Mb){
     try{
       if(!(Ma.Cnum == Mb.Rnum)){
