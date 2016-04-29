@@ -201,10 +201,10 @@ public:
     /// matrix elements and copy the elements from \c _elem
     Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
     /// @overload
-    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
-    // #####new
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool src_ongpu=false);
+    // @overload
     Matrix(rflag _tp, const std::string& fname);
-
+    // @overload
     Matrix(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
 
     /// @brief Copy elements
