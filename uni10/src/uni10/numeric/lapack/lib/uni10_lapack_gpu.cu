@@ -161,11 +161,17 @@ void matrixMul(double* A, double* B, int M, int N, int K, double* C, bool ongpuA
   }
 }
 
+__global__ void _vectorAdd(double* Y, double* X, size_t N){
+
+  size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+  if(idx < N)
+    Y[idx] += X[idx];
+
+}
+
 void vectorAdd(double* Y, double* X, size_t N, bool y_ongpu, bool x_ongpu){
 
-  std::ostringstream err;
-  err<<"GPU version is not ready !!!!";
-  throw std::runtime_error(exception_msg(err.str()));
+
 
 }// Y = Y + X
 void vectorScal(double a, double* X, size_t N, bool ongpu){
@@ -250,11 +256,94 @@ void eigSyDecompose(double* Kij, int N, double* Eig, double* EigVec, bool ongpu)
 }
 
 void matrixSVD(double* Mij_ori, int M, int N, double* U, double* S, double* vT, bool ongpu){
+  
+  bool flag = M > N;
+  if(ongpu){
 
-  std::ostringstream err;
-  err<<"GPU version is not ready !!!!";
-  throw std::runtime_error(exception_msg(err.str()));
+    cusolverDnHandle_t cusolverHandle = NULL;
+    cusolverDnCreate(&cusolverHandle);
+    // elem copy
+    size_t memsize = M * N * sizeof(double);
+    double* Mij = NULL;
+    cudaError_t cuflag = cudaMalloc(&Mij, memsize);
+    if(flag){
+      setTranspose(Mij_ori, M, N, Mij, ongpu, true); 
+      int tmp = M;
+      M = N;
+      N = tmp;
+    }else{
+      cuflag = cudaMemcpy(Mij, Mij_ori, memsize, cudaMemcpyDeviceToDevice);
+      assert(cuflag == cudaSuccess);
+    }
+    double* bufM = NULL;
+    cuflag = cudaMalloc(&bufM, N*N*sizeof(double));
+    assert(cuflag == cudaSuccess);
+    // cuda info
+    int* info = NULL;
+    cuflag = cudaMalloc(&info, sizeof(int));
+    assert(cuflag == cudaSuccess);
+    cuflag = cudaMemset(info, 0, sizeof(int));
+    assert(cuflag == cudaSuccess);
+    // cuda workdge
+    int min = std::min(M, N);
+    int ldA = N, ldu = N, ldvT = min; 
+    int lwork = 0;
+    double* rwork = NULL;
+    double* work = NULL;
+    //int K = M;
+    cusolverStatus_t cusolverflag = cusolverDnDgesvd_bufferSize(cusolverHandle, N, M, &lwork);
+    assert(cusolverflag == CUSOLVER_STATUS_SUCCESS);
+    cuflag = cudaMalloc(&rwork, sizeof(double)*lwork);
+    assert(cuflag == cudaSuccess);
 
+    cuflag = cudaMalloc(&work, sizeof(double)*lwork);
+    assert(cuflag == cudaSuccess);
+
+    cusolverflag = !flag ? cusolverDnDgesvd(cusolverHandle, 'A', 'A', N, M, Mij, ldA, S, bufM, ldu, U, ldvT, work, lwork, rwork, info) : cusolverDnDgesvd(cusolverHandle, 'A', 'A', N, M, Mij, ldA, S, bufM, ldu, vT, ldvT, work, lwork, rwork, info);
+
+    if(!flag){
+    cuflag = cudaMemcpy(vT, bufM, M*N*sizeof(double), cudaMemcpyDeviceToDevice);
+    }else{
+    cuflag = cudaMemcpy(U, bufM, M*N*sizeof(double), cudaMemcpyDeviceToDevice);
+    setTranspose(U, M, N, ongpu);
+    setTranspose(vT, M, M, ongpu);
+    }
+    int h_info = 0;
+    cuflag = cudaMemcpy(&h_info, info, sizeof(int), cudaMemcpyDeviceToHost);
+    assert(cusolverflag == CUSOLVER_STATUS_SUCCESS);
+    
+    cudaFree(Mij);
+    cudaFree(bufM);
+    cudaFree(work);
+    cudaFree(info);
+
+  }else{
+
+    double* Mij = (double*)malloc(M * N * sizeof(double));
+    memcpy(Mij, Mij_ori, M * N * sizeof(double));
+    int min = std::min(M, N);
+    int ldA = N, ldu = N, ldvT = min;
+    int lwork = -1;
+    double worktest;
+    int info;
+    dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, &worktest, &lwork, &info);
+    if(info != 0){
+      std::ostringstream err;
+      err<<"Error in Lapack function 'dgesvd': Lapack INFO = "<<info;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    lwork = (int)worktest;
+    double *work = (double*)malloc(lwork*sizeof(double));
+    dgesvd((char*)"S", (char*)"S", &N, &M, Mij, &ldA, S, vT, &ldu, U, &ldvT, work, &lwork, &info);
+    if(info != 0){
+      std::ostringstream err;
+      err<<"Error in Lapack function 'dgesvd': Lapack INFO = "<<info;
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+    free(work);
+    free(Mij);
+
+  }
 }
 
 void matrixInv(double* A, int N, bool diag, bool ongpu){
@@ -335,9 +424,9 @@ void setCTranspose(double* A, size_t M, size_t N, bool ongpu){
 }
 
 __global__ void _identity(double* mat, size_t elemNum, size_t col){
-	size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
-	if(idx < elemNum)
-		mat[idx * col + idx] = 1;
+  size_t idx = blockIdx.y * UNI10_BLOCKMAX * UNI10_THREADMAX +  blockIdx.x * blockDim.x + threadIdx.x;
+  if(idx < elemNum)
+    mat[idx * col + idx] = 1;
 }
 
 void setIdentity(double* elem, size_t M, size_t N, bool ongpu){
@@ -494,7 +583,6 @@ void matrixLQ(double* Mij_ori, int M, int N, double* Q, double* L, bool ongpu){
     free(workdor);
 
   }
-
 }
 
 /***** Complex version *****/
@@ -727,3 +815,24 @@ void matrixLQ(std::complex<double>* Mij_ori, int M, int N, std::complex<double>*
 }
 
 };	/* namespace uni10 */
+
+// debug
+//double* h_Mij_ori = (double*)malloc(M*N*sizeof(double));
+//double* h_Mij = (double*)malloc(M*N*sizeof(double));
+//cudaMemcpy(h_Mij_ori, Mij_ori, M*N*sizeof(double), cudaMemcpyDeviceToHost);
+//cudaMemcpy(h_Mij, Mij, M*N*sizeof(double), cudaMemcpyDeviceToHost);
+//for(size_t i = 0; i < M; i++){
+//  for(size_t j = 0; j < N; j++){
+//    std::cout << h_Mij_ori[i*N + j] << " ";
+//  }
+//  std::cout << std::endl << std::endl;
+//}
+//for(size_t i = 0; i < N; i++){
+//  for(size_t j = 0; j < M; j++){
+//    std::cout << h_Mij[i*M + j] << " ";
+//  }
+//  std::cout << std::endl;
+//}
+//free(h_Mij_ori);
+//free(h_Mij);
+//------------------------------- 
