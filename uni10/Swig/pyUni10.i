@@ -16,6 +16,10 @@
 #endif
 %}
 
+%inline%{
+  typedef double Real;
+  typedef std::complex<double> Complex;
+%}
 
 %include "std_vector.i"
 %include "std_map.i"
