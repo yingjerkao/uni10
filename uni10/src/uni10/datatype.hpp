@@ -1,9 +1,9 @@
 /****************************************************************************
-*  @file uni10.hpp
+*  @file datatype.hpp
 *  @license
 *    Universal Tensor Network Library
-*    Copyright (c) 2013-2014
-*    Yun-Da Hsieh, Tama Ma, Pochung Chen,  and Ying-Jer Kao 
+*    Copyright (c) 2013-2016
+*    National Taiwan University, National Tsing-Hua University
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *
@@ -31,6 +31,13 @@
 #define UNI10_DATATYPE_HPP
 #include <complex>
 #include <uni10/datatype/Qnum.h>
+namespace uni10 {
+/// @typedef Real 
+/// @brief Short for double
 typedef double Real;
+
+/// @typedef Complex 
+/// @brief Short for std::complex<double>
 typedef std::complex<double> Complex;
+}
 #endif
