@@ -64,8 +64,8 @@ public:
 
     /*********************  developping  **********************/
     
-    double absMax(bool _ongpu=false);
-    double absMax(rflag tp, bool _ongpu=false);
+    Real absMax(bool _ongpu=false);
+    Real absMax(rflag tp, bool _ongpu=false);
 
     Matrix& maxNorm();
     Matrix& maxNorm(rflag tp);
@@ -73,14 +73,14 @@ public:
     Matrix& absMaxNorm();
     Matrix& absMaxNorm(rflag tp);
 
-    double* getHostElem();
-    double* getHostElem(rflag _tp);
-    std::complex<double>* getHostElem(cflag _tp);
+    Real* getHostElem();
+    Real* getHostElem(rflag _tp);
+    Complex* getHostElem(cflag _tp);
 
     bool toGPU();
     
 	  /*********************  OPERATOR **************************/
-    /// @brief Assign to Matrix
+    /// @brief Assigns to Matrix
     ///
     /// Assigns the content of \c mat to Matrix, replacing the original content by reallocating new memory
     /// fit for \c mat.
@@ -92,12 +92,12 @@ public:
     /// @brief Multiply Matrix by a scalar and assign
     ///
     /// Performs element-wise multiplication with a Real scalar \c a .
-    Matrix& operator*= (double a);
+    Matrix& operator*= (Real a);
 
     /// @brief Multiply Matrix by a scalar and assign
     ///
     /// Performs element-wise multiplication with a Complex scalar \c a .
-    Matrix& operator*= (std::complex<double> a);
+    Matrix& operator*= (Complex a);
 
     /// @brief   Multiply Matrix by a second matrix and assign
     ///
@@ -132,7 +132,7 @@ public:
     Matrix(const std::string& fname);
     /// @brief Destructor
     ///
-    /// Destroys  Matrix and freeing all the allocated memory for matrix elements.
+    /// Destroys Matrix and freeing all the allocated memory for matrix elements.
     ~Matrix();
 
     /// @brief Set to identity
@@ -183,7 +183,7 @@ public:
     /// @brief Returns the maximum element in Matrix
     ///
     /// Returns the maximum element in Matrix
-    double max(bool _ongpu=false);
+    Real max(bool _ongpu=false);
 
     void assign(size_t _Rnum, size_t _Cnum);
 
@@ -199,9 +199,9 @@ public:
     ///
     /// Allocate memory of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true) for
     /// matrix elements and copy the elements from \c _elem
-    Matrix(size_t _Rnum, size_t _Cnum, const double* _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const Real* _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
     /// @overload
-    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<double>& _elem, bool _diag=false, bool _ongpu = false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector<Real>& _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
     // @overload
     Matrix(rflag _tp, const std::string& fname);
     // @overload
@@ -211,10 +211,10 @@ public:
     ///
     /// Copies the first elemNum() elements from \c elem, replacing the original ones.
     /// @param elem  Matrix elements to be copied from.
-    void setElem(const double* elem, bool src_ongpu = false);
+    void setElem(const Real* elem, bool src_ongpu = false);
 
     /// @overload
-    void setElem(const std::vector<double>& elem, bool src_ongpu = false);
+    void setElem(const std::vector<Real>& elem, bool src_ongpu = false);
 
     /// @brief Set to identity
     ///
@@ -265,7 +265,7 @@ public:
     /// @brief Returns the maximum element in Matrix
     ///
     /// Returns the maximum element in Matrix
-    double max(rflag _tp, bool _ongpu=false);
+    Real max(rflag _tp, bool _ongpu=false);
 
     /// @brief Access individual element
     ///
@@ -273,7 +273,7 @@ public:
     /// @note The values \c i and \c j are counted from 0.
     /// @param i,j Index of Matrix
     /// @return Element at index \c (i,j) of Matrix
-    double& at(size_t i, size_t j); //&
+    Real& at(size_t i, size_t j); //&
 
     /// @brief Access individual element
     ///
@@ -282,8 +282,8 @@ public:
     /// @note This function works similar to member function Matrix::at().
     /// @param idx Element index
     /// @return Element of Matrix at position \c idx
-    double& at(rflag _tp, size_t i); //&
-    double& operator[](size_t idx); //&
+    Real& at(rflag _tp, size_t i); //&
+    Real& operator[](size_t idx); //&
 
     void assign(rflag _tp, size_t _Rnum, size_t _Cnum);
 
@@ -295,9 +295,9 @@ public:
     ///
     /// Allocate memory of size <tt> Rnum * Cnum </tt> ( or <tt> min(Rnum, Cnum)</tt> if \c diag is \c true) for
     /// matrix elements and copy the elements from \c _elem
-    Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const Complex* _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
     /// @overload
-    Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
+    Matrix(size_t _Rnum, size_t _Cnum, const std::vector< Complex >& _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
 
     Matrix(cflag _tp, const std::string& fname);
 
@@ -307,10 +307,10 @@ public:
     ///
     /// Copies the first elemNum() elements from \c elem, replacing the original ones.
     /// @param elem  Matrix elements to be copied from.
-    void setElem(const std::complex<double>* elem, bool src_ongpu = false);
+    void setElem(const Complex* elem, bool src_ongpu = false);
 
     /// @overload
-    void setElem(const std::vector< std::complex<double> >& elem, bool src_ongpu = false);
+    void setElem(const std::vector< Complex >& elem, bool src_ongpu = false);
 
     /// @brief Set to identity
     ///
@@ -364,8 +364,8 @@ public:
     /// @note This function works similar to member function Matrix::at().
     /// @param idx Element index
     /// @return Element of Matrix at position \c idx
-    std::complex<double>& operator()(size_t idx); //&
-    std::complex<double>& at(cflag _tp, size_t i); //&
+    Complex& operator()(size_t idx); //&
+    Complex& at(cflag _tp, size_t i); //&
 
     void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
 
@@ -379,16 +379,16 @@ private:
 
     void MelemFree();
     void setMelemBNULL();
-    void init(const double* _m_elem, const std::complex<double>* _cm_elem, bool src_ongpu);
+    void init(const Real* _m_elem, const Complex* _cm_elem, bool src_ongpu);
 
     /*********************  REAL **********************/
 
-    void init(const double* elem, bool _ongpu);
+    void init(const Real* elem, bool _ongpu);
     void init(rflag tp, bool togpu);
 
     /*********************  COMPLEX **********************/
 
-    void init(const std::complex<double>* elem, bool _ongpu);
+    void init(const Complex* elem, bool _ongpu);
     void init(cflag tp, bool togpu);
 
     /***********************************8*****************/
@@ -399,12 +399,12 @@ void RAddR(Matrix& Ma, const Matrix& Mb);
 void CAddR(Matrix& Ma, const Matrix& Mb);
 void RAddC(Matrix& Ma, const Matrix& Mb);
 void CAddC(Matrix& Ma, const Matrix& Mb);
-Matrix takeExp(double a, const Block& mat);
-Matrix exph(double a, const Block& mat);
-Matrix exph(rflag tp, double a, const Block& mat);
-Matrix exph(cflag tp,double a, const Block& mat);
-Matrix exp(double a, const Block& mat);
-Matrix exp(const std::complex<double>& a, const Block& mat);
+Matrix takeExp(Real a, const Block& mat);
+Matrix exph(Real a, const Block& mat);
+Matrix exph(rflag tp, Real a, const Block& mat);
+Matrix exph(cflag tp,Real a, const Block& mat);
+Matrix exp(Real a, const Block& mat);
+Matrix exp(const Complex& a, const Block& mat);
 Matrix exp(const Block& mat);
 Matrix exph(const Block& mat);
 
