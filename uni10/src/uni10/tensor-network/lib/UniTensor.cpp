@@ -151,7 +151,7 @@ UniTensor& UniTensor::operator*=(const UniTensor& uT){
   return *this;
 }
 
-UniTensor& UniTensor::operator*= (double a){
+UniTensor& UniTensor::operator*= (Real a){
   try{
     if(!(status & HAVEELEM)){
       std::ostringstream err;
@@ -162,7 +162,7 @@ UniTensor& UniTensor::operator*= (double a){
     //vectorScal(a, elem, m_elemNum, ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::operator*=(double):");
+    propogate_exception(e, "In function UniTensor::operator*=(Real):");
   }
   return *this;
 }
@@ -178,12 +178,12 @@ UniTensor& UniTensor::operator*= (Complex a){
     //vectorScal(a, c_elem, m_elemNum, ongpu);
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::operator*=(std::complex<double>):");
+    propogate_exception(e, "In function UniTensor::operator*=(Complex):");
   }
   return *this;
 }
 
-UniTensor operator*(const std::complex<double>& a, const UniTensor& Ta){
+UniTensor operator*(const Complex& a, const UniTensor& Ta){
   try{
     if(a.imag() == 0)
       return a.real()*Ta;
@@ -199,14 +199,14 @@ UniTensor operator*(const std::complex<double>& a, const UniTensor& Ta){
     return Tb;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function operator*(uni10::UniTensor&, complex<double>&):");
+    propogate_exception(e, "In function operator*(uni10::UniTensor&, complex<Real>&):");
     return UniTensor();
   }
 }
 
-UniTensor operator*(const UniTensor& Ta, const std::complex<double>& a){return a * Ta;};
+UniTensor operator*(const UniTensor& Ta, const Complex& a){return a * Ta;};
 
-UniTensor operator*(const UniTensor& Ta, double a){
+UniTensor operator*(const UniTensor& Ta, Real a){
   try{
     if(!(Ta.status & Ta.HAVEELEM)){
       std::ostringstream err;
@@ -221,12 +221,12 @@ UniTensor operator*(const UniTensor& Ta, double a){
     return Tb;
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function operator*(uni10::UniTensor&, double):");
+    propogate_exception(e, "In function operator*(uni10::UniTensor&, Real):");
     return UniTensor();
   }
 }
 
-UniTensor operator*(double a, const UniTensor& Ta){return Ta * a;};
+UniTensor operator*(Real a, const UniTensor& Ta){return Ta * a;};
 
 UniTensor operator*(const UniTensor& Ta, const UniTensor& Tb){
   try{
@@ -643,7 +643,7 @@ UniTensor::UniTensor(const std::string& fname, const bool hdf5): status(0){ //GP
     h5f.loadStdVector("Bonds", "labels", labels);
     if(typeID() == 1){
       if(st & HAVEELEM){
-        double* work;
+        Real* work;
         h5f.loadRawBuffer("Block", "m_elem", m_elemNum, work);
         setElem(work, ongpu);
         status |= HAVEELEM;
@@ -1421,7 +1421,7 @@ bool UniTensor::elemCmp(const UniTensor& _UniT)const{
     if(Ta.typeID() != UniT.typeID())
       Ta.typeID() == 1 ? RtoC(Ta) : RtoC(UniT);
 
-    double diff;
+    Real diff;
     if(m_elemNum == UniT.m_elemNum){
       if(Ta.typeID() == 1 && UniT.typeID() == 1){
         for(size_t i = 0; i < m_elemNum; i++){
@@ -1615,7 +1615,7 @@ UniTensor& UniTensor::maxNorm(){
   return *this;
 }
 
-void UniTensor::printGraphy()const{
+void UniTensor::printDiagram()const{
   try{
     if(!(status & HAVEBOND)){
       if(ongpu){
@@ -1691,7 +1691,7 @@ void UniTensor::printGraphy()const{
     }
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::printGraphy():");
+    propogate_exception(e, "In function UniTensor::printDiagram():");
   }
 
 }
