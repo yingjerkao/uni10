@@ -83,12 +83,16 @@ set(UNI10_VERSION
 #option(BUILD_STATIC_LIBS "Build the static library" ON)
 #option(BUILD_SHARED_LIBS "Build the shared library" ON)
 #option(BUILD_TESTS "Build test programs" OFF)
-option(CUDA "Build using Nvidia CUDA for GPU library" OFF)
+option(BUILD_CUDA_SUPPORT "Build using Nvidia CUDA for GPU library" OFF)
 option(BUILD_PACKAGES "Build Source/Binary Packages" ON)
 option(BUILD_EXAMPLES "Build Example Codes" ON)
-option(BUILD_PYTHON_WRAPPER "Build Python wrapper" ON)
+option(BUILD_PYTHON_WRAPPER "Build Python wrapper" OFF)
 option(BUILD_WITH_MKL "Build Uni10 with MKL" OFF)
 option(BUILD_WITH_INTEL_COMPILERS "Build Uni10 with Intel Compilers" OFF)
+option(BUILD_ARPACK_SUPPORT "Build the arpack wrapper" OFF)
+option(BUILD_DOC "Build API docuemntation" OFF)
+
+
 if (BUILD_WITH_MKL)
   option(MKL_SDL "Link to a single MKL dynamic libary." ON)
   option(MKL_MLT "Use multi-hreading libary. [Default]" ON)
@@ -149,22 +153,6 @@ endif()
 set(CMAKE_BUILD_TYPE Release)
 
 
-
-
-
-######################################################################
-### Find ARPACK
-######################################################################
-option(BUILD_ARPACK_SUPPORT "Build the arpack wrapper " OFF)
-IF( BUILD_ARPACK_SUPPORT )
-  if( NOT (DEFINED ARPACK_LIBRARIES) )
-    find_package( ARPACK REQUIRED )
-    set(ARPACK_LIBRARIES ${ARPACK_LIBRARY})
-  else()
-    set(ARPACK_LIBRARIES  ${ARPACK_LIBRARIES})
-    message( STATUS "ARPACK found: ${ARPACK_LIBRARIES}")
-  endif()
-ENDIF()
 ######################################################################
 ### Find BLAS and LAPACK
 ######################################################################
@@ -186,7 +174,7 @@ if( NOT (DEFINED BLAS_LIBRARIES AND DEFINED LAPACK_LIBRARIES))
       endif()
     else()
       find_package( LAPACK REQUIRED)
-	endif()
+    endif()
     message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}" )
   endif()
 else()
@@ -194,11 +182,42 @@ else()
   message( STATUS "LAPACK found: ${LAPACK_LIBRARIES}")
 endif()
 
-if(CUDA)
-  find_package(CUDA)
-  set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS};-gencode arch=compute_20,code=sm_20)
-  cuda_compile(VECADD_O vecadd.cu)
+######################################################################
+### Find CUDA
+######################################################################
+if(BUILD_CUDA_SUPPORT)
+  find_package(CUDA REQUIRED)
+  list(APPEND CUDA_NVCC_FLAGS "-arch=sm_20;-std=c++11;-O2;-DCUDA_SUPPORT") #-DCUDA_SUPPORT to control the macro define
+  SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
+  string(REPLACE "libcusparse" "libcusolver" CUDA_cusolver_LIBRARY ${CUDA_cusparse_LIBRARY})#Workaround 
+  #set(CUDA_VERBOSE_BUILD true)
+
+  #FIND_PATH( CULA_INCLUDE_DIR "cula.h"
+  #         PATH_SUFFIXES "cula/include" )
+  #FIND_LIBRARY( CULA_LIBRARY
+  #            NAMES "cula_lapack"
+  #            PATH_SUFFIXES "cula/lib64" )
+  #MESSAGE(STATUS "CULA_INCLUDE_DIR = ${CULA_INCLUDE_DIR}")
 endif()
+
+
+
+######################################################################
+### Find ARPACK
+######################################################################
+IF( BUILD_ARPACK_SUPPORT )
+ IF( BUILD_CUDA_SUPPORT) 
+   message( FATAL_ERROR "CANNOT BUILD ARPACK and CUDA SIMULTANEOUSLY")
+ ELSE()
+  if( NOT (DEFINED ARPACK_LIBRARIES) )
+    find_package( ARPACK REQUIRED )
+    set(ARPACK_LIBRARIES ${ARPACK_LIBRARY})
+  else()
+    set(ARPACK_LIBRARIES  ${ARPACK_LIBRARIES})
+    message( STATUS "ARPACK found: ${ARPACK_LIBRARIES}")
+  endif()
+ ENDIF()
+ENDIF()
 ######################################################################
 ### Find HDF5 Library and Include dirs
 ######################################################################
@@ -224,9 +243,9 @@ if(MKL_MLT)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 endif()
 if( UNIX OR MINGW OR CYGWIN)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x ")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 ")
 elseif (WINDOWS)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Qstd=c++0x")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Qstd=c++11")
 endif()
 
 if (MKL_MLT)
@@ -273,7 +292,6 @@ $<TARGET_OBJECTS:uni10-datatype>
 $<TARGET_OBJECTS:uni10-data-structure>
 $<TARGET_OBJECTS:uni10-tools>
 $<TARGET_OBJECTS:uni10-tensor-network>
-$<TARGET_OBJECTS:uni10-numeric>
 $<TARGET_OBJECTS:uni10-hdf5io>
 )
 IF( BUILD_ARPACK_SUPPORT )
@@ -281,36 +299,72 @@ IF( BUILD_ARPACK_SUPPORT )
   $<TARGET_OBJECTS:uni10-arpack>
   )
 ENDIF()
+IF(BUILD_CUDA_SUPPORT)
+#### Build CUDA 
+# set(CUDA_SEPARABLE_COMPILATION ON)
+ 
 
-
-if ("${CMAKE_GENERATOR}" STREQUAL "Xcode")
+#find_library(CULA_LIBRARY libcula_lapack /usr/local/cula/lib64 /opt/local/cula/lib64)
+ CUDA_ADD_LIBRARY(uni10gpu SHARED ${uni10-objects}
+    src/uni10/numeric/lapack/lib/uni10_dgemm.cu
+    src/uni10/numeric/lapack/lib/uni10_lapack_gpu.cu
+    src/uni10/tools/lib/uni10_tools_gpu.cu )
+ CUDA_ADD_LIBRARY(uni10gpu-static STATIC ${uni10-objects}
+    src/uni10/numeric/lapack/lib/uni10_dgemm.cu
+    src/uni10/numeric/lapack/lib/uni10_lapack_gpu.cu
+    src/uni10/tools/lib/uni10_tools_gpu.cu )
+ SET_TARGET_PROPERTIES(uni10gpu-static PROPERTIES OUTPUT_NAME "uni10gpu")
+ if(APPLE)
+  set(MACOSX_RPATH 1)
+  SET_TARGET_PROPERTIES(uni10gpu PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR} MACOSX_RPATH 1)
+ else()
+  SET_TARGET_PROPERTIES(uni10gpu PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR})
+ endif()
+ CUDA_ADD_CUBLAS_TO_TARGET(uni10gpu)
+ CUDA_ADD_CUBLAS_TO_TARGET(uni10gpu-static)
+ target_link_libraries(uni10gpu ${CUDA_cusolver_LIBRARY})
+ target_link_libraries(uni10gpu-static ${CUDA_cusolver_LIBRARY})
+ #target_link_libraries(uni10gpu ${CULA_LIBRARY})
+ #target_link_libraries(uni10gpu-static ${CULA_LIBRARY})
+ target_link_libraries(uni10gpu ${LAPACK_LIBRARIES})
+ target_link_libraries(uni10gpu-static ${LAPACK_LIBRARIES})
+ target_link_libraries(uni10gpu ${HDF5_LIBs})
+ target_link_libraries(uni10gpu-static ${HDF5_LIBs})
+ELSE()
+ set(uni10-objects ${uni10-objects} $<TARGET_OBJECTS:uni10-numeric>)
+ if ("${CMAKE_GENERATOR}" STREQUAL "Xcode")
 # Add Dummy file to Xcode Project to build the library
-add_custom_command(
-PRE_BUILD
-OUTPUT ${CMAKE_BINARY_DIR}/src/dummy.cpp
-COMMAND touch ${CMAKE_BINARY_DIR}/src/dummy.cpp
-)
-add_library(uni10 SHARED ${uni10-objects} ${CMAKE_BINARY_DIR}/src/dummy.cpp)
-add_library(uni10-static STATIC ${uni10-objects} ${CMAKE_BINARY_DIR}/src/dummy.cpp)
-else()
-add_library(uni10 SHARED ${uni10-objects} )
-add_library(uni10-static STATIC ${uni10-objects})
-endif()
-SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
-if(APPLE)
+   add_custom_command(
+    PRE_BUILD
+    OUTPUT ${CMAKE_BINARY_DIR}/src/dummy.cpp
+    COMMAND touch ${CMAKE_BINARY_DIR}/src/dummy.cpp
+   )
+   add_library(uni10 SHARED ${uni10-objects} ${CMAKE_BINARY_DIR}/src/dummy.cpp)
+   add_library(uni10-static STATIC ${uni10-objects} ${CMAKE_BINARY_DIR}/src/dummy.cpp)
+ else()
+   add_library(uni10 SHARED ${uni10-objects} )
+   add_library(uni10-static STATIC ${uni10-objects})
+ endif()
+ SET_TARGET_PROPERTIES(uni10-static PROPERTIES OUTPUT_NAME "uni10")
+ if(APPLE)
   set(MACOSX_RPATH 1)
   SET_TARGET_PROPERTIES(uni10 PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR} MACOSX_RPATH 1)
-else()
+ else()
   SET_TARGET_PROPERTIES(uni10 PROPERTIES VERSION ${UNI10_VERSION} SOVERSION ${UNI10_VERSION_MAJOR})
-endif()
-target_link_libraries(uni10 ${LAPACK_LIBRARIES})
-target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
-IF( BUILD_ARPACK_SUPPORT )
+ endif()
+ target_link_libraries(uni10 ${LAPACK_LIBRARIES})
+ target_link_libraries(uni10-static ${LAPACK_LIBRARIES})
+ IF( BUILD_ARPACK_SUPPORT )
   target_link_libraries(uni10 ${ARPACK_LIBRARIES})
   target_link_libraries(uni10-static ${ARPACK_LIBRARIES})
+ ENDIF()
+ target_link_libraries(uni10 ${HDF5_LIBs})
+ target_link_libraries(uni10-static ${HDF5_LIBs})
+ #IF( BUILD_CUDA_SUPPORT) 
+ # target_link_libraries(uni10 ${CUDA_LIBRARIES} ${CUDA_BLAS_LIBRARIES})
+ # target_link_libraries(uni10-static ${CUDA_LIBRARIES} ${CUDA_BLAS_LIBRARIES})
+ #ENDIF()
 ENDIF()
-target_link_libraries(uni10 ${HDF5_LIBs})
-target_link_libraries(uni10-static ${HDF5_LIBs})
 ######################################################################
 ### RPATH SETTINGS
 ######################################################################
@@ -326,15 +380,17 @@ ENDIF("${isSystemDir}" STREQUAL "-1")
 ######################################################################
 ### Build Documents
 ######################################################################
-FIND_PACKAGE(Doxygen)
-if(DOXYGEN_FOUND)
-configure_file(Uni10_Doxyfile.in Uni10Doxyfile)
-add_custom_target(doc ALL
-${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Uni10Doxyfile
-WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-COMMENT "Generating API documentation with Doxygen" VERBATIM
-)
-endif(DOXYGEN_FOUND)
+IF(BUILD_DOC)
+  FIND_PACKAGE(Doxygen REQUIRED)
+  if(DOXYGEN_FOUND)
+    configure_file(Uni10_Doxyfile.in Uni10Doxyfile)
+    add_custom_target(doc ALL
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Uni10Doxyfile
+     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+     COMMENT "Generating API documentation with Doxygen" VERBATIM
+     )
+  endif(DOXYGEN_FOUND)
+ENDIF()
 
 
 
@@ -342,6 +398,17 @@ endif(DOXYGEN_FOUND)
 ######################################################################
 ### INSTALL
 ######################################################################
+IF(BUILD_CUDA_SUPPORT)
+### GPU 
+install(TARGETS uni10gpu uni10gpu-static
+        LIBRARY
+        DESTINATION lib
+        COMPONENT libraries
+        ARCHIVE
+        DESTINATION lib
+        COMPONENT libraries)
+ELSE()
+### CPU
 install(TARGETS uni10 uni10-static
         LIBRARY
         DESTINATION lib
@@ -349,8 +416,7 @@ install(TARGETS uni10 uni10-static
         ARCHIVE
         DESTINATION lib
         COMPONENT libraries)
-
-
+ENDIF()
 
 ######################################################################
 ### INSTALL HEADER FILES
@@ -392,6 +458,9 @@ install(FILES INSTALL README GPL LGPL ChangeLog
         COMPONENT common)
 
 set(libname "${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+IF(BUILD_CUDA_SUPPORT)
+set(libname "${CMAKE_SHARED_LIBRARY_PREFIX}uni10gpu.${UNI10_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
+ENDIF()
 
 
 
@@ -428,6 +497,16 @@ if(BUILD_PYTHON_WRAPPER)
 else()
   message(STATUS " Build Python Wrapper: NO")
 endif()
+if(BUILD_CUDA_SUPPORT)
+  message( STATUS " CUDA Version: ${CUDA_VERSION_STRING}")
+  message( STATUS " CUDA Toolkit Root: ${CUDA_TOOLKIT_ROOT_DIR}")
+  message( STATUS " CuSolver library: ${CUDA_cusolver_LIBRARY}")
+  #message( STATUS " CULA library: ${CULA_LIBRARY}")
+endif()
+if(BUILD_DOC)
+  message( STATUS " Doxygen: ${DOXYGEN_EXECUTABLE}")
+endif()
+message(STATUS "")
 message(STATUS "")
 message(STATUS "")
 
