@@ -51,16 +51,17 @@ Download
 --------
 
 The latest Uni10 source code can be downloaded from 
-<a href="https://sourceforge.net/projects/uni10/files/latest/download" rel="nofollow" target="_blank">Sourceforge</a>.
-
-Binary builds of pyUni10 is available [here](http://uni10-tutorials.readthedocs.org).
+<a href="https://github.com/yingjerkao/uni10" rel="nofollow" target="_blank">github</a>.
 
 
 Requirements
 ------------
   * <a href="http://cmake.org/" target="_blank">cmake</a> version > 2.8.12
-  * C++ compiler
+  * C++ compiler 
   * BLAS and LAPACK libraries and header files
+  * HDF5 library and header 
+  * <a href="http://www.stack.nl/~dimitri/doxygen/" target="_blank">Doxygen</a> (for documentation)
+  * <a href="http://www.swig.org/" target="_blank">Swig </a> (for Python wrapper)
 
 Build
 -----
@@ -108,12 +109,9 @@ Build Options
  BUILD_WITH_INTEL_COMPILERS   | Use Intel C++ compiler  (off)
  BUILD_PYTHON_WRAPPER         | Build pyUni10 wrapper (off)
  BUILD_EXAMPLES               | Build C++ examples (on)
+ BUILD_DOC                    | Build Documentation (off)
+ BUILD_ARPACK_SUPPORT         | Build ARPACK wrapper (off)
  CMAKE_INSTALL_PREFIX         | Installation location (/usr/local/uni10)
-
-pyUni10 Tutorials
-=================
-
-Tutorials for pyUni10 can be found [here](http://uni10-tutorials.readthedocs.org).
 
 Developers and Maintainers
 ==========================
@@ -141,7 +139,7 @@ Alumni
 Help and Bug Reports
 ====================
 
-Please send bug reports to [Uni10Support](hsieh.uni10@gmail.com)
+Please report bugs on github by creating issues. 
 
 
 Known issues
@@ -152,9 +150,9 @@ Known issues
 To Do
 =====
 
-* Complex Data Type
-
 * GUI for generating network files
+
+* Full GPU support
 
 
 
