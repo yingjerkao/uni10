@@ -11,8 +11,8 @@ addons:
     # add PPAs with more up-to-date toolchains
     packages:
     # install toolchains
-    - libhdf5
-    - libhdf5-dev
+    - libhdf5-serial
+    - libhdf5-serial-dev
 
 
 #before_install:
