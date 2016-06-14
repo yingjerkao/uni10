@@ -5,12 +5,10 @@ addons:
     # add PPAs with more up-to-date toolchains
     - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
     - ubuntu-toolchain-r-test
-    - llvm-toolchain-precise-3.6
     packages:
     # install toolchains
     - gcc-5
     - g++-5
-    - clang-3.6
     - cmake
     - cmake-data
 
@@ -19,12 +17,8 @@ before_install:
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 50
   - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 50
   - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-5 50
-  - if [ ${CC} == "clang" ]; then
-    export CC=/usr/bin/clang-3.6 CXX=/usr/bin/clang++-3.6;
-    fi
 compiler:
   - g++
-  - clang
 
 script:
   - mkdir build
