@@ -19,3 +19,4 @@ Alumni:
 * Tama Ma 
 * Sukhbinder Singh 
 
+[![Build Status](https://travis-ci.org/yingjerkao/uni10.svg?branch=develop)](https://travis-ci.org/yingjerkao/uni10)
