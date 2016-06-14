@@ -1,24 +1,24 @@
 language: c++
+
+sudo: required
+dist: trusty
+branches: 
+  only: 
+    - travis
 addons:
   apt:
     sources:
     # add PPAs with more up-to-date toolchains
-    - george-edison55-precise-backports # cmake 3.2.3 / doxygen 1.8.3
-    - ubuntu-toolchain-r-test
     packages:
     # install toolchains
-    - gcc-5
-    - g++-5
-    - cmake
-    - cmake-data
+    - libhdf5-7
+    - libhdf5-dev
 
 
-before_install:
-  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 50
-  - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-5 50
-  - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-5 50
+#before_install:
 compiler:
   - g++
+  - clang
 
 script:
   - mkdir build
