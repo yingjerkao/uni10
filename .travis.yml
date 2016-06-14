@@ -1,0 +1,9 @@
+language: c++
+compiler:
+  - g++
+  - clang
+
+script:
+  - mkdir build
+  - cd build
+  - cmake ../uni10 && make 
