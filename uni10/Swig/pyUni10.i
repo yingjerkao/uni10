@@ -501,7 +501,7 @@ class UniTensor{
         UniTensor& normalize(rflag tp);
         UniTensor& normalize(cflag tp);
         */
-        void printGraphy()const;
+        void printDiagram()const;
 
         std::vector<UniTensor> hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
         std::vector<UniTensor> hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
