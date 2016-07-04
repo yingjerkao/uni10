@@ -247,33 +247,7 @@ class Block{
     /*Complex operator()(size_t idx)const;*/
     Complex at(cflag _tp, size_t i, size_t j)const;
     Complex* getElem(cflag _tp)const;
-    /*
-       friend Matrix operator*(const Block& Ma, const Block& Mb); //R*R C*C R*C C*R
-       friend Matrix operator*(Real a, const Block& Ma);
-       friend Matrix operator*(const Block& Ma, Real a);
-       friend Matrix operator*(const Complex& a, const Block& Ma);
-       friend Matrix operator*(const Block& Ma, const Complex& a);
-       friend Matrix operator+(const Block& Ma, const Block& Mb);
-       friend bool operator==(const Block& m1, const Block& m2);
-       friend bool operator!=(const Block& m1, const Block& m2){return !(m1 == m2);};
-       Block(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
-       void save(rflag _tp, const std::string& fname)const;
-       std::vector<Matrix> qr(rflag tp)const;
-       std::vector<Matrix> rq(rflag tp)const;
-       std::vector<Matrix> ql(rflag tp)const;
-       std::vector<Matrix> lq(rflag tp)const;
-       std::vector<Matrix> svd(rflag tp)const;
-       std::vector<Matrix> eig(rflag tp)const;
-       std::vector<Matrix> eigh(rflag tp)const;
-       Matrix inverse(rflag tp)const;
-       Real norm(rflag tp)const;
-       Matrix getDiag(rflag tp)const;
-       Real trace(rflag tp)const;
-       Real sum(rflag tp)const;
-       Real operator[](size_t idx)const;
-       Real at(rflag tp, size_t i, size_t j)const;
-       Real* getElem(rflag tp = RTYPE)const;
-     */
+
     %extend {
       bool __eq__(const Block& b2){
         return (*self) == b2;
@@ -299,13 +273,6 @@ class Block{
         return a * (*self);
       }
 
-      /*
-      double lanczosEigh(Matrix& psi, int *lanczos_iter, size_t max_iter=200, double err_tol = 5E-15){
-        double E0;
-        *lanczos_iter = (*self).lanczosEigh(E0, psi, max_iter, err_tol);
-        return E0;
-      }
-      */
     }
 };
 
@@ -365,128 +332,111 @@ class Matrix: public Block {
     void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
     bool toGPU(cflag _tp);
 
-    /*
-       double absMax(rflag tp, bool _ongpu=false);
-       Matrix& maxNorm(rflag tp);
-       Matrix& absMaxNorm(rflag tp);
-       double* getHostElem(rflag _tp);
-       Matrix& operator=(const Matrix& _m);
-       Matrix& operator=(const Block& _m);
-       Matrix& operator*= (double a);
-       Matrix& operator*= (std::complex<double> a);
-       Matrix& operator*= (const Block& Mb);
-       Matrix& operator+= (const Block& Mb);
-       Matrix(rflag _tp, const std::string& fname);
-       Matrix(rflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
-       void identity(rflag _tp);
-       void set_zero(rflag _tp);
-       void randomize(rflag _tp);
-       void orthoRand(rflag _tp);
-       Matrix& normalize(rflag tp);
-       Matrix& transpose(rflag _tp);
-       Matrix& cTranspose(rflag _tp);
-       Matrix& conj(rflag _tp);
-       Matrix& resize(rflag _tp, size_t row, size_t col);
-       double max(rflag _tp, bool _ongpu=false);
-       double& at(size_t i, size_t j); //&
-       double& at(rflag _tp, size_t i); //&
-       double& operator[](size_t idx); //&
-       void assign(rflag _tp, size_t _Rnum, size_t _Cnum);
-       bool toGPU(rflag _tp);
-     */
 
-        %extend {
-          bool __eq__(const Matrix& b2){
-            return (*self) == b2;
-          }
-          Matrix __copy__(){
-            return (*self);
-          }
-          const std::string __repr__() {
-            std::ostringstream oss(std::ostringstream::out);
-            oss << (*self);
-            return oss.str();
-          }
-          Matrix __mul__(const Matrix& Ma){
-            return (*self) * Ma;
-          }
-          Matrix __add__(const Matrix& Ma){
-            return (*self) + Ma;
-          }
-          Matrix __mul__(double a){
-            return a * (*self);
-          }
-          Matrix __rmul__(double a){
-            return a * (*self);
-          }
-        /*  Real __getitem__(PyObject *parm) {
-            if (PyTuple_Check(parm)){
-              long r,c;
-              r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-              c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-              if( (*self).isDiag() && r!=c) {
-                return 0.0;
-              }
-              else {
-                return (*self)[r*(*self).col()+c];
-              }
-            } else if (PyInt_Check(parm))
-              return (*self)[PyInt_AsLong(parm)];
-            return 0;
-          }*/
+    %extend {
+      bool __eq__(const Matrix& b2){
+        return (*self) == b2;
+      }
+      Matrix __copy__(){
+        return (*self);
+      }
+      const std::string __repr__() {
+        std::ostringstream oss(std::ostringstream::out);
+        oss << (*self);
+        return oss.str();
+      }
+      Matrix __mul__(const Matrix& Ma){
+        return (*self) * Ma;
+      }
+      Matrix __add__(const Matrix& Ma){
+        return (*self) + Ma;
+      }
+      Matrix __mul__(double a){
+        return a * (*self);
+      }
+      Matrix __rmul__(double a){
+        return a * (*self);
+      }
 
-          PyObject* __getitem__(PyObject *parm) {
+      PyObject* __getitem__(PyObject *parm) {
+          switch ((*self).typeID()) {
+              case uni10::CTYPE:
+                  if (PyTuple_Check(parm)){
+                      long r,c;
+                      r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                      c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                      if( (*self).isDiag() && r!=c) {
+                          return PyComplex_FromDoubles(0.0,0.0);
+                      } else {
+                          return PyComplex_FromDoubles((*self)(r*(*self).col()+c).real(),
+                                                       (*self)(r*(*self).col()+c).imag());
+                      }
+                  } else if (PyInt_Check(parm)) {
+                      return PyComplex_FromDoubles((*self)(PyInt_AsLong(parm)).real(),
+                                                   (*self)(PyInt_AsLong(parm)).imag());
+                  }
+                  break;
+              case uni10::RTYPE:
+                  if (PyTuple_Check(parm)){
+                      long r,c;
+                      r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                      c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                      if( (*self).isDiag() && r!=c) {
+                          return PyFloat_FromDouble(0.0);
+                      } else {
+                          return PyFloat_FromDouble((*self)[r*(*self).col()+c]);
+                      }
+                  } else if (PyInt_Check(parm)) {
+                      return PyFloat_FromDouble((*self)[PyInt_AsLong(parm)]);
+                  }
+                  break;
+              default:
+                  return Py_None;
+                  
+          }
+      }
+        
+        void __setitem__(PyObject *parm, Complex val){
             switch ((*self).typeID()) {
             case uni10::CTYPE:
-              if (PyTuple_Check(parm)){
-                long r,c;
-                r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                if( (*self).isDiag() && r!=c) {
-                  return PyComplex_FromDoubles(0.0,0.0);
-                } else {
-                  return PyComplex_FromDoubles((*self)(r*(*self).col()+c).real(),
-                    (*self)(r*(*self).col()+c).imag());
+                if (PyTuple_Check(parm)){
+                    long r,c;
+                    r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                    c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                    if( (*self).isDiag()) {
+                        if (r==c) {
+                            (*self)(r)=val;
+                        }
+                    } else {
+                        (*self)(r*(*self).col()+c)=val;
+                    }
+                } else if (PyInt_Check(parm)) {
+                    (*self)(PyInt_AsLong(parm))=val;
                 }
-              } else if (PyInt_Check(parm)) {
-                return PyComplex_FromDoubles((*self)(PyInt_AsLong(parm)).real(),
-                (*self)(PyInt_AsLong(parm)).imag());
-              }
+                break;
             case uni10::RTYPE:
-              if (PyTuple_Check(parm)){
-                long r,c;
-                r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                if( (*self).isDiag() && r!=c) {
-                  return PyFloat_FromDouble(0.0);
-                } else {
-                  return PyFloat_FromDouble((*self)[r*(*self).col()+c]);
+                if (PyTuple_Check(parm)){
+                    long r,c;
+                    r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                    c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                    if( (*self).isDiag()) {
+                        if (r==c) (*self)[r]=val.real();
+                    } else {
+                        (*self)[r*(*self).col()+c]=val.real();
+                    }
+                } else if (PyInt_Check(parm)) {
+                    (*self)[PyInt_AsLong(parm)]=val.real();
                 }
-            } else if (PyInt_Check(parm)) {
-              return PyFloat_FromDouble((*self)[PyInt_AsLong(parm)]);
-            }
+                break;
             default:
-              return Py_None;
-            }
-          }
-
-          void __setitem__(PyObject *parm, PyObject *val){
-            if (PyTuple_Check(parm)){
-              long r,c;
-              r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-              c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-              if((*self).isDiag()) {
-                if (r==c) (*self)[r]=val;
-              }
-              else {
-                (*self)[r*(*self).col()+c]=val;
-              }
-            }
-            else
-              if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
-          }
-
+                
+                std::ostringstream err;
+                err<<"\nCan not assign value to Null matrix.\n";
+                throw std::runtime_error(err.str());
         }
+    }
+  }
+
 };
 Matrix takeExp(double a, const Block& mat);
 Matrix otimes(const Block& Ta, const Block& Tb);
@@ -669,11 +619,22 @@ class UniTensor{
       UniTensor __rmul__(double a){
         return a * (*self);
       }
-      Real __getitem__(PyObject *parm) {
-        return (*self)[PyInt_AsLong(parm)];
-      }
-      Complex __getitem__(cflag,PyObject *parm){
-        return (*self)(PyInt_AsLong(parm));
+      PyObject* __getitem__(PyObject *parm) {
+          switch ((*self).typeID()) {
+              case uni10::CTYPE:
+                  if (PyInt_Check(parm)) {
+                      return PyComplex_FromDoubles((*self)(PyInt_AsLong(parm)).real(),
+                            (*self)(PyInt_AsLong(parm)).imag());
+                  }
+                  break;
+              case uni10::RTYPE:
+                  if (PyInt_Check(parm)) {
+                      return PyFloat_FromDouble((*self)[PyInt_AsLong(parm)]);
+                  }
+                  break;
+              default:
+                  return Py_None;
+          }
       }
       static const std::string profile(){
         return uni10::UniTensor::profile(false);
@@ -681,7 +642,7 @@ class UniTensor{
       const std::string printRawElem(){
         return (*self).printRawElem(false);
       }
-    }
+      }
     /*
        std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
        std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const ;
