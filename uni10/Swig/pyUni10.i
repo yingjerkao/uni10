@@ -27,6 +27,8 @@
 %include "std_complex.i"
 %include "exception.i"
 /*%include "typemaps.i"*/
+
+
 namespace std{
   %template(int_arr) vector<int>;
   %template(double_arr) vector<double>;
@@ -296,21 +298,7 @@ class Block{
       Matrix __rmul__(double a){
         return a * (*self);
       }
-      std::complex<double> __getitem__(PyObject *parm) {
-        if (PyTuple_Check(parm)){
-          long r,c;
-          r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-          c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-          if( (*self).isDiag() && r!=c) {
-            return 0.0;
-          }
-          else {
-            return (*self).at(r,c);
-          }
-        } else if (PyInt_Check(parm))
-          return (*self)[PyInt_AsLong(parm)];
-        return 0;
-      }
+
       /*
       double lanczosEigh(Matrix& psi, int *lanczos_iter, size_t max_iter=200, double err_tol = 5E-15){
         double E0;
@@ -372,7 +360,7 @@ class Matrix: public Block {
     Matrix& cTranspose(cflag _tp);
     Matrix& conj(cflag _tp);
     Matrix& resize(cflag _tp, size_t row, size_t col);
-    std::complex<double>& operator()(size_t idx); //&
+    //std::complex<double>& operator()(size_t idx); //&
     std::complex<double>& at(cflag _tp, size_t i); //&
     void assign(cflag _tp, size_t _Rnum, size_t _Cnum);
     bool toGPU(cflag _tp);
@@ -431,7 +419,7 @@ class Matrix: public Block {
           Matrix __rmul__(double a){
             return a * (*self);
           }
-          std::complex<double> __getitem__(PyObject *parm) {
+        /*  Real __getitem__(PyObject *parm) {
             if (PyTuple_Check(parm)){
               long r,c;
               r=PyInt_AsLong(PyTuple_GetItem(parm,0));
@@ -440,14 +428,49 @@ class Matrix: public Block {
                 return 0.0;
               }
               else {
-                return (*self).at(r,c);
+                return (*self)[r*(*self).col()+c];
               }
             } else if (PyInt_Check(parm))
               return (*self)[PyInt_AsLong(parm)];
             return 0;
+          }*/
+
+          PyObject* __getitem__(PyObject *parm) {
+            switch ((*self).typeID()) {
+            case uni10::CTYPE:
+              if (PyTuple_Check(parm)){
+                long r,c;
+                r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                if( (*self).isDiag() && r!=c) {
+                  return PyComplex_FromDoubles(0.0,0.0);
+                } else {
+                  return PyComplex_FromDoubles((*self)(r*(*self).col()+c).real(),
+                    (*self)(r*(*self).col()+c).imag());
+                }
+              } else if (PyInt_Check(parm)) {
+                return PyComplex_FromDoubles((*self)(PyInt_AsLong(parm)).real(),
+                (*self)(PyInt_AsLong(parm)).imag());
+              }
+            case uni10::RTYPE:
+              if (PyTuple_Check(parm)){
+                long r,c;
+                r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                if( (*self).isDiag() && r!=c) {
+                  return PyFloat_FromDouble(0.0);
+                } else {
+                  return PyFloat_FromDouble((*self)[r*(*self).col()+c]);
+                }
+            } else if (PyInt_Check(parm)) {
+              return PyFloat_FromDouble((*self)[PyInt_AsLong(parm)]);
+            }
+            default:
+              return Py_None;
+            }
           }
-          /*
-          void __setitem__(PyObject *parm, double val){
+
+          void __setitem__(PyObject *parm, PyObject *val){
             if (PyTuple_Check(parm)){
               long r,c;
               r=PyInt_AsLong(PyTuple_GetItem(parm,0));
@@ -463,12 +486,6 @@ class Matrix: public Block {
               if (PyInt_Check(parm)) (*self)[PyInt_AsLong(parm)]=val;
           }
 
-          double lanczosEigh(Matrix& psi, int *lanczos_iter, size_t max_iter=200, double err_tol = 5E-15){
-            double E0;
-            *lanczos_iter = (*self).lanczosEigh(E0, psi, max_iter, err_tol);
-            return E0;
-           }
-          */
         }
 };
 Matrix takeExp(double a, const Block& mat);
@@ -629,7 +646,8 @@ class UniTensor{
         std::complex<double> at(cflag tp, const std::vector<int>& idxs)const;
         std::complex<double> at(cflag tp, const std::vector<size_t>& idxs)const;
         double* getElem();
-        
+        /*Complex operator()(size_t idx) const;*/
+
     %extend {
       UniTensor __copy__(){
         return (*self);
@@ -651,8 +669,11 @@ class UniTensor{
       UniTensor __rmul__(double a){
         return a * (*self);
       }
-      std::complex<double> __getitem__(PyObject *parm) {
+      Real __getitem__(PyObject *parm) {
         return (*self)[PyInt_AsLong(parm)];
+      }
+      Complex __getitem__(cflag,PyObject *parm){
+        return (*self)(PyInt_AsLong(parm));
       }
       static const std::string profile(){
         return uni10::UniTensor::profile(false);
@@ -757,4 +778,3 @@ class Network {
 
 
 };
-
