@@ -42,7 +42,7 @@ SET(CPACK_SOURCE_GENERATOR "TGZ")
 endif()
 SET(CPACK_SOURCE_PACKAGE_FILE_NAME "uni10-${UNI10_VERSION}")
 SET(CPACK_SOURCE_IGNORE_FILES "/\\\\.git/" "/build/" "/debug/" "/dep/" "copyright.*" ".*\\\\.sh")
-message("CPACK_SOURCE_IGNORE_FILES = ${CPACK_SOURCE_IGNORE_FILES}")
+#message("CPACK_SOURCE_IGNORE_FILES = ${CPACK_SOURCE_IGNORE_FILES}")
 
 set(CPACK_COMPONENTS_ALL libraries headers python_examples examples pyUni10 common documentation)
 set(CPACK_COMPONENT_EXAMPLES_DISPLAYNAME "Uni10 C++ Examples")
