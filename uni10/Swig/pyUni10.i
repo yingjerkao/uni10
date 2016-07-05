@@ -27,7 +27,14 @@
 %include "std_complex.i"
 %include "exception.i"
 /*%include "typemaps.i"*/
+/* %include "numpy.i"
 
+%init %{
+    import_array();
+%}
+
+%numpy_typemaps(Complex, NPY_CDOUBLE, int)
+*/
 
 namespace std{
   %template(int_arr) vector<int>;
@@ -185,7 +192,6 @@ extern Bond combine(const std::vector<Bond>& bds);
 
 /* Block */
 
-%apply int *OUTPUT { int *lanczos_iter};
 
 enum rflag{
   RNULL = 0,
@@ -280,6 +286,7 @@ class Block{
 
 
 /* Matrix */
+
 class Matrix: public Block {
   public:
     double absMax(bool _ongpu=false);
@@ -368,8 +375,8 @@ class Matrix: public Block {
                       if( (*self).isDiag() && r!=c) {
                           return PyComplex_FromDoubles(0.0,0.0);
                       } else {
-                          return PyComplex_FromDoubles((*self)(r*(*self).col()+c).real(),
-                                                       (*self)(r*(*self).col()+c).imag());
+                          return PyComplex_FromDoubles((*self)(r).real(),
+                                                       (*self)(r).imag());
                       }
                   } else if (PyInt_Check(parm)) {
                       return PyComplex_FromDoubles((*self)(PyInt_AsLong(parm)).real(),
@@ -384,7 +391,7 @@ class Matrix: public Block {
                       if( (*self).isDiag() && r!=c) {
                           return PyFloat_FromDouble(0.0);
                       } else {
-                          return PyFloat_FromDouble((*self)[r*(*self).col()+c]);
+                          return PyFloat_FromDouble((*self)[r]);
                       }
                   } else if (PyInt_Check(parm)) {
                       return PyFloat_FromDouble((*self)[PyInt_AsLong(parm)]);
@@ -392,10 +399,10 @@ class Matrix: public Block {
                   break;
               default:
                   return Py_None;
-                  
+
           }
       }
-        
+
         void __setitem__(PyObject *parm, Complex val){
             switch ((*self).typeID()) {
             case uni10::CTYPE:
@@ -429,7 +436,7 @@ class Matrix: public Block {
                 }
                 break;
             default:
-                
+
                 std::ostringstream err;
                 err<<"\nCan not assign value to Null matrix.\n";
                 throw std::runtime_error(err.str());
