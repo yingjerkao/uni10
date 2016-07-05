@@ -1,7 +1,7 @@
 #####################
 # Example Makefile
 #####################
-UNI10_ROOT:= /usr/local/uni10/ 
+UNI10_ROOT:= /usr/local/uni10
 INC := $(UNI10_ROOT)/include/
 LIB := $(UNI10_ROOT)/lib/
 CC:=g++
