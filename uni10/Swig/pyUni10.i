@@ -288,6 +288,8 @@ class Block{
 /* Matrix */
 
 class Matrix: public Block {
+    %rename(CMatrix) Matrix(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+
   public:
     double absMax(bool _ongpu=false);
     Matrix& maxNorm();
