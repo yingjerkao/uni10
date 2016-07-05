@@ -360,10 +360,6 @@ ELSE()
  ENDIF()
  target_link_libraries(uni10 ${HDF5_LIBs})
  target_link_libraries(uni10-static ${HDF5_LIBs})
- #IF( BUILD_CUDA_SUPPORT) 
- # target_link_libraries(uni10 ${CUDA_LIBRARIES} ${CUDA_BLAS_LIBRARIES})
- # target_link_libraries(uni10-static ${CUDA_LIBRARIES} ${CUDA_BLAS_LIBRARIES})
- #ENDIF()
 ENDIF()
 ######################################################################
 ### RPATH SETTINGS
@@ -456,6 +452,16 @@ endif()
 install(FILES INSTALL README GPL LGPL ChangeLog
         DESTINATION .
         COMPONENT common)
+######################################################################
+### INSTALL TESTS
+######################################################################
+install(DIRECTORY test/
+        DESTINATION test/
+        COMPONENT test
+	PATTERN "CMakeLists*" EXCLUDE
+)
+
+
 
 set(libname "${CMAKE_SHARED_LIBRARY_PREFIX}uni10.${UNI10_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}")
 IF(BUILD_CUDA_SUPPORT)

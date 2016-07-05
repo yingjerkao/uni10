@@ -45,4 +45,8 @@ add_executable( runUnitTests ${test_sources})
 target_link_libraries(runUnitTests pthread gtest gtest_main uni10)
 add_test( runUnitTests runUnitTests )
 
-
+######################################################################
+### BUILD EXAMPLES
+######################################################################
+install(TARGETS runUnitTests DESTINATION test/ COMPONENT test)
+install(FILES Simple.net DESTINATION test/ COMPONENT test)
