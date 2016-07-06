@@ -235,6 +235,7 @@ class Block{
     Real at(size_t i, size_t j)const;
     bool CelemIsNULL()const;
     bool RelemIsNULL()const;
+    Real* getElem()const;
     /* deafult is real, so rflag is ignored for conflict with cflag */
     Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
     void save(cflag _tp, const std::string& fname)const;
