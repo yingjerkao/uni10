@@ -505,7 +505,9 @@ class UniTensor{
         UniTensor(const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
         UniTensor(const UniTensor& UniT);
         UniTensor(const std::string& fname);
+        #ifdef HDF5
         UniTensor(const std::string& fname, const bool hdf5);
+        #endif
         UniTensor(const Block& UniT);
         ~UniTensor();
         void setRawElem(const Block& blk);
@@ -541,7 +543,9 @@ class UniTensor{
         void orthoRand();
         void orthoRand(const Qnum& qnum);
         void save(const std::string& fname) const;
+        #ifdef HDF5
         void h5save(const std::string& fname);
+        #endif
         UniTensor& transpose();
         UniTensor& permute(const std::vector<int>& newLabels, int inBondNum);
         UniTensor& permute(int* newLabels, int inBondNum);

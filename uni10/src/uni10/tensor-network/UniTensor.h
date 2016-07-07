@@ -87,7 +87,7 @@ namespace uni10 {
         UniTensor& absMaxNorm();
         UniTensor& absMaxNorm(rflag tp);
 
-        
+
         /// @brief Returns the \f$L^2\f$ norm of UniTensor elements
         ///
         /// @return \f$L^2\f$ norm
@@ -98,7 +98,7 @@ namespace uni10 {
         UniTensor& normalize();
         UniTensor& normalize(rflag tp);
         UniTensor& normalize(cflag tp);
-        
+
         /// @brief Print the diagrammatic representation of  UniTensor
         ///
         /// Prints out the diagrammatic representation of UniTensor \c uT as (for example):
@@ -159,8 +159,8 @@ namespace uni10 {
         std::vector<UniTensor> hosvd(int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
         std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
         std::vector<UniTensor> hosvd(cflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
-        
-        
+
+
         std::vector<UniTensor> hosvd(std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const ;
         std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const ;
         std::vector<UniTensor> hosvd(cflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const ;
@@ -170,8 +170,8 @@ namespace uni10 {
 
         std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
         std::vector<UniTensor> hosvd(cflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
-        
-        
+
+
         std::vector<UniTensor> hosvd(std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
 
         std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<std::map<Qnum, Matrix> >& Ls, bool returnL)const ;
@@ -356,11 +356,12 @@ namespace uni10 {
         /// @param fname Filename to be read in
         UniTensor(const std::string& fname);
 
+#ifdef HDF5
         /// @brief Create a UniTensor from a HDF5 file
         ///
         /// @param fname Filename to be read in
         UniTensor(const std::string& fname, const bool hdf5);
-
+#endif
         /// @brief Create a UniTensor from a Block
         UniTensor(const Block& UniT);
 
@@ -396,7 +397,7 @@ namespace uni10 {
 
         int typeID()const;
 
-        /// 
+        ///
         void setLabel(const int newLabel, const size_t idx);
         /// @brief Assign labels to bonds in UniTensor
         ///
@@ -574,12 +575,14 @@ namespace uni10 {
         /// Saves UniTensor to a file named \c fname.
         /// @param fname filename
         void save(const std::string& fname) const;
+
+#ifdef HDF5
         /// @brief Save UniTensor to HDF5 file
         ///
         /// Saves UniTensor to a HDF5 file named \c fname.
         /// @param fname filename
         void h5save(const std::string& fname);
-
+#endif
         /// @brief Transpose  block elements
         ///
         /// Transpose each quantum number block. The bonds are changed from incoming to outcoming and vice versa
@@ -778,7 +781,7 @@ namespace uni10 {
         void orthoRand(rflag tp, const Qnum& qnum);
 
         UniTensor& transpose(rflag tp);
-        
+
         UniTensor& permute(rflag tp, const std::vector<int>& newLabels, int inBondNum);
 
         UniTensor& permute(rflag tp, int* newLabels, int inBondNum);
@@ -809,7 +812,7 @@ namespace uni10 {
         UniTensor(cflag tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
         UniTensor(cflag tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
         UniTensor(cflag tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
-        
+
         /// @overload
         void setRawElem(const std::vector< Complex >& rawElem);
 
@@ -905,7 +908,7 @@ namespace uni10 {
         Complex at(cflag tp, const std::vector<int>& idxs)const;
         Complex at(cflag tp, const std::vector<size_t>& idxs)const;
         Real* getElem();
-        
+
         /// @brief Access individual element
         ///
         /// Returns the Real element at linear position \c idx.
@@ -926,7 +929,7 @@ namespace uni10 {
         Complex operator()(size_t idx) const;
 
         /*************************************/
-        
+
         friend class Node;
         friend class Network;
 

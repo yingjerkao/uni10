@@ -32,10 +32,10 @@
 ######################################################################
 if(APPLE)
   # OS X requires 2.8.12 for rpath
-cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
+  cmake_minimum_required(VERSION 2.8.12 FATAL_ERROR)
 else()
   # For RHEL/CentOS 7
-cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
+  cmake_minimum_required(VERSION 2.8.11 FATAL_ERROR)
 endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
@@ -91,7 +91,7 @@ option(BUILD_WITH_MKL "Build Uni10 with MKL" OFF)
 option(BUILD_WITH_INTEL_COMPILERS "Build Uni10 with Intel Compilers" OFF)
 option(BUILD_ARPACK_SUPPORT "Build the arpack wrapper" OFF)
 option(BUILD_DOC "Build API docuemntation" OFF)
-
+option(BUILD_HDF5_SUPPORT "Build HDF5" OFF)
 
 if (BUILD_WITH_MKL)
   option(MKL_SDL "Link to a single MKL dynamic libary." ON)
@@ -189,7 +189,7 @@ if(BUILD_CUDA_SUPPORT)
   find_package(CUDA REQUIRED)
   list(APPEND CUDA_NVCC_FLAGS "-arch=sm_20;-std=c++11;-O2;-DCUDA_SUPPORT") #-DCUDA_SUPPORT to control the macro define
   SET(CUDA_PROPAGATE_HOST_FLAGS OFF)
-  string(REPLACE "libcusparse" "libcusolver" CUDA_cusolver_LIBRARY ${CUDA_cusparse_LIBRARY})#Workaround 
+  string(REPLACE "libcusparse" "libcusolver" CUDA_cusolver_LIBRARY ${CUDA_cusparse_LIBRARY})#Workaround
   #set(CUDA_VERBOSE_BUILD true)
 
   #FIND_PATH( CULA_INCLUDE_DIR "cula.h"
@@ -206,7 +206,7 @@ endif()
 ### Find ARPACK
 ######################################################################
 IF( BUILD_ARPACK_SUPPORT )
- IF( BUILD_CUDA_SUPPORT) 
+ IF( BUILD_CUDA_SUPPORT)
    message( FATAL_ERROR "CANNOT BUILD ARPACK and CUDA SIMULTANEOUSLY")
  ELSE()
   if( NOT (DEFINED ARPACK_LIBRARIES) )
@@ -221,18 +221,22 @@ ENDIF()
 ######################################################################
 ### Find HDF5 Library and Include dirs
 ######################################################################
-if( NOT (DEFINED HDF5_C_LIBRARIES AND DEFINED HDF5_CXX_LIBRARIES AND DEFINED HDF5_INCLUDE_DIRS))
-  find_package(HDF5 REQUIRED COMPONENTS C CXX)
-  set(HDF5_LIBs ${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})
-  set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})
-  find_package(ZLIB)
-  set( HDF5_LIBs ${HDF5_LIBs} ${ZLIB_LIBRARIES})
-  #TODO: Need win32
-else()
-  set(HDF5_LIBs ${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})
-  set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})
-  message( STATUS "HDF5 found: ${HDF5_LIBRARIES}")
-endif()
+IF(BUILD_HDF5_SUPPORT)
+  ADD_DEFINITIONS("-DHDF5")
+  if( NOT (DEFINED HDF5_C_LIBRARIES AND DEFINED HDF5_CXX_LIBRARIES AND DEFINED HDF5_INCLUDE_DIRS))
+    find_package(HDF5 REQUIRED COMPONENTS C CXX)
+    set(HDF5_LIBs ${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})
+    set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})
+    find_package(ZLIB)
+    set( HDF5_LIBs ${HDF5_LIBs} ${ZLIB_LIBRARIES})
+    #TODO: Need win32
+  else()
+    set(HDF5_LIBs ${HDF5_C_LIBRARIES} ${HDF5_CXX_LIBRARIES})
+    set(HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS})
+    message( STATUS "HDF5 found: ${HDF5_LIBRARIES}")
+  endif()
+  include_directories(${HDF5_INCLUDE_DIRS})
+ENDIF()
 ######################################################################
 ### FLAGS
 ######################################################################
@@ -268,7 +272,6 @@ endif()
 
 # path to include directory
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-include_directories(${HDF5_INCLUDE_DIRS})
 
 ######################################################################
 ### ADD SUBDIRECTORIES
@@ -292,18 +295,21 @@ $<TARGET_OBJECTS:uni10-datatype>
 $<TARGET_OBJECTS:uni10-data-structure>
 $<TARGET_OBJECTS:uni10-tools>
 $<TARGET_OBJECTS:uni10-tensor-network>
-$<TARGET_OBJECTS:uni10-hdf5io>
 )
 IF( BUILD_ARPACK_SUPPORT )
   set(uni10-objects ${uni10-objects}
   $<TARGET_OBJECTS:uni10-arpack>
   )
 ENDIF()
-IF(BUILD_CUDA_SUPPORT)
-#### Build CUDA 
-# set(CUDA_SEPARABLE_COMPILATION ON)
- 
+IF(BUILD_HDF5_SUPPORT)
+  set(uni10-objects ${uni10-objects}
+  $<TARGET_OBJECTS:uni10-hdf5io>
+  )
+ENDIF()
 
+IF(BUILD_CUDA_SUPPORT)
+#### Build CUDA
+# set(CUDA_SEPARABLE_COMPILATION ON)
 #find_library(CULA_LIBRARY libcula_lapack /usr/local/cula/lib64 /opt/local/cula/lib64)
  CUDA_ADD_LIBRARY(uni10gpu SHARED ${uni10-objects}
     src/uni10/numeric/lapack/lib/uni10_dgemm.cu
@@ -328,8 +334,10 @@ IF(BUILD_CUDA_SUPPORT)
  #target_link_libraries(uni10gpu-static ${CULA_LIBRARY})
  target_link_libraries(uni10gpu ${LAPACK_LIBRARIES})
  target_link_libraries(uni10gpu-static ${LAPACK_LIBRARIES})
- target_link_libraries(uni10gpu ${HDF5_LIBs})
- target_link_libraries(uni10gpu-static ${HDF5_LIBs})
+ IF(BUILD_HDF5_SUPPORT)
+   target_link_libraries(uni10gpu ${HDF5_LIBs})
+   target_link_libraries(uni10gpu-static ${HDF5_LIBs})
+ ENDIF()
 ELSE()
  set(uni10-objects ${uni10-objects} $<TARGET_OBJECTS:uni10-numeric>)
  if ("${CMAKE_GENERATOR}" STREQUAL "Xcode")
@@ -358,8 +366,10 @@ ELSE()
   target_link_libraries(uni10 ${ARPACK_LIBRARIES})
   target_link_libraries(uni10-static ${ARPACK_LIBRARIES})
  ENDIF()
- target_link_libraries(uni10 ${HDF5_LIBs})
- target_link_libraries(uni10-static ${HDF5_LIBs})
+ IF(BUILD_HDF5_SUPPORT)
+   target_link_libraries(uni10 ${HDF5_LIBs})
+   target_link_libraries(uni10-static ${HDF5_LIBs})
+ ENDIF()
 ENDIF()
 ######################################################################
 ### RPATH SETTINGS
@@ -395,7 +405,7 @@ ENDIF()
 ### INSTALL
 ######################################################################
 IF(BUILD_CUDA_SUPPORT)
-### GPU 
+### GPU
 install(TARGETS uni10gpu uni10gpu-static
         LIBRARY
         DESTINATION lib

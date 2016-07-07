@@ -33,8 +33,9 @@
 #include <uni10/data-structure/Bond.h>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/tensor-network/UniTensor.h>
-#include <uni10/hdf5io/uni10_hdf5io.h>
-
+#ifdef HDF5
+  #include <uni10/hdf5io/uni10_hdf5io.h>
+#endif
 
 
 namespace uni10{

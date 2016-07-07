@@ -33,8 +33,12 @@
 #include <uni10/data-structure/Bond.h>
 #include <uni10/tensor-network/Matrix.h>
 #include <uni10/tensor-network/UniTensor.h>
-#include <uni10/hdf5io/uni10_hdf5io.h>
 #include <deque>
+#ifdef HDF5
+#include <uni10/hdf5io/uni10_hdf5io.h>
+#endif
+
+
 
 
 
@@ -600,7 +604,7 @@ UniTensor::UniTensor(const std::string& fname): status(0){ //GPU
     propogate_exception(e, "In constructor UniTensor::UniTensor(std::string&):");
   }
 }
-
+#ifdef HDF5
 UniTensor::UniTensor(const std::string& fname, const bool hdf5): status(0){ //GPU
   try{
     HDF5IO h5f(fname.c_str());
@@ -662,7 +666,7 @@ UniTensor::UniTensor(const std::string& fname, const bool hdf5): status(0){ //GP
     propogate_exception(e, "In constructor UniTensor::UniTensor(std::string&, bool):");
   }
 }
-
+#endif
 
 int UniTensor::typeID()const{
   return r_flag + c_flag;
@@ -1004,7 +1008,7 @@ void UniTensor::save(const std::string& fname) const{
     propogate_exception(e, "In function UniTensor::save(std::string&):");
   }
 }
-
+#ifdef HDF5
 void UniTensor::h5save(const std::string& fname){
   try{
     if((status & HAVEBOND) == 0){   //If not INIT, NO NEED to write out to file
@@ -1045,6 +1049,7 @@ void UniTensor::h5save(const std::string& fname){
     propogate_exception(e, "In function UniTensor::h5save(std::string&):");
   }
 }
+#endif
 
 UniTensor& UniTensor::transpose(){
   try{
