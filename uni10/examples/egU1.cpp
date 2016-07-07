@@ -87,9 +87,9 @@ int main(){
 
 	// Write out tensor
 	H_U1.save("egU1_H_U1");
-	H_U1.h5save("egU1_H_U1.h5");
 
-	uni10::UniTensor H_U1_read("egU1_H_U1.h5", true);
+  uni10::UniTensor H_U1_read("egU1_H_U1");
+
 	std::cout << H_U1_read << std::endl;
 	return 0;
 }
