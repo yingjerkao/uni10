@@ -466,11 +466,13 @@ install(FILES INSTALL README GPL LGPL ChangeLog
 ######################################################################
 ### INSTALL TESTS
 ######################################################################
+if(NOT WIN32)
 install(DIRECTORY test/
         DESTINATION test/
         COMPONENT test
 	PATTERN "CMakeLists*" EXCLUDE
 )
+endif()
 
 
 
