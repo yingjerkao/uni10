@@ -1,12 +1,10 @@
 /****************************************************************************
-#define UNI10_DTYPE_STRING "double"
 *  @file uni10_tools.h
 *  @license
 *    Universal Tensor Network Library
 *    Copyright (c) 2013-2014
 *    National Taiwan University
 *    National Tsing-Hua University
-
 *
 *    This file is part of Uni10, the Universal Tensor Network Library.
 *

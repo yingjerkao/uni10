@@ -284,9 +284,10 @@ endif()
 if (BUILD_PYTHON_WRAPPER)
   add_subdirectory(Swig pyUni10 )
 endif()
-
+if (NOT WIN32)
  add_subdirectory(gtest-1.7.0)
  add_subdirectory(test)
+endif()
 ######################################################################
 ### ADD LIBRARY
 ######################################################################
