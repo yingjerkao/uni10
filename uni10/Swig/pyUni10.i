@@ -2,6 +2,7 @@
 %{
   /* Put header files here or function declarations like below */
   #include <sstream>
+  #include <complex>
   #include <uni10/datatype/Qnum.h>
   #include <uni10/data-structure/Bond.h>
   #include <uni10/data-structure/Block.h>
@@ -20,6 +21,7 @@
   typedef double Real;
   typedef std::complex<double> Complex;
 %}
+%include "numpy.i"
 
 %include "std_vector.i"
 %include "std_map.i"
@@ -27,7 +29,9 @@
 %include "std_complex.i"
 %include "exception.i"
 /*%include "typemaps.i"*/
-/* %include "numpy.i"
+/*%{
+ #define SWIG_FILE_WITH_INIT
+%}
 
 %init %{
     import_array();
@@ -39,6 +43,7 @@
 namespace std{
   %template(int_arr) vector<int>;
   %template(double_arr) vector<double>;
+  %template(complex_arr) vector<Complex>;
   %template(Qnum_arr) vector<uni10::Qnum>;
   %template(Bond_arr) vector<uni10::Bond>;
   %template(Qnum2int) map<uni10::Qnum, int>;
