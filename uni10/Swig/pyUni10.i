@@ -21,7 +21,7 @@
   typedef double Real;
   typedef std::complex<double> Complex;
 %}
-%include "numpy.i"
+//%include "numpy.i"
 
 %include "std_vector.i"
 %include "std_map.i"
@@ -381,6 +381,10 @@ class Matrix: public Block {
                       r=PyInt_AsLong(PyTuple_GetItem(parm,0));
                       c=PyInt_AsLong(PyTuple_GetItem(parm,1));
                       if( (*self).isDiag() && r!=c) {
+                          if (r>=(*self).col()){
+                            PyErr_SetString(PyExc_IndexError, "Index out of bound.");
+                            return NULL;
+                          }
                           return PyComplex_FromDoubles(0.0,0.0);
                       } else {
                           return PyComplex_FromDoubles((*self)(r).real(),
@@ -397,9 +401,13 @@ class Matrix: public Block {
                       r=PyInt_AsLong(PyTuple_GetItem(parm,0));
                       c=PyInt_AsLong(PyTuple_GetItem(parm,1));
                       if( (*self).isDiag() && r!=c) {
-                          return PyFloat_FromDouble(0.0);
+                        if (r>=(*self).col()){
+                          PyErr_SetString(PyExc_IndexError, "Index out of bound.");
+                          return NULL;
+                        }
+                        return PyFloat_FromDouble(0.0);
                       } else {
-                          return PyFloat_FromDouble((*self)[r]);
+                        return PyFloat_FromDouble((*self)[r]);
                       }
                   } else if (PyInt_Check(parm)) {
                       return PyFloat_FromDouble((*self)[PyInt_AsLong(parm)]);
@@ -420,7 +428,13 @@ class Matrix: public Block {
                     c=PyInt_AsLong(PyTuple_GetItem(parm,1));
                     if( (*self).isDiag()) {
                         if (r==c) {
-                            (*self)(r)=val;
+                          if (r>=(*self).col()){
+                            PyErr_SetString(PyExc_IndexError, "Index out of bound.");
+                          }
+                          (*self)(r)=val;
+                        } else {
+                            PyErr_SetString(PyExc_IndexError,
+                              "Can not assign off-diagnonal elements for diagonal matrix.");
                         }
                     } else {
                         (*self)(r*(*self).col()+c)=val;
@@ -435,7 +449,15 @@ class Matrix: public Block {
                     r=PyInt_AsLong(PyTuple_GetItem(parm,0));
                     c=PyInt_AsLong(PyTuple_GetItem(parm,1));
                     if( (*self).isDiag()) {
-                        if (r==c) (*self)[r]=val.real();
+                        if (r==c) {
+                          if (r>=(*self).col()){
+                            PyErr_SetString(PyExc_IndexError, "Index out of bound.");
+                          }
+                          (*self)[r]=val.real();
+                        } else {
+                          PyErr_SetString(PyExc_IndexError,
+                            "Can not assign off-diagnonal elements for diagonal matrix.");
+                        }
                     } else {
                         (*self)[r*(*self).col()+c]=val.real();
                     }
