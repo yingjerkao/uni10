@@ -1,4 +1,5 @@
 %module pyUni10
+
 %{
   /* Put header files here or function declarations like below */
   #include <sstream>
@@ -17,11 +18,9 @@
 #endif
 %}
 
-%inline%{
-  typedef double Real;
-  typedef std::complex<double> Complex;
-%}
-//%include "numpy.i"
+
+
+%include "numpy.i"
 
 %include "std_vector.i"
 %include "std_map.i"
@@ -29,17 +28,14 @@
 %include "std_complex.i"
 %include "exception.i"
 /*%include "typemaps.i"*/
-/*%{
- #define SWIG_FILE_WITH_INIT
+
+%numpy_typemaps(std::complex<float>, NPY_CFLOAT, int)
+%numpy_typemaps(std::complex<double>, NPY_CDOUBLE, int)
+
+%inline%{
+  typedef double Real;
+  typedef std::complex<double> Complex;
 %}
-
-%init %{
-    import_array();
-%}
-
-%numpy_typemaps(Complex, NPY_CDOUBLE, int)
-*/
-
 namespace std{
   %template(int_arr) vector<int>;
   %template(double_arr) vector<double>;
@@ -211,9 +207,6 @@ enum cflag{
 class Matrix;
 class Block{
   public:
-    /******** develop ********/
-    /* getElem();            */
-    /*************************/
     Block();
     Block(size_t _Rnum, size_t _Cnum, bool _diag = false);
     Block(const Block& _b);
@@ -300,8 +293,8 @@ class Matrix: public Block {
     double absMax(bool _ongpu=false);
     Matrix& maxNorm();
     Matrix& absMaxNorm();
-    double* getHostElem();
-    std::complex<double>* getHostElem(cflag _tp);
+//    double* getHostElem();
+//    std::complex<double>* getHostElem(cflag _tp);
     Matrix();
     Matrix(size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
     Matrix(std::string tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
@@ -466,18 +459,44 @@ class Matrix: public Block {
                 }
                 break;
             default:
-
                 std::ostringstream err;
                 err<<"\nCan not assign value to Null matrix.\n";
                 throw std::runtime_error(err.str());
         }
     }
+    /*PyObject* nparray(){
+      switch ((*self).typeID()) {
+        case uni10::RTYPE:
+          if((*self).isDiag()){
+            npy_intp dims[1]={static_cast<npy_intp>( (*self).col())};
+            return PyArray_SimpleNewFromData((*self).elemNum(),dims,NPY_FLOAT,(*self).getElem());
+          } else {
+            npy_intp dims[2]={static_cast<npy_intp>((*self).col()),static_cast<npy_intp>((*self).row())};
+            return PyArray_SimpleNewFromData((*self).elemNum(),dims,NPY_FLOAT,(*self).getElem());
+          }
+
+          break;
+        case uni10::CTYPE:
+          if((*self).isDiag()){
+            npy_intp dims[1]={static_cast<npy_intp>( (*self).col())};
+            return PyArray_SimpleNewFromData((*self).elemNum(),dims,NPY_CDOUBLE,(*self).getElem(uni10::CTYPE));
+          } else {
+            npy_intp dims[2]={static_cast<npy_intp>((*self).col()),static_cast<npy_intp>((*self).row())};
+            return PyArray_SimpleNewFromData((*self).elemNum(),dims,NPY_CDOUBLE,(*self).getElem(uni10::CTYPE));
+          }
+
+          break;
+        default:
+          return Py_None;
+      }
+    }*/
+
   }
 
 };
 Matrix takeExp(double a, const Block& mat);
 Matrix otimes(const Block& Ta, const Block& Tb);
-%clear int *lanczos_iter;
+
 /* End of Matrix */
 
 

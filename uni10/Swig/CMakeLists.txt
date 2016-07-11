@@ -20,7 +20,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 #  @endlicense
-#  @brief SWIG specification file for CMake 
+#  @brief SWIG specification file for CMake
 #  @author Ying-Jer Kao
 #  @date 2014-10-20
 #  @since 0.9.0
@@ -37,13 +37,13 @@ set(_CURRENT_VERSION ${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
 if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
   if(UNIX)
       if (NOT ${PYTHON_EXECUTABLE} MATCHES "^(/usr)?/bin/python")
-        ### Homebrew work around 
+        ### Homebrew work around
         if(APPLE)
-          if (${PYTHON_EXECUTABLE} STREQUAL "/usr/local/bin/python") 
-            set(BREW_PREFIX 
-     /usr/local/Cellar/python/PYTHON_VERSION_STRING/Frmaeworks/Python.frameworks/Versions/Current) 
+          if (${PYTHON_EXECUTABLE} STREQUAL "/usr/local/bin/python")
+            set(BREW_PREFIX
+     /usr/local/Cellar/python/PYTHON_VERSION_STRING/Frmaeworks/Python.frameworks/Versions/Current)
            ## Homebrew Python
-           message(WARNING "Using Homebrew Python.") 
+           message(WARNING "Using Homebrew Python.")
            find_path(PYTHON_INCLUDE_DIR NAMES Python.h
                PATHS ${BREW_PREFIX}/Headers
                DOC "Location of Python Header files"
@@ -71,31 +71,31 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
        endif(APPLE)
        if (NOT PYTHONLIBS_FOUND)
          STRING(REGEX REPLACE "/bin/python.*$" "" PYTHON_ROOT "${PYTHON_EXECUTABLE}")
-         find_path(PYTHON_INCLUDE_DIR NAMES Python.h 
-               PATHS ${PYTHON_ROOT}/include/ 
+         find_path(PYTHON_INCLUDE_DIR NAMES Python.h
+               PATHS ${PYTHON_ROOT}/include/
                DOC "Location of Python Header files"
-               PATH_SUFFIXES 
+               PATH_SUFFIXES
                     python${_CURRENT_VERSION}
                NO_DEFAULT_PATH )
-         if (PYTHON_INCLUDE_DIR) 
+         if (PYTHON_INCLUDE_DIR)
            message(STATUS "Found Python.h in ${PYTHON_INCLUDE_DIR}" )
          else ()
            message(FATAL_ERROR "Python.h not found! Please set PYTHON_INCLUDE_DIR manually.")
          endif()
-         find_library(PYTHON_LIBRARY 
+         find_library(PYTHON_LIBRARY
                     NAMES ${CMAKE_SHARED_LIBRARY_PREFIX}python${_CURRENT_VERSION}${CMAKE_SHARED_LIBRARY_SUFFIX}
-                          ${CMAKE_SHARED_LIBRARY_PREFIX}python${CMAKE_SHARED_LIBRARY_SUFFIX} 
+                          ${CMAKE_SHARED_LIBRARY_PREFIX}python${CMAKE_SHARED_LIBRARY_SUFFIX}
                     PATHS ${PYTHON_ROOT}/lib/
                     DOC "Location of Python Libraries"
-                    PATH_SUFFIXES 
+                    PATH_SUFFIXES
                         python${_CURRENT_VERSION}
                NO_DEFAULT_PATH )
-         if (PYTHON_LIBRARY) 
+         if (PYTHON_LIBRARY)
            message(STATUS "Found PythonLibs: ${PYTHON_LIBRARY}")
          else ()
            message(FATAL_ERROR "PythonLibs not found! Please set PYTHON_LIBRARY manully.")
          endif()
-         if (PYTHON_LIBRARY AND PYTHON_INCLUDE_DIR) 
+         if (PYTHON_LIBRARY AND PYTHON_INCLUDE_DIR)
             set(PYTHONLIBS_FOUND)
          endif()
        endif()
@@ -105,10 +105,10 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
   endif(UNIX)
   if (WIN32)
     STRING(REGEX REPLACE "python.*$" "" PYTHON_ROOT "${PYTHON_EXECUTABLE}")
-    find_path(PYTHON_INCLUDE_DIR NAMES Python.h 
-          PATHS ${PYTHON_ROOT}/include/ 
+    find_path(PYTHON_INCLUDE_DIR NAMES Python.h
+          PATHS ${PYTHON_ROOT}/include/
           DOC "Location of Python Header files"
-          PATH_SUFFIXES 
+          PATH_SUFFIXES
                python${_CURRENT_VERSION}
           NO_DEFAULT_PATH )
     if (PYTHON_INCLUDE_DIR)
@@ -116,13 +116,13 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
     else ()
       message(FATAL_ERROR "Python.h not found! Please set PYTHON_INCLUDE_DIR manually.")
     endif()
-    find_library(PYTHON_LIBRARY 
+    find_library(PYTHON_LIBRARY
                NAMES python${_CURRENT_VERSION}.lib
                      python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.lib
-                     python.lib        
+                     python.lib
                PATHS ${PYTHON_ROOT}/libs/
                DOC "Location of Python Libraries"
-               PATH_SUFFIXES 
+               PATH_SUFFIXES
                    python${_CURRENT_VERSION}
                NO_DEFAULT_PATH )
     if (PYTHON_LIBRARY)
@@ -137,12 +137,12 @@ if (NOT DEFINED PYTHON_INCLUDE_DIR OR NOT DEFINED PYTHON_LIBRARY)
     FIND_PACKAGE(PythonLibs)
   endif(WIN32)
 endif()
-if ( PYTHON_VERSION_STRING AND PYTHONLIBS_VERSION_STRING ) 
-   if ( NOT PYTHON_VERSION_STRING VERSION_EQUAL 
-PYTHONLIBS_VERSION_STRING ) 
-     message ( FATAL_ERROR 
-             "Version mismatch between python interpreter and libraries" 
-) 
+if ( PYTHON_VERSION_STRING AND PYTHONLIBS_VERSION_STRING )
+   if ( NOT PYTHON_VERSION_STRING VERSION_EQUAL
+PYTHONLIBS_VERSION_STRING )
+     message ( FATAL_ERROR
+             "Version mismatch between python interpreter and libraries"
+)
    endif ()
 endif ( )
 
@@ -186,16 +186,20 @@ if ( APPLE)
          COMPONENT pyUni10)
 endif()
 
+exec_program("${PYTHON_EXECUTABLE}"
+  ARGS "-c 'import numpy; print numpy.get_include()'"
+  OUTPUT_VARIABLE NUMPY_INCLUDE
+  RETURN_VALUE NUMPY_RETURN
+  )
+include_directories(${NUMPY_INCLUDE})
+message(${NUMPY_INCLUDE})
+
 install(TARGETS _pyUni10 DESTINATION pyUni10 COMPONENT pyUni10 )
 
-install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py 
+install(FILES ${CMAKE_SWIG_OUTDIR}/pyUni10.py
         DESTINATION pyUni10 COMPONENT pyUni10)
 
-install(FILES ${CMAKE_SWIG_OUTDIR}/__init__.py 
+install(FILES ${CMAKE_SWIG_OUTDIR}/__init__.py
         DESTINATION pyUni10 COMPONENT pyUni10)
-install(FILES ${CMAKE_SWIG_OUTDIR}/setup.py 
+install(FILES ${CMAKE_SWIG_OUTDIR}/setup.py
         DESTINATION pyUni10 COMPONENT pyUni10)
-
-
-
-
