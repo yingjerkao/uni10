@@ -1,8 +1,8 @@
 /****************************************************************************
-*  @file CMakeLists.txt
+*  @file MatrixComplex.cpp
 *  @license
 *    Universal Tensor Network Library
-*    Copyright (c) 2013-2014
+*    Copyright (c) 2013-2016
 *    National Taiwan University
 *    National Tsing-Hua University
 
@@ -23,7 +23,7 @@
 *    along with Uni10.  If not, see <http://www.gnu.org/licenses/>.
 *  @endlicense
 *  @brief Implementation file for Matrix class
-*  @author Ying-Jer Kao
+*  @author Ying-Jer Kao, Yun-Hsuan Chou
 *  @date 2014-05-06
 *  @since 0.1.0
 *

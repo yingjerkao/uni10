@@ -169,6 +169,10 @@ public:
     ///
     /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& cTranspose();
+    
+    /// @brief Transpose a complex Matrix and take complex co
+    ///
+    /// Transposes the elements of the Matrix. Exchange the row and column numbers.
     Matrix& conj();
 
     /// @brief Resize Matrix

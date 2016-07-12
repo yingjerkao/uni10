@@ -1,5 +1,5 @@
-/****************************************************************************
- *  @file CMakeLists.txt
+    /****************************************************************************
+ *  @file UniTensor.h
  *  @license
  *   Universal Tensor Network Library
  *   Copyright (c) 2013-2014
@@ -187,7 +187,7 @@ namespace uni10 {
         /// Performs High order SVD of UniTensor.
         /// @param modeNum Number of output modes
         /// @param fixedNum Number of bonds to remain unchanged
-        /// @param Ls
+        /// @param Ls Singular values on each direction
         std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum = 0)const;
         /// @overload
         std::vector<UniTensor> hosvd(size_t modeNum, size_t fixedNum, std::vector<std::map<Qnum, Matrix> >& Ls)const;
