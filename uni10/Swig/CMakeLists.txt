@@ -185,9 +185,8 @@ if ( APPLE)
   install(CODE "execute_process( COMMAND install_name_tool -change ${LIBPYTHON} @loader_path/../../../${LIBPYTHON} ${CMAKE_SWIG_OUTDIR}/_pyUni10.so)"
          COMPONENT pyUni10)
 endif()
-
 exec_program("${PYTHON_EXECUTABLE}"
-  ARGS "-c 'import numpy; print numpy.get_include()'"
+  ARGS "-c 'from __future__ import print_function; import numpy; print(numpy.get_include())'"
   OUTPUT_VARIABLE NUMPY_INCLUDE
   RETURN_VALUE NUMPY_RETURN
   )
