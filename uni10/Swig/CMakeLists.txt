@@ -1,7 +1,7 @@
 ###
 #  @file CMakeLists.txt
 #  @license
-#    Copyright (c) 2013-2014
+#    Copyright (c) 2013-2016
 #    Natioanl Taiwan University
 #    Natioanl Tsing-Hua University
 #
@@ -150,10 +150,11 @@ set(CMAKE_SWIG_OUTDIR ${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_DIR})
 
-SET(CMAKE_SWIG_FLAGS "")
+SET(CMAKE_SWIG_FLAGS "-w509")
 
 SET_SOURCE_FILES_PROPERTIES(pyUni10.i PROPERTIES CPLUSPLUS ON)
 SET_SOURCE_FILES_PROPERTIES(pyUni10.i PROPERTIES SWIG_FLAGS "-includeall")
+set_source_files_properties( ${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-w")
 SWIG_ADD_MODULE(pyUni10 python pyUni10.i )
 SWIG_LINK_LIBRARIES(pyUni10 ${PYTHON_LIBRARY} uni10-static)
 #SET_SOURCE_FILES_PROPERTIES(${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-Wl,rpath,@loader_path/../../../${PYTHON_LIBRARY}")
@@ -190,8 +191,12 @@ exec_program("${PYTHON_EXECUTABLE}"
   OUTPUT_VARIABLE NUMPY_INCLUDE
   RETURN_VALUE NUMPY_RETURN
   )
-include_directories(${NUMPY_INCLUDE})
-message(${NUMPY_INCLUDE})
+if(${NUMPY_RETURN} EQUAL 0) 
+  include_directories(${NUMPY_INCLUDE})
+  #message(${NUMPY_INCLUDE})
+else()
+  message(FATAL_ERROR "Can not find numpy!")
+endif()
 
 install(TARGETS _pyUni10 DESTINATION pyUni10 COMPONENT pyUni10 )
 
