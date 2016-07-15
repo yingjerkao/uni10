@@ -13,9 +13,9 @@
 %}
 
 %begin %{
-#ifdef _MSC_VER
-#define SWIG_PYTHON_INTERPRETER_NO_DEBUG
-#endif
+  #ifdef _MSC_VER
+    #define SWIG_PYTHON_INTERPRETER_NO_DEBUG
+  #endif
 %}
 
 
@@ -65,6 +65,12 @@ namespace std{
 %inline{
   uni10::Qnum QnumF(uni10::parityFType _prtF, int _U1=0, uni10::parityType _prt=uni10::PRT_EVEN){
     return uni10::Qnum(_prtF, _U1, _prt);
+  }
+  uni10::Block CBlock(size_t _Rnum, size_t _Cnum, bool _diag = false){
+      return uni10::Block(uni10::CTYPE, _Rnum,  _Cnum, _diag );
+  }
+  uni10::Matrix CMatrix( size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false){
+      return uni10::Matrix(uni10::CTYPE,_Rnum, _Cnum, _diag, _ongpu);
   }
 };
 
@@ -137,6 +143,7 @@ class Qnum {
               self->assign(_prtF, _U1, _prt);
               return *self;
           }
+
       }
       /* Make Qnum Class immutable */
       static const int U1_UPB = 1000;//Upper bound of U1
@@ -235,7 +242,7 @@ class Block{
     bool RelemIsNULL()const;
     Real* getElem()const;
     /* deafult is real, so rflag is ignored for conflict with cflag */
-    Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
+    //Block(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag = false);
     void save(cflag _tp, const std::string& fname)const;
     std::vector<Matrix> qr(cflag _tp)const;
     std::vector<Matrix> rq(cflag _tp)const;
@@ -287,7 +294,7 @@ class Block{
 /* Matrix */
 
 class Matrix: public Block {
-    %rename(CMatrix) Matrix(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+
 
   public:
     double absMax(bool _ongpu=false);
@@ -412,32 +419,32 @@ class Matrix: public Block {
           }
       }
 
-        void __setitem__(PyObject *parm, Complex val){
-            switch ((*self).typeID()) {
-            case uni10::CTYPE:
-                if (PyTuple_Check(parm)){
-                    long r,c;
-                    r=PyInt_AsLong(PyTuple_GetItem(parm,0));
-                    c=PyInt_AsLong(PyTuple_GetItem(parm,1));
-                    if( (*self).isDiag()) {
-                        if (r==c) {
-                          if (r>=(*self).col()){
-                            PyErr_SetString(PyExc_IndexError, "Index out of bound.");
-                          }
-                          (*self)(r)=val;
-                        } else {
-                            PyErr_SetString(PyExc_IndexError,
-                              "Can not assign off-diagnonal elements for diagonal matrix.");
+      void __setitem__(PyObject *parm, Complex val){
+        switch ((*self).typeID()) {
+          case uni10::CTYPE:
+              if (PyTuple_Check(parm)){
+                  long r,c;
+                  r=PyInt_AsLong(PyTuple_GetItem(parm,0));
+                  c=PyInt_AsLong(PyTuple_GetItem(parm,1));
+                  if( (*self).isDiag()) {
+                      if (r==c) {
+                        if (r>=(*self).col()){
+                          PyErr_SetString(PyExc_IndexError, "Index out of bound.");
                         }
-                    } else {
-                        (*self)(r*(*self).col()+c)=val;
-                    }
-                } else if (PyInt_Check(parm)) {
-                    (*self)(PyInt_AsLong(parm))=val;
-                }
-                break;
-            case uni10::RTYPE:
-                if (PyTuple_Check(parm)){
+                        (*self)(r)=val;
+                      } else {
+                          PyErr_SetString(PyExc_IndexError,
+                            "Can not assign off-diagnonal elements for diagonal matrix.");
+                      }
+                  } else {
+                      (*self)(r*(*self).col()+c)=val;
+                  }
+              } else if (PyInt_Check(parm)) {
+                  (*self)(PyInt_AsLong(parm))=val;
+              }
+              break;
+          case uni10::RTYPE:
+              if (PyTuple_Check(parm)){
                     long r,c;
                     r=PyInt_AsLong(PyTuple_GetItem(parm,0));
                     c=PyInt_AsLong(PyTuple_GetItem(parm,1));
@@ -454,16 +461,17 @@ class Matrix: public Block {
                     } else {
                         (*self)[r*(*self).col()+c]=val.real();
                     }
-                } else if (PyInt_Check(parm)) {
+              } else if (PyInt_Check(parm)) {
                     (*self)[PyInt_AsLong(parm)]=val.real();
-                }
-                break;
-            default:
+              }
+              break;
+          default:
                 std::ostringstream err;
                 err<<"\nCan not assign value to Null matrix.\n";
                 throw std::runtime_error(err.str());
         }
-    }
+      }
+
     /*PyObject* nparray(){
       switch ((*self).typeID()) {
         case uni10::RTYPE:
@@ -598,8 +606,8 @@ class UniTensor{
         UniTensor& permute(int inBondNum);
         UniTensor& combineBond(const std::vector<int>& combined_labels);
         static std::string profile(bool );
-        std::vector<_Swap> exSwap(const UniTensor& Tb)const;
-        void addGate(const std::vector<_Swap>& swaps);
+        //std::vector<_Swap> exSwap(const UniTensor& Tb)const;
+        //void addGate(const std::vector<_Swap>& swaps);
         std::complex<double> trace()const;
         UniTensor& partialTrace(int la, int lb);
         Matrix getRawElem()const;
@@ -620,8 +628,8 @@ class UniTensor{
         UniTensor(cflag tp, const std::vector<Bond>& _bonds, const std::string& _name = "");
         UniTensor(cflag tp, const std::vector<Bond>& _bonds, std::vector<int>& labels, const std::string& _name = "");
         UniTensor(cflag tp, const std::vector<Bond>& _bonds, int* labels, const std::string& _name = "");
-        void setRawElem(const std::vector< std::complex<double> >& rawElem);
-        void setRawElem(const std::complex<double>* rawElem);
+        //void setRawElem(const std::vector< std::complex<double> >& rawElem);
+        //void setRawElem(const std::complex<double>* rawElem);
         void setRawElem(cflag tp, const Block& blk);
         void putBlock(cflag tp, const Block& mat);
         void putBlock(cflag tp, const Qnum& qnum, const Block& mat);
@@ -702,7 +710,14 @@ class UniTensor{
       const std::string printRawElem(){
         return (*self).printRawElem(false);
       }
+      void setRawElemC(const std::complex<double>* elem, bool src_ongpu = false){
+        (*self).setRawElem(elem);
       }
+      void setRawElemC(const std::vector< std::complex<double> >& elem, bool src_ongpu = false){
+        (*self).setRawElem(elem);
+      }
+
+    }
     /*
        std::vector<UniTensor> hosvd(rflag tp, int* group_labels, int* groups, size_t groupsSize, std::vector<Matrix>& Ls)const ;
        std::vector<UniTensor> hosvd(rflag tp, std::vector<int>& group_labels, std::vector<int>& groups, std::vector<Matrix>& Ls)const ;
