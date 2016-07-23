@@ -72,6 +72,9 @@ namespace std{
   uni10::Matrix CMatrix( size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false){
       return uni10::Matrix(uni10::CTYPE,_Rnum, _Cnum, _diag, _ongpu);
   }
+  uni10::Matrix CMatrix(const std::string& fname){
+      return uni10::Matrix(uni10::CTYPE, fname);
+  }
 };
 
 namespace uni10{
@@ -329,8 +332,8 @@ class Matrix: public Block {
     void setElem(const std::vector<double>& elem, bool src_ongpu = false);
     Matrix(size_t _Rnum, size_t _Cnum, const std::complex<double>* _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
     Matrix(size_t _Rnum, size_t _Cnum, const std::vector< std::complex<double> >& _elem, bool _diag=false, bool _ongpu=false, bool src_ongpu=false);
-    Matrix(cflag _tp, const std::string& fname);
-    Matrix(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
+//    Matrix(cflag _tp, const std::string& fname);
+//    Matrix(cflag _tp, size_t _Rnum, size_t _Cnum, bool _diag=false, bool _ongpu=false);
     void setElem(const std::complex<double>* elem, bool src_ongpu = false);
     void setElem(const std::vector< std::complex<double> >& elem, bool src_ongpu = false);
     void identity(cflag _tp);
@@ -595,7 +598,7 @@ class UniTensor{
         void identity(const Qnum& qnum);
         void randomize();
         void orthoRand();
-        void orthoRand(const Qnum& qnum);
+        void orthoRand(const Qnum& qnum); 
         void save(const std::string& fname) const;
         #ifdef HDF5
         void h5save(const std::string& fname);
