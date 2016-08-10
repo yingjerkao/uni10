@@ -187,7 +187,7 @@ if ( APPLE)
          COMPONENT pyUni10)
 endif()
 exec_program("${PYTHON_EXECUTABLE}"
-  ARGS "-c 'from __future__ import print_function; import numpy; print(numpy.get_include())'"
+  ARGS "-c \"from __future__ import print_function; import numpy; print(numpy.get_include())\""
   OUTPUT_VARIABLE NUMPY_INCLUDE
   RETURN_VALUE NUMPY_RETURN
   )
