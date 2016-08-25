@@ -389,8 +389,8 @@ namespace uni10{
     Matrix RDotC(const Block& Ma, const Block& Mb);
     Matrix CDotC(const Block& Ma, const Block& Mb);
     
-    size_t lanczosEigh(Matrix& ori_mat, Real& E0, Matrix& psi, size_t max_iter=1000, Real err_tol = 5E-15);
-    size_t lanczosEigh(rflag _tp, Matrix& ori_mat, Real& E0, Matrix& psi, size_t max_iter=1000, Real err_tol = 5E-15);
-    size_t lanczosEigh(cflag _tp, Matrix& ori_mat, Real& E0, Matrix& psi, size_t max_iter=1000, Real err_tol = 5E-15);
+//    size_t lanczosEigh(Matrix& ori_mat, Real& E0, Matrix& psi, size_t max_iter=1000, Real err_tol = 5E-15);
+//    size_t lanczosEigh(rflag _tp, Matrix& ori_mat, Real& E0, Matrix& psi, size_t max_iter=1000, Real err_tol = 5E-15);
+//    size_t lanczosEigh(cflag _tp, Matrix& ori_mat, Real& E0, Matrix& psi, size_t max_iter=1000, Real err_tol = 5E-15);
 };
 #endif /* BLOCK_H */
