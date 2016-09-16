@@ -1003,7 +1003,7 @@ UniTensor& UniTensor::partialTrace(rflag tp, int la, int lb){
       Q_acc[b - 1] = Q_acc[b] * bonds[b].Qnums.size();
     int tQdim = bonds[ia].Qnums.size();
     /*Sanity Check*/
-    if(tQdim == bonds[ib].Qnums.size()){
+    if(  !(tQdim == bonds[ib].Qnums.size())  ){
       std::ostringstream err;
       err<<"The bonds of the given two labels does not match for trace.";
       throw std::runtime_error(exception_msg(err.str()));
