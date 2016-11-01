@@ -199,48 +199,79 @@ void UniTensor::setElem(const std::vector<Real>& _elem, bool _ongpu){
   }
 }
 
-void UniTensor::putBlock(rflag tp, const Block& mat){
+void UniTensor::putBlock(rflag tp, const Block& mat, bool force){
+
   try{
+
+    //checkUni10TypeError(tp);
     throwTypeError(tp);
+
     Qnum q0(0);
-    putBlock(RTYPE, q0, mat);
+
+    putBlock(RTYPE, q0, mat, force);
+
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::putBlock(uni10::rflag, uni10::Block&):");
   }
+
 }
 
-void UniTensor::putBlock(rflag tp, const Qnum& qnum, const Block& mat){
+void UniTensor::putBlock(rflag tp, const Qnum& qnum, const Block& mat, bool force){
+
   try{
+
+    //checkUni10TypeError(tp);
     throwTypeError(tp);
+
     std::map<Qnum, Block>::iterator it;
+
+    if( !force && mat.typeID() == 2){
+      std::ostringstream err;
+      err<<"\n1. Can not put a Complex(CTYPE) Matrix into a Real(RTYPE) UniTensor\n\n2. Or you can turn on the force flag, UniTensor::putBlock(qnum, mat, true) or UniTensor::putBlock(RTYPE, qnum, mat, true). \n";
+      throw std::runtime_error(exception_msg(err.str()));
+    }
+
     if(!((it = blocks.find(qnum)) != blocks.end())){
       std::ostringstream err;
       err<<"There is no block with the given quantum number "<<qnum;
       throw std::runtime_error(exception_msg(err.str()));
     }
-    if(!(mat.row() == it->second.Rnum && mat.col() == it->second.Cnum)){
-      std::ostringstream err;
-      err<<"The dimension of input matrix does not match for the dimension of the block with quantum number "<<qnum<<std::endl;
-      err<<"  Hint: Use Matrix::resize(int, int)";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(typeID() == 0 || typeID() == 2)
-      this->assign(RTYPE, this->bond());
 
-    if(mat.m_elem != it->second.m_elem){
-      if(mat.isDiag()){
-        elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu);
-        setDiag(it->second.m_elem, mat.getElem(RTYPE), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
-      }
-      else
-        elemCopy(it->second.m_elem, mat.getElem(RTYPE), it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu, mat.isOngpu());
+    if(force && mat.typeID() == 2){
+
+      RtoC(*this);
+
+      this->putBlock(CTYPE, qnum, mat);
+
     }
-    status |= HAVEELEM;
+    else{
+
+      if(!(mat.row() == it->second.Rnum && mat.col() == it->second.Cnum)){
+        std::ostringstream err;
+        err<<"The dimension of input matrix does not match for the dimension of the block with quantum number "<<qnum<<std::endl;
+        err<<"  Hint: Use Matrix::resize(int, int)";
+        throw std::runtime_error(exception_msg(err.str()));
+      }
+
+      if(mat.m_elem != it->second.m_elem){
+        if(mat.isDiag()){
+          elemBzero(it->second.m_elem, it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu);
+          setDiag(it->second.m_elem, mat.getElem(RTYPE), it->second.Rnum, it->second.Cnum, mat.elemNum(), ongpu, mat.isOngpu());
+        }
+        else
+          elemCopy(it->second.m_elem, mat.getElem(RTYPE), it->second.Rnum * it->second.Cnum * sizeof(Real), ongpu, mat.isOngpu());
+      }
+
+      status |= HAVEELEM;
+
+    }
+
   }
   catch(const std::exception& e){
     propogate_exception(e, "In function UniTensor::putBlock(uni10::rflag, uni10::Qnum&, uni10::Block&):");
   }
+
 }
 
 Matrix UniTensor::getRawElem(rflag tp)const{

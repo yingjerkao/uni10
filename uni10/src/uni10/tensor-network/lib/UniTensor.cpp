@@ -1221,42 +1221,36 @@ void UniTensor::setRawElem(const Block& blk){
   }
 }
 
-void UniTensor::putBlock(const Block& mat){
+void UniTensor::putBlock(const Block& mat, bool force){
+
   try{
-    if(mat.typeID() == 1)
-      putBlock(RTYPE, mat);
-    else if(mat.typeID() == 2)
-      putBlock(CTYPE, mat);
+
+    if(typeID() == 1)
+      putBlock(RTYPE, mat, force);
+
+    else if(typeID() == 2)
+      putBlock(CTYPE, mat, force);
+
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::putBlock(uni10::Block&):");
+    propogate_exception(e, "In function UniTensor::putBlock(uni10::Block&, bool):");
   }
 }
 
-void UniTensor::putBlock(const Qnum& qnum, const Block& mat){
+void UniTensor::putBlock(const Qnum& qnum, const Block& mat, bool force){
   try{
-    std::map<Qnum, Block>::iterator it;
-    if(!((it = blocks.find(qnum)) != blocks.end())){
-      std::ostringstream err;
-      err<<"There is no block with the given quantum number "<<qnum;
-      throw std::runtime_error(exception_msg(err.str()));
-    }
-    if(!(mat.row() == it->second.Rnum && mat.col() == it->second.Cnum)){
-      std::ostringstream err;
-      err<<"The dimension of input matrix does not match for the dimension of the block with quantum number "<<qnum<<std::endl;
-      err<<"  Hint: Use Matrix::resize(int, int)";
-      throw std::runtime_error(exception_msg(err.str()));
-    }
 
-    if(mat.typeID() == 1) 
-      this->putBlock(RTYPE, qnum, mat);
-    else if(mat.typeID() == 2) 
-      this->putBlock(CTYPE, qnum, mat);
+    if(typeID() == 1)
+      this->putBlock(RTYPE, qnum, mat, force);
+    
+    else if(typeID() == 2)
+      this->putBlock(CTYPE, qnum, mat, force);
 
   }
   catch(const std::exception& e){
-    propogate_exception(e, "In function UniTensor::putBlock(uni10::Qnum&, uni10::Block&):");
+    propogate_exception(e, "In function UniTensor::putBlock(uni10::Qnum&, uni10::Block&, bool):");
   }
+
 }
 
 std::vector<_Swap> UniTensor::exSwap(const UniTensor& Tb) const{
