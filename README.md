@@ -115,7 +115,7 @@ Build Options
 API Documentation
 =================
 
-API documentation can be found [here](doc/index.html)
+API documentation can be found [here](http://yingjerkao.github.io/uni10/doc/index.html)
 
 
 Developers and Maintainers
