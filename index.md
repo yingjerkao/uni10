@@ -130,7 +130,7 @@ Developers and Maintainers
 
   * Yun-Hsuan Chou (National Taiwan University)
   
-  * Chen-Yen Lai (University of Chicago, Merced)
+  * Chen-Yen Lai (University of California, Merced)
 
 
 Alumni
