@@ -946,8 +946,10 @@ UniTensor& UniTensor::combineBond(cflag tp, const std::vector<int>&cmbLabels){
     this->permute(CTYPE, rsp_labels, RBnum);
     UniTensor Tout(CTYPE, newBonds, reduced_labels);
 
-    if(status & HAVEELEM)
-      Tout.setElem(c_elem, ongpu);
+    if(status & HAVEELEM){
+      Matrix rawMElem = this->getRawElem();
+      this->setRawElem(rawMElem.getElem());
+    }
 
     *this = Tout;
   }
