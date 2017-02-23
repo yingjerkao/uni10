@@ -948,7 +948,7 @@ UniTensor& UniTensor::combineBond(cflag tp, const std::vector<int>&cmbLabels){
 
     if(status & HAVEELEM){
       Matrix rawMElem = this->getRawElem();
-      this->setRawElem(rawMElem.getElem());
+      Tout.setRawElem(rawMElem.getElem());
     }
 
     *this = Tout;
