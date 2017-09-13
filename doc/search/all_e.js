@@ -1,12 +1,8 @@
 var searchData=
 [
-  ['release_20notes_20and_20change_20log',['Release Notes and Change Log',['../md___users_yjkao_uni10_uni10__change_log.html',1,'']]],
-  ['randomize',['randomize',['../classuni10_1_1_matrix.html#a2a7ca203103e3e37d18773bffc91d7e8',1,'uni10::Matrix::randomize()'],['../classuni10_1_1_matrix.html#a8b8bcddfa5ca772dab0e38a0b5c91f9f',1,'uni10::Matrix::randomize(rflag _tp)'],['../classuni10_1_1_matrix.html#a5d5795a16e2529dad6b25b4fa8acab3c',1,'uni10::Matrix::randomize(cflag _tp)'],['../classuni10_1_1_uni_tensor.html#a35891671fa2724e3777c455d1c16740a',1,'uni10::UniTensor::randomize()']]],
-  ['real',['Real',['../namespaceuni10.html#aa326b869a2fb6a5e898ce0718bb26b7b',1,'uni10']]],
-  ['resize',['resize',['../classuni10_1_1_matrix.html#af5519c97bffc113fc644deac3eb1fd15',1,'uni10::Matrix::resize(size_t row, size_t col)'],['../classuni10_1_1_matrix.html#a184a5f1444735eeadab25be853a9ed94',1,'uni10::Matrix::resize(rflag _tp, size_t row, size_t col)'],['../classuni10_1_1_matrix.html#a4cfa367a4cccf749263fe119221c7f8b',1,'uni10::Matrix::resize(cflag _tp, size_t row, size_t col)']]],
-  ['rflag',['rflag',['../namespaceuni10.html#a5da95baf22e0f2c9f4af8c1a556bfb92',1,'uni10']]],
-  ['rnull',['RNULL',['../namespaceuni10.html#a5da95baf22e0f2c9f4af8c1a556bfb92ad8a08aab8537d8b3c2758466c5aff9fa',1,'uni10']]],
-  ['row',['row',['../classuni10_1_1_block.html#a962830511244bd081fee1bfc7af28527',1,'uni10::Block']]],
-  ['rq',['rq',['../classuni10_1_1_block.html#a15638fcfdd8270cdcb87f98e76daad3d',1,'uni10::Block']]],
-  ['rtype',['RTYPE',['../namespaceuni10.html#a5da95baf22e0f2c9f4af8c1a556bfb92a6f3395344a4b5973c0df58fc8415eb8a',1,'uni10']]]
+  ['release_20notes_20and_20change_20log',['Release Notes and Change Log',['../md___users_yjkao_tensorlib_uni10__change_log.html',1,'']]],
+  ['randomize',['Randomize',['../classuni10_1_1_matrix.html#afa39e7c1c8e2eded759ef77b6fec2b89',1,'uni10::Matrix::Randomize()'],['../classuni10_1_1_uni_tensor.html#a4438160d6030aa71dabe9196389e8302',1,'uni10::UniTensor::Randomize(char UorN=&apos;U&apos;, uni10_double64 dn_mu=-1, uni10_double64 up_var=1, uni10_int64 seed=uni10_clock)'],['../classuni10_1_1_uni_tensor.html#ad9b35cf81b22e4774a6436d4aaa43ac0',1,'uni10::UniTensor::Randomize(const Qnum &amp;qnum, char UorN=&apos;U&apos;, uni10_double64 dn_mu=-1, uni10_double64 up_var=1, uni10_int64 seed=uni10_clock)']]],
+  ['resize',['Resize',['../group__linalg__inplace.html#ga6a2ae1c2b9f2248b67a27f12bbbb6555',1,'uni10::Resize(Matrix&lt; _uni10_type &gt; &amp;M, uni10_uint64 row, uni10_uint64 col, UNI10_INPLACE on)'],['../group__linalg__inplace.html#ga0f15a5b755dfbde4e253802215f6febd',1,'uni10::Resize(Matrix&lt; _uni10_type &gt; &amp;Mout, const Matrix&lt; _uni10_type &gt; &amp;Min, uni10_uint64 row, uni10_uint64 col, UNI10_INPLACE on)']]],
+  ['row',['row',['../classuni10_1_1_block.html#a8ce994c147097c4b01293dd57cd2e0b6',1,'uni10::Block']]],
+  ['rq',['Rq',['../group__linalg.html#ga85d818394729618415dc6f2a252ebbff',1,'uni10::Rq(const Block&lt; UniType &gt; &amp;kblk)'],['../group__linalg__inplace.html#ga0883896d2d7d25b5e9ea8680b371b59a',1,'uni10::Rq(const Block&lt; UniType &gt; &amp;kblk, Matrix&lt; UniType &gt; &amp;r, Matrix&lt; UniType &gt; &amp;q, UNI10_INPLACE on)']]]
 ];

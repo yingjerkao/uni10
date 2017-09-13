@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['trace',['trace',['../classuni10_1_1_block.html#a94048c274ffa6e8f1dab069cc6bed231',1,'uni10::Block::trace()'],['../classuni10_1_1_uni_tensor.html#aa5cd64ebbebd99c3d02a592551edc4c0',1,'uni10::UniTensor::trace()']]],
-  ['transpose',['transpose',['../classuni10_1_1_matrix.html#a7fd3065f65b6709aa603049fd534d90d',1,'uni10::Matrix::transpose()'],['../classuni10_1_1_matrix.html#ae286d635a48fcf609173109ba9abd596',1,'uni10::Matrix::transpose(rflag _tp)'],['../classuni10_1_1_matrix.html#a7b97a25083c07b1f2505aaaa570529c4',1,'uni10::Matrix::transpose(cflag _tp)'],['../classuni10_1_1_uni_tensor.html#abbbcd75fe827ca53574a9a73efef14d3',1,'uni10::UniTensor::transpose()']]],
-  ['type',['type',['../classuni10_1_1_bond.html#a6257362187b832c624a374efc5c05568',1,'uni10::Bond']]],
-  ['typeid',['typeID',['../classuni10_1_1_block.html#ab601932ef2248c45d0af5c06043b1f8a',1,'uni10::Block']]]
+  ['trace',['Trace',['../group__linalg.html#ga365b47386638f5bceb93102009283044',1,'uni10']]],
+  ['transpose',['Transpose',['../group__linalg.html#gac79d4973a1d49ed4e1d541ee58caa775',1,'uni10::Transpose(const Block&lt; UniType &gt; &amp;kblk)'],['../group__linalg__inplace.html#gad8f1e97fdf9e80cbd646c4a5610db407',1,'uni10::Transpose(Matrix&lt; UniType &gt; &amp;matout, const Block&lt; UniType &gt; &amp;kblk, UNI10_INPLACE on)'],['../group__linalg__inplace.html#ga171dd15a34c979314879f3a3c175d4cd',1,'uni10::Transpose(Matrix&lt; UniType &gt; &amp;matout, UNI10_INPLACE on)']]],
+  ['type',['type',['../classuni10_1_1_bond.html#a7fa117b85a6a0ba13d690c13bfcb8057',1,'uni10::Bond']]]
 ];
