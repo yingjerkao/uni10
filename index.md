@@ -50,18 +50,17 @@ Installation
 Download
 --------
 
-The latest Uni10 source code can be downloaded from 
+The latest Uni10 source code can be downloaded from
 <a href="https://github.com/yingjerkao/uni10" rel="nofollow" target="_blank">github</a>.
 
 
 Requirements
 ------------
   * <a href="http://cmake.org/" target="_blank">cmake</a> version > 2.8.12
-  * C++ compiler 
+  * C++ compiler
   * BLAS and LAPACK libraries and header files
-  * HDF5 library and header 
+  * Cuda Toolkit for GPU support
   * <a href="http://www.stack.nl/~dimitri/doxygen/" target="_blank">Doxygen</a> (for documentation)
-  * <a href="http://www.swig.org/" target="_blank">Swig </a> (for Python wrapper)
 
 Build
 -----
@@ -107,10 +106,8 @@ Build Options
 ----------------------------- | -------------------------------------------
  BUILD_WITH_MKL               | Use Intel MKL for lapack and blas (off)
  BUILD_WITH_INTEL_COMPILERS   | Use Intel C++ compiler  (off)
- BUILD_PYTHON_WRAPPER         | Build pyUni10 wrapper (off)
  BUILD_EXAMPLES               | Build C++ examples (on)
  BUILD_DOC                    | Build Documentation (off)
- BUILD_ARPACK_SUPPORT         | Build ARPACK wrapper (off)
  CMAKE_INSTALL_PREFIX         | Installation location (/usr/local/uni10)
 
 
@@ -120,33 +117,31 @@ API Documentation
 API documentation can be found [here](doc/index.html)
 
 
-Developers and Maintainers
-==========================
+Contributors and Maintainers
+============================
+* Ying-Jer Kao (National Taiwan University)
+* Pochung Chen (National Tsing-Hua University)
+* Yun-Hsuan Chou (National Taiwan University)
+* Kelly Wu (National Tsing-Hua University)
+* Yi-Hau Jhu (National Tsing-Hua University)
+* Chen-Yen Lai (Los Alamos Laboratory)
+* Kai-Hsin Wu (National Taiwan University)
+* Chih-Yuan Lee (National Taiwan University)
+* Chung-Yo Luo (National Tsing-Hua University)
 
-
-  * Ying-Jer Kao (National Taiwan University)
-
-  * Pochung Chen (National Tsing-Hua University)
-
-  * Yun-Hsuan Chou (National Taiwan University)
-  
-  * Chen-Yen Lai (University of California, Merced)
 
 
 Alumni
 ======
-
-  * Yun-Da Hsieh (Code Base, GPU)
-
-  * Tama Ma (CMake)
-
-  * Sukhbinder Singh (Matlab Wrapper)
+* Yun-Da Hsieh
+* Tama Ma
+* Sukhbinder Singh
 
 
 Help and Bug Reports
 ====================
 
-Please report bugs on [Github](http://github.com/yingjerkao/uni10) by creating issues. 
+Please report bugs on [Github](http://github.com/yingjerkao/uni10) by creating issues.
 
 
 Known issues
@@ -160,4 +155,3 @@ To Do
 * GUI for generating network files
 
 * Full GPU support
-
