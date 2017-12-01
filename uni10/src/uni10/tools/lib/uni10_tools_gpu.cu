@@ -101,7 +101,7 @@ void elemRand(double* elem, size_t N, bool ongpu){
 	else{
 		std::random_device rd;
 		std::default_random_engine dre(rd());		
-		std::uniform_real_distribution<double> unif(0, 1);
+		std::uniform_real_distribution<double> unif(-1, 1);
 		for(size_t i = 0; i < N; i++)
 			//elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
 			elem[i] = unif(dre);

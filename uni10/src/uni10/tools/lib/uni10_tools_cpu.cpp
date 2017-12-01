@@ -47,7 +47,7 @@ namespace uni10{
   void elemRand(double* elem, size_t N, bool ongpu){
 	std::random_device rd;
 	std::default_random_engine dre(rd());
-	std::uniform_real_distribution<double> unif(0, 1);
+	std::uniform_real_distribution<double> unif(-1, 1);
 
     for(size_t i = 0; i < N; i++)
       //elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
@@ -148,7 +148,7 @@ void setElemAt(size_t idx, std::complex<double> val, std::complex<double> *elem,
 void elemRand(std::complex<double>* elem, size_t N, bool ongpu){
 	std::random_device rd;
 	std::default_random_engine dre(rd());
-	std::uniform_real_distribution<double> unif(0, 1);
+	std::uniform_real_distribution<double> unif(-1, 1);
 	
 	for(size_t i = 0; i < N; i++)
 	   // elem[i] = std::complex<double>(((double)rand()) / RAND_MAX, ((double)rand()) / RAND_MAX); //lapack_uni01_sampler();
