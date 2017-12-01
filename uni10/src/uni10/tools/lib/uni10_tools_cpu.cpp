@@ -1,6 +1,8 @@
 #include <uni10/tools/uni10_tools.h>
 #include <string.h>
 
+#include <random> 
+
 namespace uni10{
 
   void* elemAlloc(size_t memsize, bool& ongpu){
@@ -43,8 +45,13 @@ namespace uni10{
   }
 
   void elemRand(double* elem, size_t N, bool ongpu){
+	std::random_device rd;
+	std::default_random_engine dre(rd());
+	std::uniform_real_distribution<double> unif(0, 1);
+
     for(size_t i = 0; i < N; i++)
-      elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
+      //elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
+	  elem[i] = unif(dre);
   }
 
 void setDiag(double* elem, double* diag_elem, size_t m, size_t n, size_t diag_n, bool ongpu, bool diag_ongpu){
@@ -139,8 +146,13 @@ void setElemAt(size_t idx, std::complex<double> val, std::complex<double> *elem,
 }
 
 void elemRand(std::complex<double>* elem, size_t N, bool ongpu){
+	std::random_device rd;
+	std::default_random_engine dre(rd());
+	std::uniform_real_distribution<double> unif(0, 1);
+	
 	for(size_t i = 0; i < N; i++)
-		elem[i] = std::complex<double>(((double)rand()) / RAND_MAX, ((double)rand()) / RAND_MAX); //lapack_uni01_sampler();
+	   // elem[i] = std::complex<double>(((double)rand()) / RAND_MAX, ((double)rand()) / RAND_MAX); //lapack_uni01_sampler();
+	   elem[i] = std::complex<double>(unif(dre), unif(dre));
 }
 
 void elemCast(std::complex<double>* des, double* src, size_t N, bool des_ongpu, bool src_ongpu){
