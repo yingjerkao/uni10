@@ -1,6 +1,8 @@
 #include <uni10/tools/uni10_tools.h>
 #include <string.h>
 
+#include <random>
+
 namespace uni10{
   
 const size_t GPU_MEM_MAX = UNI10_GPU_GLOBAL_MEM * 2 / 3;
@@ -97,8 +99,12 @@ void elemRand(double* elem, size_t N, bool ongpu){
 		gpu_rand<<<gridSize, UNI10_THREADMAX>>>(elem, N);
 	}
 	else{
+		std::random_device rd;
+		std::default_random_engine dre(rd());		
+		std::uniform_real_distribution<double> unif(-1, 1);
 		for(size_t i = 0; i < N; i++)
-			elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
+			//elem[i] = ((double)rand()) / RAND_MAX; //lapack_uni01_sampler();
+			elem[i] = unif(dre);
 	}
 }
 
